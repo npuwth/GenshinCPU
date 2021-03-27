@@ -134,17 +134,18 @@ interface PipeLineRegsInterface (
 	logic [2:0]  ID_Sel;
 	logic        ID_isJump;//判断是否是j 或者 jal
 
-	modport PC (//PC 的端口
+  modport PC (//PC 的端口
 	input IF_NPC , 
 	input IF_PCWr,
 	output IF_PC
-	);
+  );
 
-	modport IF_ID (
+  modport IF_ID (
 	input IF_Instr,
 	input IF_PCAdd1,
 	input ID_Flush,
 	input IF_IDWr,
+
 	output ID_Instr,
 	output ID_Imm16,
 	output ID_PCAdd1,
@@ -153,7 +154,7 @@ interface PipeLineRegsInterface (
 	output ID_rd,
 	output ID_Sel,
 	output ID_isJump
-	);
+  );
 
 
 
