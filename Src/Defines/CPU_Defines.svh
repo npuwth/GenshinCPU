@@ -27,13 +27,6 @@
 
 typedef struct packed {
     logic Interrupt;//中断例外
-    logic WrongAddressinIF;//地址错例外——取指
-    logic ReservedInstruction;//保留指令例外
-    logic Overflow;//整型溢出例外
-    logic Syscall;//系统调用例外
-    logic Break;//断点例外
-    //logic Eret;//异常返回指令 在OpenMips一书的描述中 将eret描述成一种类似异常的指令 但是在大赛的文件中eret不是例外 我认为eret可以像j指令那么做
-    logic WrongAddressinMEM;//地址错例外——数据访问
 } ExceptType;//事实上，这个应该给MEM_ExceptType信号的数据类型 因为Interrupt是异步的直接拉到异常处理单元，在异常处理单元内部是这个完全体的数据类型
 
 typedef struct packed {
