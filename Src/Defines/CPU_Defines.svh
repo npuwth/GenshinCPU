@@ -122,8 +122,162 @@ typedef struct packed {
     logic HILOWr;
 } RegsWrType;//三组寄存器的写信号的打包
 
-interface interfacename;
-    
+interface PipeLineRegsInterface (
+  input logic clk;
+  input logic rst;
+);
+//*****   ID_Output   *****//
+  	logic [31:0] ID_BusA;    		// RF 中读取到的数据A
+  	logic [31:0] ID_BusB;	 		// RF 中读取到的数据B
+  	logic [31:0] ID_Imm32;	 		// 符号扩展之后的32位立即数
+  	logic [31:0] ID_PCAdd1;  		// PC+1
+  	logic [4:0] ID_rs;		 		// rs 
+  	logic [4:0] ID_rt;		 		// rt
+  	logic [4:0] ID_rd;		 		// rd
+  	logic [3:0] ID_ALUOp;	 		// ALUOp ALU符号
+  	LoadType ID_LoadType;	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
+  	StoreType ID_StoreType;  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
+  	RegsWrType ID_RegsWrType;		// 寄存器写信号打包
+  	logic [1:0] ID_WbSel;    		// 写回信号选择
+  	logic ID_ReadMem;		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
+  	logic [1:0] ID_DstSel;   		// 寄存器写回信号选择（Dst）
+  	logic ID_DMWr;			 		// DataMemory 写信号
+  	ExceptinPipeType ID_ExceptType;	// 异常类型
+
+//*****   EXE_Output   *****//
+  	logic [31:0] EXE_BusA;   // RF 中读取到的数据A
+  	logic [31:0] EXE_BusB;	 // RF 中读取到的数据B
+  	logic [31:0] EXE_Imm32;  // 符号扩展之后的32位立即数
+  	logic [31:0] EXE_PCAdd1; // PC+1
+  	logic [4:0]  EXE_rs;
+  	logic [4:0]  EXE_rt;
+  	logic [4:0]  EXE_rd;
+  	logic [3:0]  EXE_ALUOp;  // ALUOp ALU符号
+  	LoadType EXE_LoadType;   // Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
+  	StoreType EXE_StoreType; // Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
+  	RegsWrType EXE_RegsWrType;
+  	logic [1:0] EXE_WbSel;
+  	logic [1:0] EXE_DstSel;
+  	logic EXE_ReadMem;
+  	logic EXE_DMWr;
+  	ExceptinPipeType EXE_ExceptType;
+  	logic [4:0] EXE_Shamt;
+  	logic [5:0] EXE_Funct;
+    logic [31:0] EXE_ALUOut;			//组合电路传出信号
+    logic [31:0] EXE_OutB;				//组合电路来的
+    logic [4:0] EXE_Dst;				//组合电路来的
+    logic MEM_Flush;					//未知位数 清空流水线寄存器信号
+
+//*****   MEM_OutPut   *****//
+    logic MEM_DMWr;						//OK
+    StoreType MEM_StoreType;			//OK
+    ExceptinPipeType MEM_ExceptType;	//OK
+    LoadType MEM_LoadType;				//OK
+    logic [31:0] MEM_ALUOut;			//输出信号
+    logic [31:0] MEM_PCAdd1;			//OK
+    logic [1:0] MEM_WbSel;				//OK
+    logic [4:0] MEM_Dst;    			//输出信号
+    RegsWrType MEM_RegsWrType;			//OK
+    logic [31:0]MEM_OutB;				//输出信号
+
+//*****   WB_OutPut   *****//
+	logic [1:0]  WB_WbSel;        	 	// 写回RF的选择信号
+	logic [31:0] WB_PCAdd1;      	 	// PC+1
+	logic [31:0] WB_ALUOut;      	 	// EXE级输出的ALU结果
+	logic [31:0] WB_OutB;        	 	// RF读取的第二个数据值（已经经过旁路），用于MTC0 MTHI MTLO
+ 	logic [31:0] WB_DMOut;	     	 	// DM读取出来的原始32位数据
+	logic [4:0]  WB_Dst;		 	 	// 在WB级写回寄存器的地址
+	LoadType WB_LoadType;		 	 	// 送给EXT2进行lw lh lb lbu lhu 等信号的处理
+	ExceptinPipeType WB_ExceptType;  	// 异常类型
+	RegsWrType WB_RegsWrType;         	// RF+CP0+HILO寄存器的写信号打包 
+
+modport ID_EX (	//IDEX_modport
+
+    input clk,
+    input rst,
+    input ID_BusA,
+    input ID_BusB,
+    input ID_Imm32,
+    input ID_PCAdd1,
+    input ID_rs,
+    input ID_rt,
+    input ID_rd,
+    input ID_ALUOp,
+    input ID_LoadType,
+    input ID_StoreType,
+    input ID_RegsWrType,
+    input ID_WbSel,
+    input ID_ReadMem,
+    input ID_DstSel,
+    input ID_DMWr,
+    input ID_ExceptType,
+  
+    output EXE_BusA,
+    output EXE_BusB,
+    output EXE_Imm32,
+    output EXE_PCAdd1,
+    output EXE_rs,
+    output EXE_rt,
+    output EXE_rd,
+    output EXE_ALUOp,
+    output EXE_LoadType,
+    output EXE_StoreType,
+    output EXE_RegsWrType,
+    output EXE_WbSel,
+    output EXE_DstSel,
+    output EXE_ReadMem,
+    output EXE_DMWr,
+    output EXE_Except,
+    output EXE_Shamt,
+    output EXE_Funct
+  );
+	modport EX_MEM (
+        input EXE_DMWr,
+        input WB_RegsWrType,
+        input EXE_WbSel,
+        input EXE_ALUOut,
+        input EXE_OutB;,
+        input EXE_Dst,
+        input EXE_PCAdd1,
+        input EXE_StoreType,
+        input EXE_LoadType,
+        input EXE_ExceptType,
+        input MEM_Flush,
+
+        output MEM_DMWr,
+        output MEM_StoreType,
+        output MEM_ExceptType,
+        output MEM_LoadType,
+        output MEM_ALUOut,
+        output MEM_PCAdd1,
+        output MEM_WbSel,
+        output MEM_Dst,
+        output MEM_RegsWrType,
+        output MEM_OutB
+	);
+
+    modport MEM_WB (
+	input MEM_ExceptType,
+	input MEM_LoadType,
+	input MEM_ALUOut,
+	input MEM_PCAdd1,
+	input MEM_WbSel,
+	input MEM_Dst,
+	input MEM_RegsWrType,
+	input MEM_OutB,
+	input MEM_DMOut,
+
+	output WB_WbSel,
+	output WB_PCAdd1,
+	output WB_ALUOut,
+	output WB_OutB,
+	output WB_DMOut,
+	output WB_Dst,
+	output WB_LoadType,
+	output WB_ExceptType,
+	output WB_RegsWrType,
+	);
+
 endinterface //interfacename
 
 
