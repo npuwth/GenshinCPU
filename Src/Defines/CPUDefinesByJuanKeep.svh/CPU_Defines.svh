@@ -216,6 +216,7 @@ interface PipeLineRegsInterface (
     logic [4:0] MEM_Dst;    			//输出信号
     RegsWrType MEM_RegsWrType;			//OK
     logic [31:0]MEM_OutB;				//输出信号
+    logic [31:0]MEM_DMOut;				//输出信号
 
 //*****   WB_OutPut   *****//
 	logic [1:0]  WB_WbSel;        	 	// 写回RF的选择信号
@@ -263,7 +264,7 @@ interface PipeLineRegsInterface (
     output EXE_DstSel,
     output EXE_ReadMem,
     output EXE_DMWr,
-    output EXE_Except,
+    output EXE_ExceptType,
     output EXE_Shamt
     //output EXE_Funct
   );
