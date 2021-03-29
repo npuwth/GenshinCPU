@@ -26,17 +26,23 @@
 `include "CommonDefines.svh"
 
 typedef struct packed {
-    logic Interrupt;//中断例外
+    logic HardwareInterrupt1;//硬件中断例外1
+    logic HardwareInterrupt2;//硬件中断例外2
+    logic HardwareInterrupt3;//硬件中断例外3
+    logic HardwareInterrupt4;//硬件中断例外4
+    logic HardwareInterrupt5;//硬件中断例外5
+    logic HardwareInterrupt6;//硬件中断例外6
 } AsynExceptType;//异步信号类型
 
 typedef struct packed {
-    logic WrongAddressinIF;//地址错例外——取指
+    logic WrongAddressinIF;   //地址错例外——取指
     logic ReservedInstruction;//保留指令例外
-    logic Overflow;//整型溢出例外
-    logic Syscall;//系统调用例外
-    logic Break;//断点例外
-    logic WrongAddressinMEM;//地址错例外——数据访问
-} ExceptinPipeType;//在流水线寄存器之间流动的异常信号
+    logic Overflow;           //整型溢出例外
+    logic Syscall;            //系统调用例外
+    logic Break;              //断点例外
+    logic Eret;               //异常返回指令
+    logic WrongAddressinMEM;  //地址错例外——数据访问
+} ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
 typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常量
 	/* shift */
