@@ -32,18 +32,22 @@ typedef struct packed {
     logic HardwareInterrupt4;//硬件中断例外4
     logic HardwareInterrupt5;//硬件中断例外5
     logic HardwareInterrupt6;//硬件中断例外6
+    logic SoftwareInterrupt1;//软件中断例外1
+    logic SoftwareInterrupt2;//软件中断例外2
+
 } AsynExceptType;//异步信号类型
 
 typedef struct packed {
-    logic WrongAddressinIF;   //地址错例外——取指
-    logic ReservedInstruction;//保留指令例外
-    logic Overflow;           //整型溢出例外
-    logic Syscall;            //系统调用例外
-    logic Break;              //断点例外
-    logic Eret;               //异常返回指令
-    logic WrongAddressinMEM;  //地址错例外——数据访问
+	logic Interrupt;	 	  	// 中断信号
+    logic WrongAddressinIF;   	// 地址错例外——取指
+    logic ReservedInstruction;	// 保留指令例外
+    logic Overflow;           	// 整型溢出例外
+    logic Syscall;            	// 系统调用例外
+    logic Break;              	// 断点例外
+    logic Eret;               	// 异常返回指令
+    logic WrWrongAddressinMEM;  // 地址错例外——数据写入
+    logic RdWrongAddressinMEM;  // 地址错例外——数据读取
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
-
 typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常量
 	/* shift */
 	OP_SLL, OP_SRL, OP_SRA, OP_SLLV, OP_SRLV, OP_SRAV,
