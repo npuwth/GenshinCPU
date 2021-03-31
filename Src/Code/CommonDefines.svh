@@ -13,7 +13,7 @@
 `define CommonDefines_svh
 
 `define WriteEnable         1'b1     // 打开写使能信号
-`define WriteDisable        1'b1     // 关闭写使能信号
+`define WriteDisable        1'b0     // 关闭写使能信号
 `define RstEnable           1'b1     // 打开复位信号(高有效)
 `define RstDisable          1'b0     // 关闭复位信号
 
@@ -29,5 +29,19 @@
 `define CP0_REG_STATUS      5'd12
 `define CP0_REG_CAUSE       5'd13
 `define CP0_REG_EPC         5'd14
+
+//用于选择storeleefine CP0_REG_EPC         5'd14
+
+//用于选择store类型
+`define STORETYPE_SW        2'b00
+`define STORETYPE_SH        2'b01
+`define STORETYPE_SB        2'b10
+
+//用于选择load类型
+`define LOADTYPE_LW         3'b100
+`define LOADTYPE_LH         3'b101
+`define LOADTYPE_LHU        3'b001
+`define LOADTYPE_LB         3'b110
+`define LOADTYPE_LBU        3'b010
 
 `endif
