@@ -1,27 +1,14 @@
-
-///////////////////////////////////////////////////////////////////////////////
-// Copyright(C) Team . Open source License: MIT.
-// ALL RIGHT RESERVED
-// File name   : CPU_Defines.svh
-// Author      : Juan Jiang
-// Date        : 2021-03-20
-// Version     : 0.1
-// Description :
-// 定义了中断变量类型、指令变量类型、装载指令变量类型、Store指令变量类型和寄存器堆（有RF CP0 HILO）写信号类型
-//    
-// Parameter   :没有
-//    ...
-//    ...
-// IO Port     :没有
-//    ...
-//    ...
-// Modification History:
-//   Date   |   Author   |   Version   |   Change Description
-//==============================================================================
-// 19-06-02 |    Zion    |     0.1     | Original Version
-// ...
-////////////////////////////////////////////////////////////////////////////////
-
+/*
+ * @Author: 
+ * @Date: 2021-03-31 15:16:20
+ * @LastEditTime: 2021-03-31 15:38:30
+ * @LastEditors: npuwth
+ * @Copyright 2021 GenshinCPU
+ * @Version:1.0
+ * @IO PORT:
+ * @Description: 
+ */
+ 
 `ifndef CPU_Defines_SVH
 `define CPU_Defines_SVH
 `include "CommonDefines.svh"
