@@ -50,6 +50,14 @@
 `define WBSel_OutB          2'b10
 `define WBSel_DMResult      2'b11
 
+//**************************for the branch slove unit*****************************
+`define BRANCH_CODE_BEQ  3'b000
+`define BRANCH_CODE_BNE  3'b001
+`define BRANCH_CODE_BGE  3'b010
+`define BRANCH_CODE_BGT  3'b011
+`define BRANCH_CODE_BLE  3'b100
+`define BRANCH_CODE_BLT  3'b101 
+
 //***************************  与具体指令有关的宏定义  ***************************
 //逻辑操作指令SPECIAL类的功能码
 `define EXE_AND 6'b100100           //and指令功能码
