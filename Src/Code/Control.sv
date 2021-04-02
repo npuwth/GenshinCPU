@@ -260,6 +260,7 @@ module Control(
             end
         endcase
     end
+    
 
   always_comb begin
     unique case (instrType)
@@ -303,7 +304,8 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsSel    = `RegsSel_RF;      
-        ID_EXTOp      = `EXTOP_SIGN;          
+        ID_EXTOp      = `EXTOP_SIGN;   
+        ID_BranchCode = '0;//'0表示无关控制信号               
       end
 
       OP_ADDU:begin
@@ -325,6 +327,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
+        ID_BranchCode = '0;//'0表示无关控制信号
       end
 
     endcase
@@ -333,15 +336,7 @@ module Control(
     
 
 
-    // output logic [3:0] ID_ALUOp,	 		// ALUOp ALU符号
-  	// output LoadType ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
-  	// output StoreType ID_StoreType,  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
-  	// output RegsWrType ID_RegsWrType,		// 寄存器写信号打包
-  	// output logic [1:0] ID_WbSel,    		// 写回信号选择
-  	// output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
-  	// output logic [1:0] ID_DstSel,   		// 寄存器写回信号选择（Dst）
-  	// output logic ID_DMWr,			 		// DataMemory 写信号
-  	// output ExceptinPipeType ID_ExceptType	// 异常类型
+
 
 
 endmodule
