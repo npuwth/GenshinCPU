@@ -172,6 +172,20 @@
 `define EXE_SPECIAL2_INST   6'b011100 //SPECIAL2类指令的指令码
 `define EXE_REGIMM_INST     6'b000001   //REGIMM类转移指令
 
+//****************************有关译码的宏定义***************************
+
+`define DstSel_rd           1'b0
+`define DstSel_rt           1'b1
+
+`define ALUSrcA_Sel_Regs    1'b0
+`define ALUSrcA_Sel_Shamt   1'b1
+
+`define ALUSrcB_Sel_Regs    1'b0
+`define ALUSrcB_Sel_Imm     1'b1
+
+`define RegsSel_RF          2'b00 //RF读出的数据
+`define RegsSel_HILO        2'b01//
+`define RegsSel_CP0         2'b10
 
 
 
