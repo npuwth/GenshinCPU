@@ -212,4 +212,9 @@
 `define ExceptionTypeZero {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
 `define RegsWrTypeDisable {1'b0,1'b0,1'b0}
 
+//RegsWrType 
+`define RegsWrTypeRFEn    '{1'b1,1'b0,1'b0}
+`define RegsWrTypeCP0En   '{1'b0,1'b1,1'b0}
+`define RegsWrTypeHILOEn  '{1'b0,1'b0,1'b1}
+
 `endif
