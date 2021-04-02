@@ -174,6 +174,9 @@
 
 //****************************有关译码的宏定义***************************
 
+`define DonotReadMem        1'b0
+`define DoReadMem           1'b1
+
 `define DstSel_rd           1'b0
 `define DstSel_rt           1'b1
 
