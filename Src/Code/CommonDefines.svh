@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-03-31 14:46:26
+ * @LastEditTime: 2021-04-02 09:13:10
  * @LastEditors: your name
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -16,6 +16,10 @@
 `define WriteDisable        1'b0     // 关闭写使能信号
 `define RstEnable           1'b1     // 打开复位信号(高有效)
 `define RstDisable          1'b0     // 关闭复位信号
+`define FlushEnable         1'b1     // 开启flush
+`define FlushDisable        1'b1     // 关闭flush
+
+
 
 `define InterruptNotAssert  1'b0     // 取消中断的声明
 `define InterruptAssert     1'b1     // 开启中断的声明
@@ -44,4 +48,6 @@
 `define LOADTYPE_LB         3'b110
 `define LOADTYPE_LBU        3'b010
 
+`define ExceptionTypeZero {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0} 
+`define RegsWrTypeDisable {1'b0,1'b0,1'b0}
 `endif

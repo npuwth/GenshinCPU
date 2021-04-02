@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 14:36:47
- * @LastEditTime: 2021-03-30 20:00:07
+ * @LastEditTime: 2021-03-31 15:36:52
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,7 +17,7 @@ module EXT2(WB_DMOut_i,WB_ALUOut_i,WB_DMResult_o,WB_LoadType_i);
   input logic [31:0]    WB_DMOut_i;
   input logic [31:0]    WB_ALUOut_i;
   input logic [2:0]     WB_LoadType_i;
-  output logic [31:0]   WB_DMResult_o;
+  output logic [31:0]   WB_DMResult_o; 
 
   always_comb begin
     case(WB_LoadType_i)
