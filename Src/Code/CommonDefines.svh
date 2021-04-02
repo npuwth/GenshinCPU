@@ -17,20 +17,9 @@
 `define RstEnable           1'b1     // 打开复位信号(高有效)
 `define RstDisable          1'b0     // 关闭复位信号
 
-`define InterruptNotAssert  1'b0     // 取消中断的声明
-`define InterruptAssert     1'b1     // 开启中断的声明
-`define InDelaySlot         1'b1     // 延迟槽指令
-`define ZeroWord            32'h0    // 寄存器32位全0信号
 
-// CP0寄存器的宏定义  （序号定义）
-`define CP0_REG_BADVADDR    5'd8
-`define CP0_REG_COUNT       5'd9
-`define CP0_REG_COMPARE     5'd11
-`define CP0_REG_STATUS      5'd12
-`define CP0_REG_CAUSE       5'd13
-`define CP0_REG_EPC         5'd14
 
-//用于选择storeleefine CP0_REG_EPC         5'd14
+//用于选择storeleefine
 
 //用于选择store类型
 `define STORETYPE_SW        2'b00
@@ -178,5 +167,31 @@
 `define EXE_SPECIAL_INST    6'b000000  //SPECIAL类指令的指令码
 `define EXE_SPECIAL2_INST   6'b011100 //SPECIAL2类指令的指令码
 `define EXE_REGIMM_INST     6'b000001   //REGIMM类转移指令
+
+
+
+
+
+
+
+//***************************  与CP0有关的宏定义  ***************************
+
+`define InterruptNotAssert  1'b0     // 取消中断的声明
+`define InterruptAssert     1'b1     // 开启中断的声明
+`define InDelaySlot         1'b1     // 延迟槽指令
+`define ZeroWord            32'h0    // 寄存器32位全0信号
+
+// CP0寄存器的宏定义  （序号定义）
+`define CP0_REG_BADVADDR    5'd8
+`define CP0_REG_COUNT       5'd9
+`define CP0_REG_COMPARE     5'd11
+`define CP0_REG_STATUS      5'd12
+`define CP0_REG_CAUSE       5'd13
+`define CP0_REG_EPC         5'd14
+
+
+//***************************  与结构体有关的宏定义  ***************************
+`define ExceptionTypeZero {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
+`define RegsWrTypeDisable {1'b0,1'b0,1'b0}
 
 `endif
