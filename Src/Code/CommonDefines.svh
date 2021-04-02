@@ -17,7 +17,11 @@
 `define RstEnable           1'b1     // 打开复位信号(高有效)
 `define RstDisable          1'b0     // 关闭复位信号
 
+//*******************************EXT ***********************
 
+`define EXTOP_ZERO  2'b00
+`define EXTOP_SIGN  2'b01
+`define EXTOP_LUI   2'b10
 
 //用于选择storeleefine
 
