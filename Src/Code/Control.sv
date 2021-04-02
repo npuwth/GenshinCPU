@@ -35,7 +35,8 @@ module Control(
     output logic [1:0]ID_ALUSrcA,
     output logic [1:0]ID_ALUSrcB,
     output logic [1:0]ID_RegsSel,
-    output logic [1:0]ID_EXTOp
+    output logic [1:0]ID_EXTOp,
+    output logic [2:0]ID_BranchCode
     );
 
     logic [5:0]opcode;
@@ -265,64 +266,65 @@ module Control(
       OP_ADD:begin
         ID_ALUOp      = `EXE_ALUOp_ADD;
 
-        ID_ReadMem    = 1'b0;
+        ID_ReadMem    = `DonotReadMem;
         ID_LoadType   = '0;
 
-        ID_DMWr       = 1'b0;
+        ID_DMWr       = `WriteDisable;
         ID_StoreType  = '0;
 
         ID_WbSel      = `WBSel_ALUOut;
-        ID_DstSel     = 1'b0;//rd
+        ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
         
         ID_ExceptType = `ExceptionTypeZero;
 
-        ID_ALUSrcA    = 1'b0;
-        ID_ALUSrcB    = 1'b0;
-        ID_RegsSel    = 1'b0;//选择ID级别读出的数据
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
+        ID_BranchCode = '0;//'0表示无关控制信号
       end 
 
       OP_ADDI:begin
         ID_ALUOp      = `EXE_ALUOp_ADDI;
 
-        ID_ReadMem    = 1'b0;
+        ID_ReadMem    = `DonotReadMem;
         ID_LoadType   = '0;
 
-        ID_DMWr       = 1'b0;
+        ID_DMWr       = `WriteDisable;
         ID_StoreType  = '0;
 
         ID_WbSel      = `WBSel_ALUOut;
-        ID_DstSel     = 1'b1;//rt
+        ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
         
         ID_ExceptType = `ExceptionTypeZero;
 
-        ID_ALUSrcA    = 1'b0;
-        ID_ALUSrcB    = 1'b1;
-        ID_RegsSel    = 1'b0;      
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsSel    = `RegsSel_RF;      
         ID_EXTOp      = `EXTOP_SIGN;          
       end
 
       OP_ADDU:begin
-        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作
 
-        ID_ReadMem    = 1'b0;
+        ID_ReadMem    = `DonotReadMem;//关于Load
         ID_LoadType   = '0;
 
-        ID_DMWr       = 1'b0;
+        ID_DMWr       = `WriteDisable;//关于Store
         ID_StoreType  = '0;
 
-        ID_WbSel      = `WBSel_ALUOut;
-        ID_DstSel     = 1'b1;//rt
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
         
-        ID_ExceptType = `ExceptionTypeZero;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
 
-        ID_ALUSrcA    = 1'b0;
-        ID_ALUSrcB    = 1'b0;
-        ID_RegsSel    = 1'b0;      
-        ID_EXTOp      = '0;          
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
       end
 
     endcase
