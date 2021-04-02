@@ -44,4 +44,10 @@
 `define LOADTYPE_LB         3'b110
 `define LOADTYPE_LBU        3'b010
 
+//用于选择将要WB的数据
+`define PCAdd1              2'b00
+`define ALUOut              2'b01
+`define OutB                2'b10
+`define DMResult            2'b11
+
 `endif
