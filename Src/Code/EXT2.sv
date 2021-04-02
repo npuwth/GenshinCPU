@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 14:36:47
- * @LastEditTime: 2021-03-31 15:36:52
+ * @LastEditTime: 2021-04-02 17:13:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,16 +21,16 @@ module EXT2(WB_DMOut_i,WB_ALUOut_i,WB_DMResult_o,WB_LoadType_i);
 
   always_comb begin
     case(WB_LoadType_i)
-      3'b000: WB_DMResult_o = WB_DMOut_i;  //lw
-      3'b001: if(WB_ALUOut_i[1] == 1'b0) //lh
+      `LOADTYPE_LW: WB_DMResult_o = WB_DMOut_i;  //LW
+      `LOADTYPE_LH: if(WB_ALUOut_i[1] == 1'b0) //LH
                 WB_DMResult_o = {{16{WB_DMOut_i[15]}},WB_DMOut_i[15:0]};
               else
                 WB_DMResult_o = {{16{WB_DMOut_i[31]}},WB_DMOut_i[31:16]}; 
-      3'b010: if(WB_ALUOut_i[1] == 1'b0) //lhu
+      `LOADTYPE_LHU: if(WB_ALUOut_i[1] == 1'b0) //LHU
                 WB_DMResult_o = {16'b0,WB_DMOut_i[15:0]};
               else
                 WB_DMResult_o = {16'b0,WB_DMOut_i[31:16]};
-      3'b011: if(WB_ALUOut_i[1:0] == 2'b00) //lb
+      `LOADTYPE_LB: if(WB_ALUOut_i[1:0] == 2'b00) //LB
                 WB_DMResult_o = {{24{WB_DMOut_i[7]}},WB_DMOut_i[7:0]};
               else if(WB_ALUOut_i[1:0] == 2'b01)
                 WB_DMResult_o = {{24{WB_DMOut_i[15]}},WB_DMOut_i[15:8]};
@@ -38,7 +38,7 @@ module EXT2(WB_DMOut_i,WB_ALUOut_i,WB_DMResult_o,WB_LoadType_i);
                 WB_DMResult_o = {{24{WB_DMOut_i[23]}},WB_DMOut_i[23:16]};
               else
                 WB_DMResult_o = {{24{WB_DMOut_i[31]}},WB_DMOut_i[31:24]};
-      3'b100: if(WB_ALUOut_i[1:0] == 2'b00) //lbu
+      `LOADTYPE_LBU: if(WB_ALUOut_i[1:0] == 2'b00) //LBU
                 WB_DMResult_o = {24'b0,WB_DMOut_i[7:0]};
               else if(WB_ALUOut_i[1:0] == 2'b01)
                 WB_DMResult_o = {24'b0,WB_DMOut_i[15:8]};

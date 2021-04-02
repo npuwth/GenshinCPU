@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-03-31 15:37:29
+ * @LastEditTime: 2021-04-02 17:15:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
@@ -29,14 +29,14 @@ assign MEM_DMOut_o = Dmem[MEM_ALUOut_i[11:2]];
 
 always_ff @(posedge clk) begin
     if(MEM_DMWr_i)
-      if(MEM_StoreType_i == `SW) //sw
+      if(MEM_StoreType_i == `STORETYPE_SW) //SW
         Dmem[MEM_ALUOut_i[11:2]] = MEM_OutB_i;
-      else if(MEM_StoreType_i == `SH) //sh
+      else if(MEM_StoreType_i == `STORETYPE_SH) //SH
         if(MEM_ALUOut_i[1] == 1'b0)
           Dmem[MEM_ALUOut_i[11:2]][15:0] = MEM_OutB_i[15:0];
         else
           Dmem[MEM_ALUOut_i[11:2]][31:16] = MEM_OutB_i[15:0];
-      else //sb
+      else if(MEM_StoreType_i == `STORETYPE_SB)//SB
         if(MEM_ALUOut_i[1:0] == 2'b00)
           Dmem[MEM_ALUOut_i[11:2]][7:0] = MEM_OutB_i[7:0];
         else if(MEM_ALUOut_i[1:0] == 2'b01)
@@ -45,6 +45,8 @@ always_ff @(posedge clk) begin
           Dmem[MEM_ALUOut_i[11:2]][23:16] = MEM_OutB_i[7:0];
         else
           Dmem[MEM_ALUOut_i[11:2]][31:24] = MEM_OutB_i[7:0];
+      else
+        Dmem[MEM_ALUOut_i[11:2]] = MEM_OutB_i;
 end
 
 endmodule

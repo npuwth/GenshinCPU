@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-03-31 15:38:03
+ * @LastEditTime: 2021-04-02 16:03:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -11,10 +11,10 @@
  `include "CPU_Defines.svh"
  `include "CommonDefines.svh"
 
-module IDEX_Reg(PipeLineRegsInterface.ID_EXE port );
+module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port );
 
   always_ff @( posedge port.clk ) begin
-    if( port.rst ) begin
+    if( port.rst | port.IDEXE_Flush ) begin
       port.EXE_BusA <= 32'b0;
       port.EXE_BusB <= 32'b0;
       port.EXE_Imm32 <= 32'b0;
