@@ -36,7 +36,9 @@ module Control(
     output logic [1:0]ID_ALUSrcB,
     output logic [1:0]ID_RegsSel,
     output logic [1:0]ID_EXTOp,
-    output logic [2:0]ID_BranchCode
+    output logic [2:0]ID_BranchCode,
+    output logic ID_isImmeJump,
+    output logic ID_isBranch
     );
 
     logic [5:0]opcode;
@@ -284,6 +286,9 @@ module Control(
         ID_RegsSel    = `RegsSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
         ID_BranchCode = '0;//'0表示无关控制信号
+
+        ID_isBranch   = `IsNotABranch;
+        ID_isImmeJump = `IsNotAImmeJump;
       end 
 
       OP_ADDI:begin
@@ -305,7 +310,10 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsSel    = `RegsSel_RF;      
         ID_EXTOp      = `EXTOP_SIGN;   
-        ID_BranchCode = '0;//'0表示无关控制信号               
+        ID_BranchCode = '0;//'0表示无关控制信号  
+
+        ID_isBranch   = `IsNotABranch;
+        ID_isImmeJump = `IsNotAImmeJump;             
       end
 
       OP_ADDU:begin
@@ -328,6 +336,9 @@ module Control(
         ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_BranchCode = '0;//'0表示无关控制信号
+
+        ID_isBranch   = `IsNotABranch;
+        ID_isImmeJump = `IsNotAImmeJump;
       end
 
     endcase
