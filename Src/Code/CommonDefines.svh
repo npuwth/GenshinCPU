@@ -50,4 +50,122 @@
 `define WBSel_OutB          2'b10
 `define WBSel_DMResult      2'b11
 
+//***************************  与具体指令有关的宏定义  ***************************
+//逻辑操作指令SPECIAL类的功能码
+`define EXE_AND 6'b100100           //and指令功能码
+`define EXE_OR 6'b100101            //or指令功能码
+`define EXE_XOR 6'b100110           //xor指令功能码
+`define EXE_NOR 6'b100111           //nor指令功能码
+
+//逻辑操作指令其他指令码
+`define EXE_ANDI 6'b001100          //andi指令码
+`define EXE_ORI 6'b001101           //ori指令码
+`define EXE_XORI 6'b001110          //xori指令码
+`define EXE_LUI 6'b001111           //lui指令码
+
+//移位操作指令功能码
+`define EXE_SLL 6'b000000           //sll指令功能码
+`define EXE_SLLV 6'b000100          //sllv指令功能码
+`define EXE_SRL 6'b000010           //srl指令功能码
+`define EXE_SRLV 6'b000110          //srlv指令功能码
+`define EXE_SRA 6'b000011           //sra指令功能码
+`define EXE_SRAV 6'b000111          //srav指令功能码
+
+//移动操作指令功能码
+`define EXE_MOVZ 6'b001010          //movz指令功能码
+`define EXE_MOVN 6'b001011          //movn指令功能码
+`define EXE_MFHI 6'b010000          //mfhi指令功能码
+`define EXE_MTHI 6'b010001          //mthi指令功能码
+`define EXE_MFLO 6'b010010          //mflo指令功能码
+`define EXE_MTLO 6'b010011          //mtlo指令功能码
+
+//算术操作指令
+`define EXE_SLT 6'b101010           //slt指令功能码
+`define EXE_SLTU 6'b101011          //sltu指令功能码
+`define EXE_SLTI 6'b001010          //slti指令码
+`define EXE_SLTIU 6'b001011         //sltiu指令码
+`define EXE_ADD 6'b100000           //add指令功能码
+`define EXE_ADDU 6'b100001          //addu指令功能码
+`define EXE_SUB 6'b100010           //sub指令功能码
+`define EXE_SUBU 6'b100011          //subu指令功能码
+`define EXE_ADDI 6'b001000          //addi指令码
+`define EXE_ADDIU 6'b001001         //addiu指令码
+`define EXE_CLZ 6'b100000           //clz指令功能码
+`define EXE_CLO 6'b100001           //clo指令功能码
+
+`define EXE_MULT 6'b011000          //mult指令功能码
+`define EXE_MULTU 6'b011001         //multu指令功能码
+`define EXE_MUL 6'b000010           //mul指令功能码
+
+`define EXE_MADD 6'b000000          //madd指令功能码
+`define EXE_MADDU 6'b000001         //maddu指令功能码
+`define EXE_MSUB 6'b000100          //msub指令功能码
+`define EXE_MSUBU 6'b000101         //msubu指令功能码
+
+`define EXE_DIV 6'b011010           //div指令功能码
+`define EXE_DIVU 6'b011011          //divu指令功能码
+
+//分支跳转指令
+`define EXE_J 6'b000010             //j指令码
+`define EXE_JAL 6'b000011           //jal指令码
+`define EXE_JALR 6'b001001          //jalr功能码
+`define EXE_JR 6'b001000            //jr功能码
+`define EXE_BEQ 6'b000100           //beq指令码
+`define EXE_BGEZ 5'b00001           //bgez功能码2
+`define EXE_BGEZAL 5'b10001         //bgezal功能码2
+`define EXE_BGTZ 6'b000111          //bgtz指令码
+`define EXE_BLEZ 6'b000110          //blez指令码
+`define EXE_BLTZ 5'b00000           //bltz功能码2
+`define EXE_BLTZAL 5'b10000         //bltzal功能码2
+`define EXE_BNE 6'b000101           //bne指令码
+
+//加载存储指令
+`define EXE_LB 6'b100000            //lb指令码
+`define EXE_LBU 6'b100100           //lbu指令码
+`define EXE_LH 6'b100001            //lh指令码
+`define EXE_LHU 6'b100101           //Lhu指令码
+`define EXE_LW 6'b100011            //lw指令码
+`define EXE_LWL 6'b100010           //lwl指令码
+`define EXE_LWR 6'b100110           //lwr指令码
+`define EXE_SB 6'b101000            //sb指令码
+`define EXE_SH 6'b101001            //sh指令码
+`define EXE_SW 6'b101011            //sw指令码
+`define EXE_SWL 6'b101010           //swl指令码
+`define EXE_SWR 6'b101110           //swr指令码
+`define EXE_LL 6'b110000            //ll指令码
+`define EXE_SC 6'b111000            //sc指令码
+
+//异常相关指令
+//不包含立即数的自陷指令(指令码为SPECIAL类，根据功能码区分)
+`define EXE_TEQ 6'b110100
+`define EXE_TGE 6'b110000
+`define EXE_TGEU 6'b110001
+`define EXE_TLT 6'b110010
+`define EXE_TLTU 6'b110011
+`define EXE_TNE 6'b110110
+//含立即数的自陷指令(指令码为REGIMM类，根据20～16bit区分)
+`define EXE_TEQI 5'b01100
+`define EXE_TGEI 5'b01000
+`define EXE_TGEIU 5'b01001
+`define EXE_TLTI 5'b01010
+`define EXE_TLTIU 5'b01011
+`define EXE_TNEI 5'b01110
+
+`define EXE_BREAK 6'b001101
+`define EXE_SYSCALL 6'b001100
+
+`define EXE_ERET 32'b010000_1_0000_0000_0000_0000_000_011000
+
+//空指令
+`define EXE_NOP 6'b000000           //空指令功能码
+`define SSNOP 32'h0000_0040         //SSNOP指令
+
+//其他特殊指令
+`define EXE_SYNC 6'b001111          //sync指令功能码
+`define EXE_PREF 6'b110011          //pref指令码
+
+`define EXE_SPECIAL_INST 6'b000000  //SPECIAL类指令的指令码
+`define EXE_SPECIAL2_INST 6'b011100 //SPECIAL2类指令的指令码
+`define EXE_REGIMM_INST 6'b000001   //REGIMM类转移指令
+
 `endif
