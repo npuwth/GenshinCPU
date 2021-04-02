@@ -190,8 +190,11 @@
 `define RegsSel_HILO        2'b01//
 `define RegsSel_CP0         2'b10
 
+`define IsAImmeJump         1'b1//特指 j jal
+`define IsNotAImmeJump      1'b0
 
-
+`define IsABranch           1'b1//比如bne jr 这种
+`define IsNotABranch        1'b0
 
 
 
