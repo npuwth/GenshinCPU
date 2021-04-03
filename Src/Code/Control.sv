@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:19:06
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-03 18:38:55
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -948,6 +948,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
+                            Interrupt:1'b0,
                             Break:1'b1,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -966,6 +967,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
+                            Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -982,7 +984,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//sign
-        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1002,7 +1004,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//unsign
-        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1062,7 +1064,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//sign
-        ID_LoadType.size = 2'b10;//word
+        ID_LoadType.size = 2'b00;//word
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1082,7 +1084,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b00;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SB;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1102,7 +1104,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b01;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SH;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1121,7 +1123,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b10;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SW;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1143,7 +1145,8 @@ module Control(
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{
+        ID_ExceptType = '{  
+                            Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -1153,16 +1156,39 @@ module Control(
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0
         };//关于ERET
-        
+
+      OP_MFC0:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_WbSel      = `WBSel_OutB;
+        ID_DstSel     = `DstSel_rt;//rt 
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+    
+      OP_MTC0:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_WbSel      = `WBSel_OutB;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
       end
 
     endcase
   end 
 
     
-
-
-
 
 
 endmodule
