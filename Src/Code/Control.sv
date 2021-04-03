@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:28:09
+ * @LastEditTime: 2021-04-03 18:38:55
  * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -984,7 +984,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//sign
-        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1004,7 +1004,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//unsign
-        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1064,7 +1064,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//sign
-        ID_LoadType.size = 2'b10;//word
+        ID_LoadType.size = 2'b00;//word
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1084,7 +1084,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b00;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SB;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1104,7 +1104,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b01;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SH;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1123,7 +1123,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b10;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SW;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
