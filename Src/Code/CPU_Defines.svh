@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 10:27:22
+ * @LastEditTime: 2021-04-03 10:42:56
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -131,8 +131,8 @@ interface PipeLineRegsInterface (
 //IFID,in
 	logic 		[31:0] 		IF_Instr;
 	logic 		[31:0] 		IF_PCAdd1;
-	logic 		 		IF_IDWr;           //IFID寄存器写使能
-	logic        		IFID_Flush;
+	logic 		 			IF_IDWr;           //IFID寄存器写使能
+	logic        			IFID_Flush;
 //IFID,out
 	logic 		[31:0] 		ID_Instr;
 	logic 		[15:0] 		ID_Imm16;
@@ -170,173 +170,173 @@ interface PipeLineRegsInterface (
   	logic 		[4:0]  		EXE_rd;
 	logic 		[4:0]  		EXE_Shamt;         // 移位量
   	logic 		[3:0]  		EXE_ALUOp;  		
-	logic        		EXE_ALUSrcA;
-	logic        		EXE_ALUSrcB;
-  	LoadType     		EXE_LoadType;   	
-  	StoreType    		EXE_StoreType; 	
-  	RegsWrType   		EXE_RegsWrType;
-	logic        		EXE_ReadMem;
-  	logic        		EXE_DMWr;
-  	logic 		[1:0]  	EXE_WbSel;
-  	logic 		[1:0]  	EXE_DstSel;
-  	ExceptinPipeType 	EXE_ExceptType;// 异常类型
+	logic        			EXE_ALUSrcA;
+	logic        			EXE_ALUSrcB;
+  	LoadType     			EXE_LoadType;   	
+  	StoreType    			EXE_StoreType; 	
+  	RegsWrType   			EXE_RegsWrType;
+	logic        			EXE_ReadMem;
+  	logic        			EXE_DMWr;
+  	logic 		[1:0]  		EXE_WbSel;
+  	logic 		[1:0]  		EXE_DstSel;
+  	ExceptinPipeType 		EXE_ExceptType;// 异常类型
 //EXEMEM,in
-    logic 		[31:0] 	EXE_ALUOut;		// ALU运算结果
-    logic 		[31:0] 	EXE_OutB;			// 旁路后的数据B
-    logic 		[4:0]  	EXE_Dst;			// 选择后的目标寄存器
-	//logic 	[31:0] 	EXE_PCAdd1;
-	//LoadType     		EXE_LoadType;   	// Load信号 
-  	//StoreType    		EXE_StoreType; 	// Store信号
-  	//RegsWrType   		EXE_RegsWrType;
-	//logic        		EXEDMWr;
-	//logic        		EXE_WbSel;
-    logic 		 		EXEMEM_Flush;		
+    logic 		[31:0] 		EXE_ALUOut;		// ALU运算结果
+    logic 		[31:0] 		EXE_OutB;			// 旁路后的数据B
+    logic 		[4:0]  		EXE_Dst;			// 选择后的目标寄存器
+	//logic 	[31:0] 		EXE_PCAdd1;
+	//LoadType     			EXE_LoadType;   	// Load信号 
+  	//StoreType    			EXE_StoreType; 	// Store信号
+  	//RegsWrType   			EXE_RegsWrType;
+	//logic        			EXEDMWr;
+	//logic        			EXE_WbSel;
+    logic 		 			EXEMEM_Flush;		
 //EXEMEM,out
-    logic 			 	MEM_DMWr;						
-    logic 		[31:0] 	MEM_ALUOut;			
-    logic 		[31:0] 	MEM_PCAdd1;			
-    logic 		[1:0]  	MEM_WbSel;				
-    logic 		[4:0]  	MEM_Dst;
-	LoadType     		MEM_LoadType;
-	StoreType    		MEM_StoreType;	    			
-    RegsWrType   		MEM_RegsWrType;		
-    logic 		[31:0] 	MEM_OutB;							
-	ExceptinPipeType MEM_ExceptType;//异常类型
+    logic 			 		MEM_DMWr;						
+    logic 		[31:0] 		MEM_ALUOut;			
+    logic 		[31:0] 		MEM_PCAdd1;			
+    logic 		[1:0]  		MEM_WbSel;				
+    logic 		[4:0]  		MEM_Dst;
+	LoadType     			MEM_LoadType;
+	StoreType    			MEM_StoreType;	    			
+    RegsWrType   			MEM_RegsWrType;		
+    logic 		[31:0] 		MEM_OutB;							
+	ExceptinPipeType 		MEM_ExceptType;//异常类型
 //EXEWB,in
-    //logic 	[31:0] 	MEM_ALUOut;			
-    //logic 	[31:0] 	MEM_PCAdd1;			
-    //logic 	[1:0]  	MEM_WbSel;				
-    //logic 	[4:0]  	MEM_Dst;
-	//LoadType     		MEM_LoadType;
-	logic 		[31:0] 	MEM_DMOut;
-	ExceptinPipeType 	MEM_ExceptType_new;//经过exception solvement的新的异常类型
+    //logic 	[31:0] 		MEM_ALUOut;			
+    //logic 	[31:0] 		MEM_PCAdd1;			
+    //logic 	[1:0]  		MEM_WbSel;				
+    //logic 	[4:0]  		MEM_Dst;
+	//LoadType     			MEM_LoadType;
+	logic 		[31:0] 		MEM_DMOut;
+	ExceptinPipeType 		MEM_ExceptType_new;//经过exception solvement的新的异常类型
 //EXEWB,out
-	logic 		[1:0]  	WB_WbSel;        	// 选择写回RF的数据
-	logic 		[31:0] 	WB_PCAdd1;      	// PC+1
-	logic 		[31:0] 	WB_ALUOut;      	// ALU结果
-	logic 		[31:0] 	WB_OutB;        	// RF读取的第二个数据值（已经经过旁路），用于MTC0 MTHI MTLO
- 	logic 		[31:0] 	WB_DMOut;	     	// DM读取出来的原始32位数据
-	logic 		[4:0]  	WB_Dst;		 	// 目标寄存器地址
-	LoadType     		WB_LoadType;		// 送给EXT2进行lw lh lb lbu lhu 等信号的处理
-	RegsWrType   		WB_RegsWrType;     // RF+CP0+HILO寄存器的写信号打包 
-	ExceptinPipeType 	WB_ExceptType; // 异常类型
+	logic 		[1:0]  		WB_WbSel;        	// 选择写回RF的数据
+	logic 		[31:0] 		WB_PCAdd1;      	// PC+1
+	logic 		[31:0] 		WB_ALUOut;      	// ALU结果
+	logic 		[31:0] 		WB_OutB;        	// RF读取的第二个数据值（已经经过旁路），用于MTC0 MTHI MTLO
+ 	logic 		[31:0] 		WB_DMOut;	     	// DM读取出来的原始32位数据
+	logic 		[4:0]  		WB_Dst;		 	// 目标寄存器地址
+	LoadType     			WB_LoadType;		// 送给EXT2进行lw lh lb lbu lhu 等信号的处理
+	RegsWrType   			WB_RegsWrType;     // RF+CP0+HILO寄存器的写信号打包 
+	ExceptinPipeType 		WB_ExceptType; // 异常类型
 
   modport PC (
-	input  				clk,
-	input  				rst,
-	input  				IF_NPC , 
-	input  				IF_PCWr,
+	input  					clk,
+	input  					rst,
+	input  					IF_NPC , 
+	input  					IF_PCWr,
 //output
-	output 				IF_PC
+	output 					IF_PC
   );
 
   modport IF_ID (
-	input  				clk,
-	input  				rst,
-	input  				IF_Instr,
-	input  				IF_PCAdd1,
-	input  				IFID_Flush,
-	input  				IF_IDWr,
+	input  					clk,
+	input  					rst,
+	input  					IF_Instr,
+	input  					IF_PCAdd1,
+	input  					IFID_Flush,
+	input  					IF_IDWr,
 	//output
-	output 				ID_Instr,
-	output 				ID_Imm16,
-	output 				ID_PCAdd1,
-	output 				ID_rs,
-	output 				ID_rt,
-	output 				ID_rd,
-	output 				ID_Sel,
-	output 				ID_JumpAddr
+	output 					ID_Instr,
+	output 					ID_Imm16,
+	output 					ID_PCAdd1,
+	output 					ID_rs,
+	output 					ID_rt,
+	output 					ID_rd,
+	output 					ID_Sel,
+	output 					ID_JumpAddr
   );
 
   modport ID_EXE (	//IDEXE_modport
-    input  				clk,
-    input  				rst,
-    input  				ID_BusA,
-    input  				ID_BusB,
-    input  				ID_Imm32,
-    input  				ID_PCAdd1,
-    input  				ID_rs,
-    input  				ID_rt,
-    input  				ID_rd,
-    input  				ID_ALUOp,
-    input  				ID_LoadType,
-    input  				ID_StoreType,
-    input  				ID_RegsWrType,
-    input  				ID_WbSel,
-    input  				ID_ReadMem,
-    input  				ID_DstSel,
-    input  				ID_DMWr,
-    input  				ID_ExceptType,
-	input  				IDEXE_Flush,
-    //output
-    output 				EXE_BusA,
-    output 				EXE_BusB,
-    output 				EXE_Imm32,
-    output 				EXE_PCAdd1,
-    output 				EXE_rs,
-    output 				EXE_rt,
-    output 				EXE_rd,
-    output 				EXE_ALUOp,
-    output 				EXE_LoadType,
-    output 				EXE_StoreType,
-    output 				EXE_RegsWrType,
-    output 				EXE_WbSel,
-    output 				EXE_DstSel,
-    output 				EXE_ReadMem,
-    output 				EXE_DMWr,
-    output 				EXE_ExceptType,
-    output 				EXE_Shamt
-  );				
+    input  					clk,
+    input  					rst,
+    input  					ID_BusA,
+    input  					ID_BusB,
+    input  					ID_Imm32,
+    input  					ID_PCAdd1,
+    input  					ID_rs,
+    input  					ID_rt,
+    input  					ID_rd,
+    input  					ID_ALUOp,
+    input  					ID_LoadType,
+    input  					ID_StoreType,
+    input  					ID_RegsWrType,
+    input  					ID_WbSel,
+    input  					ID_ReadMem,
+    input  					ID_DstSel,
+    input  					ID_DMWr,
+    input  					ID_ExceptType,
+	input  					IDEXE_Flush,
+    //output	
+    output 					EXE_BusA,
+    output 					EXE_BusB,
+    output 					EXE_Imm32,
+    output 					EXE_PCAdd1,
+    output 					EXE_rs,
+    output 					EXE_rt,
+    output 					EXE_rd,
+    output 					EXE_ALUOp,
+    output 					EXE_LoadType,
+    output 					EXE_StoreType,
+    output 					EXE_RegsWrType,
+    output 					EXE_WbSel,
+    output 					EXE_DstSel,
+    output 					EXE_ReadMem,
+    output 					EXE_DMWr,
+    output 					EXE_ExceptType,
+    output 					EXE_Shamt
+  );					
 
   modport EXE_MEM (  //EXEMEM_modport
-    input  				clk,
-	input  				rst,
-    input  				EXE_DMWr,
-    input  				WB_RegsWrType,
-    input  				EXE_WbSel,
-    input  				EXE_ALUOut,
-    input  				EXE_OutB,
-    input  				EXE_Dst,
-    input  				EXE_PCAdd1,
-    input  				EXE_StoreType,
-    input  				EXE_LoadType,
-    input  				EXE_ExceptType,
-    input  				EXEMEM_Flush,
+    input  					clk,
+	input  					rst,
+    input  					EXE_DMWr,
+    input  					WB_RegsWrType,
+    input  					EXE_WbSel,
+    input  					EXE_ALUOut,
+    input  					EXE_OutB,
+    input  					EXE_Dst,
+    input  					EXE_PCAdd1,
+    input  					EXE_StoreType,
+    input  					EXE_LoadType,
+    input  					EXE_ExceptType,
+    input  					EXEMEM_Flush,
     //output
-    output 				MEM_DMWr,
-    output 				MEM_StoreType,
-    output 				MEM_ExceptType,
-    output 				MEM_LoadType,
-    output 				MEM_ALUOut,
-    output 				MEM_PCAdd1,
-    output 				MEM_WbSel,
-    output 				MEM_Dst,
-    output 				MEM_RegsWrType,
-    output 				MEM_OutB
+    output 					MEM_DMWr,
+    output 					MEM_StoreType,
+    output 					MEM_ExceptType,
+    output 					MEM_LoadType,
+    output 					MEM_ALUOut,
+    output 					MEM_PCAdd1,
+    output 					MEM_WbSel,
+    output 					MEM_Dst,
+    output 					MEM_RegsWrType,
+    output 					MEM_OutB
   );
 
   modport MEM_WB (  //MEMWB_modport
-    input  				clk,
-	input  				rst,
-	input  				MEM_ExceptType,
-	input  				MEM_LoadType,
-	input  				MEM_ALUOut,
-	input  				MEM_PCAdd1,
-	input  				MEM_WbSel,
-	input  				MEM_Dst,
-	input  				MEM_RegsWrType,
-	input  				MEM_OutB,
-	input  				MEM_DMOut,
+    input  					clk,
+	input  					rst,
+	input  					MEM_ExceptType,
+	input  					MEM_LoadType,
+	input  					MEM_ALUOut,
+	input  					MEM_PCAdd1,
+	input  					MEM_WbSel,
+	input  					MEM_Dst,
+	input  					MEM_RegsWrType,
+	input  					MEM_OutB,
+	input  					MEM_DMOut,
     //output
-	output 				WB_WbSel,
-	output 				WB_PCAdd1,
-	output 				WB_ALUOut,
-	output 				WB_OutB,
-	output 				WB_DMOut,
-	output 				WB_Dst,
-	output 				WB_LoadType,
-	output 				WB_ExceptType,
-	output 				WB_RegsWrType
+	output 					WB_WbSel,
+	output 					WB_PCAdd1,
+	output 					WB_ALUOut,
+	output 					WB_OutB,
+	output 					WB_DMOut,
+	output 					WB_Dst,
+	output 					WB_LoadType,
+	output 					WB_ExceptType,
+	output 					WB_RegsWrType
   );
 
 endinterface //interfacename
