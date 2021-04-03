@@ -226,6 +226,7 @@
 `define RegsWrTypeDisable   '{1'b0,1'b0,1'b0}
 
 // ALUctr_signal_encoding 
+`define EXE_ALUOp_D         5'b00111//无关项
 //ADD 和 ADDI 共用了Opcode
 `define EXE_ALUOp_ADD       5'b00000
 `define EXE_ALUOp_ADDI      5'b00000
