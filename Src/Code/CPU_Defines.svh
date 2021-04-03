@@ -41,7 +41,7 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	/* shift */
 	OP_SLL, OP_SRL, OP_SRA, OP_SLLV, OP_SRLV, OP_SRAV,
 	/* unconditional jump (reg) */
-	OP_JALR,
+	OP_JALR,OP_JR,OP_J,
 	/* conditional move */
 	OP_MOVN, OP_MOVZ,
 	/* breakpoint and syscall */
@@ -52,11 +52,11 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	OP_MULT, OP_MULTU, OP_DIV, OP_DIVU,
 	OP_MADD, OP_MADDU, OP_MSUB, OP_MSUBU, OP_MUL,
 	/* add and substract */
-	OP_ADD, OP_ADDU, OP_SUB, OP_SUBU,
+	OP_ADD, OP_ADDU, OP_SUB, OP_SUBU,OP_ADDI,OP_ADDIU,
 	/* logical */
-	OP_AND, OP_OR, OP_XOR, OP_NOR,
+	OP_AND, OP_OR, OP_XOR, OP_NOR,OP_ANDI,OP_ORI,OP_XORI,
 	/* compare and set */
-	OP_SLT, OP_SLTU,
+	OP_SLT, OP_SLTU,OP_SLTI,OP_SLTIU,
 	/* trap */
 	OP_TGE, OP_TGEU, OP_TLT, OP_TLTU, OP_TEQ, OP_TNE,
 	/* count bits */
