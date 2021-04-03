@@ -148,10 +148,17 @@
             end
             if (ExceptType_i != `ExceptionTypeZero)begin
                 MEM_RegsWrType_o = `RegsWrTypeDisable;              // 发生异常，关闭当前信号的写回寄存器使能信号
+<<<<<<< HEAD
                 IFID_Flush      = `FlushEnable;
                 IDEXE_Flush     = `FlushEnable;
                 EXEMEM_Flush    = `FlushEnable;
                 MEMWB_Flush     = `FlushEnable;
+=======
+                IFID_Flush       = `FlushEnable;
+                IDEXE_Flush      = `FlushEnable;
+                EXEMEM_Flush     = `FlushEnable;
+                MEMWB_Flush      = `FlushEnable;
+>>>>>>> f4e3c95bdc3b2166848bec8df2da823616e2e111
 
             end 
             else begin
