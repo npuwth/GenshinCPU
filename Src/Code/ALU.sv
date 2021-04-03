@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-03 11:45:31
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-03 17:29:24
+ * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\ALU.sv
  * 
@@ -58,11 +58,12 @@ end
     assign EXE_ExceptType_new.WrongAddressinIF = EXE_ExceptType.WrongAddressinIF;
     assign EXE_ExceptType_new.ReservedInstruction = EXE_ExceptType.ReservedInstruction;
     assign EXE_ExceptType_new.Syscall = EXE_ExceptType.Syscall;
+    
     assign EXE_ExceptType_new.Break = EXE_ExceptType.Break;
     assign EXE_ExceptType_new.Eret = EXE_ExceptType.Eret;
     assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_ExceptType.WrWrongAddressinMEM;
     assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_ExceptType.RdWrongAddressinMEM;
-    assign EXE_ExceptType_new.Overflow = ((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
+    assign EXE_ExceptType_new.Overflow = (`EXE_ALUOp_ADD||`EXE_ALUOp_SUB)&&((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
     assign EXE_ALUOut = EXE_ALUOut_r;
     
 endmodule
