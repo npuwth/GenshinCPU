@@ -21,7 +21,7 @@
     output logic            IDEXE_Flush,
     output logic            EXEMEM_Flush,
     output logic            MEMWB_Flush,
-    output logic   [1:0]    IsEPCorEret,
+    output logic   [1:0]    IsExceptionorEret,
 
 //异常处理相关接口
     //来自执行阶段
@@ -154,14 +154,14 @@
                 EXEMEM_Flush     = `FlushEnable;
                 MEMWB_Flush      = `FlushEnable;
                 if (ExceptType_i.Eret == 1'b1) begin
-                    IsEPCorEret  = `IsEret;
+                    IsExceptionorEret  = `IsEret;
                 end
                 else begin
-                    IsEPCorEret  = `IsEPC;
+                    IsExceptionorEret  = `IsException;
                 end
             end 
             else begin
-                    IsEPCorEret  = `IsNone;
+                    IsExceptionorEret  = `IsNone;
                 MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号
             end
                 
