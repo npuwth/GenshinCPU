@@ -1,22 +1,14 @@
-//////////////////////////////////////////////////////////////////////////////////
-// Company: Genshin
-// Engineer: Juan Jiang
-// 
-// Create Date: 2021/03/29 15:33:02
-// Design Name: 指令译码
-// Module Name: Control
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 先把它译成InstrType 然后译成控制信号
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+/*
+ * @Author: Juan Jiang
+ * @Date: 2021-04-02 09:40:19
+ * @LastEditTime: 2021-04-03 10:34:14
+ * @LastEditors: Johnson Yang
+ * @Copyright 2021 GenshinCPU
+ * @Version:1.0
+ * @IO PORT:
+ * @Description: 指令译码  先把它译成InstrType 然后译成控制信号
+ */
+
 `include "CPU_Defines.svh"
 `include "CommonDefines.svh"
 module Control(
@@ -36,9 +28,10 @@ module Control(
     output logic [1:0]ID_ALUSrcB,
     output logic [1:0]ID_RegsSel,
     output logic [1:0]ID_EXTOp,
-    output logic [2:0]ID_BranchCode,
+
     output logic ID_isImmeJump,
-    output logic ID_isBranch
+
+    output BranchType ID_BranchType
     );
 
     logic [5:0]opcode;
@@ -201,7 +194,7 @@ module Control(
                 3'b100:instrType = OP_ANDI;
                 3'b101:instrType = OP_ORI;
                 3'b110:instrType = OP_XORI;
-                3'b111:InstrType = OP_LUI;
+                3'b111:instrType = OP_LUI;
               endcase
             end//I Type
 
@@ -233,7 +226,7 @@ module Control(
 		        end
 
             6'b010_000:begin//特权指令
-              unique case(instr[25:21])
+              unique case(ID_Instr[25:21])
 				        5'b00000: begin
 				        	instrType = OP_MFC0;
 				        end
@@ -241,7 +234,7 @@ module Control(
 				        	instrType  = OP_MTC0;
 				        end
 				        5'b10000: begin
-				        	unique case(instr[5:0])
+				        	unique case(ID_Instr[5:0])
 				        		`ifdef COMPILE_FULL_M
 				        		6'b000001: instrType = OP_TLBR;
 				        		6'b000010: instrType = OP_TLBWI;
@@ -285,10 +278,10 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsSel    = `RegsSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
-        ID_BranchCode = '0;//'0表示无关控制信号
 
-        ID_isBranch   = `IsNotABranch;
         ID_isImmeJump = `IsNotAImmeJump;
+
+        ID_BranchType = '0;
       end 
 
       OP_ADDI:begin
@@ -310,10 +303,9 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsSel    = `RegsSel_RF;      
         ID_EXTOp      = `EXTOP_SIGN;   
-        ID_BranchCode = '0;//'0表示无关控制信号  
 
-        ID_isBranch   = `IsNotABranch;
-        ID_isImmeJump = `IsNotAImmeJump;             
+        ID_isImmeJump = `IsNotAImmeJump;    
+        ID_BranchType = '0;         
       end
 
       OP_ADDU:begin
@@ -335,10 +327,9 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_BranchCode = '0;//'0表示无关控制信号
 
-        ID_isBranch   = `IsNotABranch;
         ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
       end
 
     endcase
