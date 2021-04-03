@@ -114,6 +114,10 @@ typedef struct packed {
     logic HILOWr;
 } RegsWrType;//三组寄存器的写信号的打包
 
+typedef struct packed {
+	logic [2:0] branchCode;
+	logic isBranch;
+} BranchType;
 
 interface PipeLineRegsInterface (
 	input logic clk,
