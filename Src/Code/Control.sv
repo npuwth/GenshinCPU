@@ -35,7 +35,10 @@ module Control(
     output logic [1:0]ID_ALUSrcA,
     output logic [1:0]ID_ALUSrcB,
     output logic [1:0]ID_RegsSel,
-    output logic [1:0]ID_EXTOp
+    output logic [1:0]ID_EXTOp,
+    output logic [2:0]ID_BranchCode,
+    output logic ID_isImmeJump,
+    output logic ID_isBranch
     );
 
     logic [5:0]opcode;
@@ -259,70 +262,83 @@ module Control(
             end
         endcase
     end
+    
 
   always_comb begin
     unique case (instrType)
       OP_ADD:begin
         ID_ALUOp      = `EXE_ALUOp_ADD;
 
-        ID_ReadMem    = 1'b0;
+        ID_ReadMem    = `DonotReadMem;
         ID_LoadType   = '0;
 
-        ID_DMWr       = 1'b0;
+        ID_DMWr       = `WriteDisable;
         ID_StoreType  = '0;
 
         ID_WbSel      = `WBSel_ALUOut;
-        ID_DstSel     = 1'b0;//rd
+        ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
         
         ID_ExceptType = `ExceptionTypeZero;
 
-        ID_ALUSrcA    = 1'b0;
-        ID_ALUSrcB    = 1'b0;
-        ID_RegsSel    = 1'b0;//选择ID级别读出的数据
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
+        ID_BranchCode = '0;//'0表示无关控制信号
+
+        ID_isBranch   = `IsNotABranch;
+        ID_isImmeJump = `IsNotAImmeJump;
       end 
 
       OP_ADDI:begin
         ID_ALUOp      = `EXE_ALUOp_ADDI;
 
-        ID_ReadMem    = 1'b0;
+        ID_ReadMem    = `DonotReadMem;
         ID_LoadType   = '0;
 
-        ID_DMWr       = 1'b0;
+        ID_DMWr       = `WriteDisable;
         ID_StoreType  = '0;
 
         ID_WbSel      = `WBSel_ALUOut;
-        ID_DstSel     = 1'b1;//rt
+        ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
         
         ID_ExceptType = `ExceptionTypeZero;
 
-        ID_ALUSrcA    = 1'b0;
-        ID_ALUSrcB    = 1'b1;
-        ID_RegsSel    = 1'b0;      
-        ID_EXTOp      = `EXTOP_SIGN;          
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsSel    = `RegsSel_RF;      
+        ID_EXTOp      = `EXTOP_SIGN;   
+        ID_BranchCode = '0;//'0表示无关控制信号  
+
+        ID_isBranch   = `IsNotABranch;
+        ID_isImmeJump = `IsNotAImmeJump;             
       end
 
       OP_ADDU:begin
-        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作
 
-        ID_ReadMem    = 1'b0;
+        ID_ReadMem    = `DonotReadMem;//关于Load
         ID_LoadType   = '0;
 
-        ID_DMWr       = 1'b0;
+        ID_DMWr       = `WriteDisable;//关于Store
         ID_StoreType  = '0;
 
-        ID_WbSel      = `WBSel_ALUOut;
-        ID_DstSel     = 1'b1;//rt
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
         
-        ID_ExceptType = `ExceptionTypeZero;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
 
-        ID_ALUSrcA    = 1'b0;
-        ID_ALUSrcB    = 1'b0;
-        ID_RegsSel    = 1'b0;      
-        ID_EXTOp      = '0;          
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_BranchCode = '0;//'0表示无关控制信号
+
+        ID_isBranch   = `IsNotABranch;
+        ID_isImmeJump = `IsNotAImmeJump;
       end
 
     endcase
@@ -331,15 +347,7 @@ module Control(
     
 
 
-    // output logic [3:0] ID_ALUOp,	 		// ALUOp ALU符号
-  	// output LoadType ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
-  	// output StoreType ID_StoreType,  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
-  	// output RegsWrType ID_RegsWrType,		// 寄存器写信号打包
-  	// output logic [1:0] ID_WbSel,    		// 写回信号选择
-  	// output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
-  	// output logic [1:0] ID_DstSel,   		// 寄存器写回信号选择（Dst）
-  	// output logic ID_DMWr,			 		// DataMemory 写信号
-  	// output ExceptinPipeType ID_ExceptType	// 异常类型
+
 
 
 endmodule
