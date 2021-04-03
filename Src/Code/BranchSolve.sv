@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-04-03 10:27:47
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-03 12:15:35
+ * @LastEditors: your name
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\EXE\BranchSolve.sv
  * 
@@ -23,7 +23,7 @@ module BranchSolve(
     always_comb begin
         unique case (EXE_BranchType.branchCode)
             `BRANCH_CODE_BEQ:
-                if (EXE_OutA == EXE_OutB && EXE_BranchType.isBranch) begin
+                if (EXE_OutA == EXE_OutB && EXE_BranchType.isBranch)  begin
                     IFID_Flush = 1'b1;
                 end
                 else begin
@@ -64,7 +64,9 @@ module BranchSolve(
                 else begin
                     IFID_Flush = 1'b0;
                 end
-            default: begin end
+            default: begin
+                IFID_Flush = 1'b0;
+             end
         endcase
     end
 

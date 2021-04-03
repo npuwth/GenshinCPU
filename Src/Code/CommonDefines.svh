@@ -1,8 +1,13 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 16:08:49
+<<<<<<< HEAD
+ * @LastEditTime: 2021-04-03 16:35:17
  * @LastEditors: npuwth
+=======
+ * @LastEditTime: 2021-04-03 16:11:45
+ * @LastEditors: Juan Jiang
+>>>>>>> a32fe419842ee06c1fe65fa19522fbbe81346942
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -19,11 +24,7 @@
 `define FlushEnable         1'b1     // 开启flush
 `define FlushDisable        1'b1     // 关闭flush
 
-//*******************************EXT ***********************
 
-`define EXTOP_ZERO  2'b00
-`define EXTOP_SIGN  2'b01
-`define EXTOP_LUI   2'b10
 
 //用于选择storeleefine
 
@@ -202,7 +203,11 @@
 `define IsABranch           1'b1//比如bne jr 这种
 `define IsNotABranch        1'b0
 
+//*******************************EXT ***********************
 
+`define EXTOP_ZERO  2'b00
+`define EXTOP_SIGN  2'b01
+`define EXTOP_LUI   2'b10
 
 //***************************  与CP0有关的宏定义  ***************************
 
@@ -314,5 +319,13 @@
 //XOR 和 XORI 共用了Opcode
 `define EXE_ALUOp_XOR       5'b01111
 `define EXE_ALUOp_XORI      5'b01111//异或立即数
+
+//乘除法
+`define EXE_ALUOp_DIV       5'b10000
+`define EXE_ALUOp_DIVU      5'b10001
+`define EXE_ALUOp_MULT      5'b10010
+`define EXE_ALUOp_MULTU     5'b10011
+
+
 
 `endif
