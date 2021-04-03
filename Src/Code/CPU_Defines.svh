@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 17:34:42
+ * @LastEditTime: 2021-04-03 19:56:46
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -157,7 +157,6 @@ interface PipeLineRegsInterface (
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  	// StoreType信号
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
-	logic           		ID_DMWr;			// DataMemory 写使能
   	logic 		[1:0]   	ID_WbSel;          // 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器
   	ExceptinPipeType 		ID_ExceptType;	// 异常类型
@@ -177,7 +176,6 @@ interface PipeLineRegsInterface (
   	LoadType     			EXE_LoadType;   	
   	StoreType    			EXE_StoreType; 	
   	RegsWrType   			EXE_RegsWrType;
-  	logic        			EXE_DMWr;
   	logic 		[1:0]  		EXE_WbSel;
   	logic 		[1:0]  		EXE_DstSel;
   	ExceptinPipeType 		EXE_ExceptType;// 异常类型
@@ -190,11 +188,9 @@ interface PipeLineRegsInterface (
   	//StoreType    			EXE_StoreType; 	// Store信号
   	//RegsWrType   			EXE_RegsWrType;
 	//ExceptinPipeType EXE_ExceptType;// 异常类型
-	//logic        			EXEDMWr;
 	//logic        			EXE_WbSel;
     logic 		 			EXEMEM_Flush;		
-//EXEMEM,out
-    logic 			 		MEM_DMWr;						
+//EXEMEM,out					
     logic 		[31:0] 		MEM_ALUOut;			
     logic 		[31:0] 		MEM_PCAdd1;			
     logic 		[1:0]  		MEM_WbSel;				
@@ -267,7 +263,6 @@ interface PipeLineRegsInterface (
     input  					ID_RegsWrType,
     input  					ID_WbSel,
     input  					ID_DstSel,
-    input  					ID_DMWr,
     input  					ID_ExceptType,
 	input  					IDEXE_Flush,
     //output	
@@ -284,7 +279,6 @@ interface PipeLineRegsInterface (
     output 					EXE_RegsWrType,
     output 					EXE_WbSel,
     output 					EXE_DstSel,
-    output 					EXE_DMWr,
     output 					EXE_ExceptType,
     output 					EXE_Shamt
   );					
@@ -292,7 +286,6 @@ interface PipeLineRegsInterface (
   modport EXE_MEM (  //EXEMEM_modport
     input  					clk,
 	input  					rst,
-    input  					EXE_DMWr,
     input  					WB_RegsWrType,
     input  					EXE_WbSel,
     input  					EXE_ALUOut,
@@ -304,7 +297,6 @@ interface PipeLineRegsInterface (
     input  					EXE_ExceptType,
     input  					EXEMEM_Flush,
     //output
-    output 					MEM_DMWr,
     output 					MEM_StoreType,
     output 					MEM_ExceptType,
     output 					MEM_LoadType,

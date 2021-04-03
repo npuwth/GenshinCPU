@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 17:23:05
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-03 18:05:24
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -219,7 +219,9 @@
 `define CP0_REG_CAUSE       5'd13
 `define CP0_REG_EPC         5'd14
 
-
+`define IsEret              2'b10
+`define IsEPC               1'b11
+`define IsNone              2'b00
 //***************************  与结构体有关的宏定义  ***************************
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
 
