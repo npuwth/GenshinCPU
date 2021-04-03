@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:15:00
+ * @LastEditTime: 2021-04-03 18:26:44
  * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -948,6 +948,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
+                            Interrupt:1'b0,
                             Break:1'b1,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -966,6 +967,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
+                            Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -1143,7 +1145,8 @@ module Control(
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{
+        ID_ExceptType = '{  
+                            Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -1153,16 +1156,39 @@ module Control(
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0
         };//关于ERET
-        
+
+      OP_MFC0:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_WbSel      = `WBSel_OutB;
+        ID_DstSel     = `DstSel_rt;//rt 
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+    
+      OP_MTC0:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_WbSel      = `WBSel_OutB;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
       end
 
     endcase
   end 
 
     
-
-
-
 
 
 endmodule
