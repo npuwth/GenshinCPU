@@ -779,7 +779,7 @@ module Control(
       end
 
       OP_J:begin
-        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        //ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
 
         ID_LoadType   = '0;
 
@@ -823,6 +823,9 @@ module Control(
         ID_ExceptType.WrWrongAddressinMEM = 1'b0;
         ID_ExceptType.RdWrongAddressinMEM = 1'b0;
 
+
+
+
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
@@ -830,7 +833,7 @@ module Control(
 
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType.ReservedInstruction = 1'b1;//关于异常
+
 
       end
     endcase
