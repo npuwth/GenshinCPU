@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 20:54:34
+ * @LastEditTime: 2021-04-03 22:31:51
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,6 +18,14 @@
 `define RstDisable          1'b0     // 关闭复位信号
 `define FlushEnable         1'b1     // 开启flush
 `define FlushDisable        1'b1     // 关闭flush
+
+//*******************PCSel 的宏定义********************
+`define PCSel_PC4        3'b000
+`define PCSel_ImmeJump   3'b001
+`define PCSel_EPC        3'b010
+`define PCSel_Except     3'b011
+`define PCSel_Branch     3'b100    
+
 
 
 

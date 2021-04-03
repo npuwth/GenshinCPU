@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:38:55
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-03 21:49:21
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -31,7 +31,10 @@ module Control(
 
     output logic ID_isImmeJump,
 
-    output BranchType ID_BranchType
+    output BranchType ID_BranchType,
+
+    output logic[31:0] ID_shamt,
+    output logic[1:0]  ID_rsrtRead
     );
 
     logic [5:0]opcode;
@@ -49,7 +52,24 @@ module Control(
     assign rt = ID_Instr[20:16];
     assign rd = ID_Instr[15:11];
     assign shamt = ID_Instr[10:6];
+    assign ID_shamt = {27'b0,shamt};
     // the  work before clasification 
+
+    always_comb begin
+      if(rs == 5'b00000)begin
+        ID_rsrtRead[1] = 1'b0;
+      end
+      else ID_rsrtRead[1] = 1'b1;
+    end
+
+    always_comb begin
+      if(rt == 5'b00000)begin
+        ID_rsrtRead[0] = 1'b0;
+      end
+      else ID_rsrtRead[0] = 1'b1;
+    end
+
+
 
     always_comb begin
         unique casez (opcode)
@@ -466,6 +486,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
+
       OP_MULTU:begin
         ID_ALUOp      = `EXE_ALUOp_MULTU;//ALU操作
         ID_LoadType   = '0;
@@ -923,6 +944,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
+    
 
       OP_MTLO:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作

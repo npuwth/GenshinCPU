@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-31 14:39:41
- * @LastEditTime: 2021-04-03 18:47:54
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-03 20:17:04
+ * @LastEditors: Juan Jiang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\EXE\MUX.sv
  * 
@@ -68,8 +68,8 @@ module MUX4to1 #(
 assign y=y_r;
 endmodule
 
-// mux4
-module MUX4to1 #(
+// mux8
+module MUX8to1 #(
     parameter WIDTH=32
 ) (
     d0,d1,d2,d3,d4,d5,d6,d7,sel8_to_1,y
