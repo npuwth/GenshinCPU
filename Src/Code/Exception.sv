@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-03 17:20:16
+ * @LastEditTime: 2021-04-03 18:05:15
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -153,7 +153,12 @@
                 IDEXE_Flush      = `FlushEnable;
                 EXEMEM_Flush     = `FlushEnable;
                 MEMWB_Flush      = `FlushEnable;
-
+                if (ExceptType_i.Eret == 1'b1) begin
+                    IsEPCorEret  = `IsEret;
+                end
+                else begin
+                    IsEPCorEret  = `IsEPC;
+                end
             end 
             else begin
                 MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号

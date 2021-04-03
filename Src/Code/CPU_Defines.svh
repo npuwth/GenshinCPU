@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 10:58:06
+ * @LastEditTime: 2021-04-03 17:00:03
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -113,7 +113,8 @@ typedef struct packed {
 typedef struct packed {
     logic 				RFWr;
     logic 				CP0Wr;
-    logic 				HILOWr;
+    logic 				HIWr;
+	logic 				LOWr;
 } RegsWrType;//三组寄存器的写信号的打包
 
 typedef struct packed {
@@ -156,7 +157,6 @@ interface PipeLineRegsInterface (
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  	// StoreType信号
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
-	logic           		ID_ReadMem;		// 表示读DataMemory，用于检测load类型指令
 	logic           		ID_DMWr;			// DataMemory 写使能
   	logic 		[1:0]   	ID_WbSel;          // 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器
@@ -177,7 +177,6 @@ interface PipeLineRegsInterface (
   	LoadType     			EXE_LoadType;   	
   	StoreType    			EXE_StoreType; 	
   	RegsWrType   			EXE_RegsWrType;
-	logic        			EXE_ReadMem;
   	logic        			EXE_DMWr;
   	logic 		[1:0]  		EXE_WbSel;
   	logic 		[1:0]  		EXE_DstSel;
@@ -267,7 +266,6 @@ interface PipeLineRegsInterface (
     input  					ID_StoreType,
     input  					ID_RegsWrType,
     input  					ID_WbSel,
-    input  					ID_ReadMem,
     input  					ID_DstSel,
     input  					ID_DMWr,
     input  					ID_ExceptType,
@@ -286,7 +284,6 @@ interface PipeLineRegsInterface (
     output 					EXE_RegsWrType,
     output 					EXE_WbSel,
     output 					EXE_DstSel,
-    output 					EXE_ReadMem,
     output 					EXE_DMWr,
     output 					EXE_ExceptType,
     output 					EXE_Shamt

@@ -1,22 +1,14 @@
-//////////////////////////////////////////////////////////////////////////////////
-// Company: Genshin
-// Engineer: Juan Jiang
-// 
-// Create Date: 2021/03/29 15:33:02
-// Design Name: 指令译码
-// Module Name: Control
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 先把它译成InstrType 然后译成控制信号
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+/*
+ * @Author: Juan Jiang
+ * @Date: 2021-04-02 09:40:19
+ * @LastEditTime: 2021-04-03 18:08:37
+ * @LastEditors: Johnson Yang
+ * @Copyright 2021 GenshinCPU
+ * @Version:1.0
+ * @IO PORT:
+ * @Description: 
+ */
+
 `include "CPU_Defines.svh"
 
 module Control(
@@ -34,7 +26,7 @@ module Control(
 
     output logic [1:0]ID_ALUSrcA,
     output logic [1:0]ID_ALUSrcB,
-    output logic [1:0]ID_RegsSel,
+    output logic [1:0]ID_RegsReadSel,
     output logic [1:0]ID_EXTOp,
 
     output logic ID_isImmeJump,
@@ -269,309 +261,351 @@ module Control(
     unique case (instrType)
       OP_ADD:begin
         ID_ALUOp      = `EXE_ALUOp_ADD;
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;//选择ID级别读出的数据
+        ID_RegsReadSel= `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
-
         ID_isImmeJump = `IsNotAImmeJump;
-
         ID_BranchType = '0;
       end 
 
       OP_ADDI:begin
         ID_ALUOp      = `EXE_ALUOp_ADDI;
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      
+        ID_RegsReadSel= `RegsReadSel_RF;      
         ID_EXTOp      = `EXTOP_SIGN;   
-
         ID_isImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;         
       end
 
       OP_ADDU:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
-        ID_RegsWrType = `RegsWrTypeRFEn;
-        
+        ID_RegsWrType = `RegsWrTypeRFEn; 
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
       OP_ADDIU:begin
         ID_ALUOp      = `EXE_ALUOp_ADDIU;//ALU操作
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
-
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;        
       end
 
       OP_SUB:begin
         ID_ALUOp      = `EXE_ALUOp_SUB;//ALU操作
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
       OP_SUBU:begin
         ID_ALUOp      = `EXE_ALUOp_SUBU;//ALU操作
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
 
+      OP_SLT:begin
+        ID_ALUOp      = `EXE_ALUOp_SLT;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_SLTI:begin
+        ID_ALUOp      = `EXE_ALUOp_SLTI;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_SLTU:begin
+        ID_ALUOp      = `EXE_ALUOp_SLTU;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_SLTIU:begin
+        ID_ALUOp      = `EXE_ALUOp_SLTIU;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_DIV:begin
+        ID_ALUOp      = `EXE_ALUOp_DIV;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
+        ID_DstSel     = '0;//写入HILO寄存器中所以是无关
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_DIVU:begin
+        ID_ALUOp      = `EXE_ALUOp_DIVU;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
+        ID_DstSel     = '0;//写入HILO寄存器中所以是无关
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_MULT:begin
+        ID_ALUOp      = `EXE_ALUOp_MULT;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
+        ID_DstSel     = '0;//写入HILO寄存器中所以是无关
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+      OP_MULTU:begin
+        ID_ALUOp      = `EXE_ALUOp_MULTU;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
+        ID_DstSel     = '0;//写入HILO寄存器中所以是无关
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
       OP_BEQ:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '1;          //EXT
-
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1};         
       end
 
       OP_BNE:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
       end
 
       OP_BGEZ:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
       end
 
       OP_BGTZ:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '1;          //EXT
-
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGT,1'b1};
       end
 
       OP_BLEZ:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '1;          //EXT
-
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLE,1'b1};
       end
 
       OP_BLTZ:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '1;          //EXT
-
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
       end
 
       OP_BGEZAL:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '1;          //EXT
-
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
       end
 
       OP_BLTZAL:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
-
         ID_LoadType   = '0;
-
         ID_StoreType  = '0;
-
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        
         ID_ExceptType = `ExceptionTypeZero;//关于异常
-
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '1;          //EXT
-
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
       end
@@ -580,21 +614,33 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
-        ID_DstSel     = `DstSel_rd;//31
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
+        ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-
         ID_isImmeJump = `IsAImmeJump;
         ID_BranchType = '0;
       end
 
-
-
+      OP_JAL:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
+        ID_DstSel     = `DstSel_31;//31
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsAImmeJump;
+        ID_BranchType = '0;
+      end
 
       /******* OP3.4  ******/
       OP_AND:begin
@@ -607,7 +653,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 // 
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -623,7 +669,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -639,7 +685,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_LUI;         //高位加载
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -655,7 +701,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -671,7 +717,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -687,7 +733,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
         ID_isImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;
@@ -703,7 +749,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -719,7 +765,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
         ID_isImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;
@@ -735,7 +781,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -750,7 +796,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -765,7 +811,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -780,7 +826,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
@@ -795,17 +841,105 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
-        ID_RegsSel    = `RegsSel_RF;        //ID级选择RF读取结果
+        ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
+      end
+      OP_JR:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
+        ID_DstSel     = `DstSel_rd;//d
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
+      end
+
+      OP_JALR:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
+        ID_DstSel     = `DstSel_31;//31
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
+      end
+
+      OP_MFHI:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_OutB;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rd
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_HI;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
+      OP_MFLO:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_OutB;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rd
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_LO;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
 
+      OP_MTHI:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rd,d
+        ID_RegsWrType = `RegsWrTypeHIEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
 
-
-
-
+      OP_MTLO:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rd,d
+        ID_RegsWrType = `RegsWrTypeLOEn;
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+      
     endcase
   end 
 

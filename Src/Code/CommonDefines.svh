@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 15:44:35
+ * @LastEditTime: 2021-04-03 18:05:24
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -50,7 +50,8 @@
 `define BRANCH_CODE_BGE     3'b010
 `define BRANCH_CODE_BGT     3'b011
 `define BRANCH_CODE_BLE     3'b100
-`define BRANCH_CODE_BLT     3'b101 
+`define BRANCH_CODE_BLT     3'b101
+`define BRANCH_CODE_JR      3'b110 
 
 //***************************  与具体指令有关的宏定义  ***************************
 //逻辑操作指令SPECIAL类的功能码
@@ -186,9 +187,10 @@
 `define ALUSrcB_Sel_Regs    1'b0
 `define ALUSrcB_Sel_Imm     1'b1
 
-`define RegsSel_RF          2'b00 //RF读出的数据
-`define RegsSel_HILO        2'b01//
-`define RegsSel_CP0         2'b10
+`define RegsReadSel_RF          2'b00 //RF读出的数据
+`define RegsReadSel_CP0         2'b01 //CP0读出的数据
+`define RegsReadSel_HI          2'b10 //HI寄存器读出的数据
+`define RegsReadSel_LO          2'b11 //LO寄存器读出的数据
 
 `define IsAImmeJump         1'b1//特指 j jal
 `define IsNotAImmeJump      1'b0
@@ -217,15 +219,18 @@
 `define CP0_REG_CAUSE       5'd13
 `define CP0_REG_EPC         5'd14
 
-
+`define IsEret              1'b1
+`define IsEPC               1'b0
 //***************************  与结构体有关的宏定义  ***************************
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
 
 //RegsWrType 
-`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0}
-`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0}
-`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1}
-`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0}
+`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}
+`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0,1'b0}
+`define RegsWrTypeHIEn      '{1'b0,1'b0,1'b1,1'b0}
+`define RegsWrTypeLOEn      '{1'b0,1'b0,1'b0,1'b1}
+`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1,1'b1}
+`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0,1'b0}
 
 // ALUctr_signal_encoding 
 `define EXE_ALUOp_D         5'b00111//无关项
@@ -310,5 +315,13 @@
 //XOR 和 XORI 共用了Opcode
 `define EXE_ALUOp_XOR       5'b01111
 `define EXE_ALUOp_XORI      5'b01111//异或立即数
+
+//乘除法
+`define EXE_ALUOp_DIV       5'b10000
+`define EXE_ALUOp_DIVU      5'b10001
+`define EXE_ALUOp_MULT      5'b10010
+`define EXE_ALUOp_MULTU     5'b10011
+
+
 
 `endif
