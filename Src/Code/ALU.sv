@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-03 11:45:31
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-03 12:26:15
+ * @LastEditors: your name
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\ALU.sv
  * 
@@ -11,11 +11,11 @@
 `include "CPU_Defines.svh"
 module ALU(EXE_ResultA,EXE_ResultB,EXE_ALUOp,EXE_ALUOut,EXE_ExceptType,EXE_ExceptType_new);
 input ExceptinPipeType EXE_ExceptType;
-input [31:0] EXE_ResultA,EXE_ResultB;
-input [3:0] EXE_ALUOp;
-output [31:0] EXE_ALUOut;
+input logic[31:0] EXE_ResultA,EXE_ResultB;
+input logic[4:0] EXE_ALUOp;
+output logic [31:0] EXE_ALUOut;
 output ExceptinPipeType EXE_ExceptType_new;
-reg [31:0] EXE_ALUOut_r;
+logic [31:0] EXE_ALUOut_r;
 
 always_comb begin
     unique case (EXE_ALUOp)
@@ -50,11 +50,17 @@ always_comb begin
         end
         `EXE_ALUOp_XOR  :  EXE_ALUOut_r = EXE_ResultA ^ EXE_ResultB;
         `EXE_ALUOp_AND  :  EXE_ALUOut_r = EXE_ResultA & EXE_ResultB;
-        default: ;//Do nothing
+        default: EXE_ALUOut_r = '0;//Do nothing
     endcase
     
 end 
 
+
+// always_comb begin 
+//     EXE_ExceptType_new = EXE_ExceptType;
+//     EXE_ExceptType_new.Overflow = ((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
+// end
+    assign EXE_ExceptType_new.Interrupt = EXE_ExceptType.Interrupt;
     assign EXE_ExceptType_new.WrongAddressinIF = EXE_ExceptType.WrongAddressinIF;
     assign EXE_ExceptType_new.ReservedInstruction = EXE_ExceptType.ReservedInstruction;
     assign EXE_ExceptType_new.Syscall = EXE_ExceptType.Syscall;

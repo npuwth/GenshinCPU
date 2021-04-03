@@ -400,6 +400,49 @@ module Control(
         ID_BranchType = '0;         
       end
 
+      OP_SLT:begin
+        ID_ALUOp      = `EXE_ALUOp_SLT;//ALU操作
+
+        ID_LoadType   = '0;
+
+        ID_StoreType  = '0;
+
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
+
+      OP_SLTI:begin
+        ID_ALUOp      = `EXE_ALUOp_SLT;//ALU操作
+
+        ID_LoadType   = '0;
+
+        ID_StoreType  = '0;
+
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;         
+      end
 
 
     endcase
