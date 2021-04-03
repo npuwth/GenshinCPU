@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:08:37
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-03 18:15:00
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -940,6 +940,222 @@ module Control(
         ID_BranchType = '0;
       end
       
+      //自陷指令
+      OP_BREAK:begin
+        ID_LoadType = '0;
+        ID_StoreType = '0;
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+        ID_ExceptType = '{
+                            Break:1'b1,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b0,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0
+        };//关于Break异常
+      end
+
+      OP_SYSCALL:begin
+        ID_LoadType = '0;
+        ID_StoreType = '0;
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+        ID_ExceptType = '{
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b1,
+                            Eret:1'b0,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0
+        };//关于SYSCALL
+      end
+
+      //访存指令
+      OP_LB:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign = 0;//sign
+        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.ReadMem = 1;//loadmem
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_LBU:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign = 0;//unsign
+        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.ReadMem = 1;//loadmem
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_LH:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign = 1;//sign
+        ID_LoadType.size = 2'b01;//half
+        ID_LoadType.ReadMem = 1;//loadmem
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_LHU:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign = 0;//unsign
+        ID_LoadType.size = 2'b01;//half
+        ID_LoadType.ReadMem = 1;//loadmem
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;      
+      end
+
+      OP_LW:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign = 0;//sign
+        ID_LoadType.size = 2'b10;//word
+        ID_LoadType.ReadMem = 1;//loadmem
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;      
+      end
+
+      OP_SB:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_LoadType   = '0;
+        //ID_StoreType begin
+        ID_StoreType.size  = 2'b00;//00 byte 01 half  10 word
+        ID_StoreType.DMWr  = 1;
+        //ID_StoreType end
+        ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
+        ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;          
+      end
+
+
+      OP_SH:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_LoadType   = '0;
+        //ID_StoreType begin
+        ID_StoreType.size  = 2'b01;//00 byte 01 half  10 word
+        ID_StoreType.DMWr  = 1;
+        //ID_StoreType end
+        ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
+        ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;          
+      end
+
+      OP_SW:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_LoadType   = '0;
+        //ID_StoreType begin
+        ID_StoreType.size  = 2'b10;//00 byte 01 half  10 word
+        ID_StoreType.DMWr  = 1;
+        //ID_StoreType end
+        ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
+        ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;          
+      end
+
+      //特权指令  
+      OP_ERET:begin
+        ID_LoadType = '0;
+        ID_StoreType = '0;
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+        ID_ExceptType = '{
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b1,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0
+        };//关于ERET
+        
+      end
+
     endcase
   end 
 
