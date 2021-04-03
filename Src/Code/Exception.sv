@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-03 18:05:15
+ * @LastEditTime: 2021-04-03 18:40:33
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,7 +21,7 @@
     output logic            IDEXE_Flush,
     output logic            EXEMEM_Flush,
     output logic            MEMWB_Flush,
-    output logic            IsEPCorEret,
+    output logic   [1:0]    IsEPCorEret,
 
 //异常处理相关接口
     //来自执行阶段
@@ -161,6 +161,7 @@
                 end
             end 
             else begin
+                    IsEPCorEret  = `IsNone;
                 MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号
             end
                 

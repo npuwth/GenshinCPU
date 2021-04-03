@@ -219,8 +219,9 @@
 `define CP0_REG_CAUSE       5'd13
 `define CP0_REG_EPC         5'd14
 
-`define IsEret              1'b1
-`define IsEPC               1'b0
+`define IsEret              2'b10
+`define IsEPC               1'b11
+`define IsNone              2'b00
 //***************************  与结构体有关的宏定义  ***************************
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
 
