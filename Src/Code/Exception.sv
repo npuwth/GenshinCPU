@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-03 18:05:15
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-03 20:53:27
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -21,7 +21,7 @@
     output logic            IDEXE_Flush,
     output logic            EXEMEM_Flush,
     output logic            MEMWB_Flush,
-    output logic            IsEPCorEret,
+    output logic   [1:0]    IsExceptionorEret,
 
 //异常处理相关接口
     //来自执行阶段
@@ -154,13 +154,14 @@
                 EXEMEM_Flush     = `FlushEnable;
                 MEMWB_Flush      = `FlushEnable;
                 if (ExceptType_i.Eret == 1'b1) begin
-                    IsEPCorEret  = `IsEret;
+                    IsExceptionorEret  = `IsEret;
                 end
                 else begin
-                    IsEPCorEret  = `IsEPC;
+                    IsExceptionorEret  = `IsException;
                 end
             end 
             else begin
+                    IsExceptionorEret  = `IsNone;
                 MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号
             end
                 

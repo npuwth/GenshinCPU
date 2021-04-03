@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-04-03 10:36:26
+ * @LastEditTime: 2021-04-03 22:29:32
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -45,9 +45,19 @@ module cp0_reg(
 
     output logic CP0TimerInterrupt_o          //是否有定时中断发生
     );
-    logic [5:0] Hardwareint_i;
+    logic           [5:0]   Hardwareint_i;
+    reg                     TimCount2;
+
 assign CurrentInstAddr = PCAdd1_i-4;
-assign Hardwareint_i = {Interrupt_i.HardwareInterrupt1,Interrupt_i.HardwareInterrupt2,Interrupt_i.HardwareInterrupt3,Interrupt_i.HardwareInterrupt4,Interrupt_i.HardwareInterrupt5,Interrupt_i.HardwareInterrupt6};
+assign Hardwareint_i = 
+        {
+        Interrupt_i.HardwareInterrupt1,
+        Interrupt_i.HardwareInterrupt2,
+        Interrupt_i.HardwareInterrupt3,
+        Interrupt_i.HardwareInterrupt4,
+        Interrupt_i.HardwareInterrupt5,
+        (Interrupt_i.HardwareInterrupt6|CP0TimerInterrupt_o)
+        };
 //******************************************************************************
 //                     对CP0中寄存器的初始化复位
 //******************************************************************************
@@ -65,18 +75,26 @@ assign Hardwareint_i = {Interrupt_i.HardwareInterrupt1,Interrupt_i.HardwareInter
             CP0Cause_o          <= `ZeroWord;
         //EPC寄存器的初始值
             CP0EPC_o            <= `ZeroWord;
-
         //取消时钟中断
             CP0TimerInterrupt_o <= `InterruptNotAssert;
+        //计数器初始化
+            TimCount2           <= 1'b0;
         end 
         else begin
-
-            CP0Count_o                      <= CP0Count_o + 1;   //Count寄存器的值在每个时钟周期加1
             CP0Cause_o[15:10]               <= Hardwareint_i;    //Cause寄存器的10-15位保存6个外部中断状态（1代表有中断需要处理）
-
+            
+            if (CP0Wr_i == `WriteEnable && CP0WrAddr_i == `CP0_REG_COUNT ) begin 
+                CP0Count_o                  <= CP0WrDataOut_i;   //将输入数据写入到Count寄存器中
+                TimCount2                   <= 1'b0;
+            end else begin
+                TimCount2                   <= TimCount2  + 1;
+            end
+            if (TimCount2 == 1'd1)begin
+               CP0Count_o                  <= CP0Count_o + 1;   //Count寄存器的值在每个时钟周期加1
+            end 
             // 当Compare寄存器不为0，且Count寄存器的值等于Compare寄存器的值时，
             // 将输出信号CP0TimerInterrupt_o置为1，表示时钟中断发生
-            if(CP0Compare_o != `ZeroWord && CP0Count_o == CP0Compare_o) begin
+            if(CP0Compare_o != `ZeroWord && CP0Count_o == CP0Compare_o && (CP0Wr_i != `WriteEnable || CP0WrAddr_i != `CP0_REG_COMPARE)) begin
                 CP0TimerInterrupt_o         <= `InterruptAssert;  // 发生中断
                 CP0Cause_o[30]              <= 1'b1;  // 中断标记位置1
             end
@@ -85,16 +103,15 @@ assign Hardwareint_i = {Interrupt_i.HardwareInterrupt1,Interrupt_i.HardwareInter
 //  PRId、Config不可以写，Cause寄存器只有其中的IP[1:0]、IV、WP三个字段可写
 //******************************************************************************
             if(CP0Wr_i == `WriteEnable) begin
-                case(CP0WrAddr_i)
-                    `CP0_REG_COUNT:begin       //写Count寄存器
-                        CP0Count_o          <= CP0WrDataOut_i;
-                    end
+                unique case(CP0WrAddr_i)
                     `CP0_REG_COMPARE:begin     //写Compare寄存器
                         CP0Compare_o        <= CP0WrDataOut_i;
                         CP0TimerInterrupt_o <= `InterruptNotAssert;  //取消时钟中断的声明
                     end
                     `CP0_REG_STATUS:begin      //写Status寄存器
-                        CP0Status_o         <= CP0WrDataOut_i;
+                        CP0Status_o  [15:8 ]<= CP0WrDataOut_i[15:8];
+                        CP0Status_o  [1]    <= CP0WrDataOut_i[1];
+                        CP0Status_o  [0]    <= CP0WrDataOut_i[0];
                     end
                     `CP0_REG_EPC:begin         //写EPC寄存器
                         CP0EPC_o            <= CP0WrDataOut_i;

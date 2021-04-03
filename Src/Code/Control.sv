@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:25:21
+ * @LastEditTime: 2021-04-03 22:45:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -31,7 +31,10 @@ module Control(
 
     output logic ID_isImmeJump,
 
-    output BranchType ID_BranchType
+    output BranchType ID_BranchType,
+
+    output logic[31:0] ID_shamt,
+    output logic[1:0]  ID_rsrtRead
     );
 
     logic [5:0]opcode;
@@ -49,7 +52,24 @@ module Control(
     assign rt = ID_Instr[20:16];
     assign rd = ID_Instr[15:11];
     assign shamt = ID_Instr[10:6];
+    assign ID_shamt = {27'b0,shamt};
     // the  work before clasification 
+
+    always_comb begin
+      if(rs == 5'b00000)begin
+        ID_rsrtRead[1] = 1'b0;
+      end
+      else ID_rsrtRead[1] = 1'b1;
+    end
+
+    always_comb begin
+      if(rt == 5'b00000)begin
+        ID_rsrtRead[0] = 1'b0;
+      end
+      else ID_rsrtRead[0] = 1'b1;
+    end
+
+
 
     always_comb begin
         unique casez (opcode)
@@ -466,6 +486,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
+
       OP_MULTU:begin
         ID_ALUOp      = `EXE_ALUOp_MULTU;//ALU操作
         ID_LoadType   = '0;
@@ -923,6 +944,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
+    
 
       OP_MTLO:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;//ALU操作
@@ -948,6 +970,7 @@ module Control(
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
+                            Interrupt:1'b0,
                             Break:1'b1,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -965,7 +988,8 @@ module Control(
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{  
+        ID_ExceptType = '{
+                            Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -982,7 +1006,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//sign
-        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1002,7 +1026,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//unsign
-        ID_LoadType.size = 2'b00;//byte
+        ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1062,7 +1086,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
         ID_LoadType.sign = 0;//sign
-        ID_LoadType.size = 2'b10;//word
+        ID_LoadType.size = 2'b00;//word
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
         ID_StoreType  = '0;
@@ -1082,7 +1106,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b00;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SB;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1102,7 +1126,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b01;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SH;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1121,7 +1145,7 @@ module Control(
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
         //ID_StoreType begin
-        ID_StoreType.size  = 2'b10;//00 byte 01 half  10 word
+        ID_StoreType.size  = `STORETYPE_SW;
         ID_StoreType.DMWr  = 1;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
@@ -1143,7 +1167,8 @@ module Control(
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{
+        ID_ExceptType = '{  
+                            Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
@@ -1153,16 +1178,39 @@ module Control(
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0
         };//关于ERET
-        
+
+      OP_MFC0:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_WbSel      = `WBSel_OutB;
+        ID_DstSel     = `DstSel_rt;//rt 
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+    
+      OP_MTC0:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_WbSel      = `WBSel_OutB;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
       end
 
     endcase
   end 
 
     
-
-
-
 
 
 endmodule
