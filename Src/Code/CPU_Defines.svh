@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 10:58:06
+ * @LastEditTime: 2021-04-03 16:00:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -113,7 +113,8 @@ typedef struct packed {
 typedef struct packed {
     logic 				RFWr;
     logic 				CP0Wr;
-    logic 				HILOWr;
+    logic 				HIWr;
+	logic 				LOWr;
 } RegsWrType;//三组寄存器的写信号的打包
 
 typedef struct packed {
