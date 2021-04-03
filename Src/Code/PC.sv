@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 16:23:07
- * @LastEditTime: 2021-04-02 16:44:57
+ * @LastEditTime: 2021-04-03 10:59:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,7 +14,7 @@
 
 module PC( PipeLineRegsInterface port );
   
-  always_ff @(posedge port.clk ) begin
+  always_ff @( posedge port.clk ) begin
     if( port.rst )
       port.IF_PC <= `PCRstAddr;
     else if( port.IF_PCWr )

@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-03-31 14:46:26
- * @LastEditors: your name
+ * @LastEditTime: 2021-04-03 10:28:51
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -16,6 +16,8 @@
 `define WriteDisable        1'b0     // 关闭写使能信号
 `define RstEnable           1'b1     // 打开复位信号(高有效)
 `define RstDisable          1'b0     // 关闭复位信号
+`define FlushEnable         1'b1     // 开启flush
+`define FlushDisable        1'b1     // 关闭flush
 
 //*******************************EXT ***********************
 
@@ -172,9 +174,29 @@
 `define EXE_SPECIAL2_INST   6'b011100 //SPECIAL2类指令的指令码
 `define EXE_REGIMM_INST     6'b000001   //REGIMM类转移指令
 
+//****************************有关译码的宏定义***************************
 
+`define DonotReadMem        1'b0
+`define DoReadMem           1'b1
 
+`define DstSel_rd           1'b0
+`define DstSel_rt           1'b1
 
+`define ALUSrcA_Sel_Regs    1'b0
+`define ALUSrcA_Sel_Shamt   1'b1
+
+`define ALUSrcB_Sel_Regs    1'b0
+`define ALUSrcB_Sel_Imm     1'b1
+
+`define RegsSel_RF          2'b00 //RF读出的数据
+`define RegsSel_HILO        2'b01//
+`define RegsSel_CP0         2'b10
+
+`define IsAImmeJump         1'b1//特指 j jal
+`define IsNotAImmeJump      1'b0
+
+`define IsABranch           1'b1//比如bne jr 这种
+`define IsNotABranch        1'b0
 
 
 
@@ -195,7 +217,96 @@
 
 
 //***************************  与结构体有关的宏定义  ***************************
-`define ExceptionTypeZero {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
-`define RegsWrTypeDisable {1'b0,1'b0,1'b0}
+`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
+`define RegsWrTypeDisable   {1'b0,1'b0,1'b0}
+
+//RegsWrType 
+`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0}
+`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0}
+`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1}
+
+
+// ALUctr_signal_encoding 
+//ADD 和 ADDI 共用了Opcode
+`define EXE_ALUOp_ADD       5'b00000
+`define EXE_ALUOp_ADDI      5'b00000
+//ADDIU 和 ADDU 共用了Opcode
+`define EXE_ALUOp_ADDIU     5'b00001
+`define EXE_ALUOp_ADDU      5'b00001
+//AND 和 ANDI 共用了Opcode
+`define EXE_ALUOp_AND       5'b00010
+`define EXE_ALUOp_ANDI      5'b00010
+
+`define EXE_ALUOp_SUB       5'b00011
+
+`define EXE_ALUOp_SUBU      5'b00100
+
+//OR 和 ORI 共用了Opcode
+`define EXE_ALUOp_OR        5'b00101//或
+`define EXE_ALUOp_ORI       5'b00101//或立即数
+
+`define EXE_ALUOp_NOR       5'b00110//或非
+
+`define EXE_ALUOp_SLL       5'b00111//逻辑左移
+`define EXE_ALUOp_SLLV      5'b01000//逻辑可变左移
+
+`define EXE_ALUOp_SRL       5'b01001//逻辑右移
+`define EXE_ALUOp_SRLV      5'b01010//逻辑可变右移
+
+`define EXE_ALUOp_SRA       5'b01011//算数右移
+`define EXE_ALUOp_SRAV      5'b01100//算数可变右移
+
+//SLT 和 SLTI 共用了Opcode
+`define EXE_ALUOp_SLT       5'b01101
+`define EXE_ALUOp_SLTI      5'b01101
+
+//SLTIU 和 SLTU 共用了Opcode
+`define EXE_ALUOp_SLTIU     5'b01110
+`define EXE_ALUOp_SLTU      5'b01110
+
+//XOR 和 XORI 共用了Opcode
+`define EXE_ALUOp_XOR       5'b01111
+`define EXE_ALUOp_XORI      5'b01111//异或立即数
+// ALUctr_signal_encoding 
+//ADD 和 ADDI 共用了Opcode
+`define EXE_ALUOp_ADD       5'b00000
+`define EXE_ALUOp_ADDI      5'b00000
+//ADDIU 和 ADDU 共用了Opcode
+`define EXE_ALUOp_ADDIU     5'b00001
+`define EXE_ALUOp_ADDU      5'b00001
+//AND 和 ANDI 共用了Opcode
+`define EXE_ALUOp_AND       5'b00010
+`define EXE_ALUOp_ANDI      5'b00010
+
+`define EXE_ALUOp_SUB       5'b00011
+
+`define EXE_ALUOp_SUBU      5'b00100
+
+//OR 和 ORI 共用了Opcode
+`define EXE_ALUOp_OR        5'b00101//或
+`define EXE_ALUOp_ORI       5'b00101//或立即数
+
+`define EXE_ALUOp_NOR       5'b00110//或非
+
+`define EXE_ALUOp_SLL       5'b00111//逻辑左移
+`define EXE_ALUOp_SLLV      5'b01000//逻辑可变左移
+
+`define EXE_ALUOp_SRL       5'b01001//逻辑右移
+`define EXE_ALUOp_SRLV      5'b01010//逻辑可变右移
+
+`define EXE_ALUOp_SRA       5'b01011//算数右移
+`define EXE_ALUOp_SRAV      5'b01100//算数可变右移
+
+//SLT 和 SLTI 共用了Opcode
+`define EXE_ALUOp_SLT       5'b01101
+`define EXE_ALUOp_SLTI      5'b01101
+
+//SLTIU 和 SLTU 共用了Opcode
+`define EXE_ALUOp_SLTIU     5'b01110
+`define EXE_ALUOp_SLTU      5'b01110
+
+//XOR 和 XORI 共用了Opcode
+`define EXE_ALUOp_XOR       5'b01111
+`define EXE_ALUOp_XORI      5'b01111//异或立即数
 
 `endif
