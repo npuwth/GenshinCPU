@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-03 10:36:51
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-03 11:26:14
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -147,7 +147,7 @@
                 end
             end
             if (ExceptType_i != `ExceptionTypeZero)begin
-                MEM_RegsWrType_o = '`RegsWrTypeDisable;              // 发生异常，关闭当前信号的写回寄存器使能信号
+                MEM_RegsWrType_o = `RegsWrTypeDisable;              // 发生异常，关闭当前信号的写回寄存器使能信号
                 IFID_Flush      = `FlushEnable;
                 IDEXE_Flush     = `FlushEnable;
                 EXEMEM_Flush    = `FlushEnable;

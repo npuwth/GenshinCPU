@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 10:28:51
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-03 11:25:41
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -218,13 +218,12 @@
 
 //***************************  与结构体有关的宏定义  ***************************
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
-`define RegsWrTypeDisable   {1'b0,1'b0,1'b0}
 
 //RegsWrType 
 `define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0}
 `define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0}
 `define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1}
-
+`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0}
 
 // ALUctr_signal_encoding 
 //ADD 和 ADDI 共用了Opcode

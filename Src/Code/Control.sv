@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 10:34:14
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-03 11:35:38
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -327,6 +327,54 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
+
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_BEQ:begin
+        ID_ALUOp      = `EXE_ALUOp_SLL;//ALU操作
+
+        ID_ReadMem    = `DonotReadMem;//关于Load
+        ID_LoadType   = '0;
+
+        ID_DMWr       = `WriteDisable;//关于Store
+        ID_StoreType  = '0;
+
+        ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF,无关项
+        ID_DstSel     = `DstSel_rd;//rt
+        ID_RegsWrType = `RegsWrTypeDisable;
+        
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '1;          //EXT
+
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_BNE:begin
+        ID_ALUOp      = `EXE_ALUOp_SLL;//ALU操作
+
+        ID_ReadMem    = `DonotReadMem;//关于Load
+        ID_LoadType   = '0;
+
+        ID_DMWr       = `WriteDisable;//关于Store
+        ID_StoreType  = '0;
+
+        ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF,无关项
+        ID_DstSel     = `DstSel_rd;//rt
+        ID_RegsWrType = `RegsWrTypeDisable;
+        
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
+
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '1;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
