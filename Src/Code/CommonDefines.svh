@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 11:37:58
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-03 15:48:57
+ * @LastEditors: your name
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -54,7 +54,7 @@
 `define BRANCH_CODE_BGE     3'b010
 `define BRANCH_CODE_BGT     3'b011
 `define BRANCH_CODE_BLE     3'b100
-`define BRANCH_CODE_BLT     3'b101 
+`define BRANCH_CODE_BLT     3'b101  
 
 //***************************  与具体指令有关的宏定义  ***************************
 //逻辑操作指令SPECIAL类的功能码
@@ -179,8 +179,10 @@
 `define DonotReadMem        1'b0
 `define DoReadMem           1'b1
 
-`define DstSel_rd           1'b0
-`define DstSel_rt           1'b1
+`define DstSel_rd           2'b00
+`define DstSel_rt           2'b01
+`define DstSel_31           2'b10
+
 
 `define ALUSrcA_Sel_Regs    1'b0
 `define ALUSrcA_Sel_Shamt   1'b1
