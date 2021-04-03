@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-03 11:49:21
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-03 17:20:16
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,12 +15,13 @@
  module Exception(
     input                   clk,
     input                   rst,
-    input  RegsWrType       MEM_RegsWrType_i,
-    output RegsWrType       MEM_RegsWrType_o,
-    output logic            IFID_Flush,
+    input  RegsWrType       MEM_RegsWrType_i,  //要向下一级传递的WrTypes信号
+    output RegsWrType       MEM_RegsWrType_o,  //要向下一级传递的WrTypes信号
+    output logic            IFID_Flush,        //Flush信号
     output logic            IDEXE_Flush,
     output logic            EXEMEM_Flush,
     output logic            MEMWB_Flush,
+    output logic            IsEPCorEret,
 
 //异常处理相关接口
     //来自执行阶段
