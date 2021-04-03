@@ -18,7 +18,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 `include "CPU_Defines.svh"
-
+`include "CommonDefines.svh"
 module Control(
     input  logic[31:0] ID_Instr,
 
