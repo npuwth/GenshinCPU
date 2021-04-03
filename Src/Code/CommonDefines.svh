@@ -1,8 +1,13 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 12:21:49
+<<<<<<< HEAD
+ * @LastEditTime: 2021-04-03 16:35:17
  * @LastEditors: npuwth
+=======
+ * @LastEditTime: 2021-04-03 16:11:45
+ * @LastEditors: Juan Jiang
+>>>>>>> a32fe419842ee06c1fe65fa19522fbbe81346942
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -19,11 +24,7 @@
 `define FlushEnable         1'b1     // 开启flush
 `define FlushDisable        1'b1     // 关闭flush
 
-//*******************************EXT ***********************
 
-`define EXTOP_ZERO  2'b00
-`define EXTOP_SIGN  2'b01
-`define EXTOP_LUI   2'b10
 
 //用于选择storeleefine
 
@@ -54,7 +55,8 @@
 `define BRANCH_CODE_BGE     3'b010
 `define BRANCH_CODE_BGT     3'b011
 `define BRANCH_CODE_BLE     3'b100
-`define BRANCH_CODE_BLT     3'b101 
+`define BRANCH_CODE_BLT     3'b101
+`define BRANCH_CODE_JR      3'b110 
 
 //***************************  与具体指令有关的宏定义  ***************************
 //逻辑操作指令SPECIAL类的功能码
@@ -190,9 +192,10 @@
 `define ALUSrcB_Sel_Regs    1'b0
 `define ALUSrcB_Sel_Imm     1'b1
 
-`define RegsSel_RF          2'b00 //RF读出的数据
-`define RegsSel_HILO        2'b01//
-`define RegsSel_CP0         2'b10
+`define RegsReadSel_RF          2'b00 //RF读出的数据
+`define RegsReadSel_CP0         2'b01 //CP0读出的数据
+`define RegsReadSel_HI          2'b10 //HI寄存器读出的数据
+`define RegsReadSel_LO          2'b11 //LO寄存器读出的数据
 
 `define IsAImmeJump         1'b1//特指 j jal
 `define IsNotAImmeJump      1'b0
@@ -200,7 +203,11 @@
 `define IsABranch           1'b1//比如bne jr 这种
 `define IsNotABranch        1'b0
 
+//*******************************EXT ***********************
 
+`define EXTOP_ZERO  2'b00
+`define EXTOP_SIGN  2'b01
+`define EXTOP_LUI   2'b10
 
 //***************************  与CP0有关的宏定义  ***************************
 
@@ -222,10 +229,12 @@
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
 
 //RegsWrType 
-`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0}
-`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0}
-`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1}
-`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0}
+`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}
+`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0,1'b0}
+`define RegsWrTypeHIEn      '{1'b0,1'b0,1'b1,1'b0}
+`define RegsWrTypeLOEn      '{1'b0,1'b0,1'b0,1'b1}
+`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1,1'b1}
+`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0,1'b0}
 
 // ALUctr_signal_encoding 
 `define EXE_ALUOp_D         5'b00111//无关项
@@ -310,5 +319,13 @@
 //XOR 和 XORI 共用了Opcode
 `define EXE_ALUOp_XOR       5'b01111
 `define EXE_ALUOp_XORI      5'b01111//异或立即数
+
+//乘除法
+`define EXE_ALUOp_DIV       5'b10000
+`define EXE_ALUOp_DIVU      5'b10001
+`define EXE_ALUOp_MULT      5'b10010
+`define EXE_ALUOp_MULTU     5'b10011
+
+
 
 `endif
