@@ -39,7 +39,9 @@ module Control(
 
     output logic ID_isImmeJump,
 
-    output BranchType ID_BranchType
+    output BranchType ID_BranchType,
+
+    output logic[31:0] ID_shamt
     );
 
     logic [5:0]opcode;
@@ -57,6 +59,7 @@ module Control(
     assign rt = ID_Instr[20:16];
     assign rd = ID_Instr[15:11];
     assign shamt = ID_Instr[10:6];
+    assign ID_shamt = {27'b0,shamt};
     // the  work before clasification 
 
     always_comb begin
@@ -796,7 +799,43 @@ module Control(
         ID_isImmeJump = `IsAImmeJump;
         ID_BranchType = '0;
       end
+
+
+
+      default:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+
+        ID_LoadType   = '0;
+
+        ID_StoreType  = '0;
+
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
+        ID_DstSel     = `DstSel_rd;//31
+        ID_RegsWrType = `RegsWrTypeDisable;
+        
+        ID_ExceptType.Interrupt = 1'b0 ;//关于异常
+        ID_ExceptType.WrongAddressinIF = 1'b0 ;
+        ID_ExceptType.ReservedInstruction = 1'b1;
+        ID_ExceptType.Overflow = 1'b0;
+        ID_ExceptType.Syscall = 1'b0;
+        ID_ExceptType.Break = 1'b0;
+        ID_ExceptType.Eret = 1'b0;
+        ID_ExceptType.WrWrongAddressinMEM = 1'b0;
+        ID_ExceptType.RdWrongAddressinMEM = 1'b0;
+
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_EXTOp      = '0;          //EXT
+
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+        ID_ExceptType.ReservedInstruction = 1'b1;//关于异常
+
+      end
     endcase
+
+
   end 
 
     
