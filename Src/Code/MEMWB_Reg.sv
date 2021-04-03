@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-04-03 10:42:23
+ * @LastEditTime: 2021-04-03 16:57:43
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,9 +22,9 @@ module MEMWB_Reg( PipeLineRegsInterface.MEM_WB port );
       port.WB_OutB <= 32'b0;
       port.WB_DMOut <= 32'b0;
       port.WB_Dst <= 5'b0;
-      port.WB_LoadType <= 3'b0;
-      port.WB_RegsWrType <= 3'b0;
-      port.WB_ExceptType <= 9'b0;
+      port.WB_LoadType <= '0;
+      port.WB_RegsWrType <= '0;
+      port.WB_ExceptType <= '0;
     end
     else begin
       port.WB_WbSel <= port.MEM_WbSel;
