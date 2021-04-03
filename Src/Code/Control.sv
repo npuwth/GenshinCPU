@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 20:14:43
+ * @LastEditTime: 2021-04-03 21:49:21
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -33,7 +33,8 @@ module Control(
 
     output BranchType ID_BranchType,
 
-    output logic[31:0] ID_shamt
+    output logic[31:0] ID_shamt,
+    output logic[1:0]  ID_rsrtRead
     );
 
     logic [5:0]opcode;
@@ -53,6 +54,22 @@ module Control(
     assign shamt = ID_Instr[10:6];
     assign ID_shamt = {27'b0,shamt};
     // the  work before clasification 
+
+    always_comb begin
+      if(rs == 5'b00000)begin
+        ID_rsrtRead[1] = 1'b0;
+      end
+      else ID_rsrtRead[1] = 1'b1;
+    end
+
+    always_comb begin
+      if(rt == 5'b00000)begin
+        ID_rsrtRead[0] = 1'b0;
+      end
+      else ID_rsrtRead[0] = 1'b1;
+    end
+
+
 
     always_comb begin
         unique casez (opcode)
