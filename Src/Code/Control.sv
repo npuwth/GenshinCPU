@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 18:19:06
+ * @LastEditTime: 2021-04-03 18:25:21
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -965,7 +965,7 @@ module Control(
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{
+        ID_ExceptType = '{  
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,

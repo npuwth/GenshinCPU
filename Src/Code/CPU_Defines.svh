@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 18:15:29
+ * @LastEditTime: 2021-04-03 21:21:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -160,6 +160,8 @@ interface PipeLineRegsInterface (
   	logic 		[1:0]   	ID_WbSel;          // 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器
   	ExceptinPipeType 		ID_ExceptType;	// 异常类型
+	logic                   ID_IsABranch;
+	logic                   ID_IsAImmeJump;
 	logic        			IDEXE_Flush;
 //IDEXE,out
   	logic 		[31:0] 		EXE_BusA;   		// RF 中读取到的数据A
@@ -179,6 +181,8 @@ interface PipeLineRegsInterface (
   	logic 		[1:0]  		EXE_WbSel;
   	logic 		[1:0]  		EXE_DstSel;
   	ExceptinPipeType 		EXE_ExceptType;// 异常类型
+	logic                   EXE_IsABranch;
+	logic                   EXE_IsAImmeJump;
 //EXEMEM,in
     logic 		[31:0] 		EXE_ALUOut;		// ALU运算结果
     logic 		[31:0] 		EXE_OutB;			// 旁路后的数据B
@@ -189,6 +193,8 @@ interface PipeLineRegsInterface (
   	//RegsWrType   			EXE_RegsWrType;
 	//ExceptinPipeType EXE_ExceptType;// 异常类型
 	//logic        			EXE_WbSel;
+	//logic                 EXE_IsABranch;
+	//logic                 EXE_IsAImmeJump;
     logic 		 			EXEMEM_Flush;		
 //EXEMEM,out					
     logic 		[31:0] 		MEM_ALUOut;			
@@ -200,6 +206,8 @@ interface PipeLineRegsInterface (
     RegsWrType   			MEM_RegsWrType;		
     logic 		[31:0] 		MEM_OutB;							
 	ExceptinPipeType 		MEM_ExceptType;//异常类型
+	logic                   MEM_IsABranch;
+	logic                   MEM_IsAImmeJump;
 //EXEWB,in
     //logic 	[31:0] 		MEM_ALUOut;			
     //logic 	[31:0] 		MEM_PCAdd1;			
@@ -209,6 +217,8 @@ interface PipeLineRegsInterface (
 	logic 		[31:0] 		MEM_DMOut;
 	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使能
 	//ExceptinPipeType 		MEM_ExceptType;
+	//logic                 MEM_IsABranch;
+	//logic                 MEM_IsAImmeJump;
 //EXEWB,out
 	logic 		[1:0]  		WB_WbSel;        	// 选择写回RF的数据
 	logic 		[31:0] 		WB_PCAdd1;      	// PC+1
@@ -219,6 +229,8 @@ interface PipeLineRegsInterface (
 	LoadType     			WB_LoadType;		// 送给EXT2进行lw lh lb lbu lhu 等信号的处理
 	RegsWrType   			WB_RegsWrType;     // RF+CP0+HILO寄存器的写信号打包 
 	ExceptinPipeType 		WB_ExceptType; // 异常类型
+	logic                   WB_IsABranch;
+	logic 					WB_IsAImmeJump;
 
   modport PC (
 	input  					clk,
@@ -265,6 +277,8 @@ interface PipeLineRegsInterface (
     input  					ID_DstSel,
     input  					ID_ExceptType,
 	input  					IDEXE_Flush,
+	input					ID_IsABranch,
+	input 					ID_IsAImmeJump,
     //output	
     output 					EXE_BusA,
     output 					EXE_BusB,
@@ -280,7 +294,9 @@ interface PipeLineRegsInterface (
     output 					EXE_WbSel,
     output 					EXE_DstSel,
     output 					EXE_ExceptType,
-    output 					EXE_Shamt
+    output 					EXE_Shamt,
+	output					EXE_IsABranch,
+	output 					EXE_IsAImmeJump
   );					
 
   modport EXE_MEM (  //EXEMEM_modport
@@ -296,6 +312,8 @@ interface PipeLineRegsInterface (
     input  					EXE_LoadType,
     input  					EXE_ExceptType,
     input  					EXEMEM_Flush,
+	input 					EXE_IsABranch,
+	input 					EXE_IsAImmeJump,
     //output
     output 					MEM_StoreType,
     output 					MEM_ExceptType,
@@ -305,7 +323,9 @@ interface PipeLineRegsInterface (
     output 					MEM_WbSel,
     output 					MEM_Dst,
     output 					MEM_RegsWrType,
-    output 					MEM_OutB
+    output 					MEM_OutB,
+	output 					MEM_IsABranch,
+	output 					MEM_IsAImmeJump
   );
 
   modport MEM_WB (  //MEMWB_modport
@@ -320,6 +340,8 @@ interface PipeLineRegsInterface (
 	input  					MEM_RegsWrType_new,
 	input  					MEM_OutB,
 	input  					MEM_DMOut,
+	input                   MEM_IsABranch,
+	input                   MEM_IsAImmeJump,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,
@@ -329,7 +351,9 @@ interface PipeLineRegsInterface (
 	output 					WB_Dst,
 	output 					WB_LoadType,
 	output 					WB_ExceptType,
-	output 					WB_RegsWrType
+	output 					WB_RegsWrType,
+	output                  WB_IsABranch,
+	output                  WB_IsAImmeJump
   );
 
 endinterface //interfacename
