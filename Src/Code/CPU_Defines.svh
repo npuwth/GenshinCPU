@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-02 16:31:59
+ * @LastEditTime: 2021-04-03 10:42:01
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -186,6 +186,7 @@ interface PipeLineRegsInterface (
   	//RegsWrType   EXE_RegsWrType;
 	//logic        EXEDMWr;
 	//logic        EXE_WbSel;
+	//ExceptinPipeType EXE_ExceptType;// 异常类型
     logic 		 EXEMEM_Flush;		
 //EXEMEM,out
     logic 		 MEM_DMWr;						
@@ -198,15 +199,16 @@ interface PipeLineRegsInterface (
     RegsWrType   MEM_RegsWrType;		
     logic [31:0] MEM_OutB;							
 	ExceptinPipeType MEM_ExceptType;//异常类型
-//EXEWB,in
+//MEMWB,in
     //logic [31:0] MEM_ALUOut;			
     //logic [31:0] MEM_PCAdd1;			
     //logic [1:0]  MEM_WbSel;				
     //logic [4:0]  MEM_Dst;
 	//LoadType     MEM_LoadType;
 	logic [31:0] MEM_DMOut;
-	ExceptinPipeType MEM_ExceptType_new;//经过exception solvement的新的异常类型
-//EXEWB,out
+	RegsWrType   MEM_RegsWrType_new;//经过exception solvement的新的写使能
+	//ExceptinPipeType MEM_ExceptType;
+//MEMWB,out
 	logic [1:0]  WB_WbSel;        	// 选择写回RF的数据
 	logic [31:0] WB_PCAdd1;      	// PC+1
 	logic [31:0] WB_ALUOut;      	// ALU结果
@@ -320,7 +322,7 @@ interface PipeLineRegsInterface (
 	input  MEM_PCAdd1,
 	input  MEM_WbSel,
 	input  MEM_Dst,
-	input  MEM_RegsWrType,
+	input  MEM_RegsWrType_new,
 	input  MEM_OutB,
 	input  MEM_DMOut,
     //output

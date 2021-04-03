@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-02 16:03:57
+ * @LastEditTime: 2021-04-03 10:11:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,14 +23,14 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port );
       port.EXE_rt <= 5'b0;
       port.EXE_rd <= 5'b0;
       port.EXE_ALUOp <= 4'b0;
-      port.EXE_LoadType <= '{0,2'b0};
-      port.EXE_StoreType <= '{2'b0};
-      port.EXE_RegsWrType <= '{0,0,0};
+      port.EXE_LoadType <= 3'b0;
+      port.EXE_StoreType <= 2'b0;
+      port.EXE_RegsWrType <= 3'b0;
       port.EXE_WbSel <= 2'b0;
       port.EXE_DstSel <= 2'b0;
       port.EXE_ReadMem <= 1'b0;
       port.EXE_DMWr <= 1'b0;
-      port.EXE_ExceptType <= '{0,0,0,0,0,0};
+      port.EXE_ExceptType <= 9'b0;
       port.EXE_Shamt <= 5'b0;
       port.EXE_Funct <= 6'b0;
     end
