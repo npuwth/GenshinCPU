@@ -1,48 +1,26 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-03 10:30:17
+ * @LastEditTime: 2021-04-03 11:20:52
  * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \undefinedd:\EXE\ALU.sv
+ * @FilePath: \undefinedd:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\ALU.sv
  * 
  */
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
-module ALU(EXE_ResultA,EXE_ResultB,EXE_ALUOp,EXE_ALUOut,overflow);
+module ALU(EXE_ResultA,EXE_ResultB,EXE_ALUOp,EXE_ALUOut,EXE_ExceptType,EXE_ExceptType_new);
+input ExceptinPipeType EXE_ExceptType;
 input [31:0] EXE_ResultA,EXE_ResultB;
 input [3:0] EXE_ALUOp;
 output [31:0] EXE_ALUOut;
-output overflow;
+output ExceptinPipeType EXE_ExceptType_new;
 reg [31:0] EXE_ALUOut_r;
 
 always_comb begin
     unique case (EXE_ALUOp)
-    //无符号不会溢出
-    //有符号会溢出
-        //包含ADD和ADDI
-        // `EXE_ALUOp_ADD : begin
-        //     reg [32:0] temp;
-        //     temp = {EXE_ResultA[31],EXE_ResultA} + {EXE_ResultB[31],EXE_ResultB};
-        //     if (temp[32]!=temp[31]) begin
-        //          //溢出
-        //         EXE_ALUOut_r = temp[31:0];
-        //     end
-        //     else begin
-        //         EXE_ALUOut_r = temp[31:0];
-        //     end
-        // end
-        
-        // `EXE_ALUOp_SUB :  begin
-            
-        // end
-        
-
         `EXE_ALUOp_ADD,`EXE_ALUOp_ADDU :  EXE_ALUOut_r = EXE_ResultA + EXE_ResultB;//可以直接相加
-        
         `EXE_ALUOp_SUB,`EXE_ALUOp_SUBU :  EXE_ALUOut_r = EXE_ResultA - EXE_ResultB;//可以直接相减
-        
-
         //包含OR和ORI
         `EXE_ALUOp_ORI  :  EXE_ALUOut_r = EXE_ResultA | EXE_ResultB;
         `EXE_ALUOp_NOR  :  EXE_ALUOut_r = ~(EXE_ResultA | EXE_ResultB);
@@ -77,7 +55,15 @@ always_comb begin
     
 end 
 
-    assign overflow = ((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
+    assign EXE_ExceptType_new.WrongAddressinIF = EXE_ExceptType.WrongAddressinIF;
+    assign EXE_ExceptType_new.ReservedInstruction = EXE_ExceptType.ReservedInstruction;
+    assign EXE_ExceptType_new.Syscall = EXE_ExceptType.Syscall;
+    assign EXE_ExceptType_new.Break = EXE_ExceptType.Break;
+    assign EXE_ExceptType_new.Eret = EXE_ExceptType.Eret;
+    assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_ExceptType.WrWrongAddressinMEM;
+    assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_ExceptType.RdWrongAddressinMEM;
+    assign EXE_ExceptType_new.Overflow = ((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
+    
     assign EXE_ALUOut = EXE_ALUOut_r;
     
 endmodule
