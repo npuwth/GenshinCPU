@@ -415,7 +415,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -437,7 +437,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -459,7 +459,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -481,7 +481,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -503,7 +503,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -525,7 +525,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -547,7 +547,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -570,7 +570,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
@@ -592,7 +592,7 @@ module Control(
 
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
-        ID_RegsSel    = `RegsSel_RF;      //ID级别的多选器
+        ID_RegsReadSel    = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
 
         ID_isImmeJump = `IsNotAImmeJump;
