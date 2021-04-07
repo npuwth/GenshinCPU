@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-07 14:50:30
+ * @LastEditTime: 2021-04-07 15:10:48
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -54,6 +54,24 @@
     PC U_PC(
         x.PC
     );
+
+    IFID_Reg U_IFID(
+        x
+    );
+
+    IDEXE_Reg U_IDEXE(
+        x
+    );
+
+    EXEMEM_Reg U_EXEMEM(
+        x
+    );
+
+    MEMWB_Reg U_MEMWB(
+        x
+    );
+
+
 
 
 
