@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-04-03 20:57:20
+ * @LastEditTime: 2021-04-07 14:20:59
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -25,7 +25,7 @@ module moduleName #(
 );
 
     always_comb begin 
-        if(isERETorExcept == `IsNone)begin
+        if(isExceptorERET == `IsNone)begin
             if (isImmeJump == 1'b1) begin
                 PCSel = PCSel_ImmeJump;
             end
@@ -34,7 +34,7 @@ module moduleName #(
             end
             else PCSel = PCSel_PC4;
         end
-        else if (isERETorExcept == `IsEret) begin
+        else if (isExceptorERET == `IsEret) begin
             PCSel = PCSel_EPC;
         end
         else begin
