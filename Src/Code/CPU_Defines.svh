@@ -358,9 +358,9 @@ interface PipeLineRegsInterface (
 
 endinterface //interfacename
 
-interface PipeLineStagesInterface;//也就是IF ID EXE MEM 和WB
+//interface PipeLineStagesInterface;//也就是IF ID EXE MEM 和WB
     
-endinterface //interfacename
+//endinterface //interfacename
 
 
 `endif 
