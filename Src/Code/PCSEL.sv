@@ -37,8 +37,11 @@ module moduleName #(
         else if (isExceptorERET == `IsEret) begin
             PCSel = PCSel_EPC;
         end
-        else begin
+        else if (isExceptorERET == `IsException)begin
             PCSel = PCSel_Except;
+        end
+        else begin
+            PCSel = 3'bxxx;
         end
     end
 
