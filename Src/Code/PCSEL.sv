@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-04-07 14:20:59
+ * @LastEditTime: 2021-04-07 14:55:24
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -10,7 +10,7 @@
  */
 
 
-module moduleName #(
+module PCSEL #(
     parameter PCSel_PC4      = 3'b000,
     parameter PCSel_ImmeJump = 3'b001,
     parameter PCSel_EPC      = 3'b010,
