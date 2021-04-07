@@ -26,8 +26,11 @@
 `include "CommonDefines.svh"
 
 typedef struct packed {
-    logic Interrupt;//中断例外
-    
+    logic HardwareInterrupt1;//硬件中断例外1
+    logic HardwareInterrupt2;//硬件中断例外2
+    logic HardwareInterrupt3;//硬件中断例外3
+    logic HardwareInterrupt4;//硬件中断例外4
+    logic HardwareInterrupt5;//硬件中断例外5
 } AsynExceptType;//异步信号类型
 
 typedef struct packed {
@@ -117,8 +120,8 @@ typedef struct packed {
 } RegsWrType;//三组寄存器的写信号的打包
 
 interface PipeLineRegsInterface (
-  input logic clk;
-  input logic rst;
+	input logic clk;
+	input logic rst;
 );
 //*****   ID_Output   *****//
   	logic [31:0] ID_BusA;    		// RF 中读取到的数据A
@@ -185,8 +188,7 @@ interface PipeLineRegsInterface (
 	ExceptinPipeType WB_ExceptType;  	// 异常类型
 	RegsWrType WB_RegsWrType;         	// RF+CP0+HILO寄存器的写信号打包 
 
-modport ID_EX (	//IDEX_modport
-
+  modport ID_EXE (	//IDEXE_modport
     input clk,
     input rst,
     input ID_BusA,
@@ -225,32 +227,31 @@ modport ID_EX (	//IDEX_modport
     output EXE_Shamt,
     output EXE_Funct
   );
-	modport EX_MEM (
-        input EXE_DMWr,
-        input WB_RegsWrType,
-        input EXE_WbSel,
-        input EXE_ALUOut,
-        input EXE_OutB;,
-        input EXE_Dst,
-        input EXE_PCAdd1,
-        input EXE_StoreType,
-        input EXE_LoadType,
-        input EXE_ExceptType,
-        input MEM_Flush,
+  modport EXE_MEM (  //EXEMEM_modport
+    input EXE_DMWr,
+    input WB_RegsWrType,
+    input EXE_WbSel,
+    input EXE_ALUOut,
+    input EXE_OutB;,
+    input EXE_Dst,
+    input EXE_PCAdd1,
+    input EXE_StoreType,
+    input EXE_LoadType,
+    input EXE_ExceptType,
+    input MEM_Flush,
 
-        output MEM_DMWr,
-        output MEM_StoreType,
-        output MEM_ExceptType,
-        output MEM_LoadType,
-        output MEM_ALUOut,
-        output MEM_PCAdd1,
-        output MEM_WbSel,
-        output MEM_Dst,
-        output MEM_RegsWrType,
-        output MEM_OutB
-	);
-
-    modport MEM_WB (
+    output MEM_DMWr,
+    output MEM_StoreType,
+    output MEM_ExceptType,
+    output MEM_LoadType,
+    output MEM_ALUOut,
+    output MEM_PCAdd1,
+    output MEM_WbSel,
+    output MEM_Dst,
+    output MEM_RegsWrType,
+    output MEM_OutB
+  );
+  modport MEM_WB (  //MEMWB_modport
 	input MEM_ExceptType,
 	input MEM_LoadType,
 	input MEM_ALUOut,
@@ -270,7 +271,7 @@ modport ID_EX (	//IDEX_modport
 	output WB_LoadType,
 	output WB_ExceptType,
 	output WB_RegsWrType,
-	);
+  );
 
 endinterface //interfacename
 
