@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 16:17:49
+ * @LastEditTime: 2021-04-09 17:02:33
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -55,6 +55,8 @@
     logic [31:0]        WB_Result_o;
     logic [31:0]        EXE_ResultA_o,EXE_ResultB_o;
 //------------------------seddonend
+
+    logic [31:0]        ID_CP0DataOut_o;
 
     assign x.IFID_Flush = IFID_Flush_Exception_o | IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
     assign Interrupt_o  = '{default:0};           // 6个硬件中断位 仿真里面先初始化位0 
@@ -271,7 +273,7 @@
         .CP0Wr_i(x.WB_RegsWrType.CP0Wr),                    //写使能
         .CP0WrAddr_i(x.WB_Dst),                             //写回地址
         .CP0WrDataOut_i(WB_Result_o),                       //写入数据
-        //TODO:.CP0RdAddr_i(TODO:),
+        .CP0RdAddr_i(x.ID_Instr[15:11]),
         .ExceptType_i(x.WB_ExceptType),                     //异常
         .Interrupt_i(Interrupt_o),                          //在调试时assign了全零的值
         .PCAdd1_i(x.WB_PCAdd1),                             //PC+1
@@ -279,7 +281,7 @@
         .VirtualAddr_i(x.WB_ALUOut),                        //读取&写入地址未对齐例外 访问的虚拟地址
 
         // output        
-        //TODO:.CP0RdDataOut_o(TODO:),
+        .CP0RdDataOut_o(ID_CP0DataOut_o),
         .CP0BadVAddr_o(CP0BadVAddr),
         .CP0Count_o(CP0Count),
         .CP0Compare_o(CP0Compare),
