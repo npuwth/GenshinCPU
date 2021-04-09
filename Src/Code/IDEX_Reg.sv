@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 18:16:41
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-07 15:08:30
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -31,6 +31,8 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port );
       port.EXE_ExceptType <= '0;
       port.EXE_Shamt <= 5'b0;
       port.EXE_Funct <= 6'b0;
+      port.EXE_IsABranch <= 1'b0;
+      port.EXE_IsAImmeJump <= 1'b0;
     end
     else begin
       port.EXE_BusA <= port.ID_BusA;
@@ -49,6 +51,8 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port );
       port.EXE_ExceptType <= port.ID_ExceptType;
       port.EXE_Shamt <= port.ID_Imm32[10:6];
       port.EXE_Funct <= port.ID_Imm32[5:0];
+      port.EXE_IsABranch <= port.ID_IsABranch;
+      port.EXE_IsAImmeJump <= port.ID_IsAImmeJump;
     end
   end
 

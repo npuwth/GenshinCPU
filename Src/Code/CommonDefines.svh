@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-03 22:31:51
+ * @LastEditTime: 2021-04-09 12:13:16
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -11,6 +11,10 @@
 
 `ifndef CommonDefines_svh
 `define CommonDefines_svh
+
+`define DEBUG               1             
+
+`define RegBus              31:0
 
 `define WriteEnable         1'b1     // 打开写使能信号
 `define WriteDisable        1'b0     // 关闭写使能信号
@@ -25,8 +29,6 @@
 `define PCSel_EPC        3'b010
 `define PCSel_Except     3'b011
 `define PCSel_Branch     3'b100    
-
-
 
 
 //用于选择storeleefine
@@ -61,6 +63,70 @@
 `define BRANCH_CODE_BLT     3'b101
 `define BRANCH_CODE_JR      3'b110 
 
+//****************************有关译码的宏定义***************************
+
+`define DonotReadMem        1'b0
+`define DoReadMem           1'b1
+
+`define DstSel_rd           2'b00
+`define DstSel_rt           2'b01
+`define DstSel_31           2'b10
+
+
+`define ALUSrcA_Sel_Regs    1'b0
+`define ALUSrcA_Sel_Shamt   1'b1
+
+`define ALUSrcB_Sel_Regs    1'b0
+`define ALUSrcB_Sel_Imm     1'b1
+
+`define RegsReadSel_RF      2'b00 //RF读出的数据
+`define RegsReadSel_CP0     2'b01 //CP0读出的数据
+`define RegsReadSel_HI      2'b10 //HI寄存器读出的数据
+`define RegsReadSel_LO      2'b11 //LO寄存器读出的数据
+
+`define IsAImmeJump         1'b1  //特指 j jal
+`define IsNotAImmeJump      1'b0
+
+`define IsABranch           1'b1  //比如bne jr 这种
+`define IsNotABranch        1'b0
+
+//*******************************EXT ***********************
+
+`define EXTOP_ZERO          2'b00
+`define EXTOP_SIGN          2'b01
+`define EXTOP_LUI           2'b10
+
+//***************************  与CP0有关的宏定义  ***************************
+
+`define InterruptNotAssert  1'b0     // 取消中断的声明
+`define InterruptAssert     1'b1     // 开启中断的声明
+`define InDelaySlot         1'b1     // 延迟槽指令
+`define ZeroWord            32'h0    // 寄存器32位全0信号
+
+// CP0寄存器的宏定义  （序号定义）
+`define CP0_REG_BADVADDR    5'd8
+`define CP0_REG_COUNT       5'd9
+`define CP0_REG_COMPARE     5'd11
+`define CP0_REG_STATUS      5'd12
+`define CP0_REG_CAUSE       5'd13
+`define CP0_REG_EPC         5'd14
+
+`define IsEret              2'b10
+`define IsException         2'b11
+`define IsNone              2'b00
+//***************************  与结构体有关的宏定义  ***************************
+`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
+
+//RegsWrType 
+`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}
+`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0,1'b0}
+`define RegsWrTypeHIEn      '{1'b0,1'b0,1'b1,1'b0}
+`define RegsWrTypeLOEn      '{1'b0,1'b0,1'b0,1'b1}
+`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1,1'b1}
+`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0,1'b0}
+
+
+
 //***************************  与具体指令有关的宏定义  ***************************
 //逻辑操作指令SPECIAL类的功能码
 `define EXE_AND             6'b100100          //and指令功能码
@@ -93,14 +159,14 @@
 //算术操作指令
 `define EXE_SLT             6'b101010           //slt指令功能码
 `define EXE_SLTU            6'b101011          //sltu指令功能码
-`define EXE_SLTI            6'b001010          //slti指令码
-`define EXE_SLTIU           6'b001011         //sltiu指令码
+`define EXE_SLTI            6'b001010              //slti指令码
+`define EXE_SLTIU           6'b001011             //sltiu指令码
 `define EXE_ADD             6'b100000           //add指令功能码
 `define EXE_ADDU            6'b100001          //addu指令功能码
 `define EXE_SUB             6'b100010           //sub指令功能码
 `define EXE_SUBU            6'b100011          //subu指令功能码
-`define EXE_ADDI            6'b001000          //addi指令码
-`define EXE_ADDIU           6'b001001         //addiu指令码
+`define EXE_ADDI            6'b001000              //addi指令码
+`define EXE_ADDIU           6'b001001             //addiu指令码
 `define EXE_CLZ             6'b100000           //clz指令功能码
 `define EXE_CLO             6'b100001           //clo指令功能码
 
@@ -179,67 +245,7 @@
 `define EXE_SPECIAL2_INST   6'b011100 //SPECIAL2类指令的指令码
 `define EXE_REGIMM_INST     6'b000001   //REGIMM类转移指令
 
-//****************************有关译码的宏定义***************************
 
-`define DonotReadMem        1'b0
-`define DoReadMem           1'b1
-
-`define DstSel_rd           2'b00
-`define DstSel_rt           2'b01
-`define DstSel_31           2'b10
-
-
-`define ALUSrcA_Sel_Regs    1'b0
-`define ALUSrcA_Sel_Shamt   1'b1
-
-`define ALUSrcB_Sel_Regs    1'b0
-`define ALUSrcB_Sel_Imm     1'b1
-
-`define RegsReadSel_RF          2'b00 //RF读出的数据
-`define RegsReadSel_CP0         2'b01 //CP0读出的数据
-`define RegsReadSel_HI          2'b10 //HI寄存器读出的数据
-`define RegsReadSel_LO          2'b11 //LO寄存器读出的数据
-
-`define IsAImmeJump         1'b1//特指 j jal
-`define IsNotAImmeJump      1'b0
-
-`define IsABranch           1'b1//比如bne jr 这种
-`define IsNotABranch        1'b0
-
-//*******************************EXT ***********************
-
-`define EXTOP_ZERO  2'b00
-`define EXTOP_SIGN  2'b01
-`define EXTOP_LUI   2'b10
-
-//***************************  与CP0有关的宏定义  ***************************
-
-`define InterruptNotAssert  1'b0     // 取消中断的声明
-`define InterruptAssert     1'b1     // 开启中断的声明
-`define InDelaySlot         1'b1     // 延迟槽指令
-`define ZeroWord            32'h0    // 寄存器32位全0信号
-
-// CP0寄存器的宏定义  （序号定义）
-`define CP0_REG_BADVADDR    5'd8
-`define CP0_REG_COUNT       5'd9
-`define CP0_REG_COMPARE     5'd11
-`define CP0_REG_STATUS      5'd12
-`define CP0_REG_CAUSE       5'd13
-`define CP0_REG_EPC         5'd14
-
-`define IsEret              2'b10
-`define IsException               1'b11
-`define IsNone              2'b00
-//***************************  与结构体有关的宏定义  ***************************
-`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
-
-//RegsWrType 
-`define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}
-`define RegsWrTypeCP0En     '{1'b0,1'b1,1'b0,1'b0}
-`define RegsWrTypeHIEn      '{1'b0,1'b0,1'b1,1'b0}
-`define RegsWrTypeLOEn      '{1'b0,1'b0,1'b0,1'b1}
-`define RegsWrTypeHILOEn    '{1'b0,1'b0,1'b1,1'b1}
-`define RegsWrTypeDisable   '{1'b0,1'b0,1'b0,1'b0}
 
 // ALUctr_signal_encoding 
 `define EXE_ALUOp_D         5'b00111//无关项

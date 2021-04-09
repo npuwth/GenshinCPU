@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-03 19:56:46
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-09 10:46:36
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -160,12 +160,15 @@ interface PipeLineRegsInterface (
   	logic 		[1:0]   	ID_WbSel;          // 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器
   	ExceptinPipeType 		ID_ExceptType;	// 异常类型
+	logic                   ID_IsABranch;
+	logic                   ID_IsAImmeJump;
 	logic        			IDEXE_Flush;
 //IDEXE,out
   	logic 		[31:0] 		EXE_BusA;   		// RF 中读取到的数据A
   	logic 		[31:0] 		EXE_BusB;	 		// RF 中读取到的数据B
   	logic 		[31:0] 		EXE_Imm32;  		// 符号扩展之后的32位立即数
   	logic 		[31:0] 		EXE_PCAdd1; 		// PC+1
+	logic 		[31:0]		EXE_Instr;
   	logic 		[4:0]  		EXE_rs;
   	logic 		[4:0]  		EXE_rt;
   	logic 		[4:0]  		EXE_rd;
@@ -179,6 +182,9 @@ interface PipeLineRegsInterface (
   	logic 		[1:0]  		EXE_WbSel;
   	logic 		[1:0]  		EXE_DstSel;
   	ExceptinPipeType 		EXE_ExceptType;// 异常类型
+  	ExceptinPipeType 		EXE_ExceptType_final;// 异常类型
+	logic                   EXE_IsABranch;
+	logic                   EXE_IsAImmeJump;
 //EXEMEM,in
     logic 		[31:0] 		EXE_ALUOut;		// ALU运算结果
     logic 		[31:0] 		EXE_OutB;			// 旁路后的数据B
@@ -189,10 +195,13 @@ interface PipeLineRegsInterface (
   	//RegsWrType   			EXE_RegsWrType;
 	//ExceptinPipeType EXE_ExceptType;// 异常类型
 	//logic        			EXE_WbSel;
+	//logic                 EXE_IsABranch;
+	//logic                 EXE_IsAImmeJump;
     logic 		 			EXEMEM_Flush;		
 //EXEMEM,out					
     logic 		[31:0] 		MEM_ALUOut;			
-    logic 		[31:0] 		MEM_PCAdd1;			
+    logic 		[31:0] 		MEM_PCAdd1;	
+	logic 		[31:0]		MEM_Instr;
     logic 		[1:0]  		MEM_WbSel;				
     logic 		[4:0]  		MEM_Dst;
 	LoadType     			MEM_LoadType;
@@ -200,6 +209,9 @@ interface PipeLineRegsInterface (
     RegsWrType   			MEM_RegsWrType;		
     logic 		[31:0] 		MEM_OutB;							
 	ExceptinPipeType 		MEM_ExceptType;//异常类型
+	ExceptinPipeType 		MEM_ExceptType_final;//异常类型
+	logic                   MEM_IsABranch;
+	logic                   MEM_IsAImmeJump;
 //EXEWB,in
     //logic 	[31:0] 		MEM_ALUOut;			
     //logic 	[31:0] 		MEM_PCAdd1;			
@@ -208,10 +220,14 @@ interface PipeLineRegsInterface (
 	//LoadType     			MEM_LoadType;
 	logic 		[31:0] 		MEM_DMOut;
 	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使能
+	logic					MEM_IsDelaySlot;
 	//ExceptinPipeType 		MEM_ExceptType;
+	//logic                 MEM_IsABranch;
+	//logic                 MEM_IsAImmeJump;
 //EXEWB,out
 	logic 		[1:0]  		WB_WbSel;        	// 选择写回RF的数据
 	logic 		[31:0] 		WB_PCAdd1;      	// PC+1
+	logic 		[31:0]		WB_Instr;
 	logic 		[31:0] 		WB_ALUOut;      	// ALU结果
 	logic 		[31:0] 		WB_OutB;        	// RF读取的第二个数据值（已经经过旁路），用于MTC0 MTHI MTLO
  	logic 		[31:0] 		WB_DMOut;	     	// DM读取出来的原始32位数据
@@ -219,7 +235,9 @@ interface PipeLineRegsInterface (
 	LoadType     			WB_LoadType;		// 送给EXT2进行lw lh lb lbu lhu 等信号的处理
 	RegsWrType   			WB_RegsWrType;     // RF+CP0+HILO寄存器的写信号打包 
 	ExceptinPipeType 		WB_ExceptType; // 异常类型
-
+	logic                   WB_IsABranch;
+	logic 					WB_IsAImmeJump;
+	logic					WB_IsDelaySlot;
   modport PC (
 	input  					clk,
 	input  					rst,
@@ -254,6 +272,7 @@ interface PipeLineRegsInterface (
     input  					ID_BusB,
     input  					ID_Imm32,
     input  					ID_PCAdd1,
+	input 					ID_Instr,
     input  					ID_rs,
     input  					ID_rt,
     input  					ID_rd,
@@ -265,11 +284,14 @@ interface PipeLineRegsInterface (
     input  					ID_DstSel,
     input  					ID_ExceptType,
 	input  					IDEXE_Flush,
+	input					ID_IsABranch,
+	input 					ID_IsAImmeJump,
     //output	
     output 					EXE_BusA,
     output 					EXE_BusB,
     output 					EXE_Imm32,
     output 					EXE_PCAdd1,
+	output 					EXE_Instr,
     output 					EXE_rs,
     output 					EXE_rt,
     output 					EXE_rd,
@@ -280,7 +302,9 @@ interface PipeLineRegsInterface (
     output 					EXE_WbSel,
     output 					EXE_DstSel,
     output 					EXE_ExceptType,
-    output 					EXE_Shamt
+    output 					EXE_Shamt,
+	output					EXE_IsABranch,
+	output 					EXE_IsAImmeJump
   );					
 
   modport EXE_MEM (  //EXEMEM_modport
@@ -292,51 +316,65 @@ interface PipeLineRegsInterface (
     input  					EXE_OutB,
     input  					EXE_Dst,
     input  					EXE_PCAdd1,
+	input 					EXE_Instr,
     input  					EXE_StoreType,
     input  					EXE_LoadType,
-    input  					EXE_ExceptType,
+    input  					EXE_ExceptType_final,
     input  					EXEMEM_Flush,
+	input 					EXE_IsABranch,
+	input 					EXE_IsAImmeJump,
     //output
     output 					MEM_StoreType,
     output 					MEM_ExceptType,
     output 					MEM_LoadType,
     output 					MEM_ALUOut,
     output 					MEM_PCAdd1,
+	output 					MEM_Instr,
     output 					MEM_WbSel,
     output 					MEM_Dst,
     output 					MEM_RegsWrType,
-    output 					MEM_OutB
+    output 					MEM_OutB,
+	output 					MEM_IsABranch,
+	output 					MEM_IsAImmeJump
   );
 
   modport MEM_WB (  //MEMWB_modport
     input  					clk,
 	input  					rst,
-	input  					MEM_ExceptType,
+	input  					MEM_ExceptType_final,
 	input  					MEM_LoadType,
 	input  					MEM_ALUOut,
 	input  					MEM_PCAdd1,
+	input 					MEM_Instr,
 	input  					MEM_WbSel,
 	input  					MEM_Dst,
 	input  					MEM_RegsWrType_new,
 	input  					MEM_OutB,
 	input  					MEM_DMOut,
+	input                   MEM_IsABranch,
+	input                   MEM_IsAImmeJump,
+	input 					MEM_IsDelaySlot,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,
+	output 					WB_Instr,
 	output 					WB_ALUOut,
 	output 					WB_OutB,
 	output 					WB_DMOut,
 	output 					WB_Dst,
 	output 					WB_LoadType,
 	output 					WB_ExceptType,
-	output 					WB_RegsWrType
+	output 					WB_RegsWrType,
+	output                  WB_IsABranch,
+	output                  WB_IsAImmeJump,
+	output 					WB_IsDelaySlot
   );
 
 endinterface //interfacename
 
-interface PipeLineStagesInterface;//也就是IF ID EXE MEM 和WB
+//interface PipeLineStagesInterface;//也就是IF ID EXE MEM 和WB
     
-endinterface //interfacename
+//endinterface //interfacename
 
 
 `endif 

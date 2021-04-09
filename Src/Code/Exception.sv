@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-03 20:53:27
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-09 10:48:10
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -27,7 +27,7 @@
     //来自执行阶段
     input ExceptinPipeType  ExceptType_i,     //译码执行阶段收集到的异常信息
     input logic             IsDelaySlot_i,    //访存阶段指令是否是延迟槽指令
-    input logic[31:0]       CurrentInstr_i,   //访存阶段指令的地址
+    input logic[31:0]       CurrentInstr_i,   //访存阶段指令
     //来自CP0模块
     input logic[31:0]       CP0Status_i,      //CP0 status寄存器当前信号
     input logic[31:0]       CP0Cause_i,       //CP0 cause寄存器当前信号
@@ -39,9 +39,9 @@
 //向回写阶段输出
     output ExceptinPipeType ExceptType_o,      //最终的异常类型
     output logic            IsDelaySlot_o,     //访存阶段指令是否是延迟槽指令
-    output logic[31:0]      CurrentInstr_o,    //访存阶段指令的地址
     output logic[31:0]      CP0Epc_o           //CP0中EPC寄存器的最新值
  );
+ 
     logic                   CP0RegWr;
     logic                   RFRegWr;
     logic                   HILORegWr;
@@ -52,7 +52,6 @@
 
     assign IsDelaySlot_o  = IsDelaySlot_i;
 
-    assign CurrentInstr_o = CurrentInstr_i;
 
 
 //******************************************************************************
@@ -124,7 +123,7 @@
                 end 
                 else if(ExceptType_i.WrongAddressinIF == 1'b1) begin
                     ExceptType_o.WrongAddressinIF       = 1'b1;      //取指地址错例外
-                end 
+                end
                 else if(ExceptType_i.ReservedInstruction == 1'b1) begin
                     ExceptType_o.ReservedInstruction    = 1'b1;      //保留指令例外
                 end 
@@ -162,7 +161,7 @@
             end 
             else begin
                     IsExceptionorEret  = `IsNone;
-                MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号
+                    MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号
             end
                 
             
