@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 15:34:31
+ * @LastEditTime: 2021-04-09 15:40:47
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -127,8 +127,6 @@
         .MEM_RegsWrType(x.MEM_RegsWrType),
         .EXE_rt(x.EXE_rt),
         .EXE_rs(x.EXE_rs),
-        .MEM_Wr(x.MEM_Wr),
-        .WB_Wr(x.WB.Wr),
         .MEM_Dst(x.MEM_Dst),
         .WB_Dst(x.WB_Dst),
         .EXE_ForwardA(EXE_ForwardA_o),
@@ -160,7 +158,7 @@
 
     MUX2to1 U_MUXSrcA(
         .d0(EXE_OutA_o),
-        .d1(x.EXE_Shamt),
+        .d1({27'b0,x.EXE_Shamt}),
         .sel2_to_1(x.EXE_ALUSrcA),
         .y(EXE_ResultA_o)
     );//EXE级三选一A之后的那个二选一
@@ -168,7 +166,7 @@
     MUX2to1 U_MUXSrcB(
         .d0(EXE_OutB_o),
         .d1(x.EXE_Imm32),
-        .sel2_to_1(x.EXE_ALUSrcB),
+        .sel2_to_1(x.EXE_ALUSrcB),//TODO:
         .y(EXE_ResultB_o)
     );//EXE级三选一B之后的那个二选一
 
