@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 17:02:33
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-09 17:19:36
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -28,8 +28,12 @@
     //logic [31:0]        EPCData_o;
 
     logic [1:0]         ID_RegsReadSel_o;//由译码产生 作用于ID级别的读取数据
-    logic [1:0]         ID_EXTOp_0;
-    logic [1:0]         ID_rsrtRead_0;
+    logic [1:0]         ID_EXTOp_o;
+    logic [1:0]         ID_rsrtRead_o;
+
+    logic [31:0]        RF_Bus_o;
+    logic [31:0]        HI_Bus_o;
+    logic [31:0]        LO_Bus_o;
 
     //所有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的一些信号（至少它与流水线寄存器无关，）
 // *******************************Johnson Yang & WTH **********/
@@ -73,7 +77,7 @@
         .d0(PC_4_o),
         .d1(JumpAddr_o),
         .d2(MEM_CP0Epc_o),
-        .d3(32'h80000180),
+        .d3(32'hBFC00380),
         .d4(BranchAddr_o),
         .sel8_to_1(PCSel_o),
         //output
@@ -113,18 +117,49 @@
         .ID_ALUSrcA(x.ID_ALUSrcA),
         .ID_ALUSrcB(x.ID_ALUSrcB),
         .ID_RegsReadSel(ID_RegsReadSel_o),
-        .ID_EXTOp(ID_EXTOp_0),
+        .ID_EXTOp(ID_EXTOp_o),
         .ID_isImmeJump(x.ID_isAImmeJump),
         .ID_BranchType(x.ID_BranchType),
         .ID_shamt(x.ID_shamt),
-        .ID_rsrtRead(ID_rsrtRead_0)
+        .ID_rsrtRead(ID_rsrtRead_o)
     );
 
+    RF U_RF (
+        .clk(clk),
+        .rst(rst),
+        .WB_Dst(x.WB_Dst),
+        .WB_Result(x.WB_Result),
+        .RFWr(x.WB_RegsWrType.RFWr),
+        .ID_rs(x.ID_rs),
+        .ID_rt(x.ID_rt),
+        .ID_BusA(x.ID_BusA),
+        .ID_BusB(RF_Bus_o)
+    );
 
+    HILO U_HILO (
+        .clk(clk),
+        .rst(rst),
+        .HIWr(x.WB_RegsWrType.HIWr),
+        .LOWr(x.WB_RegsWrType.LOWr),
+        .Data_i(x.WB_OutB),
+        .HI_o(HI_Bus_o),
+        .LO_o(LO_Bus_o)
+    );
 
+    MUX4to1 U_MUXBUSB ( 
+        .d0(RF_Bus_o),
+        .d1(HI_Bus_o),
+        .d2(LO_Bus_o),
+        .d3(ID_CP0DataOut_o),
+        .sel4_to_1(ID_RegsReadSel_o),
+        .y(x.ID_BusB)
+    );
 
+    DataHazard U_DataHazard ( 
+        
+    )
 //---------------------------------------------seddon
-    ForwardUnit U_ForwardUnit(
+    ForwardUnit U_ForwardUnit (
         .WB_RegsWrType(x.WB_RegsWrType),
         .MEM_RegsWrType(x.MEM_RegsWrType),
         .EXE_rt(x.EXE_rt),

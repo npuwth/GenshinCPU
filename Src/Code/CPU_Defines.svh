@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-09 15:36:09
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-09 16:36:53
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -334,7 +334,7 @@ interface PipeLineRegsInterface (
     input  					EXEMEM_Flush,
 	//input 					EXE_IsABranch,
 	input 					EXE_IsAImmeJump,
-	input 					EXE_BranchType.isBranch
+	input 					EXE_BranchType,
     //output
     output 					MEM_StoreType,
     output 					MEM_ExceptType,
