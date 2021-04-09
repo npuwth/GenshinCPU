@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 12:19:42
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-09 14:14:12
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -17,15 +17,15 @@
      input AsynExceptType   Interrupt//来自CPU外部的中断信号
  );
 
-    logic               isBranch;//PCSEL的端口 
-    logic               isImmeJump;
-    logic [1:0]         isExceptorERET;
-    logic [2:0]         PCSel;
+    logic               isBranch_o;//PCSEL的端口 
+    logic               isImmeJump_o;
+    logic [1:0]         isExceptorERET_o;
+    logic [2:0]         PCSel_o;
 
-    logic [31:0]        JumpAddr;//PCSel多选器
-    logic [31:0]        BranchAddr;
-    logic [31:0]        PC_4;
-    logic [31:0]        EPCData;
+    logic [31:0]        JumpAddr_o;//PCSel多选器
+    logic [31:0]        BranchAddr_o;
+    logic [31:0]        PC_4_o;
+    logic [31:0]        EPCData_o;
 // *******************************Johnson Yang & WTH **********/
 
     ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
@@ -60,21 +60,24 @@
     );
 
     MUX8to1 U_PCMUX(
-        .d0(PC_4),
-        .d1(JumpAddr),
-        .d2(EPCData),
+        .d0(PC_4_o),
+        .d1(JumpAddr_o),
+        .d2(EPCData_o),
         .d3(32'h80000180),
-        .d4(BranchAddr),
-        .sel8_to_1(PCSel),
+        .d4(BranchAddr_o),
+        .sel8_to_1(PCSel_o),
         .y(x.IF_NPC)
     );
 
     PCSEL U_PCSEL(
-        .isBranch(isBranch),
-        .isImmeJump(isImmeJump),
-        .isExceptorERET(isExceptorERET),
-        .PCSel(PCSel)
+        .isBranch(isBranch_o),
+        .isImmeJump(isImmeJump_o),
+        .isExceptorERET(isExceptorERET_o),
+        .PCSel(PCSel_o)
     );
+
+
+    
 //---------------------------------------------seddon
     ForwardUnit U_ForwardUnit(
         .WB_RegsWrType(x.WB_RegsWrType),
