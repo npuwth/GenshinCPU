@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 15:40:47
+ * @LastEditTime: 2021-04-09 16:17:49
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,15 +17,15 @@
      input AsynExceptType   Interrupt//来自CPU外部的中断信号
  );
 
-    logic               isBranch_o;//PCSEL的端口 
-    logic               isImmeJump_o;
+    // logic               isBranch_o;//PCSEL的端口 
+    // logic               isImmeJump_o;
     logic [1:0]         isExceptorERET_o;
     logic [2:0]         PCSel_o;
 
     logic [31:0]        JumpAddr_o;//PCSel多选器
     logic [31:0]        BranchAddr_o;
     logic [31:0]        PC_4_o;
-    logic [31:0]        EPCData_o;
+    //logic [31:0]        EPCData_o;
 
     logic [1:0]         ID_RegsReadSel_o;//由译码产生 作用于ID级别的读取数据
     logic [1:0]         ID_EXTOp_0;
@@ -38,7 +38,7 @@
     logic               IFID_Flush_Exception_o; 
     logic [1:0]         IsExceptionorEret_o;      //送给PCSEL
     logic               MEM_IsDelaySlot_o;        //访存阶段是否是延迟槽（送给CP0）
-    logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为选择信号
+    logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被选择的数据信号
     AsynExceptType      Interrupt_o;              //6个外部硬件中断输入
     logic               CP0TimerInterrupt_o;      //定时器中断
     //CP0寄存器的定义
@@ -70,7 +70,7 @@
         //input
         .d0(PC_4_o),
         .d1(JumpAddr_o),
-        .d2(EPCData_o),
+        .d2(MEM_CP0Epc_o),
         .d3(32'h80000180),
         .d4(BranchAddr_o),
         .sel8_to_1(PCSel_o),
@@ -82,8 +82,8 @@
 
     PCSEL U_PCSEL(
         //input
-        .isBranch(isBranch_o),
-        .isImmeJump(isImmeJump_o),
+        .isBranch(x.ID_BranchType.isBranch),
+        .isImmeJump(x.ID_IsAImmeJump),
         .isExceptorERET(isExceptorERET_o),
         //output
         .PCSel(PCSel_o)
