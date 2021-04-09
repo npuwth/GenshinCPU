@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 17:02:33
+ * @LastEditTime: 2021-04-09 17:23:21
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -113,11 +113,11 @@
         .ID_ALUSrcA(x.ID_ALUSrcA),
         .ID_ALUSrcB(x.ID_ALUSrcB),
         .ID_RegsReadSel(ID_RegsReadSel_o),
-        .ID_EXTOp(ID_EXTOp_0),
+        .ID_EXTOp(ID_EXTOp_o),
         .ID_isImmeJump(x.ID_isAImmeJump),
         .ID_BranchType(x.ID_BranchType),
         .ID_shamt(x.ID_shamt),
-        .ID_rsrtRead(ID_rsrtRead_0)
+        .ID_rsrtRead(ID_rsrtRead_o)
     );
 
 
