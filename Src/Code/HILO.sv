@@ -26,12 +26,12 @@ module hilo_reg(
             LO_o <= `ZeroWord;
         end else if (HIWr == `WriteEnable) begin
             HI_o <= HI_i;
-        end else if (LOWr == `WriteEnable begin
+        end else if (LOWr == `WriteEnable) begin
             LO_o <= LO_i;
         end
+        `ifdef DEBUG
+            $monitor("HI:%8X LO:%8X",HI_o,LO_o);
+        `endif
     end
-    `ifdef DEBUG
-        $monitor("HI:%8X LO:%8X",HI_o,LO_o);
-    `endif
     
 endmodule
