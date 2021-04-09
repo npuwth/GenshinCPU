@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 14:14:12
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-09 15:11:50
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -84,8 +84,6 @@
         .MEM_RegsWrType(x.MEM_RegsWrType),
         .EXE_rt(x.EXE_rt),
         .EXE_rs(x.EXE_rs),
-        .MEM_Wr(x.MEM_Wr),
-        .WB_Wr(x.WB.Wr),
         .MEM_Dst(x.MEM_Dst),
         .WB_Dst(x.WB_Dst),
         .EXE_ForwardA(EXE_ForwardA_o),
