@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-04-03 22:29:32
+ * @LastEditTime: 2021-04-09 12:04:51
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,7 +32,7 @@ module cp0_reg(
     input AsynExceptType    Interrupt_i,      //6个外部硬件中断输入
     input logic  [31:0]     PCAdd1_i,         //发生异常的指令地址+1
     input logic             IsDelaySlot_i,    //发生异常的指令是否是延迟槽指令
-    input logic  [31:0]     VirtualAddr,
+    input logic  [31:0]     VirtualAddr_i,    //就是lw sw等算出来的ALU结果
 
     // 输出
     output logic   [31:0]   CP0BadVAddr_o,    //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
@@ -254,7 +254,7 @@ assign Hardwareint_i =
                     end
                     CP0Status_o[1]          <= 1'b1;
                     CP0Cause_o[6:2]         <= 5'b00101;
-                    CP0BadVAddr_o           <= VirtualAddr;
+                    CP0BadVAddr_o           <= VirtualAddr_i;
                 end
 
             //地址错例外——数据读取
@@ -270,7 +270,7 @@ assign Hardwareint_i =
                     end
                     CP0Status_o[1]          <= 1'b1;
                     CP0Cause_o[6:2]         <= 5'b00100;
-                    CP0BadVAddr_o           <= VirtualAddr;
+                    CP0BadVAddr_o           <= VirtualAddr_i;
 
                 end
         end
