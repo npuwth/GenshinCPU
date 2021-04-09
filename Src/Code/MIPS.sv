@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 14:14:12
+ * @LastEditTime: 2021-04-09 15:34:31
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,6 +26,12 @@
     logic [31:0]        BranchAddr_o;
     logic [31:0]        PC_4_o;
     logic [31:0]        EPCData_o;
+
+    logic [1:0]         ID_RegsReadSel_o;//由译码产生 作用于ID级别的读取数据
+    logic [1:0]         ID_EXTOp_0;
+    logic [1:0]         ID_rsrtRead_0;
+
+    //所有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的一些信号（至少它与流水线寄存器无关，）
 // *******************************Johnson Yang & WTH **********/
 
     ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
@@ -55,29 +61,66 @@
     //TODO: 完善有关硬件中断位
 
     PipeLineRegsInterface x(
+        //input
         .clk(clk),
         .rst(rst)
     );
 
     MUX8to1 U_PCMUX(
+        //input
         .d0(PC_4_o),
         .d1(JumpAddr_o),
         .d2(EPCData_o),
         .d3(32'h80000180),
         .d4(BranchAddr_o),
         .sel8_to_1(PCSel_o),
+        //output
         .y(x.IF_NPC)
     );
 
+    assign PC_4_o = x.IF_PC + 4;
+
     PCSEL U_PCSEL(
+        //input
         .isBranch(isBranch_o),
         .isImmeJump(isImmeJump_o),
         .isExceptorERET(isExceptorERET_o),
+        //output
         .PCSel(PCSel_o)
     );
 
 
-    
+    ICache U_ICache(
+        //input
+        .IF_PC(x.IF_PC),
+        //output
+        .IF_Instr(x.IF_Instr)
+    );
+
+    Control U_Control(
+        //input
+        .ID_Instr(x.ID_Instr),
+        //output
+        .ID_ALUOp(x.ID_ALUOp),
+        .ID_LoadType(x.ID_LoadType),
+        .ID_StoreType(x.ID_StoreType),
+        .ID_RegsWrType(x.ID_RegsWrType),
+        .ID_WbSel(x.ID_WbSel),
+        .ID_DstSel(x.ID_DstSel),
+        .ID_ExceptType(x.ID_ExceptType),
+        .ID_ALUSrcA(x.ID_ALUSrcA),
+        .ID_ALUSrcB(x.ID_ALUSrcB),
+        .ID_RegsReadSel(ID_RegsReadSel_o),
+        .ID_EXTOp(ID_EXTOp_0),
+        .ID_isImmeJump(x.ID_isAImmeJump),
+        .ID_BranchType(x.ID_BranchType),
+        .ID_shamt(x.ID_shamt),
+        .ID_rsrtRead(ID_rsrtRead_0)
+    );
+
+
+
+
 //---------------------------------------------seddon
     ForwardUnit U_ForwardUnit(
         .WB_RegsWrType(x.WB_RegsWrType),

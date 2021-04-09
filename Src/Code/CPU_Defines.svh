@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-09 10:46:36
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-09 15:36:09
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -160,9 +160,13 @@ interface PipeLineRegsInterface (
   	logic 		[1:0]   	ID_WbSel;          // 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器
   	ExceptinPipeType 		ID_ExceptType;	// 异常类型
-	logic                   ID_IsABranch;
+	//logic                   ID_IsABranch;
 	logic                   ID_IsAImmeJump;
 	logic        			IDEXE_Flush;
+	logic       [1:0]       ID_ALUSrcA;
+	logic       [1:0]       ID_ALUSrcB;
+	BranchType              ID_BranchType;
+	logic       [31:0]      ID_shamt;
 //IDEXE,out
   	logic 		[31:0] 		EXE_BusA;   		// RF 中读取到的数据A
   	logic 		[31:0] 		EXE_BusB;	 		// RF 中读取到的数据B
@@ -183,8 +187,9 @@ interface PipeLineRegsInterface (
   	logic 		[1:0]  		EXE_DstSel;
   	ExceptinPipeType 		EXE_ExceptType;// 异常类型
   	ExceptinPipeType 		EXE_ExceptType_final;// 异常类型
-	logic                   EXE_IsABranch;
+	//logic                   EXE_IsABranch;
 	logic                   EXE_IsAImmeJump;
+	BranchType  			EXE_BranchType;
 //EXEMEM,in
     logic 		[31:0] 		EXE_ALUOut;		// ALU运算结果
     logic 		[31:0] 		EXE_OutB;			// 旁路后的数据B
@@ -284,8 +289,11 @@ interface PipeLineRegsInterface (
     input  					ID_DstSel,
     input  					ID_ExceptType,
 	input  					IDEXE_Flush,
-	input					ID_IsABranch,
+	//input					ID_IsABranch,
 	input 					ID_IsAImmeJump,
+	input					ID_ALUSrcA,
+	input					ID_ALUSrcB,
+	input					ID_BranchType,
     //output	
     output 					EXE_BusA,
     output 					EXE_BusB,
@@ -303,8 +311,11 @@ interface PipeLineRegsInterface (
     output 					EXE_DstSel,
     output 					EXE_ExceptType,
     output 					EXE_Shamt,
-	output					EXE_IsABranch,
-	output 					EXE_IsAImmeJump
+	//output					EXE_IsABranch,
+	output 					EXE_IsAImmeJump,
+	output					EXE_ALUSrcA,
+	output                  EXE_ALUSrcB,
+	output					EXE_BranchType
   );					
 
   modport EXE_MEM (  //EXEMEM_modport
@@ -321,8 +332,9 @@ interface PipeLineRegsInterface (
     input  					EXE_LoadType,
     input  					EXE_ExceptType_final,
     input  					EXEMEM_Flush,
-	input 					EXE_IsABranch,
+	//input 					EXE_IsABranch,
 	input 					EXE_IsAImmeJump,
+	input 					EXE_BranchType.isBranch
     //output
     output 					MEM_StoreType,
     output 					MEM_ExceptType,

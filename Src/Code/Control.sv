@@ -15,9 +15,9 @@ module Control(
     input  logic[31:0] ID_Instr,
 
     output logic [3:0] ID_ALUOp,	 		// ALUOp ALU符号
-  	output LoadType ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
-  	output StoreType ID_StoreType,  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
-  	output RegsWrType ID_RegsWrType,		// 寄存器写信号打包
+  	output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
+  	output StoreType   ID_StoreType,  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
+  	output RegsWrType  ID_RegsWrType,		// 寄存器写信号打包
   	output logic [1:0] ID_WbSel,    		// 写回信号选择
   	//output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
   	output logic [1:0] ID_DstSel,   		// 寄存器写回信号选择（Dst）
@@ -29,7 +29,7 @@ module Control(
     output logic [1:0]ID_RegsReadSel,
     output logic [1:0]ID_EXTOp,
 
-    output logic ID_isImmeJump,
+    output logic      ID_isImmeJump,
 
     output BranchType ID_BranchType,
 
