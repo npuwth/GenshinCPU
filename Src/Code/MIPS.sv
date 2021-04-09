@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 15:11:50
+ * @LastEditTime: 2021-04-09 15:33:32
  * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -115,7 +115,7 @@
 
     MUX2to1 U_MUXSrcA(
         .d0(EXE_OutA_o),
-        .d1(x.EXE_Shamt),
+        .d1({27'b0,x.EXE_Shamt}),
         .sel2_to_1(x.EXE_ALUSrcA),
         .y(EXE_ResultA_o)
     );//EXE级三选一A之后的那个二选一
@@ -123,7 +123,7 @@
     MUX2to1 U_MUXSrcB(
         .d0(EXE_OutB_o),
         .d1(x.EXE_Imm32),
-        .sel2_to_1(x.EXE_ALUSrcB),
+        .sel2_to_1(x.EXE_ALUSrcB),//TODO:
         .y(EXE_ResultB_o)
     );//EXE级三选一B之后的那个二选一
 
