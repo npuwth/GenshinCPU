@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-03 22:45:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-09 17:01:18
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1195,7 +1195,7 @@ module Control(
       OP_MTC0:begin
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_WbSel      = `WBSel_OutB;
-        ID_DstSel     = `DstSel_rt;//rt
+        ID_DstSel     = `DstSel_rd;//rt
         ID_LoadType   = '0;
         ID_StoreType  = '0;
         ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
