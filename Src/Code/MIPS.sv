@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 12:19:42
+ * @LastEditTime: 2021-04-09 14:50:36
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -201,7 +201,7 @@
         .MEMWB_Flush(x.MEMWB_Flush),                        
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
-        .IsDelaySlot_o(MEM_IsDelaySlot_o),                  //访存阶段指令是否是延迟槽指令
+        .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
         .CP0Epc(MEM_CP0Epc_o)                               //CP0中EPC寄存器的最新值
     );
 /*************************   WB级    **********************************/
