@@ -39,9 +39,9 @@ module hilo_reg(
         end else if (LOWr == `WriteEnable) begin
             LO_o <= Data_i;
         end
+        `ifdef DEBUG
+            $monitor("HI:%8X LO:%8X",HI_o,LO_o);
+        `endif
     end
-    `ifdef DEBUG
-        $monitor("HI:%8X LO:%8X",HI_o,LO_o);
-    `endif
     
 endmodule

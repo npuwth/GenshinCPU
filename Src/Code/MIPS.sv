@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 17:19:36
+ * @LastEditTime: 2021-04-09 17:24:39
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,11 +12,55 @@
  `include "CPU_Defines.svh"
 
  module MIPS(
-     input logic            clk,
-     input logic            rst,
-     input AsynExceptType   Interrupt//来自CPU外部的中断信号
- );
+    //  input logic            clk,
+    //  input logic            rst,
+    //  input AsynExceptType   Interrupt//来自CPU外部的中断信号
+     clk, resetn, int, 
 
+         inst_sram_rdata,
+         data_sram_rdata,
+
+         inst_sram_en,
+         inst_sram_wen,
+         inst_sram_addr,
+         inst_sram_wdata,
+         
+
+         data_sram_en,
+         data_sram_wen,
+         data_sram_addr,
+         data_sram_wdata,
+
+         debug_wb_pc,
+         debug_wb_rf_wen,
+         debug_wb_rf_wnum,
+         debug_wb_rf_wdata
+
+ );
+   input                clk;
+   input                resetn;
+   input [5:0]          int;
+   input [31:0]         inst_sram_rdata;
+   input [31:0]         data_sram_rdata;
+
+   output inst_sram_en;
+   output [3:0] inst_sram_wen;
+   output [31:0] inst_sram_addr;
+   output [31:0] inst_sram_wdata;
+
+   output data_sram_en;
+   output [3:0] data_sram_wen;
+   output [31:0] data_sram_addr;
+   output [31:0] data_sram_wdata;
+
+   output [31:0] debug_wb_pc;
+   output [31:0] debug_wb_rf_wdata;
+   output [3:0] debug_wb_rf_wen;
+   output [4:0] debug_wb_rf_wnum;
+    logic rst;
+    assign rst     =    ~resetn;            //高电平有效的复位信号
+    AsynExceptType      Interrupt           //来自CPU外部的中断信号 
+    Interrupt = {int[0],int[1],int[2],int[3],int[4],int[5],int[6]};
     // logic               isBranch_o;//PCSEL的端口 
     // logic               isImmeJump_o;
     logic [1:0]         isExceptorERET_o;
@@ -282,7 +326,7 @@
         .MEMWB_Flush(x.MEMWB_Flush),                        
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
-        .IsDelaySlot_o(MEM_IsDelaySlot_o),                  //访存阶段指令是否是延迟槽指令
+        .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
         .CP0Epc(MEM_CP0Epc_o)                               //CP0中EPC寄存器的最新值
     );
 /*************************   WB级    **********************************/
@@ -293,7 +337,7 @@
         .WB_DMResult_o(WB_DMResult_o)
     );
 
-    MUX4 #(32) U_MUXINWB(
+    MUX4to1 #(32) U_MUXINWB(
         .d0(x.WB_PCAdd1),                                   // JAL,JALR等指令 将PC写回RF
         .d1(x.WB_ALUOut),                                   // ALU计算结果
         .d2(x.WB_OutB),                                     // MTC0 MTHI LO等指令需要写寄存器数据
@@ -327,7 +371,6 @@
         );
 
 
-        
  
 
  endmodule
