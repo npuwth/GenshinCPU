@@ -26,7 +26,7 @@ module hilo_reg(
             LO_o <= `ZeroWord;
         end else if (HIWr == `WriteEnable) begin
             HI_o <= HI_i;
-        end else if (LOWr == `WriteEnable begin
+        end else if (LOWr == `WriteEnable) begin
             LO_o <= LO_i;
         end
     end
