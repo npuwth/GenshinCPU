@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 17:21:49
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-10 17:42:01
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -213,7 +213,7 @@
         .ID_rt(x.ID_rt),
         .ID_rsrtRead(ID_rsrtRead_o),
         .EXE_rt(x.EXE_rt),
-        .EXE_ReadMEM(x.EXE_ReadMEM),
+        .EXE_ReadMEM(x.EXE_LoadType.ReadMem),
         .IF_PCWr(x.IF_PCWr),
         .IF_IDWr(x.IF_IDWr)
     );
@@ -323,7 +323,7 @@
     );
     /**********************************   SRAM接口支持   **********************************/
     assign data_sram_en = (
-        (x.MEM_LoadType.ReadMen || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
+        (x.MEM_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
         !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&    // WR地址正确
         !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确
         )  ? 1 : 0;
@@ -349,8 +349,7 @@
         .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信号
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
         .IDEXE_Flush(x.IDEXE_Flush),                        //flush
-        .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush
-        .MEMWB_Flush(x.MEMWB_Flush),                        
+        .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
         .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
