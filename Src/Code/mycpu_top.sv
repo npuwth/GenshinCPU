@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 17:21:49
+ * @LastEditTime: 2021-04-10 17:31:54
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -171,7 +171,7 @@
         .ID_ALUSrcB(x.ID_ALUSrcB),
         .ID_RegsReadSel(ID_RegsReadSel_o),
         .ID_EXTOp(ID_EXTOp_o),
-        .ID_isImmeJump(x.ID_isAImmeJump),
+        .ID_isImmeJump(x.ID_IsAImmeJump),
         .ID_BranchType(x.ID_BranchType),
         .ID_shamt(x.ID_shamt),
         .ID_rsrtRead(ID_rsrtRead_o)
@@ -323,7 +323,7 @@
     );
     /**********************************   SRAM接口支持   **********************************/
     assign data_sram_en = (
-        (x.MEM_LoadType.ReadMen || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
+        (x.MEM_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
         !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&    // WR地址正确
         !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确
         )  ? 1 : 0;
