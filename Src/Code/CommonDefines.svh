@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-09 12:13:16
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-10 18:03:19
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -52,7 +52,7 @@
 `define WBSel_DMResult      2'b11
 
 //PC复位地址
-`define PCRstAddr           32'b0
+`define PCRstAddr           32'hbfc0_0000
 
 //**************************for the branch slove unit*****************************
 `define BRANCH_CODE_BEQ     3'b000
