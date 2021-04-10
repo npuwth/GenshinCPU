@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-09 21:53:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-10 14:26:06
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -27,17 +27,17 @@ typedef struct packed {
 
 typedef struct packed {
 	logic Interrupt;	 	  	// 中断信号
-    logic WrongAddressinIF;   	// 地址错例外——取指
+    logic WrongAddressinIF;   	// 地址错例外——取�?
     logic ReservedInstruction;	// 保留指令例外
     logic Overflow;           	// 整型溢出例外
     logic Syscall;            	// 系统调用例外
     logic Break;              	// 断点例外
     logic Eret;               	// 异常返回指令
-    logic WrWrongAddressinMEM;  // 地址错例外——数据写入
-    logic RdWrongAddressinMEM;  // 地址错例外——数据读取
+    logic WrWrongAddressinMEM;  // 地址错例外——数据写�?
+    logic RdWrongAddressinMEM;  // 地址错例外——数据读�?
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
-typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常量
+typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常�?
 	/* shift */
 	OP_SLL, OP_SRL, OP_SRA, OP_SLLV, OP_SRLV, OP_SRAV,
 	/* unconditional jump (reg) */
@@ -97,16 +97,16 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	`endif
 	/* invalid */
 	OP_INVALID
-} InstrType;//一个枚举变量类型 你可以在译码这个过程中使用，这个我是照抄Tsinghua的
+} InstrType;//一个枚举变量类�? 你可以在译码这个过程中使用，这个我是照抄Tsinghua�?
 
 typedef struct packed {
     logic 		    	sign;//使用0表示unsigned 1表示signed
-    logic   [1:0]   	size;//这个表示是 00 byte 01 half  10 word
+    logic   [1:0]   	size;//这个表示�? 00 byte 01 half  10 word
 	logic               ReadMem;//只有Load才能触发ReadMem
 } LoadType;//
 
 typedef struct packed {
-    logic 	[1:0]   	size;//这个表示是 00 byte 01 half  10 word
+    logic 	[1:0]   	size;//这个表示�? 00 byte 01 half  10 word
 	logic               DMWr;//只有Store才能触发DMWr
 } StoreType;//
 
@@ -128,7 +128,7 @@ interface PipeLineRegsInterface (
     );
 //PC,in
 	logic 	    [31:0] 		IF_NPC;
-	logic        		    IF_PCWr;           //PC写使能
+	logic        		    IF_PCWr;           //PC写使�?
 //PC,out
 	logic 	    [31:0] 		IF_PC;
 //IFID,in
@@ -148,17 +148,17 @@ interface PipeLineRegsInterface (
 //IDEXE,in
   	logic 		[31:0] 		ID_BusA;    		// RF 中读取到的数据A
   	logic 		[31:0] 		ID_BusB;	 		// RF 中读取到的数据B
-  	logic 		[31:0] 		ID_Imm32;	 		// 符号扩展之后的32位立即数
+  	logic 		[31:0] 		ID_Imm32;	 		// 符号扩展之后�?32位立即数
   	//logic 	[31:0]  	ID_PCAdd1;
   	//logic 	[4:0]   	ID_rs;		 	// rs 
   	//logic 	[4:0]   	ID_rt;		 	// rt
   	//logic 	[4:0]   	ID_rd;		 	// rd
-  	logic 		[3:0]   	ID_ALUOp;	 		// ALU操作码
+  	logic 		[3:0]   	ID_ALUOp;	 		// ALU操作�?
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  	// StoreType信号
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	ID_WbSel;          // 选择写回数据
-  	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器
+  	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存�?
   	ExceptinPipeType 		ID_ExceptType;	// 异常类型
 	//logic                   ID_IsABranch;
 	logic                   ID_IsAImmeJump;
@@ -170,13 +170,13 @@ interface PipeLineRegsInterface (
 //IDEXE,out
   	logic 		[31:0] 		EXE_BusA;   		// RF 中读取到的数据A
   	logic 		[31:0] 		EXE_BusB;	 		// RF 中读取到的数据B
-  	logic 		[31:0] 		EXE_Imm32;  		// 符号扩展之后的32位立即数
+  	logic 		[31:0] 		EXE_Imm32;  		// 符号扩展之后�?32位立即数
   	logic 		[31:0] 		EXE_PCAdd1; 		// PC+1
 	logic 		[31:0]		EXE_Instr;
   	logic 		[4:0]  		EXE_rs;
   	logic 		[4:0]  		EXE_rt;
   	logic 		[4:0]  		EXE_rd;
-	logic 		[4:0]  		EXE_Shamt;         // 移位量
+	logic 		[4:0]  		EXE_Shamt;         // 移位�?
   	logic 		[3:0]  		EXE_ALUOp;  		
 	logic        			EXE_ALUSrcA;
 	logic        			EXE_ALUSrcB;
@@ -193,7 +193,7 @@ interface PipeLineRegsInterface (
 //EXEMEM,in
     logic 		[31:0] 		EXE_ALUOut;		// ALU运算结果
     logic 		[31:0] 		EXE_OutB;			// 旁路后的数据B
-    logic 		[4:0]  		EXE_Dst;			// 选择后的目标寄存器
+    logic 		[4:0]  		EXE_Dst;			// 选择后的目标寄存�?
 	//logic 	[31:0] 		EXE_PCAdd1;
 	//LoadType     			EXE_LoadType;   	// Load信号 
   	//StoreType    			EXE_StoreType; 	// Store信号
@@ -224,21 +224,21 @@ interface PipeLineRegsInterface (
     //logic 	[4:0]  		MEM_Dst;
 	//LoadType     			MEM_LoadType;
 	logic 		[31:0] 		MEM_DMOut;
-	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使能
+	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使�?
 	logic					MEM_IsDelaySlot;
 	//ExceptinPipeType 		MEM_ExceptType;
 	//logic                 MEM_IsABranch;
 	//logic                 MEM_IsAImmeJump;
 //EXEWB,out
-	logic 		[1:0]  		WB_WbSel;        	// 选择写回RF的数据
+	logic 		[1:0]  		WB_WbSel;        	// 选择写回RF的数�?
 	logic 		[31:0] 		WB_PCAdd1;      	// PC+1
 	logic 		[31:0]		WB_Instr;
 	logic 		[31:0] 		WB_ALUOut;      	// ALU结果
 	logic 		[31:0] 		WB_OutB;        	// RF读取的第二个数据值（已经经过旁路），用于MTC0 MTHI MTLO
- 	logic 		[31:0] 		WB_DMOut;	     	// DM读取出来的原始32位数据
+ 	logic 		[31:0] 		WB_DMOut;	     	// DM读取出来的原�?32位数�?
 	logic 		[4:0]  		WB_Dst;		 	// 目标寄存器地址
 	LoadType     			WB_LoadType;		// 送给EXT2进行lw lh lb lbu lhu 等信号的处理
-	RegsWrType   			WB_RegsWrType;     // RF+CP0+HILO寄存器的写信号打包 
+	RegsWrType   			WB_RegsWrType;     // RF+CP0+HILO寄存器的写信号打�? 
 	ExceptinPipeType 		WB_ExceptType; // 异常类型
 	logic                   WB_IsABranch;
 	logic 					WB_IsAImmeJump;

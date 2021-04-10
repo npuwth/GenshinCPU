@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-04-02 16:34:36
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-10 14:28:46
+ * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -20,7 +20,7 @@ module IFID_Reg( PipeLineRegsInterface.IF_ID port );
       port.ID_rs <= 5'b0;
       port.ID_rt <= 5'b0;
       port.ID_rd <= 5'b0;
-      port.ID_Jump <= 1'b0;
+      port.ID_JumpAddr <= 1'b0;
       port.ID_Sel <= 3'b0;
       port.ID_PCAdd1 <= 32'b0;
     end
@@ -30,7 +30,7 @@ module IFID_Reg( PipeLineRegsInterface.IF_ID port );
       port.ID_rs <= port.IF_Instr[25:21];
       port.ID_rt <= port.IF_Instr[20:16];
       port.ID_rd <= port.IF_Instr[15:11];
-      port.ID_Jump <= port.IF_Instr[24:0];
+      port.ID_JumpAddr <= port.IF_Instr[24:0];
       port.ID_Sel <= port.IF_Instr[2:0];
       port.ID_PCAdd1 <= port.IF_PCAdd1;
     end
