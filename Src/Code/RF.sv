@@ -27,14 +27,14 @@ module RF (
     input logic clk,
     input logic rst,
 
-    input logic[4:0] WB_Dst,
-    input logic[31:0] WB_Result,
+    input logic [4:0] WB_Dst,
+    input logic [31:0] WB_Result,
     input logic RFWr,// to write the RF
 
-    input logic[4:0] ID_rs,
-    input logic[4:0] ID_rt,
-    output logic[31:0] ID_BusA,
-    output logic[31:0] ID_BusB//to read the RF
+    input logic [4:0] ID_rs,
+    input logic [4:0] ID_rt,
+    output logic [31:0] ID_BusA,
+    output logic [31:0] ID_BusB//to read the RF
 );
 
 logic [31:0][31:0] regs;
@@ -70,3 +70,4 @@ always_comb begin // readData
 end
     
 endmodule
+

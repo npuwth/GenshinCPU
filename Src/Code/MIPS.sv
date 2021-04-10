@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 22:15:34
+ * @LastEditTime: 2021-04-10 00:35:15
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -204,8 +204,10 @@
     );
 
     DataHazard U_DataHazard ( 
+        .ID_rs(),
         
     );
+    
 //---------------------------------------------seddon
     ForwardUnit U_ForwardUnit (
         .WB_RegsWrType(x.WB_RegsWrType),
@@ -395,3 +397,8 @@
  
 
  endmodule
+ 
+
+
+
+

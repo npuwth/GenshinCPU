@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-04-07 14:55:24
+ * @LastEditTime: 2021-04-10 01:01:24
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -19,9 +19,9 @@ module PCSEL #(
 ) (
     input logic         isBranch,
     input logic         isImmeJump,
-    input logic[1:0]    isExceptorERET,
+    input logic [1:0]    isExceptorERET,
 
-    output logic[2:0]   PCSel
+    output logic [2:0]   PCSel
 );
 
     always_comb begin 
