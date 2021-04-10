@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-10 14:26:06
+ * @LastEditTime: 2021-04-10 14:42:28
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -217,6 +217,7 @@ interface PipeLineRegsInterface (
 	ExceptinPipeType 		MEM_ExceptType_final;//异常类型
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
+	logic                   MEM_IsDelaySlot;
 //EXEWB,in
     //logic 	[31:0] 		MEM_ALUOut;			
     //logic 	[31:0] 		MEM_PCAdd1;			
@@ -224,8 +225,7 @@ interface PipeLineRegsInterface (
     //logic 	[4:0]  		MEM_Dst;
 	//LoadType     			MEM_LoadType;
 	logic 		[31:0] 		MEM_DMOut;
-	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使�?
-	logic					MEM_IsDelaySlot;
+	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使能
 	//ExceptinPipeType 		MEM_ExceptType;
 	//logic                 MEM_IsABranch;
 	//logic                 MEM_IsAImmeJump;
@@ -242,7 +242,7 @@ interface PipeLineRegsInterface (
 	ExceptinPipeType 		WB_ExceptType; // 异常类型
 	logic                   WB_IsABranch;
 	logic 					WB_IsAImmeJump;
-	logic					WB_IsDelaySlot;
+	logic                   WB_IsDelaySlot;	
   modport PC (
 	input  					clk,
 	input  					rst,
@@ -357,7 +357,6 @@ interface PipeLineRegsInterface (
 	input  					MEM_LoadType,
 	input  					MEM_ALUOut,
 	input  					MEM_PCAdd1,
-	input 					MEM_Instr,
 	input  					MEM_WbSel,
 	input  					MEM_Dst,
 	input  					MEM_RegsWrType_new,
@@ -365,11 +364,10 @@ interface PipeLineRegsInterface (
 	input  					MEM_DMOut,
 	input                   MEM_IsABranch,
 	input                   MEM_IsAImmeJump,
-	input 					MEM_IsDelaySlot,
+	input					MEM_IsDelaySlot,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,
-	output 					WB_Instr,
 	output 					WB_ALUOut,
 	output 					WB_OutB,
 	output 					WB_DMOut,
@@ -379,7 +377,7 @@ interface PipeLineRegsInterface (
 	output 					WB_RegsWrType,
 	output                  WB_IsABranch,
 	output                  WB_IsAImmeJump,
-	output 					WB_IsDelaySlot
+	output					WB_IsDelaySlot
   );
 
 endinterface //interfacename

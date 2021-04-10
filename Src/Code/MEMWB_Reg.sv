@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-04-03 22:40:10
+ * @LastEditTime: 2021-04-10 14:26:06
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,6 +27,7 @@ module MEMWB_Reg( PipeLineRegsInterface.MEM_WB port );
       port.WB_ExceptType <= '0;
       port.WB_IsABranch <= 1'b0;
       port.WB_IsAImmeJump <= 1'b0;
+      port.WB_IsDelaySlot <= 1'b0;
     end
     else begin
       port.WB_WbSel <= port.MEM_WbSel;
@@ -40,6 +41,7 @@ module MEMWB_Reg( PipeLineRegsInterface.MEM_WB port );
       port.WB_ExceptType <= port.MEM_ExceptType;
       port.WB_IsABranch <= port.MEM_IsABranch;
       port.WB_IsAImmeJump <= port.MEM_IsAImmeJump;
+      port.WB_IsDelaySlot <= port.MEM_IsDelaySlot;
     end
   end
 
