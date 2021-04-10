@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 00:35:15
+ * @LastEditTime: 2021-04-10 11:59:25
  * @LastEditors: Juan Jiang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -126,6 +126,10 @@
 
     assign PC_4_o = x.IF_PC + 4;
 
+    assign JumpAddr_o = {x.IF_PCAdd1[31:28],x.IF_Instr[25:0],2'b0};
+
+    assign BranchAddr_o = x.EXE_PCAdd1+{x.EXE_Imm32[29:0],2'b0};
+
     PCSEL U_PCSEL(
         //input
         .isBranch(x.ID_BranchType.isBranch),
@@ -204,8 +208,13 @@
     );
 
     DataHazard U_DataHazard ( 
-        .ID_rs(),
-        
+        .ID_rs(x.ID_rs),
+        .ID_rt(x.ID_rt),
+        .ID_rsrtRead(ID_rsrtRead_o),
+        .EXE_rt(x.EXE_rt),
+        .EXE_ReadMEM(x.EXE_ReadMEM),
+        .IF_PCWr(x.IF_PCWr),
+        .IF_IDWr(x.IF_IDWr)
     );
     
 //---------------------------------------------seddon
