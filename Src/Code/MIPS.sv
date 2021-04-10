@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 17:29:56
+ * @LastEditTime: 2021-04-10 17:32:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -171,7 +171,7 @@
         .ID_ALUSrcB(x.ID_ALUSrcB),
         .ID_RegsReadSel(ID_RegsReadSel_o),
         .ID_EXTOp(ID_EXTOp_o),
-        .ID_isImmeJump(x.ID_isAImmeJump),
+        .ID_IsImmeJump(x.ID_IsAImmeJump),
         .ID_BranchType(x.ID_BranchType),
         .ID_shamt(x.ID_shamt),
         .ID_rsrtRead(ID_rsrtRead_o)
@@ -349,8 +349,7 @@
         .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信号
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
         .IDEXE_Flush(x.IDEXE_Flush),                        //flush
-        .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush
-        .MEMWB_Flush(x.MEMWB_Flush),                        
+        .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
         .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
