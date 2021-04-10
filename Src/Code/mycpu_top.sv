@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 18:05:51
+ * @LastEditTime: 2021-04-10 18:43:17
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -56,7 +56,6 @@
    output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址（序号）
 
     logic rst;
-    logic [1:0]         isExceptorERET_o;
     logic [2:0]         PCSel_o;
 
     logic [31:0]        JumpAddr_o;//PCSel多选器
@@ -123,7 +122,6 @@
         //output
         .y(x.IF_NPC)
     );
-
     assign PC_4_o = x.IF_PC + 4;
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
@@ -134,7 +132,7 @@
         //input
         .isBranch(IFID_Flush_BranchSolvement_o),//
         .isImmeJump(x.ID_IsAImmeJump),
-        .isExceptorERET(isExceptorERET_o),
+        .isExceptorERET(IsExceptionorEret_o),
         //output
         .PCSel(PCSel_o)
     );
@@ -146,6 +144,11 @@
     //     //output
     //     .IF_Instr(x.IF_Instr)
     // );
+    always@(posedge clk) begin
+    `ifdef DEBUG
+        $monitor("PC=%8x ; Instr=%8x",x.IF_PC,x.IF_Instr);
+    `endif 
+    end
 
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
