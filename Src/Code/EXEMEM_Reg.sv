@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-04-10 14:39:06
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-10 17:54:53
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -37,7 +37,7 @@ module EXEMEM_Reg( PipeLineRegsInterface.EXE_MEM port );
       port.MEM_StoreType <= port.EXE_StoreType;
       port.MEM_RegsWrType <= port.EXE_RegsWrType;
       port.MEM_OutB <= port.EXE_OutB;
-      port.MEM_ExceptType <= port.EXE_ExceptType;
+      port.MEM_ExceptType <= port.EXE_ExceptType_final;
       port.MEM_IsABranch <= port.EXE_BranchType.isBranch;
       port.MEM_IsAImmeJump <= port.EXE_IsAImmeJump;
     end

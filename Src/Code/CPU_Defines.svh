@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-10 14:42:28
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-10 17:51:50
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -321,7 +321,7 @@ interface PipeLineRegsInterface (
   modport EXE_MEM (  //EXEMEM_modport
     input  					clk,
 	input  					rst,
-    input  					WB_RegsWrType,
+    input  					EXE_RegsWrType,
     input  					EXE_WbSel,
     input  					EXE_ALUOut,
     input  					EXE_OutB,

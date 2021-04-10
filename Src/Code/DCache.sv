@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-04-10 12:52:43
+ * @LastEditTime: 2021-04-10 17:58:37
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
@@ -30,7 +30,7 @@ module DCache(clk,MEM_ALUOut,MEM_OutB,MEM_StoreType,MEM_LoadType,MEM_ExceptType,
   always_comb begin
       
     if(MEM_StoreType.DMWr) begin
-      unique case(MEM_StoreType.sign)
+      unique case(MEM_StoreType.size)
         `STORETYPE_SW: begin //SW
           // Dmem[MEM_ALUOut[11:2]] <= MEM_OutB;
           MEM_SWData    <= MEM_OutB;
@@ -89,8 +89,8 @@ module DCache(clk,MEM_ALUOut,MEM_OutB,MEM_StoreType,MEM_LoadType,MEM_ExceptType,
   assign MEM_ExceptType_new.Syscall = MEM_ExceptType.Syscall;
   assign MEM_ExceptType_new.Break = MEM_ExceptType.Break;
   assign MEM_ExceptType_new.Eret = MEM_ExceptType.Eret;
-  assign MEM_ExceptType_new.WrWrongAddressinMEM = MEM_StoreType.DMWr&&(((MEM_StoreType.sign == `STORETYPE_SW)&&(MEM_ALUOut[1:0] != 2'b00))||((MEM_StoreType.sign == `STORETYPE_SH)&&(MEM_ALUOut[0] != 1'b0)));
-  assign MEM_ExceptType_new.RdWrongAddressinMEM = MEM_LoadType.ReadMem&&(((MEM_LoadType.sign == 2'b00)&&(MEM_ALUOut[1:0] != 2'b00))||((MEM_LoadType.sign == 2'b01)&&(MEM_ALUOut[0] != 1'b0)));
+  assign MEM_ExceptType_new.WrWrongAddressinMEM = MEM_StoreType.DMWr&&(((MEM_StoreType.size == `STORETYPE_SW)&&(MEM_ALUOut[1:0] != 2'b00))||((MEM_StoreType.size == `STORETYPE_SH)&&(MEM_ALUOut[0] != 1'b0)));
+  assign MEM_ExceptType_new.RdWrongAddressinMEM = MEM_LoadType.ReadMem&&(((MEM_LoadType.size == 2'b00)&&(MEM_ALUOut[1:0] != 2'b00))||((MEM_LoadType.size == 2'b01)&&(MEM_ALUOut[0] != 1'b0)));
   assign MEM_ExceptType_new.Overflow = MEM_ExceptType.Overflow;
 
 endmodule
