@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-09 17:42:47
+ * @LastEditTime: 2021-04-10 11:46:33
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,10 +12,7 @@
  `include "CPU_Defines.svh"
 
  module MIPS(
-    //  input logic            clk,
-    //  input logic            rst,
-    //  input AsynExceptType   Interrupt//来自CPU外部的中断信号
-     clk, resetn, int, 
+     clk, resetn, inti, 
 
          inst_sram_rdata,
          data_sram_rdata,
@@ -39,30 +36,26 @@
  );
    input                clk;
    input                resetn;
-   input [5:0]          int;
-   input [31:0]         inst_sram_rdata;
-   input [31:0]         data_sram_rdata;
+   input [5:0]          inti;               // 6个硬件中断输入
+   input [31:0]         inst_sram_rdata;    // icache读数据
+   input [31:0]         data_sram_rdata;    // dcache读数据
 
-   output inst_sram_en;
-   output [3:0] inst_sram_wen;
-   output [31:0] inst_sram_addr;
-   output [31:0] inst_sram_wdata;
+   output               inst_sram_en;       // 写使能
+   output [3:0]         inst_sram_wen;      // 字节写使能
+   output [31:0]        inst_sram_addr;     // 读写地址，字节寻址
+   output [31:0]        inst_sram_wdata;    // ram写数据
 
-   output data_sram_en;
-   output [3:0] data_sram_wen;
-   output [31:0] data_sram_addr;
-   output [31:0] data_sram_wdata;
+   output               data_sram_en;       // 写使能
+   output [3:0]         data_sram_wen;      // 字节写使能
+   output [31:0]        data_sram_addr;     // 读写地址，字节寻址
+   output [31:0]        data_sram_wdata;    // ram写数据
 
-   output [31:0] debug_wb_pc;
-   output [31:0] debug_wb_rf_wdata;
-   output [3:0] debug_wb_rf_wen;
-   output [4:0] debug_wb_rf_wnum;
+   output [31:0]        debug_wb_pc;        // 写回级的PC
+   output [31:0]        debug_wb_rf_wdata;  // 写回的数据
+   output [3:0]         debug_wb_rf_wen;    // 写回级的写使能
+   output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址（序号）
+
     logic rst;
-    assign rst     =    ~resetn;            //高电平有效的复位信号
-    AsynExceptType      Interrupt           //来自CPU外部的中断信号 
-    Interrupt = {int[0],int[1],int[2],int[3],int[4],int[5],int[6]};
-    // logic               isBranch_o;//PCSEL的端口 
-    // logic               isImmeJump_o;
     logic [1:0]         isExceptorERET_o;
     logic [2:0]         PCSel_o;
 
@@ -89,6 +82,7 @@
     logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被选择的数据信号
     AsynExceptType      Interrupt_o;              //6个外部硬件中断输入
     logic               CP0TimerInterrupt_o;      //定时器中断
+    logic [31:0]        MEM_SWData_o;             //Store类型写入data_sram写数据
     //CP0寄存器的定义
     logic [31:0]        CP0BadVAddr;              //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
     logic [31:0]        CP0Count;                 //9号寄存器  Count寄存器的值
@@ -106,9 +100,11 @@
 
     logic [31:0]        ID_CP0DataOut_o;
 
-    assign x.IFID_Flush = IFID_Flush_Exception_o | IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
-    assign Interrupt_o  = '{default:0};           // 6个硬件中断位 仿真里面先初始化位0 
-    //TODO: 完善有关硬件中断位
+    assign Interrupt_o =  {inti[0],inti[1],inti[2],inti[3],inti[4],inti[5]};  //硬件中断信号
+    assign rst       =  ~resetn;                         //高电平有效的复位信号
+    assign x.IFID_Flush = IFID_Flush_Exception_o | 
+                          IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
+
 
     PipeLineRegsInterface x(
         //input
@@ -143,12 +139,21 @@
         .PCSel(PCSel_o)
     );
 
-    ICache U_ICache(
-        //input
-        .IF_PC(x.IF_PC),
-        //output
-        .IF_Instr(x.IF_Instr)
-    );
+
+    // ICache U_ICache(
+    //     //input
+    //     .IF_PC(x.IF_PC),
+    //     //output
+    //     .IF_Instr(x.IF_Instr)
+    // );
+
+    /**********************************   SRAM接口支持   **********************************/
+    assign x.IF_Instr      = inst_sram_rdata;
+    assign inst_sram_addr  = x.IF_PC;                // TODO: 可能需要限制地址？
+    assign inst_sram_en    = resetn ? x.IF_PCWr : 0; //resten高电平 & IF_PCWr为1 读取数据
+    assign inst_sram_wen   = 4'b0000;
+    assign inst_sram_wdata = 32'b0;
+   
 
     Control U_Control(
         //input
@@ -210,7 +215,7 @@
         .EXE_ReadMEM(x.EXE_ReadMEM),
         .IF_PCWr(x.IF_PCWr),
         .IF_IDWr(x.IF_IDWr)
-    )
+    );
 //---------------------------------------------seddon
     ForwardUnit U_ForwardUnit (
         .WB_RegsWrType(x.WB_RegsWrType),
@@ -299,6 +304,7 @@
         x
     );
 
+    // Ltype信号 & DMWr 写使能信号才会触发data_ram的使能
     DCache U_Dachce(
         // input
         .clk(clk),
@@ -307,11 +313,21 @@
         .MEM_StoreType(x.MEM_StoreType),
         .MEM_LoadType(x.MEM_LoadType),
         .MEM_ExceptType(x.MEM_ExceptType),
-
         // output
-        .MEM_ExceptType_new(MEM_ExceptType_AfterDM_o),        //新的异常信号
-        .MEM_DMOut(x.MEM_DMOut)                             //DM输出
+        .MEM_ExceptType_new(MEM_ExceptType_AfterDM_o),      //新的异常信号
+        .data_sram_wen(data_sram_wen),                      //store类型，写入sram的字节使能
+        .MEM_SWData(MEM_SWData_o)                           //StoreType要写入的信号
+
     );
+    /**********************************   SRAM接口支持   **********************************/
+    assign data_sram_en = (
+        (x.MEM_LoadType.ReadMen || MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
+        !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&    // WR地址正确
+        !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确
+        )  ? 1 : 0;
+    assign data_sram_wdata = MEM_SWData_o;                  //store类型写入sram的数据
+    assign data_sram_addr = x.MEM_ALUOut;                   //data_sram写入，输出数据地址 TODO: 对地址上限作出限制
+    assign x.MEM_DMOut = data_sram_rdata;                   //读取结果直接放入DMOut
 
     Exception U_Exception(
         // input
@@ -338,7 +354,7 @@
         .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
         .CP0Epc(MEM_CP0Epc_o)                               //CP0中EPC寄存器的最新值
     );
-/*************************   WB级    **********************************/
+// WB级   
     EXT2 U_EXT2(
         .WB_DMOut_i(x.WB_DMOut),
         .WB_ALUOut_i(x.WB_ALUOut),
@@ -378,6 +394,12 @@
         .CP0EPC_o(CP0EPC),
         .CP0TimerInterrupt_o(TimerInterrupt_o)              //定时器中断
         );
+
+    /**********************************   SRAM接口支持   **********************************/
+    assign debug_wb_pc = x.WB_PCAdd1-1;                     //写回级的PC
+    assign debug_wb_rf_wdata = WB_Result_o;                 //写回的32位结果
+    assign debug_wb_rf_wen = (x.WB_RegsWrType.RFWr) ? 4'b1111 : 4'b0000; //4位字节写使能
+    assign debug_wb_rf_wnum = x.WB_Dst;                     //写地址
 
 
  

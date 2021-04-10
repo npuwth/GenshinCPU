@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-09 10:48:10
+ * @LastEditTime: 2021-04-09 17:44:42
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -131,7 +131,7 @@
                     ExceptType_o.Syscall                =1'b1;       //系统调用例外
                 end
                 else if(ExceptType_i.Break  == 1'b1) begin
-                    ExceptType_o.Break                  =1'b1;       //系统调用例外
+                    ExceptType_o.Break                  =1'b1;       //break
                 end 
                 else if(ExceptType_i.Overflow  == 1'b1) begin
                     ExceptType_o.Overflow               =1'b1;       //整形溢出例外

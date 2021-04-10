@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-09 17:24:49
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-09 21:53:01
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -20,8 +20,8 @@ typedef struct packed {
     logic HardwareInterrupt4;//硬件中断例外4
     logic HardwareInterrupt5;//硬件中断例外5
     logic HardwareInterrupt6;//硬件中断例外6
-    logic SoftwareInterrupt1;//软件中断例外1
-    logic SoftwareInterrupt2;//软件中断例外2
+    // logic SoftwareInterrupt1;//软件中断例外1
+    // logic SoftwareInterrupt2;//软件中断例外2
 
 } AsynExceptType;//异步信号类型
 
