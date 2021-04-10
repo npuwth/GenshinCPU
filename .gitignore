@@ -3,7 +3,7 @@ bin-debug/
 bin-release/
 [Oo]bj/
 [Bb]in/
-
+Sim/
 # Other files and folders
 .settings/
 .dir/

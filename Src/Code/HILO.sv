@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-04-09 16:54:11
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-10 17:09:30
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -16,7 +16,7 @@
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 
-module hilo_reg(
+module HILO(
     input logic                rst,
     input logic                clk,
 

@@ -1,25 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// Copyright(C) Team Genshin. Open source License: MIT.
-// ALL RIGHT RESERVED
-// File name   : RF.sv
-// Author      : Juan Jiang
-// Date        : 2021-03-29
-// Version     : 0.1
-// Description :
-// 
-//    
-// Parameter   :没有
-//    ...
-//    ...
-// IO Port     :没有
-//    ...
-//    ...
-// Modification History:
-//   Date   |   Author   |   Version   |   Change Description
-//==============================================================================
-// 19-06-02 |    Zion    |     0.1     | Original Version
-// ...
-////////////////////////////////////////////////////////////////////////////////
 
 `include "CPU_Defines.svh"
 
