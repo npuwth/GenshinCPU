@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-04-10 12:52:43
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-10 17:57:18
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
  * @IO PORT:
@@ -30,7 +30,7 @@ module DCache(clk,MEM_ALUOut,MEM_OutB,MEM_StoreType,MEM_LoadType,MEM_ExceptType,
   always_comb begin
       
     if(MEM_StoreType.DMWr) begin
-      unique case(MEM_StoreType.sign)
+      unique case(MEM_StoreType.size)
         `STORETYPE_SW: begin //SW
           // Dmem[MEM_ALUOut[11:2]] <= MEM_OutB;
           MEM_SWData    <= MEM_OutB;
