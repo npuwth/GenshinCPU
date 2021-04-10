@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-04-09 21:47:41
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-10 12:52:43
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
  * @IO PORT:
@@ -71,11 +71,13 @@ module DCache(clk,MEM_ALUOut,MEM_OutB,MEM_StoreType,MEM_LoadType,MEM_ExceptType,
             // Dmem[MEM_ALUOut[11:2]][31:24] <= MEM_OutB[7:0];
         end
         default: begin
+            MEM_SWData    <= 32'b0;
             data_sram_wen <= 4'b0000;
         end
         
       endcase
     end else begin
+      MEM_SWData    <= 32'b0;
       data_sram_wen <= 4'b0000;
     end
       

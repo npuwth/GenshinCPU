@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 16:23:07
- * @LastEditTime: 2021-04-03 10:59:29
+ * @LastEditTime: 2021-04-10 12:19:16
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,7 +12,7 @@
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 
-module PC( PipeLineRegsInterface port );
+module PC( PipeLineRegsInterface.PC port );
   
   always_ff @( posedge port.clk ) begin
     if( port.rst )

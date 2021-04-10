@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-09 21:53:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-10 13:00:22
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -225,7 +225,6 @@ interface PipeLineRegsInterface (
 	//LoadType     			MEM_LoadType;
 	logic 		[31:0] 		MEM_DMOut;
 	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使能
-	logic					MEM_IsDelaySlot;
 	//ExceptinPipeType 		MEM_ExceptType;
 	//logic                 MEM_IsABranch;
 	//logic                 MEM_IsAImmeJump;
@@ -242,7 +241,6 @@ interface PipeLineRegsInterface (
 	ExceptinPipeType 		WB_ExceptType; // 异常类型
 	logic                   WB_IsABranch;
 	logic 					WB_IsAImmeJump;
-	logic					WB_IsDelaySlot;
   modport PC (
 	input  					clk,
 	input  					rst,
@@ -357,7 +355,6 @@ interface PipeLineRegsInterface (
 	input  					MEM_LoadType,
 	input  					MEM_ALUOut,
 	input  					MEM_PCAdd1,
-	input 					MEM_Instr,
 	input  					MEM_WbSel,
 	input  					MEM_Dst,
 	input  					MEM_RegsWrType_new,
@@ -365,11 +362,9 @@ interface PipeLineRegsInterface (
 	input  					MEM_DMOut,
 	input                   MEM_IsABranch,
 	input                   MEM_IsAImmeJump,
-	input 					MEM_IsDelaySlot,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,
-	output 					WB_Instr,
 	output 					WB_ALUOut,
 	output 					WB_OutB,
 	output 					WB_DMOut,
@@ -378,8 +373,7 @@ interface PipeLineRegsInterface (
 	output 					WB_ExceptType,
 	output 					WB_RegsWrType,
 	output                  WB_IsABranch,
-	output                  WB_IsAImmeJump,
-	output 					WB_IsDelaySlot
+	output                  WB_IsAImmeJump
   );
 
 endinterface //interfacename

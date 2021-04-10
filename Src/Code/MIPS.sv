@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 11:46:33
+ * @LastEditTime: 2021-04-10 13:02:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,7 +12,7 @@
  `include "CPU_Defines.svh"
 
  module MIPS(
-     clk, resetn, inti, 
+        clk, resetn, inti, 
 
          inst_sram_rdata,
          data_sram_rdata,
@@ -126,7 +126,7 @@
 
     assign PC_4_o = x.IF_PC + 4;
 
-    assign JumpAddr_o = {x.IF_PCAdd1[31:28],x.IF_Instr[25:0],2'b0};
+    assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
 
     assign BranchAddr_o = x.EXE_PCAdd1+{x.EXE_Imm32[29:0],2'b0};
 
@@ -154,6 +154,7 @@
     assign inst_sram_wen   = 4'b0000;
     assign inst_sram_wdata = 32'b0;
    
+   // TODO: 目前没有加入取指地址异常的检测
 
     Control U_Control(
         //input
@@ -285,7 +286,7 @@
     
 
     PC U_PC(
-        x.PC
+        x
     );
 
     IFID_Reg U_IFID(
@@ -335,7 +336,7 @@
         .rst(x.rst),
         .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输入
         .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输入
-        .IsDelaySlot_i(x.WB_IsABranch),                     //延迟槽（检查WB级的isbranch信号）
+        .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump),                     //延迟槽（检查WB级的isbranch信号）
         .CurrentInstr_i(x.MEM_Instr),                       //指令
         .CP0Status_i(CP0Status),
         .CP0Cause_i(CP0Cause),
@@ -396,7 +397,7 @@
         );
 
     /**********************************   SRAM接口支持   **********************************/
-    assign debug_wb_pc = x.WB_PCAdd1-1;                     //写回级的PC
+    assign debug_wb_pc = x.WB_PCAdd1-4;                     //写回级的PC,应该是减4
     assign debug_wb_rf_wdata = WB_Result_o;                 //写回的32位结果
     assign debug_wb_rf_wen = (x.WB_RegsWrType.RFWr) ? 4'b1111 : 4'b0000; //4位字节写使能
     assign debug_wb_rf_wnum = x.WB_Dst;                     //写地址
@@ -405,3 +406,4 @@
  
 
  endmodule
+
