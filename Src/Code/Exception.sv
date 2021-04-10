@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-10 17:11:05
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-10 17:33:16
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -20,7 +20,6 @@
     output logic            IFID_Flush,        //Flush信号
     output logic            IDEXE_Flush,
     output logic            EXEMEM_Flush,
-    output logic            MEMWB_Flush,
     output logic   [1:0]    IsExceptionorEret,
 
 //异常处理相关接口
@@ -151,7 +150,6 @@
                 IFID_Flush       = `FlushEnable;
                 IDEXE_Flush      = `FlushEnable;
                 EXEMEM_Flush     = `FlushEnable;
-                MEMWB_Flush      = `FlushEnable;
                 if (ExceptType_i.Eret == 1'b1) begin
                     IsExceptionorEret  = `IsEret;
                 end
