@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-10 13:00:22
+ * @LastEditTime: 2021-04-10 14:27:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -217,6 +217,7 @@ interface PipeLineRegsInterface (
 	ExceptinPipeType 		MEM_ExceptType_final;//异常类型
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
+	logic                   MEM_IsDelaySlot;
 //EXEWB,in
     //logic 	[31:0] 		MEM_ALUOut;			
     //logic 	[31:0] 		MEM_PCAdd1;			
@@ -241,6 +242,7 @@ interface PipeLineRegsInterface (
 	ExceptinPipeType 		WB_ExceptType; // 异常类型
 	logic                   WB_IsABranch;
 	logic 					WB_IsAImmeJump;
+	logic                   WB_IsDelaySlot;	
   modport PC (
 	input  					clk,
 	input  					rst,
@@ -362,6 +364,7 @@ interface PipeLineRegsInterface (
 	input  					MEM_DMOut,
 	input                   MEM_IsABranch,
 	input                   MEM_IsAImmeJump,
+	input					MEM_IsDelaySlot,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,
@@ -373,7 +376,8 @@ interface PipeLineRegsInterface (
 	output 					WB_ExceptType,
 	output 					WB_RegsWrType,
 	output                  WB_IsABranch,
-	output                  WB_IsAImmeJump
+	output                  WB_IsAImmeJump,
+	output					WB_IsDelaySlot
   );
 
 endinterface //interfacename
