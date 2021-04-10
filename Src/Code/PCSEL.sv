@@ -1,14 +1,15 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-04-10 01:01:24
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-10 18:27:22
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
  * @Description: this is a module to produce the signal to choose which is the next PC
  */
-
+`include "CommonDefines.svh"
+`include "CPU_Defines.svh"
 
 module PCSEL #(
     parameter PCSel_PC4      = 3'b000,

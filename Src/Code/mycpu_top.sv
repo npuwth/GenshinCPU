@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 17:47:17
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-10 18:15:13
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -123,7 +123,6 @@
         //output
         .y(x.IF_NPC)
     );
-
     assign PC_4_o = x.IF_PC + 4;
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
@@ -146,6 +145,11 @@
     //     //output
     //     .IF_Instr(x.IF_Instr)
     // );
+    always@(posedge clk) begin
+    `ifdef DEBUG
+        $monitor("PC=%8x ; Instr=%8x",x.IF_PC,x.IF_Instr);
+    `endif 
+    end
 
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
