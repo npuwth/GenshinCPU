@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 17:31:54
+ * @LastEditTime: 2021-04-10 17:37:23
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -350,7 +350,7 @@
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
         .IDEXE_Flush(x.IDEXE_Flush),                        //flush
         .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush
-        .MEMWB_Flush(x.MEMWB_Flush),                        
+                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
         .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
