@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 17:47:35
+ * @LastEditTime: 2021-04-10 18:05:51
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -171,7 +171,7 @@
         .ID_ALUSrcB(x.ID_ALUSrcB),
         .ID_RegsReadSel(ID_RegsReadSel_o),
         .ID_EXTOp(ID_EXTOp_o),
-        .ID_IsImmeJump(x.ID_IsAImmeJump),
+        .ID_isImmeJump(x.ID_IsAImmeJump),
         .ID_BranchType(x.ID_BranchType),
         .ID_shamt(x.ID_shamt),
         .ID_rsrtRead(ID_rsrtRead_o)
