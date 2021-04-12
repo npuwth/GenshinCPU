@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-12 15:07:57
+ * @LastEditTime: 2021-04-12 15:45:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -124,6 +124,7 @@
         .y(x.IF_NPC)
     );
     assign PC_4_o = x.IF_PC + 4;
+    assign x.ID_PCAdd1 = PC_4_o;
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
 
