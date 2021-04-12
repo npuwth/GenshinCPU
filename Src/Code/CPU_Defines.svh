@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-10 17:51:50
+ * @LastEditTime: 2021-04-12 15:02:52
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -153,7 +153,7 @@ interface PipeLineRegsInterface (
   	//logic 	[4:0]   	ID_rs;		 	// rs 
   	//logic 	[4:0]   	ID_rt;		 	// rt
   	//logic 	[4:0]   	ID_rd;		 	// rd
-  	logic 		[3:0]   	ID_ALUOp;	 		// ALU操作�?
+  	logic 		[4:0]   	ID_ALUOp;	 		// ALU操作�?
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  	// StoreType信号
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
@@ -177,7 +177,7 @@ interface PipeLineRegsInterface (
   	logic 		[4:0]  		EXE_rt;
   	logic 		[4:0]  		EXE_rd;
 	logic 		[4:0]  		EXE_Shamt;         // 移位�?
-  	logic 		[3:0]  		EXE_ALUOp;  		
+  	logic 		[4:0]  		EXE_ALUOp;  		
 	logic        			EXE_ALUSrcA;
 	logic        			EXE_ALUSrcB;
   	LoadType     			EXE_LoadType;   	

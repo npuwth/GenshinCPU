@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-12 14:57:27
+ * @LastEditTime: 2021-04-12 15:07:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -89,6 +89,7 @@
     logic [31:0]        CP0Status;                //12号寄存器 Status寄存器的值
     logic [31:0]        CP0Cause;                 //13号寄存器 Cause寄存器的值
     logic [31:0]        CP0Epc;                   //14号寄存器 EPC寄存器的值
+    logic [31:0]        WB_DMResult_o;
 //---------------------------------------------seddon
     logic [1:0]         EXE_ForwardA_o,EXE_ForwardB_o; 
     logic [31:0]        EXE_OutA_o,EXE_OutB_o;
@@ -279,7 +280,7 @@
     MUX3to1 U_EXEDstSrc(
         .d0(x.EXE_rd),
         .d1(x.EXE_rt),
-        .d2(32'd31),
+        .d2(5'd31),
         .sel3_to_1(x.EXE_DstSel),
         .y(x.EXE_Dst)
     );//EXE级Dst三选一
@@ -401,7 +402,7 @@
         .CP0Compare_o(CP0Compare),
         .CP0Status_o(CP0Status),
         .CP0Cause_o(CP0Cause),
-        .CP0EPC_o(CP0EPC),
+        .CP0EPC_o(CP0Epc),
         .CP0TimerInterrupt_o(TimerInterrupt_o)              //定时器中断
         );
 
