@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 18:43:17
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-12 14:57:27
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -200,6 +200,12 @@
         .Data_i(x.WB_OutB),
         .HI_o(HI_Bus_o),
         .LO_o(LO_Bus_o)
+    );
+
+    EXT U_EXT ( 
+        .EXE_EXTOp(ID_EXTOp_o),
+        .ID_Imm16(x.ID_Imm16),
+        .ID_Imm32(x.ID_Imm32)
     );
 
     MUX4to1 U_MUXBUSB ( 
