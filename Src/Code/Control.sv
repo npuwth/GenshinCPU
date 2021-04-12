@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-09 17:01:18
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-12 15:14:06
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -14,7 +14,7 @@
 module Control(
     input  logic[31:0] ID_Instr,
 
-    output logic [3:0] ID_ALUOp,	 		// ALUOp ALU符号
+    output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
   	output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
   	output StoreType   ID_StoreType,  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
   	output RegsWrType  ID_RegsWrType,		// 寄存器写信号打包
