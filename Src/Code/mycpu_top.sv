@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-10 18:43:17
+ * @LastEditTime: 2021-04-13 15:00:07
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -89,6 +89,7 @@
     logic [31:0]        CP0Status;                //12号寄存器 Status寄存器的值
     logic [31:0]        CP0Cause;                 //13号寄存器 Cause寄存器的值
     logic [31:0]        CP0Epc;                   //14号寄存器 EPC寄存器的值
+    logic [31:0]        WB_DMResult_o;
 //---------------------------------------------seddon
     logic [1:0]         EXE_ForwardA_o,EXE_ForwardB_o; 
     logic [31:0]        EXE_OutA_o,EXE_OutB_o;
@@ -123,6 +124,7 @@
         .y(x.IF_NPC)
     );
     assign PC_4_o = x.IF_PC + 4;
+    assign x.IF_PCAdd1 = PC_4_o;
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
 
@@ -202,6 +204,12 @@
         .LO_o(LO_Bus_o)
     );
 
+    EXT U_EXT ( 
+        .EXE_EXTOp(ID_EXTOp_o),
+        .ID_Imm16(x.ID_Imm16),
+        .ID_Imm32(x.ID_Imm32)
+    );
+
     MUX4to1 U_MUXBUSB ( 
         .d0(RF_Bus_o),
         .d1(HI_Bus_o),
@@ -273,7 +281,7 @@
     MUX3to1 U_EXEDstSrc(
         .d0(x.EXE_rd),
         .d1(x.EXE_rt),
-        .d2(32'd31),
+        .d2(5'd31),
         .sel3_to_1(x.EXE_DstSel),
         .y(x.EXE_Dst)
     );//EXE级Dst三选一
@@ -395,7 +403,7 @@
         .CP0Compare_o(CP0Compare),
         .CP0Status_o(CP0Status),
         .CP0Cause_o(CP0Cause),
-        .CP0EPC_o(CP0EPC),
+        .CP0EPC_o(CP0Epc),
         .CP0TimerInterrupt_o(TimerInterrupt_o)              //定时器中断
         );
 
