@@ -30,13 +30,13 @@ always_ff @(posedge clk) begin// write the RF
         else begin
             regs <= regs;
         end
-        `ifdef DEBUG
-            $display("Registers File:");
-            $display("R[00-07]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X",regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
-            $display("R[08-15]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X", regs[8], regs[9], regs[10], regs[11], regs[12], regs[13], regs[14], regs[15]);
-            $display("R[16-23]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X", regs[16], regs[17], regs[18], regs[19], regs[20], regs[21], regs[22], regs[23]);
-            $display("R[24-31]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X", regs[24], regs[25], regs[26], regs[27], regs[28], regs[29], regs[30], regs[31]);
-        `endif
+        // `ifdef DEBUG
+        //     $display("Registers File:");
+        //     $display("R[00-07]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X",regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
+        //     $display("R[08-15]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X", regs[8], regs[9], regs[10], regs[11], regs[12], regs[13], regs[14], regs[15]);
+        //     $display("R[16-23]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X", regs[16], regs[17], regs[18], regs[19], regs[20], regs[21], regs[22], regs[23]);
+        //     $display("R[24-31]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X", regs[24], regs[25], regs[26], regs[27], regs[28], regs[29], regs[30], regs[31]);
+        // `endif
     end
 end
 

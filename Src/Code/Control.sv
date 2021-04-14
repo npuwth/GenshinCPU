@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-12 15:14:06
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-14 00:49:52
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1178,7 +1178,7 @@ module Control(
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0
         };//关于ERET
-
+      end
       OP_MFC0:begin
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_WbSel      = `WBSel_OutB;
@@ -1205,7 +1205,23 @@ module Control(
         ID_BranchType = '0;
       end
 
+      default:begin
+        ID_ALUOp      = 'X;    //ALU操作
+        ID_LoadType   = 'X;    //访存相关 
+        ID_StoreType  = 'X;    //存储相关
+        ID_WbSel      = 'X;    //关于最后写回的是PC & ALU & RF ..
+        ID_DstSel     = 'X;    //Rtype选rd
+        ID_RegsWrType = 'X;    //写回哪里
+        ID_ExceptType = 'X; //关于异常
+        ID_ALUSrcA    = 'X; //MUXA选择regs
+        ID_ALUSrcB    = 'X;  //MUXB选择regs
+        ID_RegsReadSel= 'X;        //ID级选择RF读取结果
+        ID_EXTOp      = 'X;                 //R型无关
+        ID_isImmeJump = 'X;
+        ID_BranchType = 'X;        
       end
+
+      
 
     endcase
   end 

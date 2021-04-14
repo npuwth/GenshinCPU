@@ -120,15 +120,15 @@ assign Hardwareint_i =
                     end
                 endcase
             end
-            `ifdef DEBUG
-                $monitor("CP0:BadVAddr=%8X,Count=%8X,Compare=%8X,Status=%8X,Cause=%8X,EPC=%8X",
-                CP0BadVAddr_o,
-                CP0Count_o,
-                CP0Compare_o,
-                CP0Status_o,
-                CP0Cause_o,
-                CP0EPC_o);
-            `endif
+            // `ifdef DEBUG
+            //     $monitor("CP0:BadVAddr=%8X,Count=%8X,Compare=%8X,Status=%8X,Cause=%8X,EPC=%8X",
+            //     CP0BadVAddr_o,
+            //     CP0Count_o,
+            //     CP0Compare_o,
+            //     CP0Status_o,
+            //     CP0Cause_o,
+            //     CP0EPC_o);
+            // `endif
 //******************************************************************************
 //                               CP0异常处理
 //******************************************************************************            

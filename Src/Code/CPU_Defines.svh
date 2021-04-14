@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-12 15:02:52
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-14 14:27:13
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -123,9 +123,10 @@ typedef struct packed {
 } BranchType;
 
 interface PipeLineRegsInterface (
-	input logic 		   	clk,
-	input logic 			rst
+	input logic 		   	clk
+	//input logic 			rst
     );
+	logic					rst;
 //PC,in
 	logic 	    [31:0] 		IF_NPC;
 	logic        		    IF_PCWr;           //PC写使�?

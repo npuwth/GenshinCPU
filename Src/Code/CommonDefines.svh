@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-13 14:47:33
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-14 00:51:37
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -12,7 +12,7 @@
 `ifndef CommonDefines_svh
 `define CommonDefines_svh
 
-`define DEBUG               1             
+`define DEBUG               0             
 
 `define RegBus              31:0
 
@@ -115,7 +115,8 @@
 `define IsException         2'b11
 `define IsNone              2'b00
 //***************************  与结构体有关的宏定义  ***************************
-`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   // 
+`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //
+`define ExceptionReserve    {1'b0,1'b0,1'b1,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}
 
 //RegsWrType 
 `define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-04-10 17:09:30
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-13 23:42:19
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -39,9 +39,9 @@ module HILO(
         end else if (LOWr == `WriteEnable) begin
             LO_o <= Data_i;
         end
-        `ifdef DEBUG
-            $monitor("HI:%8X LO:%8X",HI_o,LO_o);
-        `endif
+        // `ifdef DEBUG
+        //     $monitor("HI:%8X LO:%8X",HI_o,LO_o);
+        // `endif
     end
     
 endmodule

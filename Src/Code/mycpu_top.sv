@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-13 15:00:07
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-14 14:28:58
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -55,7 +55,7 @@
    output [3:0]         debug_wb_rf_wen;    // 写回级的写使能
    output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址（序号）
 
-    logic rst;
+    //logic rst;
     logic [2:0]         PCSel_o;
 
     logic [31:0]        JumpAddr_o;//PCSel多选器
@@ -101,15 +101,15 @@
     logic [31:0]        ID_CP0DataOut_o;
 
     assign Interrupt_o =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
-    assign rst       =  ~resetn;                         //高电平有效的复位信号
+    assign x.rst       =  ~resetn;                         //高电平有效的复位信号
     assign x.IFID_Flush = IFID_Flush_Exception_o | 
                           IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
 
 
     PipeLineRegsInterface x(
         //input
-        .clk(clk),
-        .rst(rst)
+        .clk(clk)
+        //.rst(~resetn)
     );
 
     MUX8to1 U_PCMUX(
@@ -146,11 +146,11 @@
     //     //output
     //     .IF_Instr(x.IF_Instr)
     // );
-    always@(posedge clk) begin
-    `ifdef DEBUG
-        $monitor("PC=%8x ; Instr=%8x",x.IF_PC,x.IF_Instr);
-    `endif 
-    end
+    // always@(posedge clk) begin
+    // `ifdef DEBUG
+    //     $monitor("PC=%8x ; Instr=%8x",x.IF_PC,x.IF_Instr);
+    // `endif 
+    // end
 
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
@@ -184,7 +184,7 @@
 
     RF U_RF (
         .clk(clk),
-        .rst(rst),
+        .rst(x.rst),
         .WB_Dst(x.WB_Dst),
         .WB_Result(WB_Result_o),
         .RFWr(x.WB_RegsWrType.RFWr),
@@ -196,7 +196,7 @@
 
     HILO U_HILO (
         .clk(clk),
-        .rst(rst),
+        .rst(x.rst),
         .HIWr(x.WB_RegsWrType.HIWr),
         .LOWr(x.WB_RegsWrType.LOWr),
         .Data_i(x.WB_OutB),
@@ -278,7 +278,7 @@
         .y(EXE_ResultB_o)
     );//EXE级三选一B之后的那个二选一
 
-    MUX3to1 U_EXEDstSrc(
+    MUX3to1#(32) U_EXEDstSrc(
         .d0(x.EXE_rd),
         .d1(x.EXE_rt),
         .d2(5'd31),
@@ -344,7 +344,7 @@
 
     Exception U_Exception(
         // input
-        .clk(x.clk),
+        .clk(clk),
         .rst(x.rst),
         .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输入
         .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输入
@@ -385,7 +385,7 @@
     cp0_reg U_CP0(
         //input
         .rst(x.rst),
-        .clk(x.clk),
+        .clk(clk),
         .CP0Wr_i(x.WB_RegsWrType.CP0Wr),                    //写使能
         .CP0WrAddr_i(x.WB_Dst),                             //写回地址
         .CP0WrDataOut_i(WB_Result_o),                       //写入数据
