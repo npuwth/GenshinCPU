@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-14 15:36:03
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-14 18:16:52
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -99,15 +99,12 @@
 //------------------------seddonend
 
     logic [31:0]        ID_CP0DataOut_o;
-    logic               IDEXE_Flush_DataHazard_o;
-    logic               IDEXE_Flush_Exception_o;
 
     assign Interrupt_o =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
-    assign x.rst       =  ~resetn;                         //高电平有效的复位信号
+    // assign x.rst       =  ~resetn;                       //高电平有效的复位信号
     assign x.IFID_Flush = IFID_Flush_Exception_o | 
                           IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
-    assign x.IDEXE_Flush = IDEXE_Flush_DataHazard_o | 
-                          IDEXE_Flush_Exception_o;
+
 
     PipeLineRegsInterface x(
         //input
@@ -158,8 +155,7 @@
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
     assign inst_sram_addr  = x.IF_PC;                // TODO: 可能需要限制地址？
-    //assign inst_sram_en    = resetn ? x.IF_PCWr : 0; //resten高电平 & IF_PCWr为1 读取数据
-    assign inst_sram_en    = x.IF_PCWr; //resten高电平 & IF_PCWr为1 读取数据
+    assign inst_sram_en    = x.IF_PCWr;              //resten高电平 & IF_PCWr为1 读取数据
     assign inst_sram_wen   = 4'b0000;
     assign inst_sram_wdata = 32'b0;
    
@@ -188,7 +184,7 @@
 
     RF U_RF (
         .clk(clk),
-        .rst(x.rst),
+        .rst(resetn),
         .WB_Dst(x.WB_Dst),
         .WB_Result(WB_Result_o),
         .RFWr(x.WB_RegsWrType.RFWr),
@@ -200,7 +196,7 @@
 
     HILO U_HILO (
         .clk(clk),
-        .rst(x.rst),
+        .rst(resetn),
         .HIWr(x.WB_RegsWrType.HIWr),
         .LOWr(x.WB_RegsWrType.LOWr),
         .Data_i(x.WB_OutB),
@@ -230,8 +226,7 @@
         .EXE_rt(x.EXE_rt),
         .EXE_ReadMEM(x.EXE_LoadType.ReadMem),
         .IF_PCWr(x.IF_PCWr),
-        .IF_IDWr(x.IF_IDWr),
-        .IDEXE_Flush(IDEXE_Flush_DataHazard_o)
+        .IF_IDWr(x.IF_IDWr)
     );
     
 //---------------------------------------------seddon
@@ -350,7 +345,7 @@
     Exception U_Exception(
         // input
         .clk(clk),
-        .rst(x.rst),
+        .rst(resetn),
         .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输入
         .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输入
         .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump),                     //延迟槽（检查WB级的isbranch信号）
@@ -364,7 +359,7 @@
          // output
         .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信号
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
-        .IDEXE_Flush(IDEXE_Flush_Exception_o),                        //flush
+        .IDEXE_Flush(x.IDEXE_Flush),                        //flush
         .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
@@ -389,7 +384,7 @@
     );
     cp0_reg U_CP0(
         //input
-        .rst(x.rst),
+        .rst(resetn),
         .clk(clk),
         .CP0Wr_i(x.WB_RegsWrType.CP0Wr),                    //写使能
         .CP0WrAddr_i(x.WB_Dst),                             //写回地址

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-04-10 14:28:46
- * @LastEditors: Juan Jiang
+ * @LastEditTime: 2021-04-14 18:13:23
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -11,10 +11,11 @@
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 
-module IFID_Reg( PipeLineRegsInterface.IF_ID port );
+module IFID_Reg( PipeLineRegsInterface.IF_ID port,
+                 input rst );
 
-  always_ff @( posedge port.clk ) begin
-    if( port.rst | port.IFID_Flush ) begin
+  always_ff @( posedge port.clk or negedge rst ) begin
+    if( rst == `RstEnable | port.IFID_Flush ) begin
       port.ID_Instr <= 32'b0;
       port.ID_Imm16 <= 16'b0;
       port.ID_rs <= 5'b0;

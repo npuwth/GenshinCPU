@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-04-09 12:04:51
+ * @LastEditTime: 2021-04-14 18:08:26
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -60,7 +60,7 @@ assign Hardwareint_i =
 //******************************************************************************
 //                     对CP0中寄存器的初始化复位
 //******************************************************************************
-    always_ff @ ( posedge clk ) begin
+    always_ff @ ( posedge clk or negedge rst) begin
         if(rst == `RstEnable) begin
         //BadVaddr寄存器的初始值
             CP0BadVAddr_o       <= `ZeroWord;

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-04-13 23:42:19
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-14 18:07:41
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -30,7 +30,7 @@ module HILO(
     output logic  [`RegBus]    LO_o
     );
 
-    always @ ( posedge clk ) begin
+    always @ ( posedge clk or negedge rst) begin
         if(rst == `RstEnable) begin
             HI_o <= `ZeroWord;
             LO_o <= `ZeroWord;

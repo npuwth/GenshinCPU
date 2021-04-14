@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-14 14:27:13
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-14 18:14:18
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -124,7 +124,7 @@ typedef struct packed {
 
 interface PipeLineRegsInterface (
 	input logic 		   	clk
-	//input logic 			rst
+	// input logic 			rst
     );
 	logic					rst;
 //PC,in
@@ -246,7 +246,7 @@ interface PipeLineRegsInterface (
 	logic                   WB_IsDelaySlot;	
   modport PC (
 	input  					clk,
-	input  					rst,
+	// input  					rst,
 	input  					IF_NPC , 
 	input  					IF_PCWr,
 //output
@@ -255,7 +255,7 @@ interface PipeLineRegsInterface (
 
   modport IF_ID (
 	input  					clk,
-	input  					rst,
+	// input  					rst,
 	input  					IF_Instr,
 	input  					IF_PCAdd1,
 	input  					IFID_Flush,
@@ -273,7 +273,7 @@ interface PipeLineRegsInterface (
 
   modport ID_EXE (	//IDEXE_modport
     input  					clk,
-    input  					rst,
+    // input  					rst,
     input  					ID_BusA,
     input  					ID_BusB,
     input  					ID_Imm32,
@@ -321,7 +321,7 @@ interface PipeLineRegsInterface (
 
   modport EXE_MEM (  //EXEMEM_modport
     input  					clk,
-	input  					rst,
+	// input  					rst,
     input  					EXE_RegsWrType,
     input  					EXE_WbSel,
     input  					EXE_ALUOut,
@@ -353,7 +353,7 @@ interface PipeLineRegsInterface (
 
   modport MEM_WB (  //MEMWB_modport
     input  					clk,
-	input  					rst,
+	// input  					rst,
 	input  					MEM_ExceptType_final,
 	input  					MEM_LoadType,
 	input  					MEM_ALUOut,

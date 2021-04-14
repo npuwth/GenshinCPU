@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-12 15:03:09
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-14 18:12:24
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -11,10 +11,11 @@
  `include "CPU_Defines.svh"
  `include "CommonDefines.svh"
 
-module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port );
+module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port ,
+                  input rst);
 
-  always_ff @( posedge port.clk ) begin
-    if( port.rst | port.IDEXE_Flush ) begin
+  always_ff @( posedge port.clk or negedge rst ) begin
+    if( rst == `RstEnable | port.IDEXE_Flush ) begin
       port.EXE_BusA <= 32'b0;
       port.EXE_BusB <= 32'b0;
       port.EXE_Imm32 <= 32'b0;
