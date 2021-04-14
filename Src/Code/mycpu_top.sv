@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-14 15:18:53
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-14 15:36:03
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -231,7 +231,7 @@
         .EXE_ReadMEM(x.EXE_LoadType.ReadMem),
         .IF_PCWr(x.IF_PCWr),
         .IF_IDWr(x.IF_IDWr),
-        .IDEXE_Flush(x.IDEXE_Flush_DataHazard_o)
+        .IDEXE_Flush(IDEXE_Flush_DataHazard_o)
     );
     
 //---------------------------------------------seddon
