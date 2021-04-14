@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-14 18:16:52
+ * @LastEditTime: 2021-04-14 21:54:51
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -125,6 +125,7 @@
     );
     assign PC_4_o = x.IF_PC + 4;
     assign x.IF_PCAdd1 = PC_4_o;
+
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
 
@@ -298,23 +299,28 @@
     
 
     PC U_PC(
-        x
+        x,
+        resetn
     );
 
     IFID_Reg U_IFID(
-        x
+        x,
+        resetn
     );
 
     IDEXE_Reg U_IDEXE(
-        x
+        x,
+        resetn
     );
 
     EXEMEM_Reg U_EXEMEM(
-        x
+        x,
+        resetn
     );
 
     MEMWB_Reg U_MEMWB(
-        x
+        x,
+        resetn
     );
 
     // Ltype信号 & DMWr 写使能信号才会触发data_ram的使能

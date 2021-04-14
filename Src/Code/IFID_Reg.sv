@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-04-14 18:13:23
+ * @LastEditTime: 2021-04-14 21:34:46
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -15,7 +15,7 @@ module IFID_Reg( PipeLineRegsInterface.IF_ID port,
                  input rst );
 
   always_ff @( posedge port.clk or negedge rst ) begin
-    if( rst == `RstEnable | port.IFID_Flush ) begin
+    if( (rst == `RstEnable) || (port.IFID_Flush == `FlushEnable) ) begin
       port.ID_Instr <= 32'b0;
       port.ID_Imm16 <= 16'b0;
       port.ID_rs <= 5'b0;

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-04-14 18:16:28
+ * @LastEditTime: 2021-04-14 21:34:20
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -16,7 +16,7 @@ module EXEMEM_Reg( PipeLineRegsInterface.EXE_MEM port,
                    input  rst  );
 
   always_ff @( posedge port.clk ,negedge rst ) begin
-    if( rst == `RstEnable | port.EXEMEM_Flush ) begin
+    if( (rst == `RstEnable )|| ( port.EXEMEM_Flush == `FlushEnable )) begin
       port.MEM_ALUOut <= 32'b0;
       port.MEM_PCAdd1 <= 32'b0;
       port.MEM_WbSel <= 2'b0;

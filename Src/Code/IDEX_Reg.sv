@@ -15,7 +15,7 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port ,
                   input rst);
 
   always_ff @( posedge port.clk or negedge rst ) begin
-    if( rst == `RstEnable | port.IDEXE_Flush ) begin
+    if( (rst == `RstEnable) || (port.IDEXE_Flush == `FlushEnable) ) begin
       port.EXE_BusA <= 32'b0;
       port.EXE_BusB <= 32'b0;
       port.EXE_Imm32 <= 32'b0;

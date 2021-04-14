@@ -20,7 +20,7 @@ logic [31:0][31:0] regs;
 
 
 always_ff @(posedge clk) begin// write the RF
-    if (rst) begin
+    if (rst == `RstEnable) begin
         regs <= '0;
     end
     else begin
