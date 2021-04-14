@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-14 14:46:46
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-14 15:18:53
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -99,12 +99,15 @@
 //------------------------seddonend
 
     logic [31:0]        ID_CP0DataOut_o;
+    logic               IDEXE_Flush_DataHazard_o;
+    logic               IDEXE_Flush_Exception_o;
 
     assign Interrupt_o =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign x.rst       =  ~resetn;                         //高电平有效的复位信号
     assign x.IFID_Flush = IFID_Flush_Exception_o | 
                           IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
-
+    assign x.IDEXE_Flush = IDEXE_Flush_DataHazard_o | 
+                          IDEXE_Flush_Exception_o;
 
     PipeLineRegsInterface x(
         //input
@@ -227,7 +230,8 @@
         .EXE_rt(x.EXE_rt),
         .EXE_ReadMEM(x.EXE_LoadType.ReadMem),
         .IF_PCWr(x.IF_PCWr),
-        .IF_IDWr(x.IF_IDWr)
+        .IF_IDWr(x.IF_IDWr),
+        .IDEXE_Flush(x.IDEXE_Flush_DataHazard_o)
     );
     
 //---------------------------------------------seddon
@@ -279,7 +283,7 @@
         .y(EXE_ResultB_o)
     );//EXE级三选一B之后的那个二选一
 
-    MUX3to1#(32) U_EXEDstSrc(
+    MUX3to1#(5) U_EXEDstSrc(
         .d0(x.EXE_rd),
         .d1(x.EXE_rt),
         .d2(5'd31),
@@ -360,7 +364,7 @@
          // output
         .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信号
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
-        .IDEXE_Flush(x.IDEXE_Flush),                        //flush
+        .IDEXE_Flush(IDEXE_Flush_Exception_o),                        //flush
         .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型

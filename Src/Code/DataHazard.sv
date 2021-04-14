@@ -7,7 +7,8 @@ module DataHazard (
     input logic [4:0] EXE_rt,
     input logic EXE_ReadMEM,
     output logic IF_PCWr,
-    output logic IF_IDWr
+    output logic IF_IDWr,
+    output logic IDEXE_Flush
 );
     logic IF_IDWr_r; // PC,IF写使能
     logic IF_PCWr_r;
@@ -15,10 +16,12 @@ module DataHazard (
             if (EXE_ReadMEM == 1'b1 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin
                 IF_IDWr_r=1'b0;  // 产生阻塞
                 IF_PCWr_r=1'b0;
+                IDEXE_Flush=1'b1;
             end
             else begin
                 IF_IDWr_r=1'b1;  // 1的时候可以写
                 IF_PCWr_r=1'b1;
+                IDEXE_Flush=1'b0;
             end    
 
     end
