@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-15 23:02:26
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-15 23:16:39
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -124,12 +124,12 @@
         .y(x.IF_NPC)
     );
     assign PC_4_o = x.IF_PC + 4;
-    assign x.IF_PCAdd1 = PC_4_o;
+    assign x.IF_PCAdd1 = PC_4_o;  //这里由于sram的原因，pc和指令会差4，所以不用PC_4_o，就用PC来表示PC_4_o
 
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
 
-    assign BranchAddr_o = x.EXE_PCAdd1-4+{x.EXE_Imm32[29:0],2'b0};
+    assign BranchAddr_o = x.EXE_PCAdd1+{x.EXE_Imm32[29:0],2'b0};
 
     PCSEL U_PCSEL(
         //input
@@ -346,7 +346,7 @@
         !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确
         )  ? 1 : 0;
     assign data_sram_wdata = MEM_SWData_o;                  //store类型写入sram的数据
-    assign data_sram_addr = x.MEM_ALUOut;                   //data_sram写入，输出数据地址 TODO: 对地址上限作出限制
+    assign data_sram_addr = x.EXE_ALUOut;                   //data_sram写入，输出数据地址 TODO: 对地址上限作出限制
     assign x.MEM_DMOut = data_sram_rdata;                   //读取结果直接放入DMOut
 
     Exception U_Exception(
@@ -382,7 +382,7 @@
     );
 
     MUX4to1 #(32) U_MUXINWB(
-        .d0(x.WB_PCAdd1),                                   // JAL,JALR等指令 将PC写回RF
+        .d0(x.WB_PCAdd1+4),                                 // JAL,JALR等指令 将PC+8写回RF
         .d1(x.WB_ALUOut),                                   // ALU计算结果
         .d2(x.WB_OutB),                                     // MTC0 MTHI LO等指令需要写寄存器数据
         .d3(WB_DMResult_o),                                 // DM结果
