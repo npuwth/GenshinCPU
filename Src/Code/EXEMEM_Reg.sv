@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-04-14 21:34:20
+ * @LastEditTime: 2021-04-15 23:00:33
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -43,5 +43,12 @@ module EXEMEM_Reg( PipeLineRegsInterface.EXE_MEM port,
       port.MEM_IsAImmeJump <= port.EXE_IsAImmeJump;
     end
   end
-
+  // always_comb begin
+  //   if( rst == `RstEnable ) begin
+  //     port.WB_DMOut = 32'b0 ;
+  //   end
+  //   else begin
+  //     port.WB_DMOut = port.MEM_DMOut;
+  //   end
+  // end
 endmodule

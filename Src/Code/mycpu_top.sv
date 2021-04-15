@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-14 21:54:51
+ * @LastEditTime: 2021-04-15 22:54:11
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -155,8 +155,8 @@
 
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
-    assign inst_sram_addr  = x.IF_PC;                // TODO: 可能需要限制地址？
-    assign inst_sram_en    = x.IF_PCWr;              //resten高电平 & IF_PCWr为1 读取数据
+    assign inst_sram_addr  = x.IF_NPC;                 // TODO: 可能需要限制地址？
+    assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电平 & IF_PCWr为1 读取数据
     assign inst_sram_wen   = 4'b0000;
     assign inst_sram_wdata = 32'b0;
    

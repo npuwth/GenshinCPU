@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2008640fs"></ZoomStartTime>
-      <ZoomEndTime time="2136441fs"></ZoomEndTime>
-      <Cursor1Time time="2035100fs"></Cursor1Time>
+      <ZoomStartTime time="1989084fs"></ZoomStartTime>
+      <ZoomEndTime time="2060085fs"></ZoomEndTime>
+      <Cursor1Time time="2035000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
       <ValueColumnWidth column_width="146"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="38" />
+   <WVObjectSize size="39" />
    <wvobject fp_name="/tb_top/resetn" type="logic">
       <obj_property name="ElementShortName">resetn</obj_property>
       <obj_property name="ObjectShortName">resetn</obj_property>
@@ -151,6 +151,10 @@
    <wvobject fp_name="/tb_top/soc_lite/cpu/U_PC/NPC" type="array">
       <obj_property name="ElementShortName">NPC[31:0]</obj_property>
       <obj_property name="ObjectShortName">NPC[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_top/soc_lite/cpu/U_PC/NPCOp" type="array">
+      <obj_property name="ElementShortName">NPCOp[1:0]</obj_property>
+      <obj_property name="ObjectShortName">NPCOp[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_top/soc_lite/cpu/U_IF_ID/IF_ID_PC" type="array">
       <obj_property name="ElementShortName">IF_ID_PC[31:0]</obj_property>
