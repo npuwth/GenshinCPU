@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-15 22:54:11
+ * @LastEditTime: 2021-04-15 23:02:26
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -129,7 +129,7 @@
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
 
-    assign BranchAddr_o = x.EXE_PCAdd1+{x.EXE_Imm32[29:0],2'b0};
+    assign BranchAddr_o = x.EXE_PCAdd1-4+{x.EXE_Imm32[29:0],2'b0};
 
     PCSEL U_PCSEL(
         //input
@@ -227,7 +227,8 @@
         .EXE_rt(x.EXE_rt),
         .EXE_ReadMEM(x.EXE_LoadType.ReadMem),
         .IF_PCWr(x.IF_PCWr),
-        .IF_IDWr(x.IF_IDWr)
+        .IF_IDWr(x.IF_IDWr),
+        .IDEXE_Flush(IDEXE_Flush_DataHazard_o)
     );
     
 //---------------------------------------------seddon
