@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-15 23:16:39
+ * @LastEditTime: 2021-04-16 00:43:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -119,6 +119,7 @@
         .d2(MEM_CP0Epc_o),
         .d3(32'hBFC00380),
         .d4(BranchAddr_o),
+        .d5(EXE_OutA_o),
         .sel8_to_1(PCSel_o),
         //output
         .y(x.IF_NPC)
@@ -136,6 +137,7 @@
         .isBranch(IFID_Flush_BranchSolvement_o),//
         .isImmeJump(x.ID_IsAImmeJump),
         .isExceptorERET(IsExceptionorEret_o),
+        .EXE_BranchType(x.EXE_BranchType),
         //output
         .PCSel(PCSel_o)
     );
