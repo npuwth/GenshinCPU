@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-16 17:50:31
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-04-17 01:03:45
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -79,7 +79,10 @@
 // *******************************Johnson Yang & WTH **********/
     logic [31:0]        data_sram_addr_o;         //虚地址 data
     ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
-    logic               IFID_Flush_Exception_o; 
+    logic               IFID_Flush_Exception_o;   //Exception 传出的IFID_flush信号
+    logic               IFID_Flush_BranchSolvement_o;
+    logic               IDEXE_Flush_Exception_o;  //Exception 传出的IDEXE_flush信号
+    logic               IDEXE_Flush_DataHazard_o; //LOAD指令后的阻塞
     logic [1:0]         IsExceptionorEret_o;      //送给PCSEL
     logic               MEM_IsDelaySlot_o;        //访存阶段是否是延迟槽（送给CP0）
     logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被选择的数据信号
@@ -97,7 +100,6 @@
 //---------------------------------------------seddon
     logic [1:0]         EXE_ForwardA_o,EXE_ForwardB_o; 
     logic [31:0]        EXE_OutA_o,EXE_OutB_o;
-    logic               IFID_Flush_BranchSolvement_o;
     logic [31:0]        WB_Result_o;
     logic [31:0]        EXE_ResultA_o,EXE_ResultB_o;
 //------------------------seddonend
@@ -106,9 +108,10 @@
 
     assign Interrupt_o =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     // assign x.rst       =  ~resetn;                       //高电平有效的复位信号
-    assign x.IFID_Flush = IFID_Flush_Exception_o | 
-                          IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
-
+    assign x.IFID_Flush =  IFID_Flush_Exception_o | 
+                           IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
+    assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
+                           IDEXE_Flush_DataHazard_o;  // 在LOAD阻塞级和 exception级 都会产生IDEXE_Flush信号
 
     PipeLineRegsInterface x(
         //input
@@ -399,7 +402,7 @@
          // output
         .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信号
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
-        .IDEXE_Flush(x.IDEXE_Flush),                        //flush
+        .IDEXE_Flush(IDEXE_Flush_Exception_o),                        //flush
         .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型

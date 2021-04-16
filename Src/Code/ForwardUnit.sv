@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-04-09 15:09:36
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-17 01:28:02
+ * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\ForwardUnit.sv
  * 
@@ -14,6 +14,7 @@ module ForwardUnit (
      EXE_ForwardA,EXE_ForwardB,//两个选择信号
      WB_RegsWrType,MEM_RegsWrType
 );
+    input RegsWrType EXE_RegsWrType;
     input RegsWrType WB_RegsWrType;
     input RegsWrType MEM_RegsWrType;
     input [4:0] EXE_rt,EXE_rs;         // 输入五位宽地址信号
@@ -34,13 +35,17 @@ module ForwardUnit (
     always_comb begin
         //加入regtype的直接比较
         if ((MEM_Wr) && MEM_Dst  !=5'd0 && EXE_rs == MEM_Dst ) begin
-            if (WB_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
+            if (EXE_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
                 EXE_ForwardA_r = 2'd1;
+            end else begin
+                EXE_ForwardA_r = 2'dx;
             end
         end
         else if ((WB_Wr) && WB_Dst != 5'd0 && EXE_rs == WB_Dst)  begin
-            if (WB_RegsWrType == MEM_RegsWrType) begin
+            if (EXE_RegsWrType == WB_RegsWrType) begin
                 EXE_ForwardA_r = 2'd2;
+            end else begin
+                EXE_ForwardA_r = 2'dx;
             end
         end
         else EXE_ForwardA_r= 2'd0;
@@ -53,13 +58,17 @@ module ForwardUnit (
     
     always_comb begin
         if ((MEM_Wr) && MEM_Dst  !=5'd0 && EXE_rt == MEM_Dst ) begin
-            if (WB_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
+            if (EXE_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
                 EXE_ForwardB_r = 2'd1;
+            end else begin
+                EXE_ForwardB_r = 2'dx;
             end
         end
         else if ((WB_Wr) && WB_Dst != 5'd0 && EXE_rt == WB_Dst)  begin
-            if (WB_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
+            if (EXE_RegsWrType == WB_RegsWrType) begin//avoid CP0 and regsfile conflict
                 EXE_ForwardB_r = 2'd2;
+            end else begin
+                EXE_ForwardB_r = 2'dx;
             end
         end
         else EXE_ForwardB_r = 2'd0;
