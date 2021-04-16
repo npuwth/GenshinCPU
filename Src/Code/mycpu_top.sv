@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-16 17:38:28
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-16 17:50:31
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -77,7 +77,7 @@
 
     //所有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的一些信号（至少它与流水线寄存器无关，）
 // *******************************Johnson Yang & WTH **********/
-
+    logic [31:0]        data_sram_addr_o;         //虚地址 data
     ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
     logic               IFID_Flush_Exception_o; 
     logic [1:0]         IsExceptionorEret_o;      //送给PCSEL
@@ -369,7 +369,15 @@
         !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM         // RD地址正确 store
         )  ? 1 : 0; 
     assign data_sram_wdata = MEM_SWData_o;                    //store类型写入sram的数据
-    assign data_sram_addr =  (data_sram_en & data_sram_wen) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
+
+
+    MMU U_MMU_dataSram(
+        //input
+        .virt_addr(data_sram_addr_o),
+        //output
+        .phsy_addr(data_sram_addr)
+    );
+    assign data_sram_addr_o =  (data_sram_en & data_sram_wen) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
                               x.MEM_ALUOut : (data_sram_en) ? //data_sram总使能为1&data_sram写使能为0 使用Load的地址
                               x.EXE_ALUOut : 32'bx;    
     assign x.MEM_DMOut = data_sram_rdata;                    //读取结果直接放入DMOut

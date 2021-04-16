@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-14 00:49:52
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-16 18:07:48
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1005,7 +1005,7 @@ module Control(
       OP_LB:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 0;//sign
+        ID_LoadType.sign = 1;//sign
         ID_LoadType.size = 2'b10;//byte
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
@@ -1085,7 +1085,7 @@ module Control(
       OP_LW:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 0;//sign
+        ID_LoadType.sign = 1;//sign
         ID_LoadType.size = 2'b00;//word
         ID_LoadType.ReadMem = 1;//loadmem
         //ID_LoadType end
