@@ -28,6 +28,7 @@ module EXEMEM_Reg( PipeLineRegsInterface.EXE_MEM port,
       port.MEM_ExceptType <= '0;
       port.MEM_IsABranch <= '0;
       port.MEM_IsAImmeJump <= 1'b0;
+      port.MEM_Instr <= 32'b0;
     end
     else begin
       port.MEM_ALUOut <= port.EXE_ALUOut;
@@ -41,6 +42,7 @@ module EXEMEM_Reg( PipeLineRegsInterface.EXE_MEM port,
       port.MEM_ExceptType <= port.EXE_ExceptType_final;
       port.MEM_IsABranch <= port.EXE_BranchType.isBranch;
       port.MEM_IsAImmeJump <= port.EXE_IsAImmeJump;
+      port.MEM_Instr <= port.EXE_Instr;
     end
   end
   // always_comb begin

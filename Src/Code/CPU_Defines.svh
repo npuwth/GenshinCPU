@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-16 13:06:48
+ * @LastEditTime: 2021-04-16 13:30:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -366,6 +366,7 @@ interface PipeLineRegsInterface (
 	input                   MEM_IsABranch,
 	input                   MEM_IsAImmeJump,
 	input					MEM_IsDelaySlot,
+	input                   MEM_Instr,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,
@@ -378,7 +379,8 @@ interface PipeLineRegsInterface (
 	output 					WB_RegsWrType,
 	output                  WB_IsABranch,
 	output                  WB_IsAImmeJump,
-	output					WB_IsDelaySlot
+	output					WB_IsDelaySlot,
+	output                  WB_Instr
   );
 
 endinterface //interfacename

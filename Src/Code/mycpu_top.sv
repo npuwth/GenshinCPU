@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-16 13:21:57
+ * @LastEditTime: 2021-04-16 13:25:02
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -207,14 +207,14 @@
     MUX2to1 U_MUX_RF_FOWARDA ( 
         .d0(ID_BusA1_o),
         .d1(WB_Result_o),
-        .sel2to1(RF_ForwardA),
+        .sel2_to_1(RF_ForwardA),
         .y(x.ID_BusA)
     );
 
     MUX2to1 U_MUX_RF_FOWARDB ( 
         .d0(ID_BusB1_o),
         .d1(WB_Result_o),
-        .sel2to1(RF_ForwardB),
+        .sel2_to_1(RF_ForwardB),
         .y(RF_Bus_o)
     );
 
