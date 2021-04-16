@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-16 16:00:50
+ * @LastEditTime: 2021-04-16 17:38:28
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -365,12 +365,14 @@
     /**********************************   SRAM接口支持   **********************************/
     assign data_sram_en = (
         (x.EXE_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
-        !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&    // WR地址正确 LOAD
-        !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确 store
-        )  ? 1 : 0;
-    assign data_sram_wdata = MEM_SWData_o;                  //store类型写入sram的数据
-    assign data_sram_addr = x.EXE_ALUOut;                   //data_sram写入，输出数据地址 TODO: 对地址上限作出限制
-    assign x.MEM_DMOut = data_sram_rdata;                   //读取结果直接放入DMOut
+        !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&      // WR地址正确 LOAD
+        !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM         // RD地址正确 store
+        )  ? 1 : 0; 
+    assign data_sram_wdata = MEM_SWData_o;                    //store类型写入sram的数据
+    assign data_sram_addr =  (data_sram_en & data_sram_wen) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
+                              x.MEM_ALUOut : (data_sram_en) ? //data_sram总使能为1&data_sram写使能为0 使用Load的地址
+                              x.EXE_ALUOut : 32'bx;    
+    assign x.MEM_DMOut = data_sram_rdata;                    //读取结果直接放入DMOut
 
     Exception U_Exception(
         // input
