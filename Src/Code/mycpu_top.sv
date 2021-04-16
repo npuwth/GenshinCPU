@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-16 13:21:57
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-16 16:00:50
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -207,14 +207,14 @@
     MUX2to1 U_MUX_RF_FOWARDA ( 
         .d0(ID_BusA1_o),
         .d1(WB_Result_o),
-        .sel2to1(RF_ForwardA),
+        .sel2_to_1(RF_ForwardA),
         .y(x.ID_BusA)
     );
 
     MUX2to1 U_MUX_RF_FOWARDB ( 
         .d0(ID_BusB1_o),
         .d1(WB_Result_o),
-        .sel2to1(RF_ForwardB),
+        .sel2_to_1(RF_ForwardB),
         .y(RF_Bus_o)
     );
 
@@ -364,9 +364,9 @@
     );
     /**********************************   SRAM接口支持   **********************************/
     assign data_sram_en = (
-        (x.MEM_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
-        !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&    // WR地址正确
-        !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确
+        (x.EXE_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
+        !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&    // WR地址正确 LOAD
+        !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM       // RD地址正确 store
         )  ? 1 : 0;
     assign data_sram_wdata = MEM_SWData_o;                  //store类型写入sram的数据
     assign data_sram_addr = x.EXE_ALUOut;                   //data_sram写入，输出数据地址 TODO: 对地址上限作出限制
