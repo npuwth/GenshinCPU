@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-16 00:43:42
+ * @LastEditTime: 2021-04-16 13:21:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -67,6 +67,10 @@
     logic [1:0]         ID_EXTOp_o;
     logic [1:0]         ID_rsrtRead_o;
 
+    logic               RF_ForwardA;
+    logic               RF_ForwardB;
+    logic [31:0]        ID_BusA1_o;
+    logic [31:0]        ID_BusB1_o;
     logic [31:0]        RF_Bus_o;
     logic [31:0]        HI_Bus_o;
     logic [31:0]        LO_Bus_o;
@@ -193,8 +197,25 @@
         .RFWr(x.WB_RegsWrType.RFWr),
         .ID_rs(x.ID_rs),
         .ID_rt(x.ID_rt),
-        .ID_BusA(x.ID_BusA),
-        .ID_BusB(RF_Bus_o)
+        .ID_BusA(ID_BusA1_o),
+        .ID_BusB(ID_BusB1_o)
+    );
+
+    assign RF_ForwardA = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rs);
+    assign RF_ForwardB = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rt);
+
+    MUX2to1 U_MUX_RF_FOWARDA ( 
+        .d0(ID_BusA1_o),
+        .d1(WB_Result_o),
+        .sel2to1(RF_ForwardA),
+        .y(x.ID_BusA)
+    );
+
+    MUX2to1 U_MUX_RF_FOWARDB ( 
+        .d0(ID_BusB1_o),
+        .d1(WB_Result_o),
+        .sel2to1(RF_ForwardB),
+        .y(RF_Bus_o)
     );
 
     HILO U_HILO (
