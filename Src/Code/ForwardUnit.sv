@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-04-17 01:28:02
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-17 10:01:30
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\ForwardUnit.sv
  * 
@@ -12,7 +12,7 @@
 module ForwardUnit (
      EXE_rs,EXE_rt,MEM_Dst ,WB_Dst,
      EXE_ForwardA,EXE_ForwardB,//两个选择信号
-     WB_RegsWrType,MEM_RegsWrType
+     WB_RegsWrType,MEM_RegsWrType,EXE_RegsWrType
 );
     input RegsWrType EXE_RegsWrType;
     input RegsWrType WB_RegsWrType;
@@ -38,14 +38,14 @@ module ForwardUnit (
             if (EXE_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
                 EXE_ForwardA_r = 2'd1;
             end else begin
-                EXE_ForwardA_r = 2'dx;
+                EXE_ForwardA_r = 2'd0;
             end
         end
         else if ((WB_Wr) && WB_Dst != 5'd0 && EXE_rs == WB_Dst)  begin
             if (EXE_RegsWrType == WB_RegsWrType) begin
                 EXE_ForwardA_r = 2'd2;
             end else begin
-                EXE_ForwardA_r = 2'dx;
+                EXE_ForwardA_r = 2'd0;
             end
         end
         else EXE_ForwardA_r= 2'd0;
@@ -61,14 +61,14 @@ module ForwardUnit (
             if (EXE_RegsWrType == MEM_RegsWrType) begin//avoid CP0 and regsfile conflict
                 EXE_ForwardB_r = 2'd1;
             end else begin
-                EXE_ForwardB_r = 2'dx;
+                EXE_ForwardB_r = 2'd0;
             end
         end
         else if ((WB_Wr) && WB_Dst != 5'd0 && EXE_rt == WB_Dst)  begin
             if (EXE_RegsWrType == WB_RegsWrType) begin//avoid CP0 and regsfile conflict
                 EXE_ForwardB_r = 2'd2;
             end else begin
-                EXE_ForwardB_r = 2'dx;
+                EXE_ForwardB_r = 2'd0;
             end
         end
         else EXE_ForwardB_r = 2'd0;

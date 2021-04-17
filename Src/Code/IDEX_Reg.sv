@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-16 14:26:17
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-17 10:44:21
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -36,6 +36,7 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port ,
       port.EXE_ALUSrcA <= 1'b0;
       port.EXE_ALUSrcB <= 1'b0;
       port.EXE_Instr <= 32'b0;
+      port.EXE_RegsReadSel <= 2'b0;
     end
     else begin
       port.EXE_BusA <= port.ID_BusA;
@@ -58,6 +59,7 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port ,
       port.EXE_ALUSrcA <= port.ID_ALUSrcA;
       port.EXE_ALUSrcB <= port.ID_ALUSrcB;
       port.EXE_Instr <= port.ID_Instr;
+      port.EXE_RegsReadSel <= port.ID_RegsReadSel;
     end
   end
 

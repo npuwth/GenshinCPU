@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 01:03:45
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-17 10:43:26
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -36,34 +36,33 @@
  );
    input                clk;
    input                resetn;
-   input [5:0]          ext_int;               // 6个硬件中断输入
-   input [31:0]         inst_sram_rdata;    // icache读数据
-   input [31:0]         data_sram_rdata;    // dcache读数据
+   input [5:0]          ext_int;               // 6个硬件中断输�?
+   input [31:0]         inst_sram_rdata;    // icache读数�?
+   input [31:0]         data_sram_rdata;    // dcache读数�?
 
-   output               inst_sram_en;       // 写使能
-   output [3:0]         inst_sram_wen;      // 字节写使能
-   output [31:0]        inst_sram_addr;     // 读写地址，字节寻址
-   output [31:0]        inst_sram_wdata;    // ram写数据
+   output               inst_sram_en;       // 写使�?
+   output [3:0]         inst_sram_wen;      // 字节写使�?
+   output [31:0]        inst_sram_addr;     // 读写地址，字节寻�?
+   output [31:0]        inst_sram_wdata;    // ram写数�?
 
-   output               data_sram_en;       // 写使能
-   output [3:0]         data_sram_wen;      // 字节写使能
-   output [31:0]        data_sram_addr;     // 读写地址，字节寻址
-   output [31:0]        data_sram_wdata;    // ram写数据
+   output               data_sram_en;       // 写使�?
+   output [3:0]         data_sram_wen;      // 字节写使�?
+   output [31:0]        data_sram_addr;     // 读写地址，字节寻�?
+   output [31:0]        data_sram_wdata;    // ram写数�?
 
    output [31:0]        debug_wb_pc;        // 写回级的PC
-   output [31:0]        debug_wb_rf_wdata;  // 写回的数据
-   output [3:0]         debug_wb_rf_wen;    // 写回级的写使能
-   output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址（序号）
+   output [31:0]        debug_wb_rf_wdata;  // 写回的数�?
+   output [3:0]         debug_wb_rf_wen;    // 写回级的写使�?
+   output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地�?（序号）
 
     //logic rst;
     logic [2:0]         PCSel_o;
 
-    logic [31:0]        JumpAddr_o;//PCSel多选器
+    logic [31:0]        JumpAddr_o;//PCSel多�?�器
     logic [31:0]        BranchAddr_o;
     logic [31:0]        PC_4_o;
     //logic [31:0]        EPCData_o;
 
-    logic [1:0]         ID_RegsReadSel_o;//由译码产生 作用于ID级别的读取数据
     logic [1:0]         ID_EXTOp_o;
     logic [1:0]         ID_rsrtRead_o;
 
@@ -75,7 +74,7 @@
     logic [31:0]        HI_Bus_o;
     logic [31:0]        LO_Bus_o;
 
-    //所有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的一些信号（至少它与流水线寄存器无关，）
+    //�?有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的�?些信号（至少它与流水线寄存器无关，）
 // *******************************Johnson Yang & WTH **********/
     logic [31:0]        data_sram_addr_o;         //虚地址 data
     ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
@@ -84,18 +83,18 @@
     logic               IDEXE_Flush_Exception_o;  //Exception 传出的IDEXE_flush信号
     logic               IDEXE_Flush_DataHazard_o; //LOAD指令后的阻塞
     logic [1:0]         IsExceptionorEret_o;      //送给PCSEL
-    logic               MEM_IsDelaySlot_o;        //访存阶段是否是延迟槽（送给CP0）
-    logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被选择的数据信号
-    AsynExceptType      Interrupt_o;              //6个外部硬件中断输入
-    logic               CP0TimerInterrupt_o;      //定时器中断
-    logic [31:0]        MEM_SWData_o;             //Store类型写入data_sram写数据
+    logic               MEM_IsDelaySlot_o;        //访存阶段是否是延迟槽（�?�给CP0�?
+    logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被�?�择的数据信�?
+    AsynExceptType      Interrupt_o;              //6个外部硬件中断输�?
+    logic               CP0TimerInterrupt_o;      //定时器中�?
+    logic [31:0]        MEM_SWData_o;             //Store类型写入data_sram写数�?
     //CP0寄存器的定义
-    logic [31:0]        CP0BadVAddr;              //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
-    logic [31:0]        CP0Count;                 //9号寄存器  Count寄存器的值
-    logic [31:0]        CP0Compare;               //11号寄存器 Compare寄存器的值
-    logic [31:0]        CP0Status;                //12号寄存器 Status寄存器的值
-    logic [31:0]        CP0Cause;                 //13号寄存器 Cause寄存器的值
-    logic [31:0]        CP0Epc;                   //14号寄存器 EPC寄存器的值
+    logic [31:0]        CP0BadVAddr;              //8号寄存器  BadVAddr寄存器的�?:�?新地�?相关例外的出错地�?
+    logic [31:0]        CP0Count;                 //9号寄存器  Count寄存器的�?
+    logic [31:0]        CP0Compare;               //11号寄存器 Compare寄存器的�?
+    logic [31:0]        CP0Status;                //12号寄存器 Status寄存器的�?
+    logic [31:0]        CP0Cause;                 //13号寄存器 Cause寄存器的�?
+    logic [31:0]        CP0Epc;                   //14号寄存器 EPC寄存器的�?
     logic [31:0]        WB_DMResult_o;
 //---------------------------------------------seddon
     logic [1:0]         EXE_ForwardA_o,EXE_ForwardB_o; 
@@ -132,7 +131,7 @@
         .y(x.IF_NPC)
     );
     assign PC_4_o = x.IF_PC + 4;
-    assign x.IF_PCAdd1 = PC_4_o;  //这里由于sram的原因，pc和指令会差4，所以不用PC_4_o，就用PC来表示PC_4_o
+    assign x.IF_PCAdd1 = PC_4_o;  //这里由于sram的原因，pc和指令会�?4，所以不用PC_4_o，就用PC来表示PC_4_o
 
 
     assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
@@ -164,12 +163,12 @@
 
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
-    assign inst_sram_addr  = x.IF_NPC;                 // TODO: 可能需要限制地址？
-    assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电平 & IF_PCWr为1 读取数据
+    assign inst_sram_addr  = x.IF_NPC;                 // TODO: 可能�?要限制地�?�?
+    assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电�? & IF_PCWr�?1 读取数据
     assign inst_sram_wen   = 4'b0000;
     assign inst_sram_wdata = 32'b0;
    
-   // TODO: 目前没有加入取指地址异常的检测
+   // TODO: 目前没有加入取指地址异常的检�?
 
     Control U_Control(
         //input
@@ -184,7 +183,7 @@
         .ID_ExceptType(x.ID_ExceptType),
         .ID_ALUSrcA(x.ID_ALUSrcA),
         .ID_ALUSrcB(x.ID_ALUSrcB),
-        .ID_RegsReadSel(ID_RegsReadSel_o),
+        .ID_RegsReadSel(x.ID_RegsReadSel),
         .ID_EXTOp(ID_EXTOp_o),
         .ID_isImmeJump(x.ID_IsAImmeJump),
         .ID_BranchType(x.ID_BranchType),
@@ -242,7 +241,7 @@
         .d1(HI_Bus_o),
         .d2(LO_Bus_o),
         .d3(ID_CP0DataOut_o),
-        .sel4_to_1(ID_RegsReadSel_o),
+        .sel4_to_1(x.ID_RegsReadSel),
         .y(x.ID_BusB)
     );
 
@@ -266,14 +265,14 @@
         .MEM_Dst(x.MEM_Dst),
         .WB_Dst(x.WB_Dst),
         .EXE_ForwardA(EXE_ForwardA_o),
-        .EXE_ForwardB(EXE_ForwardB_o)//该模块已检查
+        .EXE_ForwardB(EXE_ForwardB_o)//该模块已�?�?
     );
 
     BranchSolve U_BranchSolve(
-        .EXE_BranchType(x.EXE_BranchType),     //新定义的信号，得在定义里面新加
+        .EXE_BranchType(x.EXE_BranchType),     //新定义的信号，得在定义里面新�?
         .EXE_OutA(EXE_OutA_o),
         .EXE_OutB(EXE_OutB_o),//INPUT
-        .IFID_Flush(IFID_Flush_BranchSolvement_o)//这个阻塞信号的线没有加，只是定义了一个
+        .IFID_Flush(IFID_Flush_BranchSolvement_o)//这个阻塞信号的线没有加，只是定义了一�?
     );
     
     MUX3to1 U_MUXA(
@@ -282,7 +281,7 @@
         .d2(WB_Result_o),
         .sel3_to_1(EXE_ForwardA_o),
         .y(EXE_OutA_o)
-    );//EXE级组合逻辑三选一A
+    );//EXE级组合�?�辑三�?�一A
     
     MUX3to1 U_MUXB(
         .d0(x.EXE_BusB),
@@ -290,7 +289,7 @@
         .d2(WB_Result_o),
         .sel3_to_1(EXE_ForwardB_o),
         .y(EXE_OutB_o)
-    );//EXE级组合逻辑三选一B
+    );//EXE级组合�?�辑三�?�一B
 
     MUX2to1 U_MUXSrcA(
         .d0(EXE_OutA_o),
@@ -312,7 +311,7 @@
         .d2(5'd31),
         .sel3_to_1(x.EXE_DstSel),
         .y(x.EXE_Dst)
-    );//EXE级Dst三选一
+    );//EXE级Dst三�?�一
     
     ALU U_ALU(
         .EXE_ExceptType(x.EXE_ExceptType),
@@ -350,7 +349,7 @@
         resetn
     );
 
-    // Ltype信号 & DMWr 写使能信号才会触发data_ram的使能
+    // Ltype信号 & DMWr 写使能信号才会触发data_ram的使�?
     DCache U_Dachce(
         // input
         .clk(clk),
@@ -361,7 +360,7 @@
         .MEM_ExceptType(x.MEM_ExceptType),
         // output
         .MEM_ExceptType_new(MEM_ExceptType_AfterDM_o),      //新的异常信号
-        .data_sram_wen(data_sram_wen),                      //store类型，写入sram的字节使能
+        .data_sram_wen(data_sram_wen),                      //store类型，写入sram的字节使�?
         .MEM_SWData(MEM_SWData_o)                           //StoreType要写入的信号
 
     );
@@ -389,27 +388,27 @@
         // input
         .clk(clk),
         .rst(resetn),
-        .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输入
-        .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输入
-        .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump),                     //延迟槽（检查WB级的isbranch信号）
+        .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输�?
+        .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输�?
+        .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump),                     //延迟槽（�?查WB级的isbranch信号�?
         .CurrentInstr_i(x.MEM_Instr),                       //指令
         .CP0Status_i(CP0Status),
         .CP0Cause_i(CP0Cause),
         .CP0Epc_i(CP0Epc),
-        .WB_CP0RegWr_i(x.WB_RegsWrType.CP0Wr),              //CP0写使能（用于旁路）
-        .WB_CP0RegWrAddr_i(x.WB_Dst),                       //CP0写地址（用于旁路）
-        .WB_CP0RegWrData_i(WB_Result_o),                    //CP0写结果（用于旁路）
+        .WB_CP0RegWr_i(x.WB_RegsWrType.CP0Wr),              //CP0写使能（用于旁路�?
+        .WB_CP0RegWrAddr_i(x.WB_Dst),                       //CP0写地�?（用于旁路）
+        .WB_CP0RegWrData_i(WB_Result_o),                    //CP0写结果（用于旁路�?
          // output
-        .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信号
+        .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信�?
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
         .IDEXE_Flush(IDEXE_Flush_Exception_o),                        //flush
         .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
-        .IsExceptionorEret(IsExceptionorEret_o),            //传递给PCSEL信号
-        .ExceptType_o(x.MEM_ExceptType_final),              //最终的异常类型
+        .IsExceptionorEret(IsExceptionorEret_o),            //传�?�给PCSEL信号
+        .ExceptType_o(x.MEM_ExceptType_final),              //�?终的异常类型
         .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
-        .CP0Epc_o(MEM_CP0Epc_o)                               //CP0中EPC寄存器的最新值
+        .CP0Epc_o(MEM_CP0Epc_o)                               //CP0中EPC寄存器的�?新�??
     );
-// WB级   
+// WB�?   
     EXT2 U_EXT2(
         .WB_DMOut_i(x.WB_DMOut),
         .WB_ALUOut_i(x.WB_ALUOut),
@@ -418,26 +417,26 @@
     );
 
     MUX4to1 #(32) U_MUXINWB(
-        .d0(x.WB_PCAdd1+4),                                 // JAL,JALR等指令 将PC+8写回RF
+        .d0(x.WB_PCAdd1+4),                                 // JAL,JALR等指�? 将PC+8写回RF
         .d1(x.WB_ALUOut),                                   // ALU计算结果
-        .d2(x.WB_OutB),                                     // MTC0 MTHI LO等指令需要写寄存器数据
+        .d2(x.WB_OutB),                                     // MTC0 MTHI LO等指令需要写寄存器数�?
         .d3(WB_DMResult_o),                                 // DM结果
         .sel4_to_1(x.WB_WbSel),
-        .y(WB_Result_o)                                     // 最终写回结果
+        .y(WB_Result_o)                                     // �?终写回结�?
     );
     cp0_reg U_CP0(
         //input
         .rst(resetn),
         .clk(clk),
-        .CP0Wr_i(x.WB_RegsWrType.CP0Wr),                    //写使能
+        .CP0Wr_i(x.WB_RegsWrType.CP0Wr),                    //写使�?
         .CP0WrAddr_i(x.WB_Dst),                             //写回地址
         .CP0WrDataOut_i(WB_Result_o),                       //写入数据
         .CP0RdAddr_i(x.ID_Instr[15:11]),
         .ExceptType_i(x.WB_ExceptType),                     //异常
-        .Interrupt_i(Interrupt_o),                          //在调试时assign了全零的值
+        .Interrupt_i(Interrupt_o),                          //在调试时assign了全零的�?
         .PCAdd1_i(x.WB_PCAdd1),                             //PC+1
-        .IsDelaySlot_i(x.WB_IsDelaySlot),                   //是否延迟槽
-        .VirtualAddr_i(x.WB_ALUOut),                        //读取&写入地址未对齐例外 访问的虚拟地址
+        .IsDelaySlot_i(x.WB_IsDelaySlot),                   //是否延迟�?
+        .VirtualAddr_i(x.WB_ALUOut),                        //读取&写入地址未对齐例�? 访问的虚拟地�?
 
         // output        
         .CP0RdDataOut_o(ID_CP0DataOut_o),
@@ -447,14 +446,14 @@
         .CP0Status_o(CP0Status),
         .CP0Cause_o(CP0Cause),
         .CP0EPC_o(CP0Epc),
-        .CP0TimerInterrupt_o(TimerInterrupt_o)              //定时器中断
+        .CP0TimerInterrupt_o(TimerInterrupt_o)              //定时器中�?
         );
 
     /**********************************   SRAM接口支持   **********************************/
     assign debug_wb_pc = x.WB_PCAdd1-4;                     //写回级的PC,应该是减4
-    assign debug_wb_rf_wdata = WB_Result_o;                 //写回的32位结果
+    assign debug_wb_rf_wdata = WB_Result_o;                 //写回�?32位结�?
     assign debug_wb_rf_wen = (x.WB_RegsWrType.RFWr) ? 4'b1111 : 4'b0000; //4位字节写使能
-    assign debug_wb_rf_wnum = x.WB_Dst;                     //写地址
+    assign debug_wb_rf_wnum = x.WB_Dst;                     //写地�?
 
 
  
