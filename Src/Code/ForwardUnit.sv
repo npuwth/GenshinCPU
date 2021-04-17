@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-04-17 11:35:40
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-17 16:02:13
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\ForwardUnit.sv
  * 
@@ -12,9 +12,9 @@
 module ForwardUnit (
      EXE_rs,EXE_rt,EXE_rd,MEM_Dst,WB_Dst,
      EXE_ForwardA,EXE_ForwardB,//两个选择信号
-     WB_RegsWrType,MEM_RegsWrType,EXE_RegsWrType,EXE_RegsReadSel
+     WB_RegsWrType,MEM_RegsWrType,EXE_RegsReadSel
 );
-    input RegsWrType EXE_RegsWrType;
+    //input RegsWrType EXE_RegsWrType;
     input RegsWrType WB_RegsWrType;
     input RegsWrType MEM_RegsWrType;
     input logic [4:0] EXE_rt,EXE_rs,EXE_rd;         // 输入五位宽地址信号

@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-03 17:39:00
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-17 16:00:11
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\ALU.sv
  * 
@@ -69,7 +69,8 @@ end
     assign EXE_ExceptType_new.Eret = EXE_ExceptType.Eret;
     assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_ExceptType.WrWrongAddressinMEM;
     assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_ExceptType.RdWrongAddressinMEM;
-    assign EXE_ExceptType_new.Overflow = (`EXE_ALUOp_ADD||`EXE_ALUOp_SUB)&&((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
+    assign EXE_ExceptType_new.Overflow = (EXE_ALUOp == `EXE_ALUOp_ADD )&&( ( (!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) )) ||
+                                         (EXE_ALUOp == `EXE_ALUOp_SUB)&&( ( (!EXE_ResultA[31] && EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && !EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) ));
     assign EXE_ALUOut = EXE_ALUOut_r;
     
 endmodule

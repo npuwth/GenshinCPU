@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 14:43:23
+ * @LastEditTime: 2021-04-17 15:15:23
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -171,7 +171,7 @@
    
     MMU U_MMU_inst_sram(
         .virt_addr(inst_sram_addr_o),
-        .phsy_addr(inst_sram_addr),
+        .phsy_addr(inst_sram_addr)
     );
 
 
