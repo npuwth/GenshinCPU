@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-17 10:33:06
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-17 17:37:51
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -322,7 +322,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '0;          //EXT
+        ID_EXTOp      = 'x;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
@@ -402,7 +402,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '0;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
@@ -418,7 +418,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '0;          //EXT
+        ID_EXTOp      = 'x;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
@@ -434,7 +434,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = '0;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
@@ -864,7 +864,25 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = 'x;
       end
+      OP_SRL:begin
+        ID_ALUOp      = `EXE_ALUOp_SRL;    //ALU操作
+        ID_LoadType   = 'x;                 //访存相关 
+        ID_StoreType  = 'x;                 //存储相关
+        ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
+        ID_DstSel     = `DstSel_rd;         //Rtype选rd
+        ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
+        ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
+        ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
+        ID_EXTOp      = '0;                 //R型无关
+        ID_isImmeJump = `IsNotAImmeJump;
+        ID_BranchType = 'x;
+      end
+
       OP_JR:begin
         ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
         ID_LoadType   = '0;

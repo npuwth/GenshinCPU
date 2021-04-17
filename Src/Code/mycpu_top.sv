@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 15:15:23
+ * @LastEditTime: 2021-04-17 16:28:20
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -255,11 +255,15 @@
     );
 
     DataHazard U_DataHazard ( 
+        //input
         .ID_rs(x.ID_rs),
         .ID_rt(x.ID_rt),
         .ID_rsrtRead(ID_rsrtRead_o),
         .EXE_rt(x.EXE_rt),
         .EXE_ReadMEM(x.EXE_LoadType.ReadMem),
+        .EXE_isStore(x.EXE_StoreType.DMWr),
+        .ID_isLoad(x.ID_LoadType.ReadMem),
+        //output
         .IF_PCWr(x.IF_PCWr),
         .IF_IDWr(x.IF_IDWr),
         .IDEXE_Flush(IDEXE_Flush_DataHazard_o)

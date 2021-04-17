@@ -24,7 +24,7 @@ always_ff @(posedge clk) begin// write the RF
         regs <= '0;
     end
     else begin
-        if (RFWr==1'b1) begin
+        if (RFWr==1'b1 && WB_Dst != 5'b0) begin
             regs[WB_Dst] <= WB_Result;
         end
         else begin
