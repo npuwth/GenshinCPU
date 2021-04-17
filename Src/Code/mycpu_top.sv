@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 11:40:48
+ * @LastEditTime: 2021-04-17 12:16:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -264,6 +264,7 @@
         .EXE_rs(x.EXE_rs),
         .MEM_Dst(x.MEM_Dst),
         .WB_Dst(x.WB_Dst),
+        .EXE_RegsReadSel(x.EXE_RegsReadSel),
         .EXE_ForwardA(EXE_ForwardA_o),
         .EXE_ForwardB(EXE_ForwardB_o)//该模块已�?�?
     );
@@ -306,7 +307,7 @@
         .y(EXE_ResultB_o)
     );//EXE级四选一B之后的那个二选一
 
-    assign EXE_OutB = EXE_OutB_o;
+    assign x.EXE_OutB = EXE_OutB_o;
 
     MUX3to1#(5) U_EXEDstSrc(
         .d0(x.EXE_rd),
