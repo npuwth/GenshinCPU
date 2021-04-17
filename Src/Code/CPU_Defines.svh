@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-17 10:53:36
+ * @LastEditTime: 2021-04-17 11:45:16
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -297,6 +297,7 @@ interface PipeLineRegsInterface (
 	input					ID_ALUSrcA,
 	input					ID_ALUSrcB,
 	input					ID_BranchType,
+	input                   ID_RegsReadSel,
     //output	
     output 					EXE_BusA,
     output 					EXE_BusB,
@@ -318,7 +319,8 @@ interface PipeLineRegsInterface (
 	output 					EXE_IsAImmeJump,
 	output					EXE_ALUSrcA,
 	output                  EXE_ALUSrcB,
-	output					EXE_BranchType
+	output					EXE_BranchType,
+	output                  EXE_RegsReadSel
   );					
 
   modport EXE_MEM (  //EXEMEM_modport

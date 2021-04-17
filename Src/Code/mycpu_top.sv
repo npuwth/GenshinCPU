@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 11:38:29
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-17 11:40:48
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -305,6 +305,8 @@
         .sel2_to_1(x.EXE_ALUSrcB),//
         .y(EXE_ResultB_o)
     );//EXE级四选一B之后的那个二选一
+
+    assign EXE_OutB = EXE_OutB_o;
 
     MUX3to1#(5) U_EXEDstSrc(
         .d0(x.EXE_rd),
