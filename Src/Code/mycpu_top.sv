@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 12:16:44
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-17 14:43:23
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -75,8 +75,9 @@
     logic [31:0]        LO_Bus_o;
 
     //�?有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的�?些信号（至少它与流水线寄存器无关，）
-// *******************************Johnson Yang & WTH **********/
+// *******************************Johnson Yang & WTH &Juan **********/
     logic [31:0]        data_sram_addr_o;         //虚地址 data
+    logic [31:0]        inst_sram_addr_o;
     ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
     logic               IFID_Flush_Exception_o;   //Exception 传出的IFID_flush信号
     logic               IFID_Flush_BranchSolvement_o;
@@ -163,11 +164,19 @@
 
     /**********************************   SRAM接口支持   **********************************/
     assign x.IF_Instr      = inst_sram_rdata;
-    assign inst_sram_addr  = x.IF_NPC;                 // TODO: 可能�?要限制地�?�?
+    assign inst_sram_addr_o  = x.IF_NPC;                 // inst_sram_addr_o 虚拟地址
     assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电�? & IF_PCWr�?1 读取数据
     assign inst_sram_wen   = 4'b0000;
     assign inst_sram_wdata = 32'b0;
    
+    MMU U_MMU_inst_sram(
+        .virt_addr(inst_sram_addr_o),
+        .phsy_addr(inst_sram_addr),
+    );
+
+
+
+
    // TODO: 目前没有加入取指地址异常的检�?
 
     Control U_Control(
