@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-20 18:32:04
+ * @LastEditTime: 2021-04-20 19:53:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -206,7 +206,8 @@ interface PipeLineRegsInterface (
 	//logic                 EXE_IsABranch;
 	//logic                 EXE_IsAImmeJump;
 	logic       [1:0]       EXE_RegsReadSel;
-    logic 		 			EXEMEM_Flush;		
+    logic 		 			EXEMEM_Flush;
+	logic                   EXE_MEMWr;		
 //EXEMEM,out					
     logic 		[31:0] 		MEM_ALUOut;			
     logic 		[31:0] 		MEM_PCAdd1;	
@@ -233,6 +234,7 @@ interface PipeLineRegsInterface (
 	//ExceptinPipeType 		MEM_ExceptType;
 	//logic                 MEM_IsABranch;
 	//logic                 MEM_IsAImmeJump;
+	logic                   MEM_WBWr;
 //EXEWB,out
 	logic 		[1:0]  		WB_WbSel;        	// 选择写回RF的数�?
 	logic 		[31:0] 		WB_PCAdd1;      	// PC+1
@@ -342,6 +344,7 @@ interface PipeLineRegsInterface (
 	//input 					EXE_IsABranch,
 	input 					EXE_IsAImmeJump,
 	input 					EXE_BranchType,
+	input                   EXE_MEMWr,
     //output
     output 					MEM_StoreType,
     output 					MEM_ExceptType,
@@ -373,6 +376,7 @@ interface PipeLineRegsInterface (
 	input                   MEM_IsAImmeJump,
 	input					MEM_IsDelaySlot,
 	input                   MEM_Instr,
+	input                   MEM_WBWr,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,

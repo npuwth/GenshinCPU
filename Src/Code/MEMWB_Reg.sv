@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-04-16 13:30:07
+ * @LastEditTime: 2021-04-20 19:56:11
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -31,7 +31,7 @@ module MEMWB_Reg( PipeLineRegsInterface.MEM_WB port,
       port.WB_IsDelaySlot <= 1'b0;
       port.WB_Instr <= 32'b0;
     end
-    else begin
+    else if( port.MEM_WBWr ) begin
       port.WB_WbSel <= port.MEM_WbSel;
       port.WB_PCAdd1 <= port.MEM_PCAdd1;
       port.WB_ALUOut <= port.MEM_ALUOut;

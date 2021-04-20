@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-20 18:39:14
+ * @LastEditTime: 2021-04-20 20:17:38
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -120,6 +120,8 @@
     assign x.IF_PCWr = DH_IF_PCWr_o & ~EXE_MULTDIVStall;
     assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;
     assign x.ID_EXEWr = ~EXE_MULTDIVStall;
+    assign x.EXE_MEMWr = 1;
+    assign x.MEM_WBWr = 1;
 
     assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
                            IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
@@ -299,6 +301,7 @@
         .MEM_RegsWrType(x.MEM_RegsWrType),
         .EXE_rt(x.EXE_rt),
         .EXE_rs(x.EXE_rs),
+        .EXE_rd(x.EXE_rd),
         .MEM_Dst(x.MEM_Dst),
         .WB_Dst(x.WB_Dst),
         .EXE_RegsReadSel(x.EXE_RegsReadSel),

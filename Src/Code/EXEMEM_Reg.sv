@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-04-15 23:00:33
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-20 19:55:54
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -30,7 +30,7 @@ module EXEMEM_Reg( PipeLineRegsInterface.EXE_MEM port,
       port.MEM_IsAImmeJump <= 1'b0;
       port.MEM_Instr <= 32'b0;
     end
-    else begin
+    else if( port.EXE_MEMWr ) begin
       port.MEM_ALUOut <= port.EXE_ALUOut;
       port.MEM_PCAdd1 <= port.EXE_PCAdd1;
       port.MEM_WbSel <= port.EXE_WbSel;
