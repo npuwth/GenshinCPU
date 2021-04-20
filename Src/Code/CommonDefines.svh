@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-15 22:55:46
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-20 20:56:05
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -80,9 +80,9 @@
 `define ALUSrcB_Sel_Imm     1'b1
 
 `define RegsReadSel_RF      2'b00 //RF读出的数据
-`define RegsReadSel_CP0     2'b01 //CP0读出的数据
-`define RegsReadSel_HI      2'b10 //HI寄存器读出的数据
-`define RegsReadSel_LO      2'b11 //LO寄存器读出的数据
+`define RegsReadSel_HI      2'b01 //HI寄存器读出的数据
+`define RegsReadSel_LO      2'b10 //LO寄存器读出的数据
+`define RegsReadSel_CP0     2'b11 //CP0读出的数据
 
 `define IsAImmeJump         1'b1  //特指 j jal
 `define IsNotAImmeJump      1'b0
