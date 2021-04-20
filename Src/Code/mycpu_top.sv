@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-20 17:27:57
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-20 10:24:44
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -104,13 +104,18 @@
     logic [31:0]        EXE_OutA_o,EXE_OutB_o;
     logic [31:0]        WB_Result_o;
     logic [31:0]        EXE_ResultA_o,EXE_ResultB_o;
+    logic [31:0]        EXE_MULTDIVtoLO;
+    logic [31:0]        EXE_MULTDIVtoHI;
+    logic               EXE_Finish;   
+    logic               EXE_MULTDIVStall;       
+
 //------------------------seddonend
 
     logic [31:0]        ID_CP0DataOut_o;
 
-    assign Interrupt_o =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
+    assign Interrupt_o   =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     // assign x.rst       =  ~resetn;                       //高电平有效的复位信号
-    assign x.IFID_Flush =  IFID_Flush_Exception_o | 
+    assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
                            IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
     assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
                            IDEXE_Flush_DataHazard_o;  // 在LOAD阻塞级和 exception级 都会产生IDEXE_Flush信号
@@ -218,33 +223,36 @@
     assign ID_RF_ForwardB = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rt);
     assign ID_CP0_Forward = x.WB_RegsWrType.CP0Wr && (x.WB_Dst == x.ID_rd);
 
-    MUX2to1 U_MUX_RF_FORWARDA ( 
+    MUX2to1 #(32) U_MUX_RF_FORWARDA ( 
         .d0(ID_BusA1_o),
         .d1(WB_Result_o),
         .sel2_to_1(ID_RF_ForwardA),
         .y(x.ID_BusA)
     );
 
-    MUX2to1 U_MUX_RF_FORWARDB ( 
+    MUX2to1 #(32) U_MUX_RF_FORWARDB ( 
         .d0(ID_BusB1_o),
         .d1(WB_Result_o),
         .sel2_to_1(ID_RF_ForwardB),
         .y(RF_Bus_o)
     );
 
-    MUX2to1 U_MUX_CP0_FORWARD ( 
+    MUX2to1 #(32) U_MUX_CP0_FORWARD ( 
         .d0(ID_CP0DataOut_o),
         .d1(WB_Result_o),
         .sel2_to_1(ID_CP0_Forward),
         .y(CP0_Bus_o)
     );
-
+    
     HILO U_HILO (
         .clk(clk),
         .rst(resetn),
+        .MULT_DIV_finish(EXE_Finish),
         .HIWr(x.EXE_RegsWrType.HIWr), //把写HI，LO统一在EXE级
         .LOWr(x.EXE_RegsWrType.LOWr),
         .Data_i(x.EXE_OutB),
+        .EXE_MULTDIVtoLO(EXE_MULTDIVtoLO),
+        .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
         .HI_o(HI_Bus_o),
         .LO_o(LO_Bus_o)
     );
@@ -347,6 +355,17 @@
         .EXE_ALUOp(x.EXE_ALUOp),
         .EXE_ALUOut(x.EXE_ALUOut),
         .EXE_ExceptType_new(x.EXE_ExceptType_final)//input
+    );
+    MULTDIV U_MULTDIV(
+        .aclk(clk),    
+        .rst(resetn),            
+        .EXE_ResultA(EXE_ResultA_o),
+        .EXE_ResultB(EXE_ResultB_o),
+        .EXE_ALUOp(x.EXE_ALUOp),
+        .EXE_MULTDIVtoLO(EXE_MULTDIVtoLO),
+        .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
+        .EXE_Finish(EXE_Finish),
+        .EXE_MULTDIVStall(EXE_MULTDIVStall)
     );
 //---------------------------------------------seddonend
     

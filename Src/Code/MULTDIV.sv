@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-20 09:52:49
+ * @LastEditTime: 2021-04-20 10:00:23
  * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\MULTDIV.sv
@@ -12,10 +12,9 @@
 module MULTDIV(
     input logic           aclk,    
     input logic           rst,             // 除法状态机的复位信号
-    input logic  [4:0]    opcode,
+    input logic  [4:0]    EXE_ALUOp,
     input logic  [31:0]   EXE_ResultA,
     input logic  [31:0]   EXE_ResultB,
-    input logic  [4:0]    EXE_ALUOp,
     output logic [31:0]   EXE_MULTDIVtoLO,
     output logic [31:0]   EXE_MULTDIVtoHI,
     output logic          EXE_Finish,
@@ -125,9 +124,9 @@ always_comb begin
     end
 // 除法状态机的控制信号
 always_comb begin
-        if (prestate == T && (opcode == `EXE_ALUOp_DIV || opcode == `EXE_ALUOp_DIVU)) begin
+        if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)) begin
             nextstate = S;
-        end else if (prestate == T && (opcode != `EXE_ALUOp_DIV && opcode != `EXE_ALUOp_DIVU)) begin
+        end else if (prestate == T && (EXE_ALUOp != `EXE_ALUOp_DIV && EXE_ALUOp != `EXE_ALUOp_DIVU)) begin
             nextstate = T;
         end 
         else if (prestate == S && 
@@ -185,5 +184,5 @@ Unsigned_div U_UnsignedDIV (
                              (Signed_div_finish   ) ? Signed_dout_tdata[31:0]   : 
                              (Unsigned_div_finish ) ? Unsigned_dout_tdata[31:0] : 31'bx;
     //assign EXE_ALUOut = ;
-    assign EXE_MULTDIVStall = ((opcode == `EXE_ALUOp_DIV || opcode == `EXE_ALUOp_DIVU) && div_finish == 1'b0) ? 1 : 0 ;
+    assign EXE_MULTDIVStall = ((EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) && div_finish == 1'b0) ? 1 : 0 ;
 endmodule
