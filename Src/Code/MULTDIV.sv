@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-20 10:00:23
+ * @LastEditTime: 2021-04-20 20:30:14
  * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\MULTDIV.sv
@@ -54,9 +54,14 @@ logic  [63:0]   Unsigned_dout_tdata;
 logic  [1:0]    nextstate;
 logic  [1:0]    prestate;  
 
-assign dividend_tdata = EXE_ResultA;  // A中保存的是被除数
-assign divisor_tdata  = EXE_ResultB;  // B中保存的是除数
 
+
+always_ff @(posedge aclk or negedge rst) begin
+    if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) ) begin
+        dividend_tdata <= EXE_ResultA;
+        divisor_tdata  <= EXE_ResultB;
+    end
+end
 
 always_comb begin
     unique case (EXE_ALUOp)
