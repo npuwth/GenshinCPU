@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-04-20 17:32:44
+ * @LastEditTime: 2021-04-20 17:52:06
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\ForwardUnit.sv
@@ -56,6 +56,12 @@ module ForwardUnit (
                     else begin
                         EXE_ForwardB_r =2'b00;
                     end
+                end
+                2'b01:begin//HI
+                    EXE_ForwardB_r =2'b00;
+                    end
+                2'b10:begin//LO
+                    EXE_ForwardB_r =2'b00;
                 end
                 2'b11:begin//CP0
                     if(MEM_RegsWrType.CP0Wr && EXE_rd == MEM_Dst)begin
