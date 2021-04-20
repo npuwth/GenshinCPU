@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-04-20 10:21:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-20 20:05:20
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -31,23 +31,46 @@ module HILO(
     output logic  [`RegBus]    HI_o,
     output logic  [`RegBus]    LO_o
     );
+    
+    logic [`RegBus] HI;
+    logic [`RegBus] LO;
+
+    always_comb begin
+        if(MULT_DIV_finish == 1'b1)
+            HI_o = EXE_MULTDIVtoHI;
+        else if(HIWr == 1'b1)
+            HI_o = Data_i;
+        else begin
+            HI_o = HI;
+        end
+    end
+
+    always_comb begin
+        if(MULT_DIV_finish == 1'b1)
+            LO_o = EXE_MULTDIVtoLO;
+        else if(HIWr == 1'b1)
+            LO_o = Data_i;
+        else begin
+            LO_o = LO;
+        end
+    end
 
     always @ ( posedge clk or negedge rst) begin
         if(rst == `RstEnable) begin
-            HI_o <= `ZeroWord;
+            HI <= `ZeroWord;
         end else if (MULT_DIV_finish == 1'b1) begin
-            HI_o <= EXE_MULTDIVtoHI;
+            HI <= EXE_MULTDIVtoHI;
         end else if (HIWr == `WriteEnable) begin
-            HI_o <= Data_i;
+            HI <= Data_i;
         end 
     end
     always @ ( posedge clk or negedge rst) begin
         if(rst == `RstEnable) begin
-            LO_o <= `ZeroWord;
+            LO <= `ZeroWord;
         end else if (MULT_DIV_finish == 1'b1) begin
-            LO_o <= EXE_MULTDIVtoLO;
+            LO <= EXE_MULTDIVtoLO;
         end else if (LOWr == `WriteEnable) begin
-            LO_o <= Data_i;
+            LO <= Data_i;
         end
         // `ifdef DEBUG
         //     $monitor("HI:%8X LO:%8X",HI_o,LO_o);
