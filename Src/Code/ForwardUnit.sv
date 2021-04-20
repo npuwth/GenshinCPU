@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-04-17 16:02:13
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-04-20 17:52:06
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\ForwardUnit.sv
  * 
@@ -29,10 +29,10 @@ module ForwardUnit (
     assign MEM_Wr = MEM_RegsWrType.RFWr | MEM_RegsWrType.CP0Wr | MEM_RegsWrType.HIWr | MEM_RegsWrType.LOWr;
     assign WB_Wr = WB_RegsWrType.RFWr | WB_RegsWrType.CP0Wr | WB_RegsWrType.HIWr | WB_RegsWrType.LOWr;
 
-    // 0 选择的是 寄存器中的数据
+    // 00 选择的是 寄存器中的数据
     // 01 选择的是 MEM_ALUOut中的数据
     // 10 选择的是 WB_Result中的数据
-    // 11 选择的是 EXE_OutB中的数据 
+    // 11 选择的是 MEM_OutB中的数据 
     always_comb begin
             if(MEM_RegsWrType.RFWr && MEM_Dst!=5'd0 && EXE_rs == MEM_Dst)begin
                         EXE_ForwardA_r =2'b01;
@@ -58,26 +58,10 @@ module ForwardUnit (
                     end
                 end
                 2'b01:begin//HI
-                    if (MEM_RegsWrType.HIWr) begin
-                        EXE_ForwardB_r =2'b11;
+                    EXE_ForwardB_r =2'b00;
                     end
-                    else if (WB_RegsWrType.HIWr) begin
-                        EXE_ForwardB_r =2'b10;
-                    end
-                    else begin
-                        EXE_ForwardB_r =2'b00;
-                    end
-                end
                 2'b10:begin//LO
-                    if (MEM_RegsWrType.LOWr) begin
-                        EXE_ForwardB_r =2'b11;
-                    end
-                    else if (WB_RegsWrType.LOWr) begin
-                        EXE_ForwardB_r =2'b10;
-                    end
-                    else begin
-                        EXE_ForwardB_r =2'b00;
-                    end
+                    EXE_ForwardB_r =2'b00;
                 end
                 2'b11:begin//CP0
                     if(MEM_RegsWrType.CP0Wr && EXE_rd == MEM_Dst)begin

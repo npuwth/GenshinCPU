@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-17 16:28:20
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-04-20 17:27:57
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -66,13 +66,15 @@
     logic [1:0]         ID_EXTOp_o;
     logic [1:0]         ID_rsrtRead_o;
 
-    logic               RF_ForwardA;
-    logic               RF_ForwardB;
+    logic               ID_RF_ForwardA;
+    logic               ID_RF_ForwardB;
+    logic               ID_CP0_Forward;
     logic [31:0]        ID_BusA1_o;
     logic [31:0]        ID_BusB1_o;
     logic [31:0]        RF_Bus_o;
     logic [31:0]        HI_Bus_o;
     logic [31:0]        LO_Bus_o;
+    logic [31:0]        CP0_Bus_o;
 
     //�?有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的�?些信号（至少它与流水线寄存器无关，）
 // *******************************Johnson Yang & WTH &Juan **********/
@@ -212,29 +214,37 @@
         .ID_BusB(ID_BusB1_o)
     );
 
-    assign RF_ForwardA = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rs);
-    assign RF_ForwardB = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rt);
+    assign ID_RF_ForwardA = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rs);
+    assign ID_RF_ForwardB = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rt);
+    assign ID_CP0_Forward = x.WB_RegsWrType.CP0Wr && (x.WB_Dst == x.ID_rd);
 
-    MUX2to1 U_MUX_RF_FOWARDA ( 
+    MUX2to1 U_MUX_RF_FORWARDA ( 
         .d0(ID_BusA1_o),
         .d1(WB_Result_o),
-        .sel2_to_1(RF_ForwardA),
+        .sel2_to_1(ID_RF_ForwardA),
         .y(x.ID_BusA)
     );
 
-    MUX2to1 U_MUX_RF_FOWARDB ( 
+    MUX2to1 U_MUX_RF_FORWARDB ( 
         .d0(ID_BusB1_o),
         .d1(WB_Result_o),
-        .sel2_to_1(RF_ForwardB),
+        .sel2_to_1(ID_RF_ForwardB),
         .y(RF_Bus_o)
+    );
+
+    MUX2to1 U_MUX_CP0_FORWARD ( 
+        .d0(ID_CP0DataOut_o),
+        .d1(WB_Result_o),
+        .sel2_to_1(ID_CP0_Forward),
+        .y(CP0_Bus_o)
     );
 
     HILO U_HILO (
         .clk(clk),
         .rst(resetn),
-        .HIWr(x.WB_RegsWrType.HIWr),
-        .LOWr(x.WB_RegsWrType.LOWr),
-        .Data_i(x.WB_OutB),
+        .HIWr(x.EXE_RegsWrType.HIWr), //把写HI，LO统一在EXE级
+        .LOWr(x.EXE_RegsWrType.LOWr),
+        .Data_i(x.EXE_OutB),
         .HI_o(HI_Bus_o),
         .LO_o(LO_Bus_o)
     );
@@ -249,7 +259,7 @@
         .d0(RF_Bus_o),
         .d1(HI_Bus_o),
         .d2(LO_Bus_o),
-        .d3(ID_CP0DataOut_o),
+        .d3(CP0_Bus_o),
         .sel4_to_1(x.ID_RegsReadSel),
         .y(x.ID_BusB)
     );
