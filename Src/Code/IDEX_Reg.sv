@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-17 10:44:21
+ * @LastEditTime: 2021-04-20 18:30:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -38,7 +38,7 @@ module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port ,
       port.EXE_Instr <= 32'b0;
       port.EXE_RegsReadSel <= 2'b0;
     end
-    else begin
+    else if( port.ID_EXEWr ) begin
       port.EXE_BusA <= port.ID_BusA;
       port.EXE_BusB <= port.ID_BusB;
       port.EXE_Imm32 <= port.ID_Imm32;

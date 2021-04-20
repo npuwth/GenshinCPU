@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-17 11:45:16
+ * @LastEditTime: 2021-04-20 18:32:04
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -169,6 +169,7 @@ interface PipeLineRegsInterface (
 	BranchType              ID_BranchType;
 	logic       [31:0]      ID_shamt;
 	logic       [1:0]       ID_RegsReadSel;
+	logic                   ID_EXEWr;
 //IDEXE,out
   	logic 		[31:0] 		EXE_BusA;   		// RF 中读取到的数据A
   	logic 		[31:0] 		EXE_BusB;	 		// RF 中读取到的数据B
@@ -298,6 +299,7 @@ interface PipeLineRegsInterface (
 	input					ID_ALUSrcB,
 	input					ID_BranchType,
 	input                   ID_RegsReadSel,
+	input                   ID_EXEWr,
     //output	
     output 					EXE_BusA,
     output 					EXE_BusB,

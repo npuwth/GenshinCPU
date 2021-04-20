@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-20 10:24:44
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-20 18:39:14
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -107,7 +107,9 @@
     logic [31:0]        EXE_MULTDIVtoLO;
     logic [31:0]        EXE_MULTDIVtoHI;
     logic               EXE_Finish;   
-    logic               EXE_MULTDIVStall;       
+    logic               EXE_MULTDIVStall;    
+    logic               DH_IF_PCWr_o;
+    logic               DH_IF_IDWr_o;   
 
 //------------------------seddonend
 
@@ -115,6 +117,10 @@
 
     assign Interrupt_o   =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     // assign x.rst       =  ~resetn;                       //高电平有效的复位信号
+    assign x.IF_PCWr = DH_IF_PCWr_o & ~EXE_MULTDIVStall;
+    assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;
+    assign x.ID_EXEWr = ~EXE_MULTDIVStall;
+
     assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
                            IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
     assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
@@ -282,8 +288,8 @@
         .EXE_isStore(x.EXE_StoreType.DMWr),
         .ID_isLoad(x.ID_LoadType.ReadMem),
         //output
-        .IF_PCWr(x.IF_PCWr),
-        .IF_IDWr(x.IF_IDWr),
+        .IF_PCWr(DH_IF_PCWr_o),
+        .IF_IDWr(DH_IF_IDWr_o),
         .IDEXE_Flush(IDEXE_Flush_DataHazard_o)
     );
     
