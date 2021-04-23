@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-04-14 18:08:26
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-23 16:08:29
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -45,6 +45,7 @@ module cp0_reg(
     output logic CP0TimerInterrupt_o          //是否有定时中断发生
     );
     logic           [5:0]   Hardwareint_i;
+    logic           [31:0]  CurrentInstAddr;
     reg                     TimCount2;
 
 assign CurrentInstAddr = PCAdd1_i-4;
@@ -69,7 +70,7 @@ assign Hardwareint_i =
         //Compare寄存器的初始值
             CP0Compare_o        <= `ZeroWord;
         //Status寄存器的初始值：其中CU字段为0001，表示协处理器CP0存在
-            CP0Status_o         <= 32'b0001_0000_0000_0000_0000_0000_0000_0000;
+            CP0Status_o         <= 32'b0000_0000_0100_0000_0000_0000_0000_0000;
         //Cause寄存器的初始值
             CP0Cause_o          <= `ZeroWord;
         //EPC寄存器的初始值

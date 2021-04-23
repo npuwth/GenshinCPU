@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-17 17:37:51
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-04-23 17:29:11
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -445,7 +445,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -461,7 +461,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -477,7 +477,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -493,7 +493,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -982,9 +982,16 @@ module Control(
       
       //自陷指令
       OP_BREAK:begin
-        ID_LoadType = '0;
-        ID_StoreType = '0;
+        ID_ALUOp      = 'x;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = 'x;
+        ID_DstSel     = 'x;
         ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = 'x;
+        ID_ALUSrcB    = 'x;
+        ID_RegsReadSel= 'x;//选择ID级别读出的数据
+        ID_EXTOp      = 'x;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
@@ -1001,9 +1008,16 @@ module Control(
       end
 
       OP_SYSCALL:begin
-        ID_LoadType = '0;
-        ID_StoreType = '0;
+        ID_ALUOp      = 'x;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = 'x;
+        ID_DstSel     = 'x;
         ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = 'x;
+        ID_ALUSrcB    = 'x;
+        ID_RegsReadSel= 'x;//选择ID级别读出的数据
+        ID_EXTOp      = 'x;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
@@ -1180,9 +1194,16 @@ module Control(
 
       //特权指令  
       OP_ERET:begin
-        ID_LoadType = '0;
-        ID_StoreType = '0;
+        ID_ALUOp      = 'x;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = 'x;
+        ID_DstSel     = 'x;
         ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = 'x;
+        ID_ALUSrcB    = 'x;
+        ID_RegsReadSel= 'x;//选择ID级别读出的数据
+        ID_EXTOp      = 'x;
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{  
@@ -1203,9 +1224,12 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt 
         ID_LoadType   = '0;
         ID_StoreType  = '0;
+        ID_ALUSrcA    = 'x;
+        ID_ALUSrcB    = 'x;
         ID_RegsWrType = `RegsWrTypeRFEn;
         ID_ExceptType = `ExceptionTypeZero;
         ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
+        ID_EXTOp      = 'x;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
@@ -1216,9 +1240,12 @@ module Control(
         ID_DstSel     = `DstSel_rd;//rd
         ID_LoadType   = '0;
         ID_StoreType  = '0;
+        ID_ALUSrcA    = 'x;
+        ID_ALUSrcB    = 'x;
         ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
         ID_ExceptType = `ExceptionTypeZero;
         ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
+        ID_EXTOp      = 'x;                 //R型无关
         ID_isImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end

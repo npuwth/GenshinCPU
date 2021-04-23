@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-23 15:31:24
+ * @LastEditTime: 2021-04-23 16:49:39
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -117,8 +117,8 @@
 
     assign Interrupt_o   =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     // assign x.rst       =  ~resetn;                       //高电平有效的复位信号
-    assign x.IF_PCWr = DH_IF_PCWr_o & ~EXE_MULTDIVStall;
-    assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;
+    assign x.IF_PCWr = (IFID_Flush_Exception_o)? 1: DH_IF_PCWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
+    assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
     assign x.ID_EXEWr = ~EXE_MULTDIVStall;
     assign x.EXE_MEMWr = 1;
     assign x.MEM_WBWr = 1;
@@ -126,7 +126,7 @@
     assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
                            IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
     assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
-                           IDEXE_Flush_DataHazard_o;  // 在LOAD阻塞级和 exception级 都会产生IDEXE_Flush信号
+                           IDEXE_Flush_DataHazard_o;      // 在（先Store 后LOAD阻塞级）和 exception级 都会产生IDEXE_Flush信号
 
     PipeLineRegsInterface x(
         //input

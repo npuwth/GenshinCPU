@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-04-10 17:33:16
+ * @LastEditTime: 2021-04-23 15:54:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -159,6 +159,9 @@
             end 
             else begin
                     IsExceptionorEret  = `IsNone;
+                    IFID_Flush       = `FlushDisable;
+                    IDEXE_Flush      = `FlushDisable;
+                    EXEMEM_Flush     = `FlushDisable;
                     MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信号
             end
                 
