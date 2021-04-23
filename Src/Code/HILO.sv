@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-04-20 20:05:20
+ * @LastEditTime: 2021-04-23 14:53:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -48,7 +48,7 @@ module HILO(
     always_comb begin
         if(MULT_DIV_finish == 1'b1)
             LO_o = EXE_MULTDIVtoLO;
-        else if(HIWr == 1'b1)
+        else if(LOWr == 1'b1)
             LO_o = Data_i;
         else begin
             LO_o = LO;
