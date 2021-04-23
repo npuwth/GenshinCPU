@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-23 14:29:22
+ * @LastEditTime: 2021-04-23 15:31:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -434,7 +434,7 @@
         //output
         .phsy_addr(data_sram_addr)
     );
-    assign data_sram_addr_o =  (data_sram_en & data_sram_wen) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
+    assign data_sram_addr_o =  (data_sram_en & (|data_sram_wen)) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
                               x.MEM_ALUOut : (data_sram_en) ? //data_sram总使能为1&data_sram写使能为0 使用Load的地址
                               x.EXE_ALUOut : 32'bx;    
     assign x.MEM_DMOut = data_sram_rdata;                    //读取结果直接放入DMOut
