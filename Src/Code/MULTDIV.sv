@@ -1,10 +1,10 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-20 20:30:14
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-21 00:13:03
+ * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \nontrival-cpu\Src\Code\MULTDIV.sv
+ * @FilePath: \myCPU\MULTDIV.sv
  * 
  */
 `include "CommonDefines.svh"
@@ -74,7 +74,7 @@ always_comb begin
                 Result_A33 = {1'b0,EXE_ResultA};
                 Result_B33 = {1'b0,EXE_ResultB};
             end
-            Prod = Result_A33 * Result_B33;
+            Prod = $signed(Result_A33) * $signed(Result_B33);
         end
         
         default: Prod = 'x;//Do nothing

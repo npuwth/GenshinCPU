@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-20 20:17:38
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-21 00:15:29
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -258,7 +258,7 @@
         .MULT_DIV_finish(EXE_Finish),
         .HIWr(x.EXE_RegsWrType.HIWr), //把写HI，LO统一在EXE级
         .LOWr(x.EXE_RegsWrType.LOWr),
-        .Data_i(x.EXE_OutB),
+        .Data_i(EXE_OutA_o),
         .EXE_MULTDIVtoLO(EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
         .HI_o(HI_Bus_o),

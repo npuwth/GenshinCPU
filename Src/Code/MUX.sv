@@ -1,10 +1,10 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-31 14:39:41
- * @LastEditTime: 2021-04-23 14:19:11
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-07 14:37:23
+ * @LastEditors: Juan Jiang
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \Code\MUX.sv
+ * @FilePath: \undefinedd:\EXE\MUX.sv
  * 
  */
 // mux2
@@ -61,29 +61,6 @@ module MUX4to1 #(
             2'b01:y_r=d1;
             2'b10:y_r=d2;
             2'b11:y_r=d3;
-            default : 
-            y_r={WIDTH{1'bx}};
-        endcase 
-    end
-assign y=y_r;
-endmodule
-
-module MUX5to1 #(
-    parameter WIDTH=32
-) (
-    d0,d1,d2,d3,d4,sel5_to_1,y
-);
-    input  logic    [WIDTH-1:0]     d0,d1,d2,d3,d4;
-    input  logic    [2:0]           sel5_to_1;
-    output          [WIDTH-1:0]     y;
-    logic           [WIDTH-1:0]     y_r;
-    always_comb begin
-        unique case (sel5_to_1)
-            3'b000:y_r=d0;
-            3'b001:y_r=d1;
-            3'b010:y_r=d2;
-            3'b011:y_r=d3;
-            3'b100:y_r=d4;
             default : 
             y_r={WIDTH{1'bx}};
         endcase 
