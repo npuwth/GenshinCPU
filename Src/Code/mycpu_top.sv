@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-23 16:49:39
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-25 00:02:58
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -230,7 +230,8 @@
     assign ID_RF_ForwardA = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rs);
     assign ID_RF_ForwardB = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rt);
     assign ID_CP0_Forward = x.WB_RegsWrType.CP0Wr && (x.WB_Dst == x.ID_rd);
-
+    // 关于同一个时刻即写入，有读取的处理单元
+    // HILO在其内部进行了处理，因此没有出现在MUX中
     MUX2to1 #(32) U_MUX_RF_FORWARDA ( 
         .d0(ID_BusA1_o),
         .d1(WB_Result_o),
