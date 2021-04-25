@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-25 22:57:42
+ * @LastEditTime: 2021-04-25 23:07:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -382,7 +382,7 @@
         .rst(resetn),            
         .EXE_ResultA(EXE_ResultA_o),
         .EXE_ResultB(EXE_ResultB_o),
-        .ExceptionAssert(~HiLo_Not_Flush),
+        .ExceptionAssert(~HiLo_Not_Flush),  // 如果产生flush信号，需要清除状态机
         .EXE_ALUOp(x.EXE_ALUOp),
         .EXE_MULTDIVtoLO(EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
