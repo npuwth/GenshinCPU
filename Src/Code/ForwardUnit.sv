@@ -1,14 +1,13 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-04-25 00:43:32
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-25 19:28:34
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\ForwardUnit.sv
  * 
  */ 
 
- //TODO:旁路又要重开喽
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 module ForwardUnit (
@@ -32,9 +31,9 @@ module ForwardUnit (
     assign WB_Wr = WB_RegsWrType.RFWr | WB_RegsWrType.CP0Wr | WB_RegsWrType.HIWr | WB_RegsWrType.LOWr;
 
     // 00 选择的是 寄存器中的数据
-    // 01 选择的是 MEM_ALUOut中的数据
+    // 01 选择的是 MEM_Result中的数据
     // 10 选择的是 WB_Result中的数据
-    // 11 选择的是 MEM_OutB中的数据 
+    
     always_comb begin
             if(MEM_RegsWrType.RFWr && MEM_Dst!=5'd0 && EXE_rs == MEM_Dst)begin
                         EXE_ForwardA_r =2'b01;
@@ -67,7 +66,7 @@ module ForwardUnit (
                 end
                 2'b11:begin//CP0
                     if(MEM_RegsWrType.CP0Wr && EXE_rd == MEM_Dst)begin
-                        EXE_ForwardB_r =2'b11;
+                        EXE_ForwardB_r =2'b01;
                     end
                     else if (WB_RegsWrType.CP0Wr && EXE_rd == WB_Dst) begin
                         EXE_ForwardB_r =2'b10;

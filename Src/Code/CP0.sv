@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-04-23 16:08:29
+ * @LastEditTime: 2021-04-25 21:55:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -136,17 +136,19 @@ assign Hardwareint_i =
             //存在外部中断
             if (ExceptType_i.Interrupt == `InterruptAssert) begin   
                     //已经在访存阶段判断了是否处于异常级
-                    if(IsDelaySlot_i == `InDelaySlot) begin // 是否位于延迟槽中
-                        CP0EPC_o            <= CurrentInstAddr - 4;
-                        CP0Cause_o[31]      <= 1'b1;        //Cause寄存器的BD字段(延迟槽标记字段)
-                    end else begin
-                        CP0EPC_o            <= CurrentInstAddr;
-                        CP0Cause_o[31]      <= 1'b0;
+                    if(CP0Status_o[1] == 1'b0) begin        //EXL字段是否有例外发生（为0代表处于正常级）
+                        if(IsDelaySlot_i == `InDelaySlot) begin // 是否位于延迟槽中
+                            CP0EPC_o            <= CurrentInstAddr - 4;
+                            CP0Cause_o[31]      <= 1'b1;        //Cause寄存器的BD字段(延迟槽标记字段)
+                        end else begin
+                            CP0EPC_o            <= CurrentInstAddr;
+                            CP0Cause_o[31]      <= 1'b0;
+                        end
                     end
-                    //如果EXL字段为1，表示当前已经处于异常级了，又发生了新的异常，那么
-                    //只需要将异常原因保存到Cause寄存器的ExcCode字段
-                    CP0Status_o[1]          <= 1'b1;        //Status寄存器的EXL字段
-                    CP0Cause_o[6:2]         <= 5'b00000;    //Cause寄存器的ExcCode字段
+                        //如果EXL字段为1，表示当前已经处于异常级了，又发生了新的异常，那么
+                        //只需要将异常原因保存到Cause寄存器的ExcCode字段
+                        CP0Status_o[1]          <= 1'b1;        //Status寄存器的EXL字段
+                        CP0Cause_o[6:2]         <= 5'b00000;    //Cause寄存器的ExcCode字段
                 end
             //地址错例外--取指令
             else if (ExceptType_i.WrongAddressinIF == `InterruptAssert) begin  
@@ -230,7 +232,7 @@ assign Hardwareint_i =
                 //     end
             //溢出异常
             else if (ExceptType_i.Overflow == `InterruptAssert) begin 
-                    if(CP0Status_o[1] <= 1'b0) begin
+                    if(CP0Status_o[1] == 1'b0) begin
                         if(IsDelaySlot_i == `InDelaySlot) begin  
                             CP0EPC_o        <= CurrentInstAddr - 4;
                             CP0Cause_o[31]  <= 1'b1;
@@ -244,7 +246,7 @@ assign Hardwareint_i =
                 end
             //地址错例外——数据写入
             else if (ExceptType_i.WrWrongAddressinMEM == `InterruptAssert) begin 
-                    if(CP0Status_o[1] <= 1'b0) begin
+                    if(CP0Status_o[1] == 1'b0) begin
                         if(IsDelaySlot_i == `InDelaySlot) begin  
                             CP0EPC_o        <= CurrentInstAddr - 4;
                             CP0Cause_o[31]  <= 1'b1;
@@ -260,7 +262,7 @@ assign Hardwareint_i =
 
             //地址错例外——数据读取
             else if (ExceptType_i.RdWrongAddressinMEM == `InterruptAssert) begin 
-                    if(CP0Status_o[1] <= 1'b0) begin
+                    if(CP0Status_o[1] == 1'b0) begin
                         if(IsDelaySlot_i == `InDelaySlot) begin  
                             CP0EPC_o        <= CurrentInstAddr - 4;
                             CP0Cause_o[31]  <= 1'b1;
@@ -300,7 +302,12 @@ assign Hardwareint_i =
             `CP0_REG_EPC:begin                  //读EPC寄存器
                 CP0RdDataOut_o = CP0EPC_o;
             end
-            default: ;
+            `CP0_REG_BADVADDR:begin
+                CP0RdDataOut_o = CP0BadVAddr_o;
+            end    
+            default:begin
+                CP0RdDataOut_o = 'x;
+            end
         endcase
     end//end always
     

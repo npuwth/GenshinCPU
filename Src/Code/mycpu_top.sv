@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-25 00:02:58
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-25 22:57:42
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -103,6 +103,7 @@
     logic [1:0]         EXE_ForwardA_o,EXE_ForwardB_o; 
     logic [31:0]        EXE_OutA_o,EXE_OutB_o;
     logic [31:0]        WB_Result_o;
+    logic [31:0]        MEM_Result_o;   //用于旁路的来自EXEMEM的数据
     logic [31:0]        EXE_ResultA_o,EXE_ResultB_o;
     logic [31:0]        EXE_MULTDIVtoLO;
     logic [31:0]        EXE_MULTDIVtoHI;
@@ -252,13 +253,14 @@
         .sel2_to_1(ID_CP0_Forward),
         .y(CP0_Bus_o)
     );
-    
+    //处理在异常情况下有写HiLo发生 (也可用作为是否产生异常的判断 为1：没有异常)
+    assign HiLo_Not_Flush = (IsExceptionorEret_o == `IsNone) ? 1'b1:1'b0;
     HILO U_HILO (
         .clk(clk),
         .rst(resetn),
-        .MULT_DIV_finish(EXE_Finish),
-        .HIWr(x.EXE_RegsWrType.HIWr), //把写HI，LO统一在EXE级
-        .LOWr(x.EXE_RegsWrType.LOWr),
+        .MULT_DIV_finish(EXE_Finish & HiLo_Not_Flush),
+        .HIWr(x.EXE_RegsWrType.HIWr & HiLo_Not_Flush), //把写HI，LO统一在EXE级
+        .LOWr(x.EXE_RegsWrType.LOWr & HiLo_Not_Flush),
         .Data_i(EXE_OutA_o),
         .EXE_MULTDIVtoLO(EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
@@ -316,23 +318,32 @@
         .EXE_OutB(EXE_OutB_o),//INPUT
         .IFID_Flush(IFID_Flush_BranchSolvement_o)//这个阻塞信号的线没有加，只是定义了一�?
     );
-    
+
+    //用于解决旁路ALUOut和OutB的问题
+    assign MEM_Forward_data_sel = (x.MEM_WbSel == `WBSel_OutB)?1'b1:1'b0;
+
+    MUX2to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
+        .d0(x.MEM_ALUOut),
+        .d1(x.MEM_OutB),
+        .sel2_to_1(MEM_Forward_data_sel),
+        .y(MEM_Result_o)
+    );
+
     MUX3to1 U_MUXA(
         .d0(x.EXE_BusA),
-        .d1(x.MEM_ALUOut),
+        .d1(MEM_Result_o),
         .d2(WB_Result_o),
         .sel3_to_1(EXE_ForwardA_o),
         .y(EXE_OutA_o)
-    );//EXE级组合�?�辑三�?�一A
+    );//EXE级旁路
     
     MUX4to1 U_MUXB(
         .d0(x.EXE_BusB),
-        .d1(x.MEM_ALUOut),
+        .d1(MEM_Result_o),
         .d2(WB_Result_o),
-        .d3(x.MEM_OutB),
         .sel4_to_1(EXE_ForwardB_o),
         .y(EXE_OutB_o)
-    );//EXE级组合四选一B
+    );//EXE级旁路
 
     MUX2to1 U_MUXSrcA(
         .d0(EXE_OutA_o),
@@ -359,18 +370,19 @@
     );//EXE级Dst三�?�一
     
     ALU U_ALU(
-        .EXE_ExceptType(x.EXE_ExceptType),
+        .EXE_ExceptType(x.EXE_ExceptType),//input
         .EXE_ResultA(EXE_ResultA_o),
         .EXE_ResultB(EXE_ResultB_o),
         .EXE_ALUOp(x.EXE_ALUOp),
-        .EXE_ALUOut(x.EXE_ALUOut),
-        .EXE_ExceptType_new(x.EXE_ExceptType_final)//input
+        .EXE_ALUOut(x.EXE_ALUOut),         //output
+        .EXE_ExceptType_new(x.EXE_ExceptType_final)
     );
     MULTDIV U_MULTDIV(
         .aclk(clk),    
         .rst(resetn),            
         .EXE_ResultA(EXE_ResultA_o),
         .EXE_ResultB(EXE_ResultB_o),
+        .ExceptionAssert(~HiLo_Not_Flush),
         .EXE_ALUOp(x.EXE_ALUOp),
         .EXE_MULTDIVtoLO(EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
@@ -446,8 +458,9 @@
         .rst(resetn),
         .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输�?
         .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输�?
-        .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump),                     //延迟槽（�?查WB级的isbranch信号�?
-        .CurrentInstr_i(x.MEM_Instr),                       //指令
+        .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump), //延迟槽（�?查WB级的isbranch信号�?
+        .CurrentPC_i(x.MEM_PCAdd1 -4),
+        //.CurrentInstr_i(x.MEM_Instr),                       //指令
         .CP0Status_i(CP0Status),
         .CP0Cause_i(CP0Cause),
         .CP0Epc_i(CP0Epc),

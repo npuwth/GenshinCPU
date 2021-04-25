@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-21 00:13:03
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-04-25 22:54:50
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \myCPU\MULTDIV.sv
  * 
@@ -15,6 +15,7 @@ module MULTDIV(
     input logic  [4:0]    EXE_ALUOp,
     input logic  [31:0]   EXE_ResultA,
     input logic  [31:0]   EXE_ResultB,
+    input logic           ExceptionAssert,
     output logic [31:0]   EXE_MULTDIVtoLO,
     output logic [31:0]   EXE_MULTDIVtoHI,
     output logic          EXE_Finish,
@@ -129,7 +130,10 @@ always_comb begin
     end
 // 除法状态机的控制信号
 always_comb begin
-        if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)) begin
+        if (ExceptionAssert == `InterruptAssert) begin  // 前面流水级有异常，需要清空状态机状态
+            nextstate = T;
+        end
+        else if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)) begin
             nextstate = S;
         end else if (prestate == T && (EXE_ALUOp != `EXE_ALUOp_DIV && EXE_ALUOp != `EXE_ALUOp_DIVU)) begin
             nextstate = T;

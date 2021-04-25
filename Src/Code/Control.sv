@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-23 17:29:11
+ * @LastEditTime: 2021-04-25 21:31:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -1257,7 +1257,7 @@ module Control(
         ID_WbSel      = 'X;    //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = 'X;    //Rtype选rd
         ID_RegsWrType = 'X;    //写回哪里
-        ID_ExceptType = 'X; //关于异常
+        ID_ExceptType = `ExceptionReserve;
         ID_ALUSrcA    = 'X; //MUXA选择regs
         ID_ALUSrcB    = 'X;  //MUXB选择regs
         ID_RegsReadSel= 'X;        //ID级选择RF读取结果
