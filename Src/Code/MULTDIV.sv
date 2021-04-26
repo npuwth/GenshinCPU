@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-25 22:54:50
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-26 15:04:25
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \myCPU\MULTDIV.sv
  * 
@@ -58,9 +58,15 @@ logic  [1:0]    prestate;
 
 
 always_ff @(posedge aclk or negedge rst) begin
-    if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) ) begin
-        dividend_tdata <= EXE_ResultA;
-        divisor_tdata  <= EXE_ResultB;
+    if (!rst) begin
+            dividend_tdata <= `ZeroWord;
+            divisor_tdata  <= `ZeroWord;
+    end
+    else begin
+        if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) ) begin
+            dividend_tdata <= EXE_ResultA;
+            divisor_tdata  <= EXE_ResultB;
+        end
     end
 end
 
