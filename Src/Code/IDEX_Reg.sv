@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-20 18:30:19
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-26 15:36:26
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -11,7 +11,7 @@
  `include "CPU_Defines.svh"
  `include "CommonDefines.svh"
 
-module IDEXE_Reg( PipeLineRegsInterface.ID_EXE port ,
+module IDEXE_Reg( PipeLineRegsInterface port ,
                   input rst);
 
   always_ff @( posedge port.clk or negedge rst ) begin

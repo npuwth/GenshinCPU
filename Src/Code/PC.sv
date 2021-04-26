@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 16:23:07
- * @LastEditTime: 2021-04-14 15:49:09
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-04-26 15:36:55
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -12,7 +12,7 @@
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 
-module PC( PipeLineRegsInterface.PC port ,
+module PC( PipeLineRegsInterface port ,
            input rst);
   
   always_ff @( posedge port.clk or negedge rst) begin

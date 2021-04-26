@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-25 23:07:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-26 15:38:08
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -393,27 +393,27 @@
     
 
     PC U_PC(
-        x,
+        x.PC,
         resetn
     );
 
     IFID_Reg U_IFID(
-        x,
+        x.IF_ID,
         resetn
     );
 
     IDEXE_Reg U_IDEXE(
-        x,
+        x.ID_EXE,
         resetn
     );
 
     EXEMEM_Reg U_EXEMEM(
-        x,
+        x.EXE_MEM,
         resetn
     );
 
     MEMWB_Reg U_MEMWB(
-        x,
+        x.MEM_WB,
         resetn
     );
 

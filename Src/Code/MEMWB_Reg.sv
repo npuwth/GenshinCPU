@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-04-20 19:56:11
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-26 15:36:44
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -12,7 +12,7 @@
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 
-module MEMWB_Reg( PipeLineRegsInterface.MEM_WB port,
+module MEMWB_Reg( PipeLineRegsInterface port,
                   input                 rst );
 
   always_ff @(posedge port.clk ,negedge rst) begin

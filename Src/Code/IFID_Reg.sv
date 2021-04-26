@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-04-15 13:13:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-04-26 15:36:36
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -11,7 +11,7 @@
 `include "CommonDefines.svh"
 `include "CPU_Defines.svh"
 
-module IFID_Reg( PipeLineRegsInterface.IF_ID port,
+module IFID_Reg( PipeLineRegsInterface port,
                  input rst );
 
   always_ff @( posedge port.clk or negedge rst ) begin
