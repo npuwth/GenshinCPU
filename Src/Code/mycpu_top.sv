@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-04-26 15:38:08
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-05-28 16:58:58
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -418,9 +418,8 @@
     );
 
     // Ltype信号 & DMWr 写使能信号才会触发data_ram的使�?
-    DCache U_Dachce(
+    DCache U_DCache(
         // input
-        .clk(clk),
         .MEM_ALUOut(x.MEM_ALUOut),
         .MEM_OutB(x.MEM_OutB),
         .MEM_StoreType(x.MEM_StoreType),

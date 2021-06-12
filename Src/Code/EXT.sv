@@ -28,6 +28,9 @@ module EXT(
             `EXTOP_LUI:begin
                 ID_Imm32 =  {ID_Imm16[15:0],{16{1'b0}}};
             end
+           default:begin
+                ID_Imm32 =  'x;
+           end
         endcase
     end
 endmodule

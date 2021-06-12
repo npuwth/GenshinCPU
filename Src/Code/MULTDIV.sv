@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-26 15:04:25
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-05-28 16:11:23
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \myCPU\MULTDIV.sv
  * 
@@ -23,9 +23,9 @@ module MULTDIV(
     // output logic          Finish,
     // output logic [64:0]   DivOut
     );
-parameter T = 2'b00;
-parameter S = 2'b01;
-parameter Q = 2'b10;
+parameter T = 2'b00;  //空闲
+parameter S = 2'b01;  //等待握手
+parameter Q = 2'b10;  //等待结果
 // div -->  dividend_tdata / divisor_tdata 
 // 除号后面的叫做除数（divisor_tdata）
 logic  [31:0]   divisor_tdata;      // 除数
@@ -136,25 +136,35 @@ always_comb begin
     end
 // 除法状态机的控制信号
 always_comb begin
-        if (ExceptionAssert == `InterruptAssert) begin  // 前面流水级有异常，需要清空状态机状态
+        if (ExceptionAssert == `InterruptAssert)  // 前面流水级有异常，需要清空状态机状态
             nextstate = T;
+        else begin
+            case(prestate)
+                T:begin
+                  if(EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)
+                    nextstate = S;
+                  else
+                    nextstate = T;
+                end
+                S:begin
+                  if(((Signed_dividend_tready == 1'b1 && Signed_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIV ) ||
+                    ((Unsigned_dividend_tready == 1'b1 && Unsigned_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIVU ))
+                    nextstate = Q;
+                  else
+                    nextstate = S;
+                end
+                Q:begin
+                  if(div_finish == 1'b1)
+                    nextstate = T;
+                  else
+                    nextstate = Q;
+                end
+                default:begin
+                    nextstate = T;
+                end
+            endcase
         end
-        else if (prestate == T && (EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)) begin
-            nextstate = S;
-        end else if (prestate == T && (EXE_ALUOp != `EXE_ALUOp_DIV && EXE_ALUOp != `EXE_ALUOp_DIVU)) begin
-            nextstate = T;
-        end 
-        else if (prestate == S && 
-                    ((Signed_dividend_tready == 1'b1 && Signed_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIV ) ||
-                    ((Unsigned_dividend_tready == 1'b1 && Unsigned_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIVU ) )  begin
-            nextstate = Q;
-        end 
-        else if (prestate == Q && div_finish == 1'b1) begin
-            nextstate = T;
-        end else begin
-            nextstate = nextstate;
-        end
-    end
+end
 
 
 
