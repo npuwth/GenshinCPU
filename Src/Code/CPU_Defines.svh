@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-05-31 15:04:29
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-16 18:05:01
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -121,6 +121,58 @@ typedef struct packed {
 	logic 		[2:0] 		branchCode;
 	logic 					isBranch;
 } BranchType;
+
+interface IF_ID_Interface();
+
+	logic       [31:0]      IF_Instr;
+	logic       [31:0]      IF_PC;
+
+	modport IF (
+	output  				IF_Instr,
+	output  			    IF_PC
+    );
+
+	modport ID ( 
+	input                   IF_Instr,
+    input                   IF_PC
+	);
+	
+endinterface
+
+interface ID_EXE_Interface();
+
+    logic 		[31:0] 		ID_BusA;    		// RF 中读取到的数据A
+  	logic 		[31:0] 		ID_BusB;	 		// RF 中读取到的数据B
+  	logic 		[31:0] 		ID_Imm32;	 		// 符号扩展之后�?32位立即数
+  	logic 	    [31:0]  	ID_PC;
+  	logic 	    [4:0]   	ID_rs;		 	    // rs 
+  	logic 	    [4:0]   	ID_rt;		 	    // rt
+  	logic 	    [4:0]   	ID_rd;		 	    // rd
+  	logic 		[4:0]   	ID_ALUOp;	 		// ALU操作�?
+  	LoadType        		ID_LoadType;	 	// LoadType信号 
+  	StoreType       		ID_StoreType;  	    // StoreType信号
+  	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
+  	logic 		[1:0]   	ID_WbSel;           // 选择写回数据
+  	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存�?
+  	ExceptinPipeType 		ID_ExceptType;	    // 异常类型
+	logic                   ID_IsAImmeJump;
+	logic       [1:0]       ID_ALUSrcA;
+	logic       [1:0]       ID_ALUSrcB;
+	BranchType              ID_BranchType;
+	logic       [31:0]      ID_shamt;
+	logic       [1:0]       ID_RegsReadSel;
+    
+
+
+
+
+
+
+
+
+
+
+
 
 interface PipeLineRegsInterface (
 	input logic 		   	clk
