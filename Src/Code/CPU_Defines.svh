@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-04-20 19:53:20
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-05-31 15:04:29
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -249,6 +249,7 @@ interface PipeLineRegsInterface (
 	logic                   WB_IsABranch;
 	logic 					WB_IsAImmeJump;
 	logic                   WB_IsDelaySlot;	
+	logic 					MEMWB_Flush;	
   modport PC (
 	input  					clk,
 	// input  					rst,
@@ -377,6 +378,7 @@ interface PipeLineRegsInterface (
 	input					MEM_IsDelaySlot,
 	input                   MEM_Instr,
 	input                   MEM_WBWr,
+	input					MEMWB_Flush,
     //output
 	output 					WB_WbSel,
 	output 					WB_PCAdd1,

@@ -91,8 +91,8 @@ end
 
 // 除法的状态机
 always_ff @(posedge aclk or negedge rst) begin
-        if (!rst) prestate = T;
-        else  prestate <= nextstate;
+        if (!rst) prestate <= T;
+        else      prestate <= nextstate;
 end
 //除法状态机的状态转移
 always_comb begin

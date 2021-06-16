@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-05-28 16:58:58
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-11 09:20:52
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -12,48 +12,103 @@
  `include "CPU_Defines.svh"
 
  module mycpu_top(
-        clk, resetn, ext_int, 
-
-         inst_sram_rdata,
-         data_sram_rdata,
-
-         inst_sram_en,
-         inst_sram_wen,
-         inst_sram_addr,
-         inst_sram_wdata,
+         ext_int,
          
-
-         data_sram_en,
-         data_sram_wen,
-         data_sram_addr,
-         data_sram_wdata,
+         aclk,   
+         aresetn,
+         
+         arid,   
+         araddr, 
+         arlen,  
+         arsize, 
+         arburst,
+         arlock, 
+         arcache,
+         arprot, 
+         arvalid,
+         arready,
+                
+         rid,    
+         rdata,  
+         rresp,  
+         rlast,  
+         rvalid, 
+         rready, 
+                
+         awid,   
+         awaddr, 
+         awlen,  
+         awsize, 
+         awburst,
+         awlock, 
+         awcache,
+         awprot, 
+         awvalid,
+         awready,
+             
+         wid,    
+         wdata,  
+         wstrb,  
+         wlast,  
+         wvalid, 
+         wready, 
+             
+         bid,    
+         bresp,  
+         bvalid, 
+         bready,
 
          debug_wb_pc,
          debug_wb_rf_wen,
          debug_wb_rf_wnum,
          debug_wb_rf_wdata
+         
 
  );
-   input                clk;
-   input                resetn;
-   input [5:0]          ext_int;               // 6个硬件中断输�?
-   input [31:0]         inst_sram_rdata;    // icache读数�?
-   input [31:0]         data_sram_rdata;    // dcache读数�?
-
-   output               inst_sram_en;       // 写使�?
-   output [3:0]         inst_sram_wen;      // 字节写使�?
-   output [31:0]        inst_sram_addr;     // 读写地址，字节寻�?
-   output [31:0]        inst_sram_wdata;    // ram写数�?
-
-   output               data_sram_en;       // 写使�?
-   output [3:0]         data_sram_wen;      // 字节写使�?
-   output [31:0]        data_sram_addr;     // 读写地址，字节寻�?
-   output [31:0]        data_sram_wdata;    // ram写数�?
+    input  logic  [ 5:0] ext_int;
+    input  logic         aclk;
+    input  logic         aresetn;
+    output logic  [ 3:0] arid;
+    output logic  [31:0] araddr;
+    output logic  [ 3:0] arlen;
+    output logic  [ 2:0] arsize;
+    output logic  [ 1:0] arburst;
+    output logic  [ 1:0] arlock;
+    output logic  [ 3:0] arcache;
+    output logic  [ 2:0] arprot;
+    output logic         arvalid;
+    input  logic         arready;
+    input  logic  [ 3:0] rid;
+    input  logic  [31:0] rdata;
+    input  logic  [ 1:0] rresp;
+    input  logic         rlast;
+    input  logic         rvalid;
+    output logic         rready;
+    output logic  [ 3:0] awid;
+    output logic  [31:0] awaddr;
+    output logic  [ 3:0] awlen;
+    output logic  [ 2:0] awsize;
+    output logic  [ 1:0] awburst;
+    output logic  [ 1:0] awlock;
+    output logic  [ 3:0] awcache;
+    output logic  [ 2:0] awprot;
+    output logic         awvalid;
+    input  logic         awready;
+    output logic  [ 3:0] wid;
+    output logic  [31:0] wdata;
+    output logic  [ 3:0] wstrb;
+    output logic         wlast;
+    output logic         wvalid;
+    input  logic         wready;
+    input  logic  [ 3:0] bid;
+    input  logic  [ 1:0] bresp;
+    input  logic         bvalid;
+    output logic         bready;
 
    output [31:0]        debug_wb_pc;        // 写回级的PC
-   output [31:0]        debug_wb_rf_wdata;  // 写回的数�?
-   output [3:0]         debug_wb_rf_wen;    // 写回级的写使�?
-   output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地�?（序号）
+   output [31:0]        debug_wb_rf_wdata;  // 写回的数据
+   output [3:0]         debug_wb_rf_wen;    // 写回级的写使能
+   output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址
 
     //logic rst;
     logic [2:0]         PCSel_o;
@@ -78,14 +133,15 @@
 
     //�?有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的�?些信号（至少它与流水线寄存器无关，）
 // *******************************Johnson Yang & WTH &Juan **********/
-    logic [31:0]        data_sram_addr_o;         //虚地址 data
-    logic [31:0]        inst_sram_addr_o;
-    ExceptinPipeType    MEM_ExceptType_AfterDM_o; 
+    // logic [31:0]        data_sram_addr_o;         //虚地址 data
+    // logic [31:0]        inst_sram_addr_o;
+    ExceptinPipeType    EXE_ExceptType_new; 
     logic               IFID_Flush_Exception_o;   //Exception 传出的IFID_flush信号
     logic               IFID_Flush_BranchSolvement_o;
     logic               IDEXE_Flush_Exception_o;  //Exception 传出的IDEXE_flush信号
     logic               IDEXE_Flush_DataHazard_o; //LOAD指令后的阻塞
     logic [1:0]         IsExceptionorEret_o;      //送给PCSEL
+    logic               EXEMEM_Flush_Exception_o;  //Exception 传出的IDEXE_flush信号
     logic               MEM_IsDelaySlot_o;        //访存阶段是否是延迟槽（�?�给CP0�?
     logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被�?�择的数据信�?
     AsynExceptType      Interrupt_o;              //6个外部硬件中断输�?
@@ -112,28 +168,91 @@
     logic               DH_IF_PCWr_o;
     logic               DH_IF_IDWr_o;   
 
+    logic               IF_PCWr;   
+    logic               IF_IDWr;
+    logic               ID_EXEWr;
+    logic               EXE_MEMWr;
+    logic               MEM_WBWr;  
+    logic               IFID_Flush;
+    logic               IDEXE_Flush;
+    logic               EXEMEM_Flush;
+    logic               MEMWB_Flush;      
+    logic               HiLo_Not_Flush;
+    logic               MEMWB_DisWr; 
+    RegsWrType          WB_Final_Wr;   // WB级最终的写使能信号
 //------------------------seddonend
 
     logic [31:0]        ID_CP0DataOut_o;
 
     assign Interrupt_o   =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
-    // assign x.rst       =  ~resetn;                       //高电平有效的复位信号
-    assign x.IF_PCWr = (IFID_Flush_Exception_o)? 1: DH_IF_PCWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
-    assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
-    assign x.ID_EXEWr = ~EXE_MULTDIVStall;
-    assign x.EXE_MEMWr = 1;
-    assign x.MEM_WBWr = 1;
+    assign x.rst       =  ~aresetn;                       //高电平有效的复位信号
+    // assign x.IF_PCWr = (IFID_Flush_Exception_o)? 1: DH_IF_PCWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
+    // assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
+    // assign x.ID_EXEWr = ~EXE_MULTDIVStall;
+    // assign x.EXE_MEMWr = 1;
+    // assign x.MEM_WBWr = 1;
+    assign x.IF_PCWr       =    IF_PCWr  ;
+    assign x.IF_IDWr       =    IF_IDWr  ;
+    assign x.ID_EXEWr      =    ID_EXEWr ;
+    assign x.EXE_MEMWr     =    EXE_MEMWr;
+    assign x.MEM_WBWr      =    MEM_WBWr ;
+    assign x.IFID_Flush    =    IFID_Flush;
+    assign x.IDEXE_Flush   =    IDEXE_Flush;
+    assign x.EXEMEM_Flush  =    EXEMEM_Flush;
+    assign x.MEMWB_Flush   =    MEMWB_Flush;
 
-    assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
-                           IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
-    assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
-                           IDEXE_Flush_DataHazard_o;      // 在（先Store 后LOAD阻塞级）和 exception级 都会产生IDEXE_Flush信号
+    // assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
+                        //    IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
+    // assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
+                        //    IDEXE_Flush_DataHazard_o;      // 在（先Store 后LOAD阻塞级）和 exception级 都会产生IDEXE_Flush信号
 
     PipeLineRegsInterface x(
         //input
-        .clk(clk)
-        //.rst(~resetn)
+        .clk(aclk)
+        //.rst(~aresetn)
     );
+
+    CPU_Bus_Interface cpu_ibus();
+    CPU_Bus_Interface cpu_dbus();
+    AXI_Bus_Interface axi_ibus();
+    AXI_Bus_Interface axi_dbus();
+    AXI_UNCACHE_Interface axi_ubus();
+
+    WrFlushControl U_WRFLUSHControl (
+    // input 
+        // Flush 
+        .IFID_Flush_Exception_o (IFID_Flush_Exception_o ),
+        .IDEXE_Flush_Exception_o(IDEXE_Flush_Exception_o),
+        .EXEMEM_Flush_Exception_o(EXEMEM_Flush_Exception_o),
+        // Wr
+        .DH_IF_PCWr_o(DH_IF_PCWr_o),
+        .DH_IF_IDWr_o(DH_IF_IDWr_o),
+        .IDEXE_Flush_DataHazard_o(IDEXE_Flush_DataHazard_o), // 以上三个是数据冒险的3个控制信号
+        .DIVMULTBusy(EXE_MULTDIVStall),
+        .IsExceptionorEret_o(IsExceptionorEret_o),
+        .BranchFailed(IFID_Flush_BranchSolvement_o),
+        .ID_IsAImmeJump(x.ID_IsAImmeJump),
+        // .Icache_addr_ok(cpu_ibus.addr_ok),  // 1表示cache空闲 0表示cache miss
+        .Icache_data_ok(cpu_ibus.data_ok),
+        .Icache_busy(~cpu_ibus.addr_ok),  // addr_ok = 1表示cache空闲
+        .Dcache_data_ok(cpu_dbus.data_ok),
+        .Dcache_busy(~cpu_dbus.addr_ok),  // addr_ok = 1表示cache空闲
+    // output
+        .IF_PCWr(IF_PCWr),
+        .IF_IDWr(IF_IDWr),
+        .ID_EXEWr(ID_EXEWr),
+        .EXE_MEMWr(EXE_MEMWr),
+        .MEM_WBWr(MEM_WBWr),
+
+        .IFID_Flush(IFID_Flush),
+        .IDEXE_Flush(IDEXE_Flush),
+        .EXEMEM_Flush(EXEMEM_Flush),
+        .MEMWB_Flush(MEMWB_Flush),
+        .MEMWB_DisWr(MEMWB_DisWr),
+        .HiLo_Not_Flush(HiLo_Not_Flush),
+        .IcacheFlush(cpu_ibus.flush),
+        .DcacheFlush(cpu_dbus.flush)
+    ); 
 
     MUX8to1 U_PCMUX(
         //input
@@ -176,24 +295,79 @@
     // `ifdef DEBUG
     //     $monitor("PC=%8x ; Instr=%8x",x.IF_PC,x.IF_Instr);
     // `endif 
+    
     // end
+    /*********************************AXI模块接口的实例化**********************************/
+    AXIInteract   AXIInteract_dut (
+    .clk (aclk ),
+    .resetn (aresetn ),
+    .DcacheAXIBus (axi_dbus.slave ),
+    .IcacheAXIBus (axi_ibus.slave ),
+    .UncacheAXIBus(axi_ubus.slave) ,
+    .m_axi_arid (arid ),
+    .m_axi_araddr (araddr ),
+    .m_axi_arlen (arlen ),
+    .m_axi_arsize (arsize ),
+    .m_axi_arburst (arburst ),
+    .m_axi_arlock (arlock ),
+    .m_axi_arcache (arcache ),
+    .m_axi_arprot (arprot ),
+    .m_axi_arvalid (arvalid ),
+    .m_axi_arready (arready ),
+    .m_axi_rid (rid ),
+    .m_axi_rdata (rdata ),
+    .m_axi_rresp (rresp ),
+    .m_axi_rlast (rlast ),
+    .m_axi_rvalid (rvalid ),
+    .m_axi_rready (rready ),
+    .m_axi_awid (awid ),
+    .m_axi_awaddr (awaddr ),
+    .m_axi_awlen (awlen ),
+    .m_axi_awsize (awsize ),
+    .m_axi_awburst (awburst ),
+    .m_axi_awlock (awlock ),
+    .m_axi_awcache (awcache ),
+    .m_axi_awprot (awprot ),
+    .m_axi_awvalid (awvalid ),
+    .m_axi_awready (awready ),
+    .m_axi_wid (wid ),
+    .m_axi_wdata (wdata ),
+    .m_axi_wstrb (wstrb ),
+    .m_axi_wlast (wlast ),
+    .m_axi_wvalid (wvalid ),
+    .m_axi_wready (wready ),
+    .m_axi_bid (bid ),
+    .m_axi_bresp (bresp ),
+    .m_axi_bvalid (bvalid ),
+    .m_axi_bready  (bready)
+  );
 
-    /**********************************   SRAM接口支持   **********************************/
-    assign x.IF_Instr      = inst_sram_rdata;
-    assign inst_sram_addr_o  = x.IF_NPC;                 // inst_sram_addr_o 虚拟地址
-    assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电�? & IF_PCWr�?1 读取数据
-    assign inst_sram_wen   = 4'b0000;
-    assign inst_sram_wdata = 32'b0;
-   
-    MMU U_MMU_inst_sram(
-        .virt_addr(inst_sram_addr_o),
-        .phsy_addr(inst_sram_addr)
+    
+    /*********************************ICache的实例化**************************************/
+    ICache U_ICache(
+        .clk(aclk),
+        .resetn(aresetn),
+        .CPUBus(cpu_ibus.slave),
+        .AXIBus(axi_ibus.master)
     );
 
+    /**********************************   Icache接口支持   **********************************/
+    assign x.IF_Instr     = cpu_ibus.rdata;
+    assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset}  = x.IF_NPC;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
+    assign cpu_ibus.valid = (IFID_Flush_Exception_o)?1'b1:(IDEXE_Flush_DataHazard_o || IF_IDWr == 1'b0)?1'b0:1'b1;
+    assign cpu_ibus.op    = 1'b0;
+    assign cpu_ibus.wstrb = 'x;
+    assign cpu_ibus.wdata = 'x;
+    assign cpu_ibus.ready = IF_IDWr;
 
-
-
-   // TODO: 目前没有加入取指地址异常的检�?
+    // assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电�? & IF_PCWr�?1 读取数据
+    // assign inst_sram_wen   = 4'b0000;
+    // assign inst_sram_wdata = 32'b0;
+   
+    // MMU U_MMU_inst_sram(
+    //     .virt_addr(inst_sram_addr_o),
+    //     .phsy_addr(inst_sram_addr)
+    // );因为加了cache所以不需要了
 
     Control U_Control(
         //input
@@ -217,11 +391,11 @@
     );
 
     RF U_RF (
-        .clk(clk),
-        .rst(resetn),
+        .clk(aclk),
+        .rst(aresetn),
         .WB_Dst(x.WB_Dst),
         .WB_Result(WB_Result_o),
-        .RFWr(x.WB_RegsWrType.RFWr),
+        .RFWr(WB_Final_Wr.RFWr),
         .ID_rs(x.ID_rs),
         .ID_rt(x.ID_rt),
         .ID_BusA(ID_BusA1_o),
@@ -254,10 +428,10 @@
         .y(CP0_Bus_o)
     );
     //处理在异常情况下有写HiLo发生 (也可用作为是否产生异常的判断 为1：没有异常)
-    assign HiLo_Not_Flush = (IsExceptionorEret_o == `IsNone) ? 1'b1:1'b0;
+    // assign HiLo_Not_Flush = (IsExceptionorEret_o == `IsNone) ? 1'b1:1'b0;
     HILO U_HILO (
-        .clk(clk),
-        .rst(resetn),
+        .clk(aclk),
+        .rst(aresetn),
         .MULT_DIV_finish(EXE_Finish & HiLo_Not_Flush),
         .HIWr(x.EXE_RegsWrType.HIWr & HiLo_Not_Flush), //把写HI，LO统一在EXE级
         .LOWr(x.EXE_RegsWrType.LOWr & HiLo_Not_Flush),
@@ -375,11 +549,22 @@
         .EXE_ResultB(EXE_ResultB_o),
         .EXE_ALUOp(x.EXE_ALUOp),
         .EXE_ALUOut(x.EXE_ALUOut),         //output
-        .EXE_ExceptType_new(x.EXE_ExceptType_final)
+        .EXE_ExceptType_new(EXE_ExceptType_new)
     );
+
+        DCacheWen U_DCACHEWEN(
+        .EXE_ALUOut(x.EXE_ALUOut),
+        .EXE_StoreType(x.EXE_StoreType),
+        .EXE_LoadType(x.EXE_LoadType),
+        .EXE_ExceptType(EXE_ExceptType_new),
+        
+        .EXE_ExceptType_new(x.EXE_ExceptType_final),
+        .cache_wen(cpu_dbus.wstrb)                   //给出dcache的写使能信号，
+    );
+
     MULTDIV U_MULTDIV(
-        .aclk(clk),    
-        .rst(resetn),            
+        .aclk(aclk),    
+        .rst(aresetn),            
         .EXE_ResultA(EXE_ResultA_o),
         .EXE_ResultB(EXE_ResultB_o),
         .ExceptionAssert(~HiLo_Not_Flush),  // 如果产生flush信号，需要清除状态机
@@ -394,69 +579,82 @@
 
     PC U_PC(
         x.PC,
-        resetn
+        aresetn
     );
 
     IFID_Reg U_IFID(
         x.IF_ID,
-        resetn
+        aresetn
     );
 
     IDEXE_Reg U_IDEXE(
         x.ID_EXE,
-        resetn
+        aresetn
     );
 
     EXEMEM_Reg U_EXEMEM(
         x.EXE_MEM,
-        resetn
+        aresetn
     );
 
     MEMWB_Reg U_MEMWB(
         x.MEM_WB,
-        resetn
+        aresetn
     );
 
-    // Ltype信号 & DMWr 写使能信号才会触发data_ram的使�?
-    DCache U_DCache(
-        // input
-        .MEM_ALUOut(x.MEM_ALUOut),
-        .MEM_OutB(x.MEM_OutB),
-        .MEM_StoreType(x.MEM_StoreType),
-        .MEM_LoadType(x.MEM_LoadType),
-        .MEM_ExceptType(x.MEM_ExceptType),
-        // output
-        .MEM_ExceptType_new(MEM_ExceptType_AfterDM_o),      //新的异常信号
-        .data_sram_wen(data_sram_wen),                      //store类型，写入sram的字节使�?
-        .MEM_SWData(MEM_SWData_o)                           //StoreType要写入的信号
-
+    //TODO 如果拥堵 需要将整个的访存请求都变为MEM级前的流水线寄存器的
+    assign cpu_dbus.wdata = x.EXE_OutB;
+    assign cpu_dbus.valid = (MEM_WBWr== 1'b0)?1'b0:((x.EXE_LoadType.ReadMem || x.EXE_StoreType.DMWr )  ? 1 : 0);
+    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = x.EXE_ALUOut;                 // inst_sram_addr_o 虚拟地址
+    assign cpu_dbus.op = (x.EXE_LoadType.ReadMem)? 1'b0
+                         :(x.EXE_StoreType.DMWr) ? 1'b1
+                         :1'bx;
+    assign x.MEM_DMOut = cpu_dbus.rdata;       //读取结果直接放入DMOut
+    assign cpu_dbus.ready = MEM_WBWr;
+    assign cpu_dbus.storeType = x.EXE_StoreType;
+    DCache U_DCACHE(
+        .clk(aclk),
+        .resetn(aresetn),
+        .CPUBus(cpu_dbus.slave),
+        .AXIBus(axi_dbus.master),
+        .UBus(axi_ubus.master)
     );
-    /**********************************   SRAM接口支持   **********************************/
-    assign data_sram_en = (
-        (x.EXE_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
-        !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&      // WR地址正确 LOAD
-        !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM         // RD地址正确 store
-        )  ? 1 : 0; 
-    assign data_sram_wdata = MEM_SWData_o;                    //store类型写入sram的数据
+
+    // // Ltype信号 & DMWr 写使能信号才会触发data_ram的使�?
+    // DCache U_Dachce(
+    //     // input
+    //     .clk(clk),
+    //     .MEM_ALUOut(x.MEM_ALUOut),
+    //     .MEM_OutB(x.MEM_OutB),
+    //     .MEM_StoreType(x.MEM_StoreType),
+    //     .MEM_LoadType(x.MEM_LoadType),
+    //     .MEM_ExceptType(x.MEM_ExceptType),
+    //     // output
+    //     .MEM_ExceptType_new(MEM_ExceptType_AfterDM_o),      //新的异常信号
+    //     .data_sram_wen(data_sram_wen),                      //store类型，写入sram的字节使�?
+    //     .MEM_SWData(MEM_SWData_o)                           //StoreType要写入的信号
+    // 
+    // );
+    // /**********************************   SRAM接口支持   **********************************/
+    // assign data_sram_en = (
+    //     (x.EXE_LoadType.ReadMem || x.MEM_StoreType.DMWr )&&   // Ltype信号 & DMWr 写使能信号
+    //     !MEM_ExceptType_AfterDM_o.WrWrongAddressinMEM &&      // WR地址正确 LOAD
+    //     !MEM_ExceptType_AfterDM_o.RdWrongAddressinMEM         // RD地址正确 store
+    //     )  ? 1 : 0; 
+    // assign data_sram_wdata = MEM_SWData_o;                    //store类型写入sram的数据
 
 
-    MMU U_MMU_dataSram(
-        //input
-        .virt_addr(data_sram_addr_o),
-        //output
-        .phsy_addr(data_sram_addr)
-    );
-    assign data_sram_addr_o =  (data_sram_en & (|data_sram_wen)) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
-                              x.MEM_ALUOut : (data_sram_en) ? //data_sram总使能为1&data_sram写使能为0 使用Load的地址
-                              x.EXE_ALUOut : 32'bx;    
-    assign x.MEM_DMOut = data_sram_rdata;                    //读取结果直接放入DMOut
+
+    // assign data_sram_addr_o =  (data_sram_en & (|data_sram_wen)) ? //data_sram总使能为1&data_sram写使能为1 使用store地址，否则使用load地址 
+    //                           x.MEM_ALUOut : (data_sram_en) ? //data_sram总使能为1&data_sram写使能为0 使用Load的地址
+    //                           x.EXE_ALUOut : 32'bx;    
 
     Exception U_Exception(
         // input
-        .clk(clk),
-        .rst(resetn),
+        .clk(aclk),
+        .rst(aresetn),
         .MEM_RegsWrType_i(x.MEM_RegsWrType),                //写信号输�?
-        .ExceptType_i(MEM_ExceptType_AfterDM_o),            //将经过DM之后的异常信号做为输�?
+        .ExceptType_i(x.MEM_ExceptType),            //将经过DM之后的异常信号做为输�?
         .IsDelaySlot_i(x.WB_IsABranch || x.WB_IsAImmeJump), //延迟槽（�?查WB级的isbranch信号�?
         .CurrentPC_i(x.MEM_PCAdd1 -4),
         //.CurrentInstr_i(x.MEM_Instr),                       //指令
@@ -470,7 +668,7 @@
         .MEM_RegsWrType_o(x.MEM_RegsWrType_new),            //新的写信�?
         .IFID_Flush(IFID_Flush_Exception_o),                //flush
         .IDEXE_Flush(IDEXE_Flush_Exception_o),                        //flush
-        .EXEMEM_Flush(x.EXEMEM_Flush),                      //flush                      
+        .EXEMEM_Flush(EXEMEM_Flush_Exception_o),                      //flush                      
         .IsExceptionorEret(IsExceptionorEret_o),            //传�?�给PCSEL信号
         .ExceptType_o(x.MEM_ExceptType_final),              //�?终的异常类型
         .IsDelaySlot_o(x.MEM_IsDelaySlot),                  //访存阶段指令是否是延迟槽指令
@@ -494,9 +692,9 @@
     );
     cp0_reg U_CP0(
         //input
-        .rst(resetn),
-        .clk(clk),
-        .CP0Wr_i(x.WB_RegsWrType.CP0Wr),                    //写使�?
+        .rst(aresetn),
+        .clk(aclk),
+        .CP0Wr_i(WB_Final_Wr.CP0Wr),                    //写使�?
         .CP0WrAddr_i(x.WB_Dst),                             //写回地址
         .CP0WrDataOut_i(WB_Result_o),                       //写入数据
         .CP0RdAddr_i(x.ID_Instr[15:11]),
@@ -516,11 +714,11 @@
         .CP0EPC_o(CP0Epc),
         .CP0TimerInterrupt_o(TimerInterrupt_o)              //定时器中�?
         );
-
+    assign WB_Final_Wr = (MEMWB_DisWr)? '0: x.WB_RegsWrType ;  // Dcache 停滞流水线时 wb级数据不能写入RF
     /**********************************   SRAM接口支持   **********************************/
     assign debug_wb_pc = x.WB_PCAdd1-4;                     //写回级的PC,应该是减4
     assign debug_wb_rf_wdata = WB_Result_o;                 //写回�?32位结�?
-    assign debug_wb_rf_wen = (x.WB_RegsWrType.RFWr) ? 4'b1111 : 4'b0000; //4位字节写使能
+    assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000; //4位字节写使能
     assign debug_wb_rf_wnum = x.WB_Dst;                     //写地�?
 
 

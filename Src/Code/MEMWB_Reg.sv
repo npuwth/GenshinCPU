@@ -16,7 +16,7 @@ module MEMWB_Reg( PipeLineRegsInterface port,
                   input                 rst );
 
   always_ff @(posedge port.clk ,negedge rst) begin
-    if( rst == `RstEnable ) begin
+    if( rst == `RstEnable || port.MEMWB_Flush == `FlushEnable) begin
       port.WB_WbSel <= 2'b0;
       port.WB_PCAdd1 <= 32'b0;
       port.WB_ALUOut <= 32'b0;

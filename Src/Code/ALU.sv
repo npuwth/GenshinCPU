@@ -72,5 +72,5 @@ end
     assign EXE_ExceptType_new.Overflow = (EXE_ALUOp == `EXE_ALUOp_ADD )&&( ( (!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) )) ||
                                          (EXE_ALUOp == `EXE_ALUOp_SUB)&&( ( (!EXE_ResultA[31] && EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && !EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) ));
     assign EXE_ALUOut = EXE_ALUOut_r;
-    
+    // TODO: 针对EXE_ALUOP字段，当其为'x的时候，是否需要将overflow的异常置为'0 ,现在是'x
 endmodule

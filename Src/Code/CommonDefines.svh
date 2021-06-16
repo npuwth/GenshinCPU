@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-04-20 20:56:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-05-23 16:26:47
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -16,6 +16,14 @@
 
 `define RegBus              31:0
 
+`define Ready               1'b1
+`define Unready             1'b0
+
+`define Enable              1'b1
+`define Disable             1'b0
+
+`define Valid               1'b1
+`define Invalid             1'b0
 `define WriteEnable         1'b1     // 打开写使能信号
 `define WriteDisable        1'b0     // 关闭写使能信号
 `define RstEnable           1'b0     // 打开复位信号(高有效)

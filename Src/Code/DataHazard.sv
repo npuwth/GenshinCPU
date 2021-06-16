@@ -17,9 +17,8 @@ module DataHazard (
     logic IF_IDWr_r; // PC,IF写使能
     logic IF_PCWr_r;
     always_comb begin
-            if ( (EXE_ReadMEM == 1'b1 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1)) ) ||
-                ( EXE_isStore== 1'b1 && ID_isLoad == 1'b1 )
-            ) begin
+            if ( (EXE_ReadMEM == 1'b1 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
+                 (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1)) )  ) begin
                 IF_IDWr_r=1'b0;  // 产生阻塞
                 IF_PCWr_r=1'b0;
                 IDEXE_Flush=1'b1;

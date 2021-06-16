@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-05-28 15:56:57
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-13 10:04:42
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -29,103 +29,103 @@
     // input logic[31:0]       CurrentInstr_i,   //访存阶段指令
     input logic [31:0]       CurrentPC_i,
     //来自CP0模块
-    input logic [31:0]       CP0Status_i,      //CP0 status寄存器当前信�?
-    input logic [31:0]       CP0Cause_i,       //CP0 cause寄存器当前信�?
-    input logic [31:0]       CP0Epc_i,         //CP0 Epc寄存器当前信�?
-    //来自回写阶段的前推信�?
-    input logic              WB_CP0RegWr_i,    //WB级对应的CP0写使�?
-    input logic [4:0]        WB_CP0RegWrAddr_i,//WB级对应的CP0写地�? 
-    input logic [31:0]       WB_CP0RegWrData_i,//WB级对应的CP0写数�? 
-//向回写阶段输�?
-    output ExceptinPipeType  ExceptType_o,      //�?终的异常类型
+    input logic [31:0]       CP0Status_i,      //CP0 status寄存器当前信�?
+    input logic [31:0]       CP0Cause_i,       //CP0 cause寄存器当前信�?
+    input logic [31:0]       CP0Epc_i,         //CP0 Epc寄存器当前信�?
+    //来自回写阶段的前推信�?
+    input logic              WB_CP0RegWr_i,    //WB级对应的CP0写使�?
+    input logic [4:0]        WB_CP0RegWrAddr_i,//WB级对应的CP0写地�? 
+    input logic [31:0]       WB_CP0RegWrData_i,//WB级对应的CP0写数�? 
+//向回写阶段输�?
+    output ExceptinPipeType  ExceptType_o,      //�?终的异常类型
     output logic             IsDelaySlot_o,     //访存阶段指令是否是延迟槽指令
-    output logic [31:0]      CP0Epc_o           //CP0中EPC寄存器的�?新�??
+    output logic [31:0]      CP0Epc_o           //CP0中EPC寄存器的�?新�??
  );
  
     logic                   CP0RegWr;
     logic                   RFRegWr;
     logic                   HILORegWr;
 
-    logic[31:0]             CP0Status;         //用来保存CP0中Status寄存器的�?新�??
-    logic[31:0]             CP0Cause;          //用来保存CP0中Cause寄存器的�?新�??
-    logic[31:0]             CP0Epc;            //用来保存CP0中EPC寄存器的�?新�??
+    logic[31:0]             CP0Status;         //用来保存CP0中Status寄存器的�?新�??
+    logic[31:0]             CP0Cause;          //用来保存CP0中Cause寄存器的�?新�??
+    logic[31:0]             CP0Epc;            //用来保存CP0中EPC寄存器的�?新�??
 
     assign IsDelaySlot_o  = IsDelaySlot_i;
 
 
 
 //******************************************************************************
-//  得到CP0中寄存器的最新�??
+//  得到CP0中寄存器的最新�??
 //******************************************************************************
-    //得到CP0中Status寄存器的�?新�?�，步骤如下�?
-    //判断当前处于回写阶段的指令是否要写CP0中Status寄存器，如果要写，那么要写入的�?�就�?
-    //Status寄存器的�?新�?�，反之，从CP0模块通过CP0Status_i接口传入的数据就是Status
-    //寄存器的�?新�??
+    //得到CP0中Status寄存器的�?新�?�，步骤如下�?
+    //判断当前处于回写阶段的指令是否要写CP0中Status寄存器，如果要写，那么要写入的�?�就�?
+    //Status寄存器的�?新�?�，反之，从CP0模块通过CP0Status_i接口传入的数据就是Status
+    //寄存器的�?新�??
     always_comb  begin
         if(rst == `RstEnable) begin
-            CP0Status   <=  `ZeroWord;
+            CP0Status   =  `ZeroWord;
         end
          else if((WB_CP0RegWr_i == `WriteEnable) && (WB_CP0RegWrAddr_i == `CP0_REG_STATUS)) begin
-            CP0Status   <=  WB_CP0RegWrData_i;
+            CP0Status   =  WB_CP0RegWrData_i;
         end 
         else begin
-            CP0Status   <=  CP0Status_i;
+            CP0Status   =  CP0Status_i;
         end
     end
 
-    //得到CP0中EPC寄存器的�?新�?�，原理同Status寄存�?
+    //得到CP0中EPC寄存器的�?新�?�，原理同Status寄存�?
     always_comb begin
         if(rst == `RstEnable) begin
-            CP0Epc       <=  `ZeroWord;
+            CP0Epc       =  `ZeroWord;
         end else if((WB_CP0RegWr_i == `WriteEnable) && (WB_CP0RegWrAddr_i == `CP0_REG_EPC)) begin
-            CP0Epc       <=  WB_CP0RegWrData_i;
+            CP0Epc       =  WB_CP0RegWrData_i;
         end else begin
-            CP0Epc       <=  CP0Epc_i;
+            CP0Epc       =  CP0Epc_i;
         end
     end
 
-    //将EPC寄存器的�?新�?��?�过接口CP0Epc_o输出
+    //将EPC寄存器的�?新�?��?�过接口CP0Epc_o输出
     assign CP0Epc_o = CP0Epc;
 
-    //得到CP0中Cause寄存器的�?新�?�，原理同Status寄存�?
-    //要注意的是：Cause寄存器只有几个字段是可写�?
+    //得到CP0中Cause寄存器的�?新�?�，原理同Status寄存�?
+    //要注意的是：Cause寄存器只有几个字段是可写�?
     always_comb begin
         if(rst == `RstEnable) begin
-            CP0Cause <= `ZeroWord;
+            CP0Cause = `ZeroWord;
         end else if((WB_CP0RegWr_i == `WriteEnable) &&
                     (WB_CP0RegWrAddr_i == `CP0_REG_CAUSE)) begin
-            CP0Cause[7:0] <= '0;
-            CP0Cause[9:8] <= WB_CP0RegWrData_i[9:8];          //IP[1:0]字段
-            CP0Cause[21:10] <= '0;
-            CP0Cause[22]  <= WB_CP0RegWrData_i[22];           //WP字段
-            CP0Cause[23]  <= WB_CP0RegWrData_i[23];           //IV字段
-            CP0Cause[31:24] <= '0;
+            CP0Cause[7:0] = '0;
+            CP0Cause[9:8] = WB_CP0RegWrData_i[9:8];          //IP[1:0]字段
+            CP0Cause[21:10] = '0;
+            CP0Cause[22]  = WB_CP0RegWrData_i[22];           //WP字段
+            CP0Cause[23]  = WB_CP0RegWrData_i[23];           //IV字段
+            CP0Cause[31:24] = '0;
         end else begin
-            CP0Cause      <= CP0Cause_i;
+            CP0Cause      = CP0Cause_i;
         end
     end
 
 
 // //******************************************************************************
-// //  给出�?终的异常类型
+// //  给出�?终的异常类型
 // //******************************************************************************
 //     always_comb begin
 //         if(rst == `RstEnable) begin
-//             ExceptType_o  <= '`ExceptionTypeZero;  // 寄存器信号全部清�?
+//             ExceptType_o  <= '`ExceptionTypeZero;  // 寄存器信号全部清�?
 //         end else begin
 //             ExceptType_o  <= '`ExceptionTypeZero;
-//             //当前处于访存阶段的指令的地址�?0，表示处理器处于复位状�?�，或�?�刚刚发生异常，
-//             //正在清除流水�?(flush�?1)，或者流水线处于暂停状�?�，在这三种情况下都不处�?
+//             //当前处于访存阶段的指令的地址�?0，表示处理器处于复位状�?�，或�?�刚刚发生异常，
+//             //正在清除流水�?(flush�?1)，或者流水线处于暂停状�?�，在这三种情况下都不处�?
 //             //异常
 //             if(CurrentInstr_i != `ZeroWord) begin
-//                 //status[15:8]是否屏蔽相应中断�?0表示屏蔽；cause[15:8]中断挂起字段�?
+//                 //status[15:8]是否屏蔽相应中断�?0表示屏蔽；cause[15:8]中断挂起字段�?
 //                 //status[1]EXL字段，表示是否处于异常级；status[0]中断使能
 //                 if(((CP0Cause[15:8] & CP0Status[15:8]) != 8'h00) &&
 //                     (CP0Status[1] == 1'b0) && (CP0Status[0] == 1'b1)) begin
 //                     ExceptType_o.Interrupt              = 1'b1;      //interrupt
 //                 end 
 //                 else if(CurrentPC_i[1:0] != 2'b0) begin
-//                     ExceptType_o.WrongAddressinIF       = 1'b1;      //取指地址错例�?
+//                     ExceptType_o.WrongAddressinIF       = 1'b1;      //取指地址错例�?
 //                 end
 //                 else if(ExceptType_i.ReservedInstruction == 1'b1) begin
 //                     ExceptType_o.ReservedInstruction    = 1'b1;      //保留指令例外
@@ -140,18 +140,18 @@
 //                     ExceptType_o.Overflow               =1'b1;       //整形溢出例外
 //                 end 
 //                 else if(ExceptType_i.WrWrongAddressinMEM  == 1'b1) begin
-//                     ExceptType_o.WrWrongAddressinMEM    =1'b1;       //数据访问写地�?�?
+//                     ExceptType_o.WrWrongAddressinMEM    =1'b1;       //数据访问写地�?�?
 //                 end 
 //                 else if(ExceptType_i.RdWrongAddressinMEM  == 1'b1) begin
-//                     ExceptType_o.RdWrongAddressinMEM    =1'b1;       //数据访问读地�?�?
+//                     ExceptType_o.RdWrongAddressinMEM    =1'b1;       //数据访问读地�?�?
 //                 end 
 //                 else if(ExceptType_i.Eret  == 1'b1) begin
-//                     ExceptType_o.Eret                   =1'b1;       //数据访问读地�?�?
+//                     ExceptType_o.Eret                   =1'b1;       //数据访问读地�?�?
 //               end
 //            end
 always_comb begin
     if (ExceptType_o != `ExceptionTypeZero)begin
-        MEM_RegsWrType_o = `RegsWrTypeDisable;              // 发生异常，关闭当前信号的写回寄存器使能信�?
+        MEM_RegsWrType_o = `RegsWrTypeDisable;              // 发生异常，关闭当前信号的写回寄存器使能信�?
         IFID_Flush       = `FlushEnable;
         IDEXE_Flush      = `FlushEnable;
         EXEMEM_Flush     = `FlushEnable;
@@ -167,7 +167,7 @@ always_comb begin
             IFID_Flush       = `FlushDisable;
             IDEXE_Flush      = `FlushDisable;
             EXEMEM_Flush     = `FlushDisable;
-            MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信�?
+            MEM_RegsWrType_o = MEM_RegsWrType_i;                 // 没有异常，继续传递使能信�?
     end
         
     

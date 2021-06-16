@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-04-25 21:55:50
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-11 19:34:58
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -119,6 +119,9 @@ assign Hardwareint_i =
                     `CP0_REG_CAUSE:begin       //写Cause寄存器
                         CP0Cause_o[9:8]     <= CP0WrDataOut_i[9:8];  //Cause寄存器只有IP[1:0]字段是可写的
                     end
+                default:begin
+                    CP0EPC_o <= CP0EPC_o;
+                end
                 endcase
             end
             // `ifdef DEBUG
