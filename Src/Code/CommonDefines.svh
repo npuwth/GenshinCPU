@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-05-23 16:26:47
+ * @LastEditTime: 2021-06-16 17:23:20
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,6 +14,8 @@
 
 `define DEBUG               0             
 
+`define ALUOpLen            4:0
+`define InstrLen            31:0
 `define RegBus              31:0
 
 `define Ready               1'b1
