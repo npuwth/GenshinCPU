@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-06-11 09:20:52
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-18 16:57:28
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -218,7 +218,7 @@
     AXI_Bus_Interface axi_dbus();
     AXI_UNCACHE_Interface axi_ubus();
 
-    WrFlushControl U_WRFLUSHControl (
+    WrFlushControl U_WRFlushControl (
     // input 
         // Flush 
         .IFID_Flush_Exception_o (IFID_Flush_Exception_o ),

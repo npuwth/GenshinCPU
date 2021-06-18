@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-17 22:20:15
+ * @LastEditTime: 2021-06-18 16:41:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -273,24 +273,33 @@ interface MEM_WB_Interface();
     logic 		[4:0]  		MEM_Dst;
 	LoadType     			MEM_LoadType;
 	logic 		[31:0] 		MEM_DMOut;
-	RegsWrType              MEM_RegsWrType_new;//经过exception solvement的新写使能
-	ExceptinPipeType 		MEM_ExceptType;
+	RegsWrType              MEM_RegsWrType_final;//经过exception solvement的新写使能
+	ExceptinPipeType 		MEM_ExceptType_final;
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
-	logic                   MEM_WBWr;
-
+	logic                   MEM_IsInDelaySlot;
+	logic                   WB_IsABranch;
+	logic                   WB_IsAImmeJump;
+	RegsWrType              WB_RegsWrType;
+    logic       [4:0]       WB_Dst;
+	logic       [31:0]      WB_Result;    
+  
 	modport MEM ( 
+	input                   WB_IsABranch,
+	input                   WB_IsAImmeJump,	
+	input                   WB_Dst,
+	input                   WB_Result,
     output					MEM_ALUOut,			
     output					MEM_PC,			
     output					MEM_WbSel,				
     output					MEM_Dst,
     output					MEM_LoadType,
 	output					MEM_DMOut,
-	output					MEM_RegsWrType_new,//经过exception solvement的新写使能
-	output					MEM_ExceptType,
+	output					MEM_RegsWrType_final,//经过exception solvement的新写使能
+	output					MEM_ExceptType_final,
 	output					MEM_IsABranch,
 	output					MEM_IsAImmeJump,
-	output					MEM_WBWr
+	output                  MEM_IsInDelaySlot
 	);
 
 	modport WB ( 
@@ -300,11 +309,15 @@ interface MEM_WB_Interface();
     input					MEM_Dst,
     input					MEM_LoadType,
 	input					MEM_DMOut,
-	input					MEM_RegsWrType_new,//经过exception solvement的新写使能
-	input					MEM_ExceptType,
+	input					MEM_RegsWrType_final,//经过exception solvement的新写使能
+	input					MEM_ExceptType_final,
 	input					MEM_IsABranch,
 	input					MEM_IsAImmeJump,
-	input					MEM_WBWr	
+	input                   MEM_IsInDelaySlot,
+	output                  WB_IsABranch,
+	output                  WB_IsAImmeJump,
+	output                  WB_Dst,
+	output                  WB_Result
 	);
 
 endinterface

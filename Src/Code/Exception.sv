@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-06-13 10:04:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-18 16:38:43
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -25,7 +25,6 @@
 //异常处理相关接口
     //来自执行阶段
     input ExceptinPipeType   ExceptType_i,     //译码执行阶段收集到的异常信息
-    input logic              IsDelaySlot_i,    //访存阶段指令是否是延迟槽指令
     // input logic[31:0]       CurrentInstr_i,   //访存阶段指令
     input logic [31:0]       CurrentPC_i,
     //来自CP0模块
@@ -38,7 +37,6 @@
     input logic [31:0]       WB_CP0RegWrData_i,//WB级对应的CP0写数�? 
 //向回写阶段输�?
     output ExceptinPipeType  ExceptType_o,      //�?终的异常类型
-    output logic             IsDelaySlot_o,     //访存阶段指令是否是延迟槽指令
     output logic [31:0]      CP0Epc_o           //CP0中EPC寄存器的�?新�??
  );
  
@@ -49,8 +47,6 @@
     logic[31:0]             CP0Status;         //用来保存CP0中Status寄存器的�?新�??
     logic[31:0]             CP0Cause;          //用来保存CP0中Cause寄存器的�?新�??
     logic[31:0]             CP0Epc;            //用来保存CP0中EPC寄存器的�?新�??
-
-    assign IsDelaySlot_o  = IsDelaySlot_i;
 
 
 
