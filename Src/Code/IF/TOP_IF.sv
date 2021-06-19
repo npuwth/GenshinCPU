@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-18 17:17:39
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-19 22:10:08
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -24,7 +24,7 @@ module TOP_IF (
     logic   [31:0]  IF_NPC;
     logic   [31:0]  IF_PC;
 
-    PC U_PC ( 
+    PC U_PC ( //TODO 端口连线
         .clk(clk),
         .rst(rst),
         .PC_Wr(PC_Wr),

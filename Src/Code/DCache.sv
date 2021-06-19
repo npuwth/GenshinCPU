@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-06-14 01:03:21
+ * @LastEditTime: 2021-06-18 17:27:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
@@ -117,7 +117,7 @@ module DCache(
   logic [31:0]unCache_rdata;//用来存放来自axi模块的数据
   logic unCache_rdata_en;
   logic [31:0]wdata;
-
+  logic [31:0]dirty_addr;
   // logic way0_data;因为没写注释 我也不知道这是啥
   // logic way1_data;
 //----------------------------对req的选择 如果isAgain高电平 那就引入 req_buffer的内容 不然就是
@@ -125,7 +125,7 @@ always_comb begin
   if (CPUBus.flush == `FlushEnable) begin
     req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType };
   end
-  else if(isAgain == 1'b1)begin
+  else if(isAgain == 1'b1 || (state == LOOKUP && cache_hit== `MISS))begin
     req = req_buffer;
   end
   else begin
@@ -525,7 +525,11 @@ always_comb begin
   else AXIBus.rd_req = `Disable;
 end
 
-assign AXIBus.wr_addr = {phsy_addr[31:12],req_buffer.index,4'b0000};
+assign dirty_addr = (Count0 == 1'b1) ? {tagV0.tagout,req_buffer.index,4'b0000}
+                                         : {tagV1.tagout,req_buffer.index,4'b0000}  ;
+
+
+assign AXIBus.wr_addr = dirty_addr;
 assign AXIBus.wr_data = (Count0 == 1'b1) ? {data0[0].dout,data0[1].dout,data0[2].dout,data0[3].dout}
                                          : {data1[0].dout,data1[1].dout,data1[2].dout,data1[3].dout}  ;
 always_comb begin
