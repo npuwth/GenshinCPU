@@ -1,17 +1,17 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-06-18 17:47:56
+ * @LastEditTime: 2021-06-20 17:06:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
  * @Description: 
  */
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 
-module ID_Reg( 
+module ID_Reg ( 
 //-------------------------------------------------------------------//    
     input logic                        clk,
     input logic                        rst,

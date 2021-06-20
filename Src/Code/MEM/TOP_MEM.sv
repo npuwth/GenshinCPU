@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-18 16:59:33
+ * @LastEditTime: 2021-06-20 16:45:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -31,9 +31,9 @@ module TOP_MEM (
     output logic [31:0]    MEM_Result               //用于MEM级旁路的数据
 );
 
-	  StoreType     		MEM_StoreType;
-	  RegsWrType        MEM_RegsWrType;
-	  ExceptinPipeType 	MEM_ExceptType_AfterDM;
+	StoreType     		   MEM_StoreType;
+	RegsWrType             MEM_RegsWrType;
+	ExceptinPipeType 	   MEM_ExceptType_AfterDM;
     
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MWBus.IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
@@ -59,15 +59,15 @@ module TOP_MEM (
         .EXE_Hi                  (EMBus.EXE_Hi ),
         .EXE_Lo                  (EMBus.EXE_Lo ),
     //------------------------out--------------------------------------------------//
-        .MEM_ALUOut              (WMBus.MEM_ALUOut ),
-        .MEM_OutB                (WMBus.MEM_OutB ),
-        .MEM_PC                  (WMBus.MEM_PC ),
-        .MEM_Instr               (WMBus.MEM_Instr ),
-        .MEM_IsABranch           (WMBus.MEM_IsABranch ),
-        .MEM_IsAImmeJump         (WMBus.MEM_IsAImmeJump ),
+        .MEM_ALUOut              (MWBus.MEM_ALUOut ),
+        .MEM_OutB                (MWBus.MEM_OutB ),
+        .MEM_PC                  (MWBus.MEM_PC ),
+        .MEM_Instr               (MWBus.MEM_Instr ),
+        .MEM_IsABranch           (MWBus.MEM_IsABranch ),
+        .MEM_IsAImmeJump         (MWBus.MEM_IsAImmeJump ),
         .MEM_LoadType            (MWBus.MEM_LoadType ),
         .MEM_StoreType           (MEM_StoreType),
-        .MEM_Dst                 (WMBus.MEM_Dst ),
+        .MEM_Dst                 (MWBus.MEM_Dst ),
         .MEM_RegsWrType          (MEM_RegsWrType ),
         .MEM_WbSel               (MWBus.MEM_WbSel ),
         .MEM_ExceptType          (MEM_ExceptType ),
@@ -76,35 +76,35 @@ module TOP_MEM (
     );
 
     Exception U_Exception(
-        .clk(clk),
-        .rst(resetn),
-        .MEM_RegsWrType_i(MEM_RegsWrType),              
-        .ExceptType_i(MEM_ExceptType),            
-        .CurrentPC_i(MWBus.MEM_PC),                     
-        .CP0Status_i(CP0Status),
-        .CP0Cause_i(CP0Cause),
-        .CP0Epc_i(CP0Epc),
-        .WB_CP0RegWr_i(MWBus.WB_RegsWrType.CP0Wr),             
-        .WB_CP0RegWrAddr_i(MWBus.WB_Dst),                     
-        .WB_CP0RegWrData_i(MWBus.WB_Result),                    
+        .clk                     (clk),
+        .rst                     (resetn),
+        .MEM_RegsWrType_i        (MEM_RegsWrType),              
+        .ExceptType_i            (MEM_ExceptType),            
+        .CurrentPC_i             (MWBus.MEM_PC),                     
+        .CP0Status_i             (CP0Status),
+        .CP0Cause_i              (CP0Cause),
+        .CP0Epc_i                (CP0Epc),
+        .WB_CP0RegWr_i           (MWBus.WB_RegsWrType.CP0Wr),             
+        .WB_CP0RegWrAddr_i       (MWBus.WB_Dst),                     
+        .WB_CP0RegWrData_i       (MWBus.WB_Result),                    
     //------------------------------out--------------------------------------------//
-        .MEM_RegsWrType_o(MWBus.MEM_RegsWrType_final),            
-        .IFID_Flush(ID_Flush_Exception),                
-        .IDEXE_Flush(EXE_Flush_Exception),                       
-        .EXEMEM_Flush(MEM_Flush_Exception),                           
-        .IsExceptionorEret(IsExceptionOrEret),            
-        .ExceptType_o(MWBus.MEM_ExceptType_final),          
-        .CP0Epc_o(Exception_CP0_EPC)                        
+        .MEM_RegsWrType_o        (MWBus.MEM_RegsWrType_final),            
+        .IFID_Flush              (ID_Flush_Exception),                
+        .IDEXE_Flush             (EXE_Flush_Exception),                       
+        .EXEMEM_Flush            (MEM_Flush_Exception),                           
+        .IsExceptionorEret       (IsExceptionOrEret),            
+        .ExceptType_o            (MWBus.MEM_ExceptType_final),          
+        .CP0Epc_o                (Exception_CP0_EPC)                        
     );
     
     //------------------------------用于旁路的多选器-------------------------------//
-    assign MEM_Forward_data_sel = (MWBus.MEM_WbSel == `WBSel_OutB)?1'b1:1'b0;
+    assign MEM_Forward_data_sel= (MWBus.MEM_WbSel == `WBSel_OutB)?1'b1:1'b0;
 
     MUX2to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
-        .d0(MWBus.MEM_ALUOut),
-        .d1(MWBus.MEM_OutB),
-        .sel2_to_1(MEM_Forward_data_sel),
-        .y(MEM_Result)
+        .d0                      (MWBus.MEM_ALUOut),
+        .d1                      (MWBus.MEM_OutB),
+        .sel2_to_1               (MEM_Forward_data_sel),
+        .y                       (MEM_Result)
     );
     //---------------------------------------------------------------------------//
     

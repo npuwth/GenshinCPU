@@ -1,14 +1,14 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-04-17 16:00:11
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-20 16:59:24
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\ALU.sv
  * 
  */
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 module ALU(EXE_ResultA,EXE_ResultB,EXE_ALUOp,EXE_ALUOut,EXE_ExceptType,EXE_ExceptType_new);
 input ExceptinPipeType EXE_ExceptType;
 input logic[31:0] EXE_ResultA,EXE_ResultB;

@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-06-18 16:38:43
+ * @LastEditTime: 2021-06-20 17:04:32
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -9,8 +9,8 @@
  * @Description: 
  */
 
-`include "CommonDefines.svh"  
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"  
+`include "../CPU_Defines.svh"
 
  module Exception(
     input                   clk,

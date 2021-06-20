@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-04-25 21:31:36
+ * @LastEditTime: 2021-06-20 17:00:52
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -9,7 +9,7 @@
  * @Description: 
  */
 
-`include "CPU_Defines.svh"
+`include "../CPU_Defines.svh"
 
 module Control(
     input  logic[31:0] ID_Instr,
@@ -29,11 +29,10 @@ module Control(
     output logic [1:0]ID_RegsReadSel,
     output logic [1:0]ID_EXTOp,
 
-    output logic      ID_isImmeJump,
+    output logic      ID_IsAImmeJump,
 
     output BranchType ID_BranchType,
 
-    output logic[31:0] ID_shamt,
     output logic[1:0]  ID_rsrtRead
     );
 
@@ -52,7 +51,6 @@ module Control(
     assign rt = ID_Instr[20:16];
     assign rd = ID_Instr[15:11];
     assign shamt = ID_Instr[10:6];
-    assign ID_shamt = {27'b0,shamt};
     // the  work before clasification 
 
     always_comb begin
@@ -291,7 +289,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end 
 
@@ -307,7 +305,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      
         ID_EXTOp      = `EXTOP_SIGN;   
-        ID_isImmeJump = `IsNotAImmeJump;    
+        ID_IsAImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;         
       end
 
@@ -323,7 +321,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 'x;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -339,7 +337,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;        
       end
 
@@ -355,7 +353,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -371,7 +369,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -387,7 +385,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -403,7 +401,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -419,7 +417,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 'x;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -435,7 +433,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -451,7 +449,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -467,7 +465,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -483,7 +481,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -499,7 +497,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;         
       end
 
@@ -515,7 +513,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1};         
       end
 
@@ -531,7 +529,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
       end
 
@@ -547,7 +545,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
       end
 
@@ -563,7 +561,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGT,1'b1};
       end
 
@@ -579,7 +577,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLE,1'b1};
       end
 
@@ -595,7 +593,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
       end
 
@@ -611,7 +609,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
       end
 
@@ -627,7 +625,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
       end
 
@@ -643,7 +641,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsAImmeJump;
+        ID_IsAImmeJump = `IsAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -659,7 +657,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsAImmeJump;
+        ID_IsAImmeJump = `IsAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -676,7 +674,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 // 
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -692,7 +690,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -708,7 +706,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_LUI;         //高位加载
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -724,7 +722,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -740,7 +738,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -756,7 +754,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
-        ID_isImmeJump = `IsNotAImmeJump;    
+        ID_IsAImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;
       end
 
@@ -772,7 +770,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -788,7 +786,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
-        ID_isImmeJump = `IsNotAImmeJump;    
+        ID_IsAImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;
       end
 
@@ -804,7 +802,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
       OP_SLL:begin
@@ -819,7 +817,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
       OP_SRAV:begin
@@ -834,7 +832,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
       OP_SRA:begin
@@ -849,7 +847,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
       OP_SRLV:begin
@@ -864,7 +862,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = 'x;
       end
       OP_SRL:begin
@@ -879,7 +877,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = 'x;
       end
 
@@ -895,7 +893,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
       end
 
@@ -911,7 +909,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
       end
 
@@ -927,7 +925,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_HI;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -943,7 +941,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_LO;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -959,7 +957,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
     
@@ -976,7 +974,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
       
@@ -992,7 +990,7 @@ module Control(
         ID_ALUSrcB    = 'x;
         ID_RegsReadSel= 'x;//选择ID级别读出的数据
         ID_EXTOp      = 'x;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
                             Interrupt:1'b0,
@@ -1018,7 +1016,7 @@ module Control(
         ID_ALUSrcB    = 'x;
         ID_RegsReadSel= 'x;//选择ID级别读出的数据
         ID_EXTOp      = 'x;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{
                             Interrupt:1'b0,
@@ -1050,7 +1048,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -1070,7 +1068,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -1090,7 +1088,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -1110,7 +1108,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;      
       end
 
@@ -1130,7 +1128,7 @@ module Control(
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;      
       end
 
@@ -1149,7 +1147,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;          
       end
 
@@ -1169,7 +1167,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;          
       end
 
@@ -1188,7 +1186,7 @@ module Control(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;          
       end
 
@@ -1204,7 +1202,7 @@ module Control(
         ID_ALUSrcB    = 'x;
         ID_RegsReadSel= 'x;//选择ID级别读出的数据
         ID_EXTOp      = 'x;
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         ID_ExceptType = '{  
                             Interrupt:1'b0,
@@ -1230,7 +1228,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero;
         ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
         ID_EXTOp      = 'x;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
     
@@ -1246,7 +1244,7 @@ module Control(
         ID_ExceptType = `ExceptionTypeZero;
         ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
         ID_EXTOp      = 'x;                 //R型无关
-        ID_isImmeJump = `IsNotAImmeJump;
+        ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end
 
@@ -1262,7 +1260,7 @@ module Control(
         ID_ALUSrcB    = 'X;  //MUXB选择regs
         ID_RegsReadSel= 'X;        //ID级选择RF读取结果
         ID_EXTOp      = 'X;                 //R型无关
-        ID_isImmeJump = 'X;
+        ID_IsAImmeJump = 'X;
         ID_BranchType = 'X;        
       end
 

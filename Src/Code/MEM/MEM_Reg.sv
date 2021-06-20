@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-06-18 15:27:53
+ * @LastEditTime: 2021-06-20 17:04:40
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -9,8 +9,8 @@
  * @Description: 
  */
 
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 
 module MEM_Reg ( 
 //-------------------------------------------------------//

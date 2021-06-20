@@ -1,5 +1,5 @@
 
-`include "CPU_Defines.svh"
+`include "../CPU_Defines.svh"
 
 module RF (
     input logic clk,

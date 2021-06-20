@@ -1,14 +1,14 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-09 17:32:04
- * @LastEditTime: 2021-04-09 17:41:44
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-20 17:01:11
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXT.sv
  * 
  */
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 module EXT(
     EXE_EXTOp,
     ID_Imm16,

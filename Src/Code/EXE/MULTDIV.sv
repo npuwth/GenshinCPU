@@ -1,14 +1,14 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-05-28 16:11:23
+ * @LastEditTime: 2021-06-20 16:59:41
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \myCPU\MULTDIV.sv
  * 
  */
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 module MULTDIV(
     input logic           aclk,    
     input logic           rst,             // 除法状态机的复位信号

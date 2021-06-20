@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-06-18 16:57:28
+ * @LastEditTime: 2021-06-20 16:39:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -386,7 +386,6 @@
         .ID_EXTOp(ID_EXTOp_o),
         .ID_isImmeJump(x.ID_IsAImmeJump),
         .ID_BranchType(x.ID_BranchType),
-        .ID_shamt(x.ID_shamt),
         .ID_rsrtRead(ID_rsrtRead_o)
     );
 

@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-18 16:41:22
+ * @LastEditTime: 2021-06-20 17:48:45
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -152,7 +152,8 @@ interface ID_EXE_interface();
 	logic 		[4:0]	    ID_rs;	
 	logic 		[4:0]	    ID_rt;	
 	logic 		[4:0]	    ID_rd;
-	logic 					ID_IsAImmeJump;
+	
+	
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  		// StoreType信号
@@ -162,9 +163,10 @@ interface ID_EXE_interface();
   	ExceptinPipeType 		ID_ExceptType;		// 异常类型
 	logic       [1:0]       ID_ALUSrcA;
 	logic       [1:0]       ID_ALUSrcB;
-	BranchType              ID_BranchType;
-	logic       [4:0]       ID_shamt;			//TODO:ID shamt原版为32位
 	logic       [1:0]       ID_RegsReadSel;
+	logic 					ID_IsAImmeJump;
+	BranchType              ID_BranchType;
+	
 
 	                                            //TODO:删去了流水线寄存器写使能和clk rstn
 
@@ -188,7 +190,6 @@ interface ID_EXE_interface();
 	output	                ID_ALUSrcA,
 	output	                ID_ALUSrcB,
 	output	                ID_BranchType,
-	output                  ID_shamt,			//TODO:ID shamt原版为32位
 	output                  ID_RegsReadSel
 	);
 
@@ -212,7 +213,6 @@ interface ID_EXE_interface();
 	input	                ID_ALUSrcA,
 	input	                ID_ALUSrcB,
 	input	                ID_BranchType,
-	input                   ID_shamt,			//TODO:ID shamt原版为32位
 	input                   ID_RegsReadSel
 	);
 	
@@ -221,7 +221,9 @@ endinterface
 interface EXE_MEM_Interface();
 	
 	logic 		[`RegBus] 	EXE_ALUOut;   		// RF 中读取到的数据A
-  	logic 		[`RegBus] 	EXE_BusB;	 		// RF 中读取到的数据B
+  	logic       [`RegBus]   EXE_Hi;
+	logic       [`RegBus]   EXE_Lo;
+	logic 		[`RegBus] 	EXE_BusB;	 		// RF 中读取到的数据B
   	logic 		[`RegBus] 	EXE_Dst;  		    // 符号扩展之后�?32位立即数
   	logic 		[`RegBus] 	EXE_PC; 		    // PC
 	logic 		[`InstrLen]	EXE_Instr;
@@ -235,7 +237,9 @@ interface EXE_MEM_Interface();
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
-  	output      	        EXE_BusB,	 		// RF 中读取到的数据B
+  	output                  EXE_Hi,
+	output                  EXE_Lo,
+	output      	        EXE_BusB,	 		// RF 中读取到的数据B
   	output      	        EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	output      	        EXE_PC, 		    // PC
 	output      	        EXE_Instr,
@@ -250,7 +254,9 @@ interface EXE_MEM_Interface();
 
 	modport MEM (
 	input      	            EXE_ALUOut,   		// RF 中读取到的数据A
-  	input      	            EXE_BusB,	 		// RF 中读取到的数据B
+  	input                   EXE_Hi,
+	input                   EXE_Lo,
+	input      	            EXE_BusB,	 		// RF 中读取到的数据B
   	input      	            EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	input      	            EXE_PC, 		    // PC
 	input      	            EXE_Instr,
@@ -267,12 +273,16 @@ endinterface
 
 interface MEM_WB_Interface();
 
-    logic		[31:0] 		MEM_ALUOut;			
-    logic 		[31:0] 		MEM_PC;			
+    logic		[31:0] 		MEM_ALUOut;	
+	logic       [31:0]      MEM_Hi;
+	logic       [31:0]      MEM_Lo;		
+    logic 		[31:0] 		MEM_PC;	
+	logic       [31:0]      MEM_Instr;		
     logic 		[1:0]  		MEM_WbSel;				
     logic 		[4:0]  		MEM_Dst;
 	LoadType     			MEM_LoadType;
 	logic 		[31:0] 		MEM_DMOut;
+	logic       [31:0]      MEM_OutB;
 	RegsWrType              MEM_RegsWrType_final;//经过exception solvement的新写使能
 	ExceptinPipeType 		MEM_ExceptType_final;
 	logic                   MEM_IsABranch;
@@ -289,12 +299,16 @@ interface MEM_WB_Interface();
 	input                   WB_IsAImmeJump,	
 	input                   WB_Dst,
 	input                   WB_Result,
-    output					MEM_ALUOut,			
-    output					MEM_PC,			
+    output					MEM_ALUOut,		
+	output                  MEM_Hi,
+	output                  MEM_Lo,	
+    output					MEM_PC,		
+	output                  MEM_Instr,	
     output					MEM_WbSel,				
     output					MEM_Dst,
     output					MEM_LoadType,
 	output					MEM_DMOut,
+	output                  MEM_OutB,
 	output					MEM_RegsWrType_final,//经过exception solvement的新写使能
 	output					MEM_ExceptType_final,
 	output					MEM_IsABranch,
@@ -303,12 +317,16 @@ interface MEM_WB_Interface();
 	);
 
 	modport WB ( 
-	input					MEM_ALUOut,			
-    input					MEM_PC,			
+	input					MEM_ALUOut,		
+	input                   MEM_Hi,
+	input                   MEM_Lo,	
+    input					MEM_PC,		
+	input                   MEM_Instr,	
     input					MEM_WbSel,				
     input					MEM_Dst,
     input					MEM_LoadType,
 	input					MEM_DMOut,
+	input                   MEM_OutB,
 	input					MEM_RegsWrType_final,//经过exception solvement的新写使能
 	input					MEM_ExceptType_final,
 	input					MEM_IsABranch,

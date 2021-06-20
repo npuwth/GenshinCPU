@@ -1,14 +1,14 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-04-10 19:09:59
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-06-20 17:01:53
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
  * 
  */
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 module BranchSolve(
     EXE_BranchType,
     EXE_OutA,

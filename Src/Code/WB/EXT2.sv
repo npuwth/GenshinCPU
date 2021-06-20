@@ -1,16 +1,16 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 14:36:47
- * @LastEditTime: 2021-04-16 18:00:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-20 17:04:49
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
  * @Description: 
  */
 
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 
 module EXT2(WB_DMOut_i,WB_ALUOut_i,WB_DMResult_o,WB_LoadType_i);
 
