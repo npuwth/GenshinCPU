@@ -1,17 +1,18 @@
 /*
- * @Author: Juan Jiang
- * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-06-28 15:25:46
+ * @Author: npuwth
+ * @Date: 2021-06-28 18:45:50
+ * @LastEditTime: 2021-06-28 21:20:27
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
  * @Description: 
  */
- 
- `include "CPU_Defines.svh"
 
- module mycpu_top(
+ `include "CPU_Defines.svh"
+ `include "CommonDefines.svh"
+
+ module mycpu (
          ext_int,
          
          aclk,   
@@ -105,112 +106,12 @@
     input  logic         bvalid;
     output logic         bready;
 
-   output [31:0]        debug_wb_pc;        // 写回级的PC
-   output [31:0]        debug_wb_rf_wdata;  // 写回的数据
-   output [3:0]         debug_wb_rf_wen;    // 写回级的写使能
-   output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址
-
-    //logic rst;
-    logic [2:0]         PCSel_o;
-
-    logic [31:0]        JumpAddr_o;//PCSel多�?�器
-    logic [31:0]        BranchAddr_o;
-    logic [31:0]        PC_4_o;
-    //logic [31:0]        EPCData_o;
-
-    logic [1:0]         ID_EXTOp_o;
-    logic [1:0]         ID_rsrtRead_o;
-
-    logic               ID_RF_ForwardA;
-    logic               ID_RF_ForwardB;
-    logic               ID_CP0_Forward;
-    logic [31:0]        ID_BusA1_o;
-    logic [31:0]        ID_BusB1_o;
-    logic [31:0]        RF_Bus_o;
-    logic [31:0]        HI_Bus_o;
-    logic [31:0]        LO_Bus_o;
-    logic [31:0]        CP0_Bus_o;
-
-    //�?有与流水线寄存器相关的信号，数据都是x.  *_o后缀的都是其他的�?些信号（至少它与流水线寄存器无关，）
-// *******************************Johnson Yang & WTH &Juan **********/
-    // logic [31:0]        data_sram_addr_o;         //虚地址 data
-    // logic [31:0]        inst_sram_addr_o;
-    ExceptinPipeType    EXE_ExceptType_new; 
-    logic               IFID_Flush_Exception_o;   //Exception 传出的IFID_flush信号
-    logic               IFID_Flush_BranchSolvement_o;
-    logic               IDEXE_Flush_Exception_o;  //Exception 传出的IDEXE_flush信号
-    logic               IDEXE_Flush_DataHazard_o; //LOAD指令后的阻塞
-    logic [1:0]         IsExceptionorEret_o;      //送给PCSEL
-    logic               EXEMEM_Flush_Exception_o;  //Exception 传出的IDEXE_flush信号
-    logic               MEM_IsDelaySlot_o;        //访存阶段是否是延迟槽（�?�给CP0�?
-    logic [31:0]        MEM_CP0Epc_o;             //送给PC的MUX做为被�?�择的数据信�?
-    AsynExceptType      Interrupt_o;              //6个外部硬件中断输�?
-    logic               CP0TimerInterrupt_o;      //定时器中�?
-    logic [31:0]        MEM_SWData_o;             //Store类型写入data_sram写数�?
-    //CP0寄存器的定义
-    logic [31:0]        CP0BadVAddr;              //8号寄存器  BadVAddr寄存器的�?:�?新地�?相关例外的出错地�?
-    logic [31:0]        CP0Count;                 //9号寄存器  Count寄存器的�?
-    logic [31:0]        CP0Compare;               //11号寄存器 Compare寄存器的�?
-    logic [31:0]        CP0Status;                //12号寄存器 Status寄存器的�?
-    logic [31:0]        CP0Cause;                 //13号寄存器 Cause寄存器的�?
-    logic [31:0]        CP0Epc;                   //14号寄存器 EPC寄存器的�?
-    logic [31:0]        WB_DMResult_o;
-//---------------------------------------------seddon
-    logic [1:0]         EXE_ForwardA_o,EXE_ForwardB_o; 
-    logic [31:0]        EXE_OutA_o,EXE_OutB_o;
-    logic [31:0]        WB_Result_o;
-    logic [31:0]        MEM_Result_o;   //用于旁路的来自EXEMEM的数据
-    logic [31:0]        EXE_ResultA_o,EXE_ResultB_o;
-    logic [31:0]        EXE_MULTDIVtoLO;
-    logic [31:0]        EXE_MULTDIVtoHI;
-    logic               EXE_Finish;   
-    logic               EXE_MULTDIVStall;    
-    logic               DH_IF_PCWr_o;
-    logic               DH_IF_IDWr_o;   
-
-    logic               IF_PCWr;   
-    logic               IF_IDWr;
-    logic               ID_EXEWr;
-    logic               EXE_MEMWr;
-    logic               MEM_WBWr;  
-    logic               IFID_Flush;
-    logic               IDEXE_Flush;
-    logic               EXEMEM_Flush;
-    logic               MEMWB_Flush;      
-    logic               HiLo_Not_Flush;
-    logic               MEMWB_DisWr; 
-    RegsWrType          WB_Final_Wr;   // WB级最终的写使能信号
-//------------------------seddonend
-
-    logic [31:0]        ID_CP0DataOut_o;
+    output [31:0]        debug_wb_pc;        // 写回级的PC
+    output [31:0]        debug_wb_rf_wdata;  // 写回的数据
+    output [3:0]         debug_wb_rf_wen;    // 写回级的写使能
+    output [4:0]         debug_wb_rf_wnum;   // 写寄存器的地址
 
     assign Interrupt_o   =  {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
-    assign x.rst       =  ~aresetn;                       //高电平有效的复位信号
-    // assign x.IF_PCWr = (IFID_Flush_Exception_o)? 1: DH_IF_PCWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
-    // assign x.IF_IDWr = DH_IF_IDWr_o & ~EXE_MULTDIVStall;    //在load & R型的时候 以及乘除法的时候产生
-    // assign x.ID_EXEWr = ~EXE_MULTDIVStall;
-    // assign x.EXE_MEMWr = 1;
-    // assign x.MEM_WBWr = 1;
-    assign x.IF_PCWr       =    IF_PCWr  ;
-    assign x.IF_IDWr       =    IF_IDWr  ;
-    assign x.ID_EXEWr      =    ID_EXEWr ;
-    assign x.EXE_MEMWr     =    EXE_MEMWr;
-    assign x.MEM_WBWr      =    MEM_WBWr ;
-    assign x.IFID_Flush    =    IFID_Flush;
-    assign x.IDEXE_Flush   =    IDEXE_Flush;
-    assign x.EXEMEM_Flush  =    EXEMEM_Flush;
-    assign x.MEMWB_Flush   =    MEMWB_Flush;
-
-    // assign x.IFID_Flush  =  IFID_Flush_Exception_o | 
-                        //    IFID_Flush_BranchSolvement_o;  // 在branch solvement级和 exception级 都会产生IFID_Flush信号
-    // assign x.IDEXE_Flush = IDEXE_Flush_Exception_o | 
-                        //    IDEXE_Flush_DataHazard_o;      // 在（先Store 后LOAD阻塞级）和 exception级 都会产生IDEXE_Flush信号
-
-    PipeLineRegsInterface x(
-        //input
-        .clk(aclk)
-        //.rst(~aresetn)
-    );
 
     CPU_Bus_Interface cpu_ibus();
     CPU_Bus_Interface cpu_dbus();
@@ -253,37 +154,6 @@
         .IcacheFlush(cpu_ibus.flush),
         .DcacheFlush(cpu_dbus.flush)
     ); 
-
-    MUX8to1 U_PCMUX(
-        //input
-        .d0(PC_4_o),
-        .d1(JumpAddr_o),
-        .d2(MEM_CP0Epc_o),
-        .d3(32'hBFC00380),
-        .d4(BranchAddr_o),
-        .d5(EXE_OutA_o),
-        .sel8_to_1(PCSel_o),
-        //output
-        .y(x.IF_NPC)
-    );
-    assign PC_4_o = x.IF_PC + 4;
-    assign x.IF_PCAdd1 = PC_4_o;  //这里由于sram的原因，pc和指令会�?4，所以不用PC_4_o，就用PC来表示PC_4_o
-
-
-    assign JumpAddr_o = {x.ID_PCAdd1[31:28],x.ID_Instr[25:0],2'b0};
-
-    assign BranchAddr_o = x.EXE_PCAdd1+{x.EXE_Imm32[29:0],2'b0};
-
-    PCSEL U_PCSEL(
-        //input
-        .isBranch(IFID_Flush_BranchSolvement_o),//
-        .isImmeJump(x.ID_IsAImmeJump),
-        .isExceptorERET(IsExceptionorEret_o),
-        .EXE_BranchType(x.EXE_BranchType),
-        //output
-        .PCSel(PCSel_o)
-    );
-
 
     // ICache U_ICache(
     //     //input
@@ -360,74 +230,6 @@
     assign cpu_ibus.wdata = 'x;
     assign cpu_ibus.ready = IF_IDWr;
 
-    // assign inst_sram_en    = (resetn) ? x.IF_PCWr : 0; //resten高电�? & IF_PCWr�?1 读取数据
-    // assign inst_sram_wen   = 4'b0000;
-    // assign inst_sram_wdata = 32'b0;
-   
-    // MMU U_MMU_inst_sram(
-    //     .virt_addr(inst_sram_addr_o),
-    //     .phsy_addr(inst_sram_addr)
-    // );因为加了cache所以不需要了
-
-    Control U_Control(
-        //input
-        .ID_Instr(x.ID_Instr),
-        //output
-        .ID_ALUOp(x.ID_ALUOp),
-        .ID_LoadType(x.ID_LoadType),
-        .ID_StoreType(x.ID_StoreType),
-        .ID_RegsWrType(x.ID_RegsWrType),
-        .ID_WbSel(x.ID_WbSel),
-        .ID_DstSel(x.ID_DstSel),
-        .ID_ExceptType(x.ID_ExceptType),
-        .ID_ALUSrcA(x.ID_ALUSrcA),
-        .ID_ALUSrcB(x.ID_ALUSrcB),
-        .ID_RegsReadSel(x.ID_RegsReadSel),
-        .ID_EXTOp(ID_EXTOp_o),
-        .ID_isImmeJump(x.ID_IsAImmeJump),
-        .ID_BranchType(x.ID_BranchType),
-        .ID_rsrtRead(ID_rsrtRead_o)
-    );
-
-    RF U_RF (
-        .clk(aclk),
-        .rst(aresetn),
-        .WB_Dst(x.WB_Dst),
-        .WB_Result(WB_Result_o),
-        .RFWr(WB_Final_Wr.RFWr),
-        .ID_rs(x.ID_rs),
-        .ID_rt(x.ID_rt),
-        .ID_BusA(ID_BusA1_o),
-        .ID_BusB(ID_BusB1_o)
-    );
-
-    assign ID_RF_ForwardA = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rs);
-    assign ID_RF_ForwardB = x.WB_RegsWrType.RFWr && (x.WB_Dst==x.ID_rt);
-    assign ID_CP0_Forward = x.WB_RegsWrType.CP0Wr && (x.WB_Dst == x.ID_rd);
-    // 关于同一个时刻即写入，有读取的处理单元
-    // HILO在其内部进行了处理，因此没有出现在MUX中
-    MUX2to1 #(32) U_MUX_RF_FORWARDA ( 
-        .d0(ID_BusA1_o),
-        .d1(WB_Result_o),
-        .sel2_to_1(ID_RF_ForwardA),
-        .y(x.ID_BusA)
-    );
-
-    MUX2to1 #(32) U_MUX_RF_FORWARDB ( 
-        .d0(ID_BusB1_o),
-        .d1(WB_Result_o),
-        .sel2_to_1(ID_RF_ForwardB),
-        .y(RF_Bus_o)
-    );
-
-    MUX2to1 #(32) U_MUX_CP0_FORWARD ( 
-        .d0(ID_CP0DataOut_o),
-        .d1(WB_Result_o),
-        .sel2_to_1(ID_CP0_Forward),
-        .y(CP0_Bus_o)
-    );
-    //处理在异常情况下有写HiLo发生 (也可用作为是否产生异常的判断 为1：没有异常)
-    // assign HiLo_Not_Flush = (IsExceptionorEret_o == `IsNone) ? 1'b1:1'b0;
     HILO U_HILO (
         .clk(aclk),
         .rst(aresetn),
@@ -439,21 +241,6 @@
         .EXE_MULTDIVtoHI(EXE_MULTDIVtoHI),
         .HI_o(HI_Bus_o),
         .LO_o(LO_Bus_o)
-    );
-
-    EXT U_EXT ( 
-        .EXE_EXTOp(ID_EXTOp_o),
-        .ID_Imm16(x.ID_Imm16),
-        .ID_Imm32(x.ID_Imm32)
-    );
-
-    MUX4to1 U_MUXBUSB ( 
-        .d0(RF_Bus_o),
-        .d1(HI_Bus_o),
-        .d2(LO_Bus_o),
-        .d3(CP0_Bus_o),
-        .sel4_to_1(x.ID_RegsReadSel),
-        .y(x.ID_BusB)
     );
 
     DataHazard U_DataHazard ( 
@@ -471,6 +258,83 @@
         .IDEXE_Flush(IDEXE_Flush_DataHazard_o)
     );
     
+    IF_ID_Interface     IIBus();
+    ID_EXE_Interface    IEBus();
+    EXE_MEM_Interface   EMBus();
+    MEM_WB_Interface    MWBus();
+    WB_CP0_Interface    WCBus();
+
+    TOP_IF U_TOP_IF ( 
+        .clk (clk ),
+        .resetn (resetn ),
+        .PC_Wr (PC_Wr ),
+        .IIBus (IIBus.IF)
+    );
+
+    TOP_ID U_TOP_ID ( 
+        .clk (aclk ),
+        .resetn (aresetn ),
+        .ID_Flush (ID_Flush ),
+        .ID_Wr (ID_Wr ),
+        .WB_Result (WB_Result ),
+        .WB_Dst (WB_Dst ),
+        .WB_RFWr (WB_RFWr ),
+        .CP0_Bus (CP0_Bus ),
+        .HI_Bus (HI_Bus ),
+        .LO_Bus (LO_Bus ),
+        .IIBus (IIBus.ID ),
+        .IEBus (IEBus.ID ),
+        .ID_rsrtRead  (ID_rsrtRead )
+    );
+
+    TOP_EXE U_TOP_EXE ( 
+        .clk (aclk ),
+        .resetn (aresetn ),
+        .EXE_Flush (EXE_Flush ),
+        .EXE_Wr (EXE_Wr ),
+        .WB_RegsWrType (WB_RegsWrType ),
+        .WB_Dst (WB_Dst ),
+        .WB_Result (WB_Result ),
+        .HiLo_Not_Flush (HiLo_Not_Flush ),
+        .IEBus (IEBus.EXE ),
+        .EMBus (EMBus.EXE ),
+        .IFID_Flush_BranchSolvement (IFID_Flush_BranchSolvement ),
+        .EXE_Finish (EXE_Finish ),
+        .EXE_MULTDIVStall  ( EXE_MULTDIVStall)
+    );
+
+    TOP_MEM U_TOP_MEM ( 
+        .clk (aclk ),
+        .resetn (aresetn ),
+        .MEM_Flush (MEM_Flush ),
+        .MEM_Wr (MEM_Wr ),
+        .CP0Status (CP0Status ),
+        .CP0Cause (CP0Cause ),
+        .CP0Epc (CP0Epc ),
+        .EMBus (EMBus.MEM ),
+        .MWBus (MWBus.MEM ),
+        .ID_Flush_Exception (ID_Flush_Exception ),
+        .EXE_Flush_Exception (EXE_Flush_Exception ),
+        .MEM_Flush_Exception (MEM_Flush_Exception ),
+        .IsExceptionOrEret (IsExceptionOrEret ),
+        .Exception_CP0_EPC  ( Exception_CP0_EPC)
+    );
+
+    TOP_WB U_TOP_WB ( 
+        .clk (aclk ),
+        .resetn (aresetn ),
+        .WB_Flush (WB_Flush ),
+        .MWBus (MWBus.WB ),
+        .WCBus (WCBus.WB ),
+        .WB_Result (WB_Result ),
+        .WB_Dst (WB_Dst ),
+        .WB_RegsWrType (WB_RegsWrType ),
+        .WB_Hi (WB_Hi ),
+        .WB_Lo (WB_Lo )
+    );
+
+
+
 //---------------------------------------------seddon
     ForwardUnit U_ForwardUnit (
         .WB_RegsWrType(x.WB_RegsWrType),
@@ -721,7 +585,5 @@
     assign debug_wb_rf_wnum = x.WB_Dst;                     //写地�?
 
 
- 
-
- endmodule
+endmodule
 

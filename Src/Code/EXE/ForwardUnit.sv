@@ -8,8 +8,8 @@
  * 
  */ 
 
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 module ForwardUnit (
      EXE_rs,EXE_rt,EXE_rd,MEM_Dst,WB_Dst,
      EXE_ForwardA,EXE_ForwardB,//两个选择信号

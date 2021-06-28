@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-20 16:45:42
+ * @LastEditTime: 2021-06-27 14:45:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,17 +26,17 @@ module TOP_MEM (
     output logic           EXE_Flush_Exception,
     output logic           MEM_Flush_Exception,
     output logic           IsExceptionOrEret,
-    output logic [31:0]    Exception_CP0_EPC,
-    output logic [4:0]     MEM_Dst,                 //用于MEM级旁路的地址
-    output logic [31:0]    MEM_Result               //用于MEM级旁路的数据
+    output logic [31:0]    Exception_CP0_EPC
 );
 
 	StoreType     		   MEM_StoreType;
 	RegsWrType             MEM_RegsWrType;
-	ExceptinPipeType 	   MEM_ExceptType_AfterDM;
+	ExceptinPipeType 	   MEM_ExceptType;
     
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MWBus.IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
+    assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType;
+    assign EMBus.MEM_Dst = MWBus.MEM_Dst;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -104,7 +104,7 @@ module TOP_MEM (
         .d0                      (MWBus.MEM_ALUOut),
         .d1                      (MWBus.MEM_OutB),
         .sel2_to_1               (MEM_Forward_data_sel),
-        .y                       (MEM_Result)
+        .y                       (EMBus.MEM_Result)
     );
     //---------------------------------------------------------------------------//
     

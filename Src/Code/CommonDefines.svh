@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-06-16 17:23:20
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-28 15:48:52
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -120,6 +120,11 @@
 `define CP0_REG_STATUS      5'd12
 `define CP0_REG_CAUSE       5'd13
 `define CP0_REG_EPC         5'd14
+`define CP0_REG_INDEX       5'd0
+`define CP0_REG_ENTRYHI     5'd10
+`define CP0_REG_ENTRYLO0    5'd2
+`define CP0_REG_ENTRYLO1    5'd3
+`define CP0_REG_RANDOM      5'd1
 
 `define IsEret              2'b10
 `define IsException         2'b11

@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-20 17:48:45
+ * @LastEditTime: 2021-06-28 21:11:21
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -142,7 +142,7 @@ interface IF_ID_Interface();
 	
 endinterface
 
-interface ID_EXE_interface();
+interface ID_EXE_Interface();
 
 	logic       [`RegBus]   ID_BusA;            //从RF中读出的A数据
 	logic       [`RegBus]   ID_BusB;            //从RF中读出的B数据
@@ -231,6 +231,9 @@ interface EXE_MEM_Interface();
   	LoadType        		EXE_LoadType;	 	// LoadType信号 
   	StoreType       		EXE_StoreType;  	// StoreType信号
   	RegsWrType      		EXE_RegsWrType;		// 寄存器写信号打包
+	RegsWrType              MEM_RegsWrType;
+	logic       [4:0]       MEM_Dst;
+	logic       [31:0]      MEM_Result;
   	logic 		[1:0]   	EXE_WbSel;        	// 选择写回数据
   	ExceptinPipeType 		EXE_ExceptType;		// 异常类型
 	BranchType              EXE_BranchType;
@@ -249,7 +252,10 @@ interface EXE_MEM_Interface();
    	output      	        EXE_RegsWrType,		// 寄存器写信号打包
   	output                  EXE_WbSel,        	// 选择写回数据
     output                  EXE_ExceptType,		// 异常类型
-	output                  EXE_BranchType
+	output                  EXE_BranchType,
+	input                   MEM_RegsWrType,
+	input                   MEM_Dst,
+	input                   MEM_Result
 	);
 
 	modport MEM (
@@ -266,7 +272,10 @@ interface EXE_MEM_Interface();
    	input      	            EXE_RegsWrType,		// 寄存器写信号打包
   	input                   EXE_WbSel,        	// 选择写回数据
     input                   EXE_ExceptType,		// 异常类型
-	input                   EXE_BranchType
+	input                   EXE_BranchType,
+	output                  MEM_RegsWrType,
+	output                  MEM_Dst,
+	output                  MEM_Result
 	);
 
 endinterface
@@ -340,6 +349,37 @@ interface MEM_WB_Interface();
 
 endinterface
 
+interface WB_CP0_Interface ();
+    
+	logic                   WB_CP0Wr;
+	logic [4:0]             WB_Dst;
+	logic [31:0]            WB_Result;
+	ExceptinPipeType        WB_ExceptType;
+	logic [31:0]            WB_PC;
+	logic                   WB_IsInDelaySlot;
+	logic [31:0]            WB_ALUOut;
+
+	modport WB ( 
+    output                  WB_CP0Wr,
+	output                  WB_Dst,
+	output                  WB_Result,
+	output                  WB_ExceptType,
+	output                  WB_PC,
+	output                  WB_IsInDelaySlot,
+	output                  WB_ALUOut
+	);
+
+	modport CP0 ( 
+    input                   WB_CP0Wr,
+	input                   WB_Dst,
+	input                   WB_Result,
+	input                   WB_ExceptType,
+	input                   WB_PC,
+	input                   WB_IsInDelaySlot,
+	input                   WB_ALUOut
+	);
+
+endinterface
 //-----------------------------------------------------------------------------------------//
 
 interface PipeLineRegsInterface (

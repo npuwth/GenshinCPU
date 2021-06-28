@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-20 17:31:50
+ * @LastEditTime: 2021-06-27 13:14:31
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -11,7 +11,7 @@
  `include "../CPU_Defines.svh"
  `include "../CommonDefines.svh"
 
-module IDEXE_Reg ( 
+module EXE_Reg ( 
     input logic                          clk,
     input logic                          rst,
     input logic                          EXE_Flush,
