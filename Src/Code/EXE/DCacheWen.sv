@@ -1,16 +1,16 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-06-13 10:28:41
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-29 14:37:52
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
  * @IO PORT:
  * @Description: 改成了组合逻辑
  */
 
-`include "CommonDefines.svh"
-`include "CPU_Defines.svh"
+`include "../CommonDefines.svh"
+`include "../CPU_Defines.svh"
 
 module DCacheWen(
   input logic [31:0]       EXE_ALUOut,

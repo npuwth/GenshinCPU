@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-20 16:57:27
+ * @LastEditTime: 2021-06-29 14:53:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,19 +17,17 @@ module TOP_ID (
     input logic              resetn,
     input logic              ID_Flush,
     input logic              ID_Wr,
-
     input logic [31:0]       WB_Result,  //写寄存器堆来自WB
     input logic [4:0]        WB_Dst,
     input logic              WB_RFWr,
-
     input logic [31:0]       CP0_Bus,
     input logic [31:0]       HI_Bus,
     input logic [31:0]       LO_Bus,
-
-    IF_ID_Interface          IIBus,//TODO: 不如改成IF_ID_Bus 
-    ID_EXE_interface         IEBus,
-
-    output logic             ID_rsrtRead  //用于数据旁路与阻塞            
+    IF_ID_Interface.ID       IIBus,//TODO: 不如改成IF_ID_Bus 
+    ID_EXE_interface.ID      IEBus,
+    //---------------------------output------------------------------//
+    output logic             ID_rsrtRead,  //用于数据旁路与阻塞    
+    output logic             ID_IsAImmeJump  //用于PCSel，表示是j，jal跳转      
 );
     
     logic [31:0]             ID_JumpAddr;
@@ -41,9 +39,13 @@ module TOP_ID (
 
     logic [31:0]             RF_BusB_Final;
 
+    assign IIBus.ID_Instr = IEBus.ID_Instr;
+    assign IIBus.ID_PC    = IEBus.ID_PC;
+    assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
+
     ID_Reg U_ID_Reg ( //TODO: 端口的连线还没改好
         .clk                 (clk ),
-        .rst                 (rst ),
+        .rst                 (resetn ),
         .ID_Flush            (ID_Flush ),
         .ID_Wr               (ID_Wr ),
         .IF_Instr            (IIBus.IF_Instr ),

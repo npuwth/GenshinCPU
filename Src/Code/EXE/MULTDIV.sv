@@ -10,7 +10,7 @@
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
 module MULTDIV(
-    input logic           aclk,    
+    input logic           clk,    
     input logic           rst,             // 除法状态机的复位信号
     input logic  [4:0]    EXE_ALUOp,
     input logic  [31:0]   EXE_ResultA,
@@ -57,7 +57,7 @@ logic  [1:0]    prestate;
 
 
 
-always_ff @(posedge aclk or negedge rst) begin
+always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
             dividend_tdata <= `ZeroWord;
             divisor_tdata  <= `ZeroWord;
@@ -90,7 +90,7 @@ always_comb begin
 end 
 
 // 除法的状态机
-always_ff @(posedge aclk or negedge rst) begin
+always_ff @(posedge clk or negedge rst) begin
         if (!rst) prestate <= T;
         else      prestate <= nextstate;
 end
@@ -169,7 +169,7 @@ end
 
 
 Signed_div U_SignedDIV (
-    .aclk(aclk),                                         // input wire aclk
+    .clk(clk),                                         // input wire clk
     .s_axis_divisor_tvalid (Signed_divisor_tvalid),      // input wire s_axis_divisor_tvalid
     .s_axis_divisor_tready (Signed_divisor_tready),      // output wire s_axis_divisor_tready
     .s_axis_divisor_tdata  (divisor_tdata),              // input wire [31 : 0] s_axis_divisor_tdata
@@ -181,7 +181,7 @@ Signed_div U_SignedDIV (
     );
 
 Unsigned_div U_UnsignedDIV (
-   .aclk(aclk),                                          // input wire aclk
+   .clk(clk),                                          // input wire clk
    .s_axis_divisor_tvalid  (Unsigned_divisor_tvalid),    // input wire s_axis_divisor_tvalid
    .s_axis_divisor_tready  (Unsigned_divisor_tready),    // output wire s_axis_divisor_tready
    .s_axis_divisor_tdata   (divisor_tdata),              // input wire [31 : 0] s_axis_divisor_tdata

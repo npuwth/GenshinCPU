@@ -1,14 +1,14 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-06-18 17:27:35
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-29 14:38:15
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
-`include "Cache_Defines.svh"
-`include "CPU_Defines.svh"
-`include "CommonDefines.svh"
+`include "../Cache_Defines.svh"
+`include "../CPU_Defines.svh"
+`include "../CommonDefines.svh"
 module DCache(
     input logic clk,
     input logic resetn,

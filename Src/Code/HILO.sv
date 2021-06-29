@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-04-23 14:53:57
+ * @LastEditTime: 2021-06-28 22:38:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,13 +23,13 @@ module HILO(
     //写端口
     input logic                HIWr,
     input logic                LOWr,
-    input logic   [`RegBus]    Data_i,    //  MTLO MTHI
+    input logic   [`RegBus]    Data_Wr,    //  MTLO MTHI
     input logic   [`RegBus]    EXE_MULTDIVtoLO,  // 乘除法写
     input logic   [`RegBus]    EXE_MULTDIVtoHI,  // 乘除法写
 
     //读端口
-    output logic  [`RegBus]    HI_o,
-    output logic  [`RegBus]    LO_o
+    output logic  [`RegBus]    HI_Rd,
+    output logic  [`RegBus]    LO_Rd
     );
     
     logic [`RegBus] HI;
@@ -37,21 +37,21 @@ module HILO(
 
     always_comb begin
         if(MULT_DIV_finish == 1'b1)
-            HI_o = EXE_MULTDIVtoHI;
+            HI_Rd = EXE_MULTDIVtoHI;
         else if(HIWr == 1'b1)
-            HI_o = Data_i;
+            HI_Rd = Data_Wr;
         else begin
-            HI_o = HI;
+            HI_Rd = HI;
         end
     end
 
     always_comb begin
         if(MULT_DIV_finish == 1'b1)
-            LO_o = EXE_MULTDIVtoLO;
+            LO_Rd = EXE_MULTDIVtoLO;
         else if(LOWr == 1'b1)
-            LO_o = Data_i;
+            LO_Rd = Data_Wr;
         else begin
-            LO_o = LO;
+            LO_Rd = LO;
         end
     end
 
@@ -61,7 +61,7 @@ module HILO(
         end else if (MULT_DIV_finish == 1'b1) begin
             HI <= EXE_MULTDIVtoHI;
         end else if (HIWr == `WriteEnable) begin
-            HI <= Data_i;
+            HI <= Data_Wr;
         end 
     end
     always @ ( posedge clk or negedge rst) begin
@@ -70,10 +70,10 @@ module HILO(
         end else if (MULT_DIV_finish == 1'b1) begin
             LO <= EXE_MULTDIVtoLO;
         end else if (LOWr == `WriteEnable) begin
-            LO <= Data_i;
+            LO <= Data_Wr;
         end
         // `ifdef DEBUG
-        //     $monitor("HI:%8X LO:%8X",HI_o,LO_o);
+        //     $monitor("HI:%8X LO:%8X",HI_Rd,LO_Rd);
         // `endif
     end
     

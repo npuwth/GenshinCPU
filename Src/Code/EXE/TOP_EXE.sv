@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-27 14:49:37
+ * @LastEditTime: 2021-06-29 15:47:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -13,43 +13,51 @@
 `include "../CPU_Defines.svh"
 
 module TOP_EXE ( 
-    input logic        clk,
-    input logic        resetn,
-    input logic        EXE_Flush,
-    input logic        EXE_Wr,
-    input RegsWrType   WB_RegsWrType,
-    input logic [4:0]  WB_Dst,
-    input logic [31:0] WB_Result,
-    input logic        HiLo_Not_Flush,
-    ID_EXE_Interface   IEBus,
-    EXE_MEM_Interface  EMBus,
-    output logic       IFID_Flush_BranchSolvement,
-    output logic       EXE_Finish,
-    output logic       EXE_MULTDIVStall
+    input logic               clk,
+    input logic               resetn,
+    input logic               EXE_Flush,
+    input logic               EXE_Wr,
+    input RegsWrType          WB_RegsWrType,
+    input logic [4:0]         WB_Dst,
+    input logic [31:0]        WB_Result,
+    input logic               HiLo_Not_Flush,
+    ID_EXE_Interface.EXE      IEBus,
+    EXE_MEM_Interface.EXE     EMBus,
+    output logic              ID_Flush_BranchSolvement,
+    output logic              EXE_Finish,
+    output logic              EXE_MULTDIVStall,
+    output logic [31:0]       EXE_BusA_L1,
+    output logic [31:0]       EXE_BusB_L1,
+    output BranchType         EXE_BranchType,
+    output logic [31:0]       EXE_PC,
+    output logic [31:0]       EXE_Imm32,
+    output LoadType           EXE_LoadType,
+    output StoreType          EXE_StoreType,
+    output RegsWrType         EXE_RegsWrType,
+    output logic [31:0]       EXE_ALUOut,
+    output logic [3:0]        DCache_Wen
 );
 
-    logic [31:0]       EXE_BusA;
-    logic [31:0]       EXE_BusB;
-    logic [31:0]       EXE_Imm32;
-    logic [4:0]        EXE_rs;
-    logic [4:0]        EXE_rt;
-    logic [4:0]        EXE_rd;
-    logic [4:0]        EXE_ALUOp;
-    logic [1:0]        EXE_DstSel;
-    logic [31:0]       EXE_ALUSrcA;
-    logic [31:0]       EXE_ALUSrcB;
-    logic [1:0]        EXE_RegsReadSel;
-    ExceptinPipeType   EXE_ExceptType;
-    logic [1:0]        EXE_ForwardA;
-    logic [1:0]        EXE_ForwardB;
-    logic [4:0]        EXE_Shamt;
-    logic [31:0]       EXE_BusA_L1;
-    logic [31:0]       EXE_BusB_L1;
-    logic [31:0]       EXE_BusA_L2;
-    logic [31:0]       EXE_BusB_L2;
+    logic [31:0]              EXE_BusA;
+    logic [31:0]              EXE_BusB;
+    logic [4:0]               EXE_rs;
+    logic [4:0]               EXE_rt;
+    logic [4:0]               EXE_rd;
+    logic [4:0]               EXE_ALUOp;
+    logic [1:0]               EXE_DstSel;
+    logic [31:0]              EXE_ALUSrcA;
+    logic [31:0]              EXE_ALUSrcB;
+    logic [1:0]               EXE_RegsReadSel;
+    ExceptinPipeType          EXE_ExceptType;//未经过alu的
+    ExceptinPipeType          EXE_ExceptType_new;//经过ALU后的excepttype
+    logic [1:0]               EXE_ForwardA;
+    logic [1:0]               EXE_ForwardB;
+    logic [4:0]               EXE_Shamt;
+    logic [31:0]              EXE_BusA_L2;
+    logic [31:0]              EXE_BusB_L2;
 
- 
-    assign EMBus.EXE_OutB = EXE_BusB_L1; 
+    assign EXE_LoadType       = EMBus.EXE_LoadType;
+    assign EMBus.EXE_OutB           = EXE_BusB_L1;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
@@ -76,7 +84,7 @@ module TOP_EXE (
         .ID_RegsReadSel       (IEBus.ID_RegsReadSel ),
         .ID_IsAImmeJump       (IEBus.ID_IsAImmeJump ),
         .ID_BranchType        (IEBus.ID_BranchType ),
-    //-------------------------out-----------------------------//
+    //-------------------------output-----------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
         .EXE_Imm32            (EXE_Imm32 ),
@@ -102,82 +110,99 @@ module TOP_EXE (
 
 
     ForwardUnit U_ForwardUnit (
-        .WB_RegsWrType(WB_RegsWrType),
-        .MEM_RegsWrType(EMBus.MEM_RegsWrType),
-        .EXE_rt(EXE_rt),
-        .EXE_rs(EXE_rs),
-        .EXE_rd(EXE_rd),
-        .MEM_Dst(EMBus.MEM_Dst),
-        .WB_Dst(WB_Dst),
-        .EXE_RegsReadSel(EXE_RegsReadSel),
-        .EXE_ForwardA(EXE_ForwardA),
-        .EXE_ForwardB(EXE_ForwardB)
+        .WB_RegsWrType        (WB_RegsWrType),
+        .MEM_RegsWrType       (EMBus.MEM_RegsWrType),
+        .EXE_rt               (EXE_rt),
+        .EXE_rs               (EXE_rs),
+        .EXE_rd               (EXE_rd),
+        .MEM_Dst              (EMBus.MEM_Dst),
+        .WB_Dst               (WB_Dst),
+        .EXE_RegsReadSel      (EXE_RegsReadSel),
+        //-----------------output-----------------------------//
+        .EXE_ForwardA         (EXE_ForwardA),
+        .EXE_ForwardB         (EXE_ForwardB)
     );
 
     BranchSolve U_BranchSolve (
-        .EXE_BranchType(EMBus.EXE_BranchType),     //新定义的信号，得在定义里面新�?
-        .EXE_OutA(EXE_BusA_L1),
-        .EXE_OutB(EXE_BusB_L1),//INPUT
-        .IFID_Flush(IFID_Flush_BranchSolvement)//这个阻塞信号的线没有加，只是定义了一�?
+        .EXE_BranchType       (EMBus.EXE_BranchType),     
+        .EXE_OutA             (EXE_BusA_L1),
+        .EXE_OutB             (EXE_BusB_L1),
+        //-----------------output----------------------------//
+        .IFID_Flush           (ID_Flush_BranchSolvement)
     );
     
     MUX3to1 U_MUXA_L1 (
-        .sel3_to_1(EXE_ForwardA),
-        .y(EXE_BusA_L1)
+        .d0                   (EXE_BusA),
+        .d1                   (EMBus.MEM_Result),
+        .d2                   (WB_Result),
+        .sel3_to_1            (EXE_ForwardA),
+        .y                    (EXE_BusA_L1)
     );//EXE级旁路
     
     MUX4to1 U_MUXB_L1 (
-        .d0(EXE_BusB),
-        .d1(EMBus.MEM_Result),
-        .d2(WB_Result),
-        .sel4_to_1(EXE_ForwardB),
-        .y(EXE_BusB_L1)
+        .d0                   (EXE_BusB),
+        .d1                   (EMBus.MEM_Result),
+        .d2                   (WB_Result),
+        .sel4_to_1            (EXE_ForwardB),
+        .y                    (EXE_BusB_L1)
     );//EXE级旁路
 
     MUX2to1 U_MUXA_L2 (
-        .d0(EXE_BusA_L1),
-        .d1({27'b0,EXE_Shamt}),
-        .sel2_to_1(EXE_ALUSrcA),
-        .y(EXE_BusA_L2)
+        .d0                   (EXE_BusA_L1),
+        .d1                   ({27'b0,EXE_Shamt}),
+        .sel2_to_1            (EXE_ALUSrcA),
+        .y                    (EXE_BusA_L2)
     );//EXE级三选一A之后的那个二选一
 
     MUX2to1 U_MUXB_L2 (
-        .d0(EXE_BusB_L1),
-        .d1(EXE_Imm32),
-        .sel2_to_1(EXE_ALUSrcB),//
-        .y(EXE_BusB_L2)
+        .d0                   (EXE_BusB_L1),
+        .d1                   (EXE_Imm32),
+        .sel2_to_1            (EXE_ALUSrcB),//
+        .y                    (EXE_BusB_L2)
     );//EXE级四选一B之后的那个二选一
 
     
 
     MUX3to1#(5) U_EXEDstSrc(
-        .d0(EXE_rd),
-        .d1(EXE_rt),
-        .d2(5'd31),
-        .sel3_to_1(EXE_DstSel),
-        .y(EMBus.EXE_Dst)
+        .d0                   (EXE_rd),
+        .d1                   (EXE_rt),
+        .d2                   (5'd31),
+        .sel3_to_1            (EXE_DstSel),
+        .y                    (EMBus.EXE_Dst)
     );//EXE级Dst
 
     ALU U_ALU(
-        .EXE_ExceptType(EXE_ExceptType),//input
-        .EXE_ResultA(EXE_BusA_L2),
-        .EXE_ResultB(EXE_BusB_L2),
-        .EXE_ALUOp(EXE_ALUOp),
-        .EXE_ALUOut(EMBus.EXE_ALUOut),         //output
-        .EXE_ExceptType_new(EMBus.EXE_ExceptType)
+        .EXE_ExceptType       (EXE_ExceptType),
+        .EXE_ResultA          (EXE_BusA_L2),
+        .EXE_ResultB          (EXE_BusB_L2),
+        .EXE_ALUOp            (EXE_ALUOp),
+        //---------------------------output-----------------//
+        .EXE_ALUOut           (EMBus.EXE_ALUOut),         
+        .EXE_ExceptType_new   (EXE_ExceptType_new)
     );
 
     MULTDIV U_MULTDIV(
-        .aclk(clk),    
-        .rst(resetn),            
-        .EXE_ResultA(EXE_BusA_L1),
-        .EXE_ResultB(EXE_BusB_L1),
-        .ExceptionAssert(~HiLo_Not_Flush),  // 如果产生flush信号，需要清除状态机
-    //---------------output--------------------------//
-        .EXE_ALUOp(EXE_ALUOp),
-        .EXE_MULTDIVtoLO(EMBus.LO),
-        .EXE_MULTDIVtoHI(EMBus.HI),
-        .EXE_Finish(EXE_Finish),
-        .EXE_MULTDIVStall(EXE_MULTDIVStall)
+        .clk                 (clk),    
+        .rst                  (resetn),            
+        .EXE_ResultA          (EXE_BusA_L1),
+        .EXE_ResultB          (EXE_BusB_L1),
+        .ExceptionAssert      (~HiLo_Not_Flush),  // 如果产生flush信号，需要清除状态机
+    //---------------------output--------------------------//
+        .EXE_ALUOp            (EXE_ALUOp),
+        .EXE_MULTDIVtoLO      (EMBus.LO),
+        .EXE_MULTDIVtoHI      (EMBus.HI),
+        .EXE_Finish           (EXE_Finish),
+        .EXE_MULTDIVStall     (EXE_MULTDIVStall)
     );
+
+    DCacheWen U_DCACHEWEN(
+        .EXE_ALUOut(EMBus.EXE_ALUOut),
+        .EXE_StoreType(EMBus.EXE_StoreType),
+        .EXE_LoadType(EMBus.EXE_LoadType),
+        .EXE_ExceptType(EXE_ExceptType_new),
+        //-----------------output-------------------------//
+        .EXE_ExceptType_new(EMBus.EXE_ExceptType),
+        .cache_wen(EMBus.DCache_Wen)                   //给出dcache的写使能信号，
+    );
+    
 endmodule

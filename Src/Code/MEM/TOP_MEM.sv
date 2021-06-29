@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-27 14:45:58
+ * @LastEditTime: 2021-06-29 15:48:34
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -11,27 +11,32 @@
 
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
+`include "../Cache_Defines.svh"
 
 module TOP_MEM (
-    input logic            clk,
-    input logic            resetn,
-    input logic            MEM_Flush,
-    input logic            MEM_Wr,
-    input logic  [31:0]    CP0Status,
-    input logic  [31:0]    CP0Cause,
-    input logic  [31:0]    CP0Epc,
-    EXE_MEM_Interface      EMBus,
-    MEM_WB_Interface       MWBus,
-    output logic           ID_Flush_Exception,
-    output logic           EXE_Flush_Exception,
-    output logic           MEM_Flush_Exception,
-    output logic           IsExceptionOrEret,
-    output logic [31:0]    Exception_CP0_EPC
+    input logic                  clk,
+    input logic                  resetn,
+    input logic                  MEM_Flush,
+    input logic                  MEM_Wr,
+    input logic  [31:0]          CP0_Status,
+    input logic  [31:0]          CP0_Cause,
+    input logic  [31:0]          CP0_Epc,
+    input logic                  WB_Wr,
+    EXE_MEM_Interface.MEM        EMBus,
+    MEM_WB_Interface.MEM         MWBus,
+    CPU_BUS_Interface            cpu_dbus,
+    AXI_Bus_Interface            axi_dbus,
+    AXI_Bus_Interface            axi_ubus,
+    output logic                 ID_Flush_Exception,
+    output logic                 EXE_Flush_Exception,
+    output logic                 MEM_Flush_Exception,
+    output logic                 IsExceptionOrEret,
+    output logic [31:0]          Exception_CP0_EPC
 );
 
-	StoreType     		   MEM_StoreType;
-	RegsWrType             MEM_RegsWrType;
-	ExceptinPipeType 	   MEM_ExceptType;
+	StoreType     		         MEM_StoreType;
+	RegsWrType                   MEM_RegsWrType;
+	ExceptinPipeType 	         MEM_ExceptType;
     
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MWBus.IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
@@ -81,9 +86,9 @@ module TOP_MEM (
         .MEM_RegsWrType_i        (MEM_RegsWrType),              
         .ExceptType_i            (MEM_ExceptType),            
         .CurrentPC_i             (MWBus.MEM_PC),                     
-        .CP0Status_i             (CP0Status),
-        .CP0Cause_i              (CP0Cause),
-        .CP0Epc_i                (CP0Epc),
+        .CP0Status_i             (CP0_Status),
+        .CP0Cause_i              (CP0_Cause),
+        .CP0Epc_i                (CP0_Epc),
         .WB_CP0RegWr_i           (MWBus.WB_RegsWrType.CP0Wr),             
         .WB_CP0RegWrAddr_i       (MWBus.WB_Dst),                     
         .WB_CP0RegWrData_i       (MWBus.WB_Result),                    
@@ -94,7 +99,7 @@ module TOP_MEM (
         .EXEMEM_Flush            (MEM_Flush_Exception),                           
         .IsExceptionorEret       (IsExceptionOrEret),            
         .ExceptType_o            (MWBus.MEM_ExceptType_final),          
-        .CP0Epc_o                (Exception_CP0_EPC)                        
+        .CP0_Epc_o               (Exception_CP0_EPC)                        
     );
     
     //------------------------------用于旁路的多选器-------------------------------//
@@ -107,6 +112,25 @@ module TOP_MEM (
         .y                       (EMBus.MEM_Result)
     );
     //---------------------------------------------------------------------------//
+//--------------------------------------------cache-------------------------------//
+    //TODO 如果拥堵 需要将整个的访存请求都变为MEM级前的流水线寄存器的
+    assign cpu_dbus.wdata                                 = EMBus.EXE_OutB;
+    assign cpu_dbus.valid                                 = (WB_Wr== 1'b0)?1'b0:((EMBus.EXE_LoadType.ReadMem || EMBus.EXE_StoreType.DMWr )  ? 1 : 0);
+    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = EMBus.EXE_ALUOut;                 // inst_sram_addr_o 虚拟地址
+    assign cpu_dbus.op                                    = (EMBus.EXE_LoadType.ReadMem)? 1'b0
+                                                            :(EMBus.EXE_StoreType.DMWr) ? 1'b1
+                                                            :1'bx;
+    assign MWBus.MEM_DMOut                                = cpu_dbus.rdata;       //读取结果直接放入DMOut
+    assign cpu_dbus.ready                                 = WB_Wr;
+    assign cpu_dbus.storeType                             = EMBus.EXE_StoreType;
+    assign cpu_dbus.wstrb                                 = EMBus.Cache_Wen;
     
+    DCache U_DCACHE(
+        .clk            (aclk),
+        .resetn         (aresetn),
+        .CPUBus         (cpu_dbus.slave),
+        .AXIBus         (axi_dbus.master),
+        .UBus           (axi_ubus.master)
+    );
 
 endmodule
