@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-06-20 17:52:30
+ * @LastEditTime: 2021-06-29 20:14:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,6 +17,7 @@ module WB_Reg (
     input logic                         clk,
     input logic                         rst,
     input logic                         WB_Flush,
+    input logic                         WB_Wr,
     
     input logic		  [31:0] 		          MEM_ALUOut,	
     input logic     [31:0]              MEM_Hi,
@@ -69,7 +70,7 @@ module WB_Reg (
       WB_Hi                             <= 32'b0;
       WB_Lo                             <= 32'b0;
     end
-    else if( port.MEM_WBWr ) begin
+    else if( WB_Wr ) begin
       WB_WbSel                          <= MEM_WbSel;
       WB_PC                             <= MEM_PC;
       WB_ALUOut                         <= MEM_ALUOut;

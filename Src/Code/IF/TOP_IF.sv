@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 15:54:19
+ * @LastEditTime: 2021-06-29 17:57:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,14 +21,14 @@ module TOP_IF (
     input logic [31:0]  EXE_BusA_L1,
     input logic         ID_Flush_BranchSolvement,
     input logic         ID_IsAImmeJump,
-    input logic         IsExceptionorEret,
-    input logic         EXE_BranchType,
+    input logic [1:0]   IsExceptionOrEret,
+    input BranchType    EXE_BranchType,
     input logic         ID_Wr,
     input logic         ID_Flush_Exception,
     input logic         EXE_Flush_DataHazard,
     input logic [31:0]  EXE_PC,
     input logic [31:0]  EXE_Imm32,
-    IF_ID_Interface.IF  IIBus,
+    IF_ID_Interface     IIBus,
     AXI_Bus_Interface   axi_ibus
 );
 
@@ -36,6 +36,9 @@ module TOP_IF (
     logic   [31:0]      IF_NPC;
     logic   [2:0]       PCSel;
     logic   [31:0]      ID_PCAdd4;
+    logic   [31:0]      PC_4;
+    logic   [31:0]      JumpAddr;
+    logic   [31:0]      BranchAddr;
 
     assign PC_4         = IF_PC + 4;
     assign ID_PCAdd4    = IIBus.ID_PC+4;
@@ -68,7 +71,7 @@ module TOP_IF (
     PCSEL U_PCSEL(
         .isBranch       (ID_Flush_BranchSolvement),
         .isImmeJump     (ID_IsAImmeJump),
-        .isExceptorERET (IsExceptionorEret),
+        .isExceptOrEret (IsExceptionOrEret),
         .EXE_BranchType (EXE_BranchType),
         //---------------output-------------------//
         .PCSel          (PCSel)

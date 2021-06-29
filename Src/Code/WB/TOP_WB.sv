@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 15:35:39
+ * @LastEditTime: 2021-06-29 20:14:51
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -16,9 +16,10 @@ module TOP_WB (
     input logic                  clk,
     input logic                  resetn,
     input logic                  WB_Flush,
+    input logic                  WB_Wr,
     input logic                  WB_DisWr,
-    MEM_WB_Interface.WB          MWBus,
-    WB_CP0_Interface.WB          WCBus,
+    MEM_WB_Interface             MWBus,
+    WB_CP0_Interface             WCBus,
     output logic [31:0]          WB_Result,
     output logic [4:0]           WB_Dst,
     output RegsWrType            WB_Final_Wr,
@@ -31,10 +32,16 @@ module TOP_WB (
     LoadType                     WB_LoadType;
     logic [31:0]                 WB_DMResult;
     RegsWrType                   WB_RegsWrType;
+    logic [31:0]                 WB_Instr;
+    logic [31:0]                 WB_OutB;
+    logic [1:0]                  WB_WbSel;
+    ExceptinPipeType             WB_ExceptType;
+    logic                        WB_IsInDelaySlot;
 
     assign MWBus.WB_Dst          = WB_Dst;
     assign MWBus.WB_Result       = WB_Result;
-    assign WCBus.WB_CP0Wr        = WB_RegsWrType.CP0Wr;
+    assign MWBus.WB_RegsWrType   = WB_Final_Wr;
+    assign WCBus.WB_CP0Wr        = WB_Final_Wr.CP0Wr;
     assign WCBus.WB_Dst          = WB_Dst;
     assign WCBus.WB_Result       = WB_Result;
     assign WCBus.WB_ExceptType   = WB_ExceptType;
@@ -48,6 +55,7 @@ module TOP_WB (
         .clk                  (clk ),
         .rst                  (resetn ),
         .WB_Flush             (WB_Flush ),
+        .WB_Wr                (WB_Wr ),
         .MEM_ALUOut           (MWBus.MEM_ALUOut ),
         .MEM_Hi               (MWBus.MEM_Hi ),
         .MEM_Lo               (MWBus.MEM_Lo ),

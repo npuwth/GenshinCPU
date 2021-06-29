@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-06-29 14:38:00
+ * @LastEditTime: 2021-06-29 17:57:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,14 +21,14 @@ module PCSEL #(
 ) (
     input logic          isBranch,
     input logic          isImmeJump,
-    input logic [1:0]    isExceptorERET,
+    input logic [1:0]    isExceptOrEret,
     input BranchType     EXE_BranchType,
 
     output logic [2:0]   PCSel
 );
 
     always_comb begin 
-        if(isExceptorERET == `IsNone)begin
+        if(isExceptOrEret == `IsNone)begin
             if (isImmeJump == 1'b1) begin
                 PCSel = PCSel_ImmeJump;
             end
@@ -40,10 +40,10 @@ module PCSEL #(
             end
             else PCSel = PCSel_PC4;
         end
-        else if (isExceptorERET == `IsEret) begin
+        else if (isExceptOrEret == `IsEret) begin
             PCSel = PCSel_EPC;
         end
-        else if (isExceptorERET == `IsException)begin
+        else if (isExceptOrEret == `IsException)begin
             PCSel = PCSel_Except;
         end
         else begin

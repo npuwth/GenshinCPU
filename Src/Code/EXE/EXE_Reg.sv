@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-27 13:14:31
+ * @LastEditTime: 2021-06-29 20:13:02
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,8 +32,8 @@ module EXE_Reg (
   	input logic 		[1:0]   	           ID_WbSel,        	// 选择写回数据
   	input logic 		[1:0]   	           ID_DstSel,   		// 选择目标寄存器使能
   	input ExceptinPipeType 		           ID_ExceptType,		// 异常类型
-	  input logic     [1:0]                ID_ALUSrcA,
-	  input logic     [1:0]                ID_ALUSrcB,
+	  input logic                          ID_ALUSrcA,
+	  input logic                          ID_ALUSrcB,
 	  input logic     [1:0]                ID_RegsReadSel,
 	  input logic 					               ID_IsAImmeJump,
 	  input BranchType                     ID_BranchType,
@@ -53,8 +53,8 @@ module EXE_Reg (
   	output logic 	   [1:0]   	           EXE_WbSel,        	// 选择写回数据
   	output logic 	   [1:0]   	           EXE_DstSel,   		// 选择目标寄存器使能
   	output ExceptinPipeType 		         EXE_ExceptType,		// 异常类型
-	  output logic     [1:0]               EXE_ALUSrcA,
-	  output logic     [1:0]               EXE_ALUSrcB,
+	  output logic                         EXE_ALUSrcA,
+	  output logic                         EXE_ALUSrcB,
 	  output logic     [1:0]               EXE_RegsReadSel,
 	  output logic 					               EXE_IsAImmeJump,
 	  output BranchType                    EXE_BranchType,

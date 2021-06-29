@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 14:53:50
+ * @LastEditTime: 2021-06-29 18:11:12
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,21 +23,19 @@ module TOP_ID (
     input logic [31:0]       CP0_Bus,
     input logic [31:0]       HI_Bus,
     input logic [31:0]       LO_Bus,
-    IF_ID_Interface.ID       IIBus,//TODO: 不如改成IF_ID_Bus 
-    ID_EXE_interface.ID      IEBus,
+    IF_ID_Interface          IIBus,//TODO: 不如改成IF_ID_Bus 
+    ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//
-    output logic             ID_rsrtRead,  //用于数据旁路与阻塞    
+    output logic [1:0]       ID_rsrtRead,  //用于数据旁路与阻塞    
     output logic             ID_IsAImmeJump  //用于PCSel，表示是j，jal跳转      
 );
-    
-    logic [31:0]             ID_JumpAddr;
     logic [15:0]             ID_Imm16;
-    logic                    ID_EXTOp;
-
+    logic [1:0]              ID_EXTOp;
     logic [31:0]             RF_BusA;  //从寄存器堆读出的数据
     logic [31:0]             RF_BusB;
-
     logic [31:0]             RF_BusB_Final;
+    logic                    ID_RF_ForwardA;
+    logic                    ID_RF_ForwardB;
 
     assign IIBus.ID_Instr = IEBus.ID_Instr;
     assign IIBus.ID_PC    = IEBus.ID_PC;
@@ -56,8 +54,6 @@ module TOP_ID (
         .ID_rs               (IEBus.ID_rs ),
         .ID_rt               (IEBus.ID_rt ),
         .ID_rd               (IEBus.ID_rd ),
-        .ID_JumpAddr         (ID_JumpAddr ),
-        .ID_Sel              (ID_Sel ),
         .ID_PC               (IEBus.ID_PC )
     );
 
@@ -76,8 +72,8 @@ module TOP_ID (
         .ID_rs               (IEBus.ID_rs),
         .ID_rt               (IEBus.ID_rt),
     //-------------------out--------------------------------------------//
-        .RF_BusA             (RF_BusA),
-        .RF_BusB             (RF_BusB)
+        .ID_BusA             (RF_BusA),
+        .ID_BusB             (RF_BusB)
     );
 //---------------------------对RF读出的数据进行WB/ID级旁路------------//
     assign ID_RF_ForwardA = WB_RFWr && (WB_Dst==IEBus.ID_rs);

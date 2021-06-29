@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-06-20 17:04:32
+ * @LastEditTime: 2021-06-29 17:07:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,14 +30,14 @@
     //来自CP0模块
     input logic [31:0]       CP0Status_i,      //CP0 status寄存器当前信�?
     input logic [31:0]       CP0Cause_i,       //CP0 cause寄存器当前信�?
-    input logic [31:0]       CP0Epc_i,         //CP0 Epc寄存器当前信�?
+    input logic [31:0]       CP0EPC_i,         //CP0 EPC寄存器当前信�?
     //来自回写阶段的前推信�?
     input logic              WB_CP0RegWr_i,    //WB级对应的CP0写使�?
     input logic [4:0]        WB_CP0RegWrAddr_i,//WB级对应的CP0写地�? 
     input logic [31:0]       WB_CP0RegWrData_i,//WB级对应的CP0写数�? 
 //向回写阶段输�?
     output ExceptinPipeType  ExceptType_o,      //�?终的异常类型
-    output logic [31:0]      CP0Epc_o           //CP0中EPC寄存器的�?新�??
+    output logic [31:0]      CP0EPC_o           //CP0中EPC寄存器的�?新�??
  );
  
     logic                   CP0RegWr;
@@ -46,7 +46,7 @@
 
     logic[31:0]             CP0Status;         //用来保存CP0中Status寄存器的�?新�??
     logic[31:0]             CP0Cause;          //用来保存CP0中Cause寄存器的�?新�??
-    logic[31:0]             CP0Epc;            //用来保存CP0中EPC寄存器的�?新�??
+    logic[31:0]             CP0EPC;            //用来保存CP0中EPC寄存器的�?新�??
 
 
 
@@ -72,16 +72,16 @@
     //得到CP0中EPC寄存器的�?新�?�，原理同Status寄存�?
     always_comb begin
         if(rst == `RstEnable) begin
-            CP0Epc       =  `ZeroWord;
+            CP0EPC       =  `ZeroWord;
         end else if((WB_CP0RegWr_i == `WriteEnable) && (WB_CP0RegWrAddr_i == `CP0_REG_EPC)) begin
-            CP0Epc       =  WB_CP0RegWrData_i;
+            CP0EPC       =  WB_CP0RegWrData_i;
         end else begin
-            CP0Epc       =  CP0Epc_i;
+            CP0EPC       =  CP0EPC_i;
         end
     end
 
-    //将EPC寄存器的�?新�?��?�过接口CP0Epc_o输出
-    assign CP0Epc_o = CP0Epc;
+    //将EPC寄存器的�?新�?��?�过接口CP0EPC_o输出
+    assign CP0EPC_o = CP0EPC;
 
     //得到CP0中Cause寄存器的�?新�?�，原理同Status寄存�?
     //要注意的是：Cause寄存器只有几个字段是可写�?

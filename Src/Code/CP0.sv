@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-06-29 14:54:07
+ * @LastEditTime: 2021-06-29 17:50:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,7 +22,7 @@ module cp0_reg (
     output logic [31:0]     CP0_RdData,              //读出的CP0某个寄存器的值   
     // 异常相关输入接口           
     input AsynExceptType    Interrupt,                 //6个外部硬件中断输入 
-    WB_CP0_Interface.CP0    WCBus,      
+    WB_CP0_Interface        WCBus,      
     output logic   [31:0]   CP0_BadVAddr,               //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
     output logic   [31:0]   CP0_Count,                  //9号寄存器  Count寄存器的值
     output logic   [31:0]   CP0_Compare,                //11号寄存器 Compare寄存器的值
@@ -69,7 +69,7 @@ module cp0_reg (
         else begin
             CP0_Cause[15:10]               <= Hardwareint;    //Cause寄存器的10-15位保存6个外部中断状态（1代表有中断需要处理）
             
-            if (WCBus.CP0_Wr == `WriteEnable && WCBus.WB_Dst == `CP0_REG_COUNT ) begin 
+            if (WCBus.WB_CP0Wr == `WriteEnable && WCBus.WB_Dst == `CP0_REG_COUNT ) begin 
                 CP0_Count                  <= WCBus.WB_Result;   //将输入数据写入到Count寄存器中
                 TimCount2                  <= 1'b0;
             end else begin
@@ -80,7 +80,7 @@ module cp0_reg (
             end 
             // 当Compare寄存器不为0，且Count寄存器的值等于Compare寄存器的值时，
             // 将输出信号CP0_TimerInterrupt置为1，表示时钟中断发生
-            if(CP0_Compare != `ZeroWord && CP0_Count == CP0_Compare && (WCBus.CP0_Wr != `WriteEnable || WCBus.WB_Dst != `CP0_REG_COMPARE)) begin
+            if(CP0_Compare != `ZeroWord && CP0_Count == CP0_Compare && (WCBus.WB_CP0Wr != `WriteEnable || WCBus.WB_Dst != `CP0_REG_COMPARE)) begin
                 CP0_TimerInterrupt         <= `InterruptAssert;  // 发生中断
                 CP0_Cause[30]              <= 1'b1;  // 中断标记位置1
             end
@@ -88,7 +88,7 @@ module cp0_reg (
             //                     对CP0中寄存器的写操作：时序逻辑
             //  PRId、Config不可以写，Cause寄存器只有其中的IP[1:0]、IV、WP三个字段可写
             //******************************************************************************
-            if(WCBus.CP0_Wr == `WriteEnable) begin
+            if(WCBus.WB_CP0Wr == `WriteEnable) begin
                 unique case(WCBus.WB_Dst)
                     `CP0_REG_COMPARE:begin     //写Compare寄存器
                         CP0_Compare        <= WCBus.WB_Result;
@@ -123,7 +123,7 @@ module cp0_reg (
             //                               CP0异常处理
             //******************************************************************************            
             //存在外部中断
-            if (ExceptType.Interrupt == `InterruptAssert) begin   
+            if (WCBus.WB_ExceptType.Interrupt == `InterruptAssert) begin   
                     //已经在访存阶段判断了是否处于异常级
                     if(CP0_Status[1] == 1'b0) begin        //EXL字段是否有例外发生（为0代表处于正常级）
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin // 是否位于延迟槽中
@@ -140,7 +140,7 @@ module cp0_reg (
                         CP0_Cause[6:2]         <= 5'b00000;    //Cause寄存器的ExcCode字段
                 end
             //地址错例外--取指令
-            else if (ExceptType.WrongAddressinIF == `InterruptAssert) begin  
+            else if (WCBus.WB_ExceptType.WrongAddressinIF == `InterruptAssert) begin  
                     //Status[1]为EXL字段，表示是否处于异常级
                     if(CP0_Status[1] == 1'b0) begin        //EXL字段是否有例外发生（为0代表处于正常级）
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin
@@ -156,7 +156,7 @@ module cp0_reg (
                     CP0_BadVAddr           <= WCBus.WB_PC;
                 end
             //无效指令异常
-            else if (ExceptType.ReservedInstruction == `InterruptAssert)  begin   
+            else if (WCBus.WB_ExceptType.ReservedInstruction == `InterruptAssert)  begin   
                     if(CP0_Status[1] == 1'b0) begin
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin
                             CP0_EPC        <= WCBus.WB_PC - 4;
@@ -171,7 +171,7 @@ module cp0_reg (
                 end
 
             //系统调用异常syscall
-            else if (ExceptType.Syscall == `InterruptAssert) begin  
+            else if (WCBus.WB_ExceptType.Syscall == `InterruptAssert) begin  
                     //Status[1]为EXL字段，表示是否处于异常级
                     if(CP0_Status[1] == 1'b0) begin        //EXL字段是否有例外发生（为0代表处于正常级）
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin
@@ -187,7 +187,7 @@ module cp0_reg (
                 end
 
             // 断点break异常
-            else if (ExceptType.Break == `InterruptAssert) begin  
+            else if (WCBus.WB_ExceptType.Break == `InterruptAssert) begin  
                     //Status[1]为EXL字段，表示是否处于异常级
                     if(CP0_Status[1] == 1'b0) begin        //EXL字段是否有例外发生（为0代表处于正常级）
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin
@@ -202,7 +202,7 @@ module cp0_reg (
                     CP0_Cause[6:2]         <= 5'b01001;
                 end
             //异常返回指令eret
-            else if (ExceptType.Eret == `InterruptAssert)  begin  
+            else if (WCBus.WB_ExceptType.Eret == `InterruptAssert)  begin  
                     CP0_Status[1]          <= 1'b0;
                 end
             // //自陷异常
@@ -220,7 +220,7 @@ module cp0_reg (
             //     CP0_Cause[6:2] <= 5'b01101;
             //     end
             //溢出异常
-            else if (ExceptType.Overflow == `InterruptAssert) begin 
+            else if (WCBus.WB_ExceptType.Overflow == `InterruptAssert) begin 
                     if(CP0_Status[1] == 1'b0) begin
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin  
                             CP0_EPC        <= WCBus.WB_PC - 4;
@@ -234,7 +234,7 @@ module cp0_reg (
                     CP0_Cause[6:2]         <= 5'b01100;
                 end
             //地址错例外——数据写入
-            else if (ExceptType.WrWrongAddressinMEM == `InterruptAssert) begin 
+            else if (WCBus.WB_ExceptType.WrWrongAddressinMEM == `InterruptAssert) begin 
                     if(CP0_Status[1] == 1'b0) begin
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin  
                             CP0_EPC        <= WCBus.WB_PC - 4;
@@ -250,7 +250,7 @@ module cp0_reg (
                 end
 
             //地址错例外——数据读取
-            else if (ExceptType.RdWrongAddressinMEM == `InterruptAssert) begin 
+            else if (WCBus.WB_ExceptType.RdWrongAddressinMEM == `InterruptAssert) begin 
                     if(CP0_Status[1] == 1'b0) begin
                         if(WCBus.WB_IsInDelaySlot == `InDelaySlot) begin  
                             CP0_EPC        <= WCBus.WB_PC - 4;

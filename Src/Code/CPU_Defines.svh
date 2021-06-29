@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-29 15:48:19
+ * @LastEditTime: 2021-06-29 20:06:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -150,11 +150,11 @@ endinterface
 
 interface ID_EXE_Interface();
 
-	logic       [`RegBus]   ID_BusA;            //从RF中读出的A数据
-	logic       [`RegBus]   ID_BusB;            //从RF中读出的B数据
-	logic       [`RegBus]   ID_Imm32;           //在ID 被extend的 立即数
-	logic 		[`RegBus]   ID_PC;
-	logic       [`InstrLen] ID_Instr;
+	logic       [31:0]      ID_BusA;            //从RF中读出的A数据
+	logic       [31:0]      ID_BusB;            //从RF中读出的B数据
+	logic       [31:0]      ID_Imm32;           //在ID 被extend的 立即数
+	logic 		[31:0]      ID_PC;
+	logic       [31:0]      ID_Instr;
 	logic 		[4:0]	    ID_rs;	
 	logic 		[4:0]	    ID_rt;	
 	logic 		[4:0]	    ID_rd;
@@ -167,8 +167,8 @@ interface ID_EXE_Interface();
   	logic 		[1:0]   	ID_WbSel;        	// 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器使能
   	ExceptinPipeType 		ID_ExceptType;		// 异常类型
-	logic       [1:0]       ID_ALUSrcA;
-	logic       [1:0]       ID_ALUSrcB;
+	logic                   ID_ALUSrcA;
+	logic                   ID_ALUSrcB;
 	logic       [1:0]       ID_RegsReadSel;
 	logic 					ID_IsAImmeJump;
 	BranchType              ID_BranchType;
@@ -223,13 +223,13 @@ endinterface
 
 interface EXE_MEM_Interface();
 	
-	logic 		[`RegBus] 	EXE_ALUOut;   		// RF 中读取到的数据A
-  	logic       [`RegBus]   EXE_Hi;
-	logic       [`RegBus]   EXE_Lo;
-	logic 		[`RegBus] 	EXE_OutB;	 		// RF 中读取到的数据B
-  	logic 		[`RegBus] 	EXE_Dst;  		    // 符号扩展之后�?32位立即数
-  	logic 		[`RegBus] 	EXE_PC; 		    // PC
-	logic 		[`InstrLen]	EXE_Instr;
+	logic 		[31:0]  	EXE_ALUOut;   		// RF 中读取到的数据A
+  	logic       [31:0]      EXE_Hi;
+	logic       [31:0]      EXE_Lo;
+	logic 		[31:0]  	EXE_OutB;	 		// RF 中读取到的数据B
+  	logic 		[4:0]    	EXE_Dst;  		    // 符号扩展之后�?32位立即数
+  	logic 		[31:0] 	    EXE_PC; 		    // PC
+	logic 		[31:0]   	EXE_Instr;
 	logic 					EXE_IsAImmeJump;
   	LoadType        		EXE_LoadType;	 	// LoadType信号 
   	StoreType       		EXE_StoreType;  	// StoreType信号
@@ -238,7 +238,7 @@ interface EXE_MEM_Interface();
 	logic       [4:0]       MEM_Dst;
 	logic       [31:0]      MEM_Result;
   	logic 		[1:0]   	EXE_WbSel;        	// 选择写回数据
-  	ExceptinPipeType 		EXE_ExceptType;		// 异常类型
+  	ExceptinPipeType 		EXE_ExceptType_final;		// 异常类型
 	BranchType              EXE_BranchType;
 	logic       [3:0]       DCache_Wen;
 
@@ -255,7 +255,7 @@ interface EXE_MEM_Interface();
   	output      	        EXE_StoreType,  	// StoreType信号
    	output      	        EXE_RegsWrType,		// 寄存器写信号打包
   	output                  EXE_WbSel,        	// 选择写回数据
-    output                  EXE_ExceptType,		// 异常类型
+    output                  EXE_ExceptType_final,		// 异常类型
 	output                  EXE_BranchType,
 	output                  DCache_Wen,         //DCache的字节写使能
 	input                   MEM_RegsWrType,
@@ -276,7 +276,7 @@ interface EXE_MEM_Interface();
   	input      	            EXE_StoreType,      // StoreType信号
    	input      	            EXE_RegsWrType,		// 寄存器写信号打包
   	input                   EXE_WbSel,        	// 选择写回数据
-    input                   EXE_ExceptType,		// 异常类型
+    input                   EXE_ExceptType_final,		// 异常类型
 	input                   EXE_BranchType,
 	input                   DCache_Wen,
 	output                  MEM_RegsWrType,
@@ -314,6 +314,7 @@ interface MEM_WB_Interface();
 	input                   WB_IsAImmeJump,	
 	input                   WB_Dst,
 	input                   WB_Result,
+	input                   WB_RegsWrType,
     output					MEM_ALUOut,		
 	output                  MEM_Hi,
 	output                  MEM_Lo,	
@@ -350,7 +351,8 @@ interface MEM_WB_Interface();
 	output                  WB_IsABranch,
 	output                  WB_IsAImmeJump,
 	output                  WB_Dst,
-	output                  WB_Result
+	output                  WB_Result,
+	output                  WB_RegsWrType
 	);
 
 endinterface

@@ -40,8 +40,6 @@ always_ff @(posedge clk) begin// write the RF
     end
 end
 
-
-
 always_comb begin // readData
     ID_BusA = regs[ID_rs];
     ID_BusB = regs[ID_rt];

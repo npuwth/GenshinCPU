@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-06-20 16:59:41
+ * @LastEditTime: 2021-06-29 17:43:04
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \myCPU\MULTDIV.sv
@@ -169,7 +169,7 @@ end
 
 
 Signed_div U_SignedDIV (
-    .clk(clk),                                         // input wire clk
+    .aclk(clk),                                         // input wire clk
     .s_axis_divisor_tvalid (Signed_divisor_tvalid),      // input wire s_axis_divisor_tvalid
     .s_axis_divisor_tready (Signed_divisor_tready),      // output wire s_axis_divisor_tready
     .s_axis_divisor_tdata  (divisor_tdata),              // input wire [31 : 0] s_axis_divisor_tdata
@@ -181,7 +181,7 @@ Signed_div U_SignedDIV (
     );
 
 Unsigned_div U_UnsignedDIV (
-   .clk(clk),                                          // input wire clk
+   .aclk(clk),                                          // input wire clk
    .s_axis_divisor_tvalid  (Unsigned_divisor_tvalid),    // input wire s_axis_divisor_tvalid
    .s_axis_divisor_tready  (Unsigned_divisor_tready),    // output wire s_axis_divisor_tready
    .s_axis_divisor_tdata   (divisor_tdata),              // input wire [31 : 0] s_axis_divisor_tdata

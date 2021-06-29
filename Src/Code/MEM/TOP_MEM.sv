@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 15:48:34
+ * @LastEditTime: 2021-06-29 20:09:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,27 +20,28 @@ module TOP_MEM (
     input logic                  MEM_Wr,
     input logic  [31:0]          CP0_Status,
     input logic  [31:0]          CP0_Cause,
-    input logic  [31:0]          CP0_Epc,
+    input logic  [31:0]          CP0_EPC,
     input logic                  WB_Wr,
-    EXE_MEM_Interface.MEM        EMBus,
-    MEM_WB_Interface.MEM         MWBus,
-    CPU_BUS_Interface            cpu_dbus,
+    EXE_MEM_Interface            EMBus,
+    MEM_WB_Interface             MWBus,
+    CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
-    AXI_Bus_Interface            axi_ubus,
+    AXI_UNCACHE_Interface        axi_ubus,
     output logic                 ID_Flush_Exception,
     output logic                 EXE_Flush_Exception,
     output logic                 MEM_Flush_Exception,
-    output logic                 IsExceptionOrEret,
+    output logic [1:0]           IsExceptionOrEret,
     output logic [31:0]          Exception_CP0_EPC
 );
 
 	StoreType     		         MEM_StoreType;
 	RegsWrType                   MEM_RegsWrType;
 	ExceptinPipeType 	         MEM_ExceptType;
+    logic                        MEM_Forward_data_sel;
     
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
-    assign MWBus.IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType;
+    assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
+    assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType_final;
     assign EMBus.MEM_Dst = MWBus.MEM_Dst;
 
     MEM_Reg U_MEM_Reg ( 
@@ -88,7 +89,7 @@ module TOP_MEM (
         .CurrentPC_i             (MWBus.MEM_PC),                     
         .CP0Status_i             (CP0_Status),
         .CP0Cause_i              (CP0_Cause),
-        .CP0Epc_i                (CP0_Epc),
+        .CP0EPC_i                (CP0_EPC),
         .WB_CP0RegWr_i           (MWBus.WB_RegsWrType.CP0Wr),             
         .WB_CP0RegWrAddr_i       (MWBus.WB_Dst),                     
         .WB_CP0RegWrData_i       (MWBus.WB_Result),                    
@@ -99,7 +100,7 @@ module TOP_MEM (
         .EXEMEM_Flush            (MEM_Flush_Exception),                           
         .IsExceptionorEret       (IsExceptionOrEret),            
         .ExceptType_o            (MWBus.MEM_ExceptType_final),          
-        .CP0_Epc_o               (Exception_CP0_EPC)                        
+        .CP0EPC_o                (Exception_CP0_EPC)                        
     );
     
     //------------------------------用于旁路的多选器-------------------------------//
@@ -123,11 +124,11 @@ module TOP_MEM (
     assign MWBus.MEM_DMOut                                = cpu_dbus.rdata;       //读取结果直接放入DMOut
     assign cpu_dbus.ready                                 = WB_Wr;
     assign cpu_dbus.storeType                             = EMBus.EXE_StoreType;
-    assign cpu_dbus.wstrb                                 = EMBus.Cache_Wen;
+    assign cpu_dbus.wstrb                                 = EMBus.DCache_Wen;
     
     DCache U_DCACHE(
-        .clk            (aclk),
-        .resetn         (aresetn),
+        .clk            (clk),
+        .resetn         (resetn),
         .CPUBus         (cpu_dbus.slave),
         .AXIBus         (axi_dbus.master),
         .UBus           (axi_ubus.master)

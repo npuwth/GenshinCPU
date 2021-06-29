@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-06-20 17:06:28
+ * @LastEditTime: 2021-06-29 18:08:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,8 +26,6 @@ module ID_Reg (
     output logic  [4:0]                ID_rs,
     output logic  [4:0]                ID_rt,
     output logic  [4:0]                ID_rd,
-    output logic  [24:0]               ID_JumpAddr,
-    output logic  [2:0]                ID_Sel,
     output logic  [31:0]               ID_PC         
 
 );
@@ -39,8 +37,6 @@ module ID_Reg (
       ID_rs                            <= 5'b0;
       ID_rt                            <= 5'b0;
       ID_rd                            <= 5'b0;
-      ID_JumpAddr                      <= 25'b0;
-      ID_Sel                           <= 3'b0;
       ID_PC                            <= 32'b0;
     end
     else if( ID_Wr ) begin
@@ -49,8 +45,6 @@ module ID_Reg (
       ID_rs                            <= IF_Instr[25:21];
       ID_rt                            <= IF_Instr[20:16];
       ID_rd                            <= IF_Instr[15:11];
-      ID_JumpAddr                      <= IF_Instr[24:0];
-      ID_Sel                           <= IF_Instr[2:0];
       ID_PC                            <= IF_PC;
     end
   end

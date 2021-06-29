@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 15:47:57
+ * @LastEditTime: 2021-06-29 20:00:23
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,8 +21,8 @@ module TOP_EXE (
     input logic [4:0]         WB_Dst,
     input logic [31:0]        WB_Result,
     input logic               HiLo_Not_Flush,
-    ID_EXE_Interface.EXE      IEBus,
-    EXE_MEM_Interface.EXE     EMBus,
+    ID_EXE_Interface          IEBus,
+    EXE_MEM_Interface         EMBus,
     output logic              ID_Flush_BranchSolvement,
     output logic              EXE_Finish,
     output logic              EXE_MULTDIVStall,
@@ -45,8 +45,8 @@ module TOP_EXE (
     logic [4:0]               EXE_rd;
     logic [4:0]               EXE_ALUOp;
     logic [1:0]               EXE_DstSel;
-    logic [31:0]              EXE_ALUSrcA;
-    logic [31:0]              EXE_ALUSrcB;
+    logic                     EXE_ALUSrcA;
+    logic                     EXE_ALUSrcB;
     logic [1:0]               EXE_RegsReadSel;
     ExceptinPipeType          EXE_ExceptType;//未经过alu的
     ExceptinPipeType          EXE_ExceptType_new;//经过ALU后的excepttype
@@ -189,8 +189,8 @@ module TOP_EXE (
         .ExceptionAssert      (~HiLo_Not_Flush),  // 如果产生flush信号，需要清除状态机
     //---------------------output--------------------------//
         .EXE_ALUOp            (EXE_ALUOp),
-        .EXE_MULTDIVtoLO      (EMBus.LO),
-        .EXE_MULTDIVtoHI      (EMBus.HI),
+        .EXE_MULTDIVtoLO      (EMBus.EXE_Lo),
+        .EXE_MULTDIVtoHI      (EMBus.EXE_Hi),
         .EXE_Finish           (EXE_Finish),
         .EXE_MULTDIVStall     (EXE_MULTDIVStall)
     );
@@ -201,7 +201,7 @@ module TOP_EXE (
         .EXE_LoadType(EMBus.EXE_LoadType),
         .EXE_ExceptType(EXE_ExceptType_new),
         //-----------------output-------------------------//
-        .EXE_ExceptType_new(EMBus.EXE_ExceptType),
+        .EXE_ExceptType_new(EMBus.EXE_ExceptType_final),
         .cache_wen(EMBus.DCache_Wen)                   //给出dcache的写使能信号，
     );
     
