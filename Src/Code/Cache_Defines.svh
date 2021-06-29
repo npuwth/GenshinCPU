@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-06-11 02:21:18
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-06-29 23:04:48
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -111,7 +111,8 @@ interface AXI_UNCACHE_Interface();
   logic           wr_req;
   logic[31:0]     wr_addr;   // 写地址 
   logic[31:0]     wr_data;   // 写数据
-  logic           wr_rdy;    //就是说只要当slave axi模块可以接收之后才发出写请求    
+  logic           wr_rdy;    //就是说只要当slave axi模块可以接收之后才发出写请求  
+  logic [3:0]     wstrb;    //字节写使能 //TODO:增加对于字节写使能的支持  
   //写返回通道
   logic           wr_valid;  //表示已经写入
 

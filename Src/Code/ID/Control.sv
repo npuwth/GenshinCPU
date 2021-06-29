@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-06-29 19:59:25
+ * @LastEditTime: 2021-06-29 22:06:03
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,14 +24,14 @@ module Control(
   	//output logic ID_DMWr,			 		// DataMemory 写信号
   	output ExceptinPipeType ID_ExceptType,	// 异常类型
 
-    output logic      ID_ALUSrcA,
-    output logic      ID_ALUSrcB,
-    output logic [1:0]ID_RegsReadSel,
-    output logic [1:0]ID_EXTOp,
+    output logic       ID_ALUSrcA,
+    output logic       ID_ALUSrcB,
+    output logic [1:0] ID_RegsReadSel,
+    output logic [1:0] ID_EXTOp,
 
-    output logic      ID_IsAImmeJump,
+    output logic       ID_IsAImmeJump,
 
-    output BranchType ID_BranchType,
+    output BranchType  ID_BranchType,
 
     output logic[1:0]  ID_rsrtRead
     );

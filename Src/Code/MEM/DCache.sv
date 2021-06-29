@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-06-29 14:38:15
+ * @LastEditTime: 2021-06-29 23:56:02
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
@@ -556,7 +556,7 @@ always_comb begin
       UBus.rd_req ='0;
         UBus.rd_addr = '0;
         UBus.wr_req  = `Enable;
-        UBus.wr_addr = phsy_addr;
+        UBus.wr_addr = {phsy_addr[31:2],2'b00};
         UBus.wr_data = wdata;
       end
       default: begin

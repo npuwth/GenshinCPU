@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 17:57:28
+ * @LastEditTime: 2021-06-29 21:26:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,6 +29,7 @@ module TOP_IF (
     input logic [31:0]  EXE_PC,
     input logic [31:0]  EXE_Imm32,
     IF_ID_Interface     IIBus,
+    CPU_Bus_Interface   cpu_ibus,
     AXI_Bus_Interface   axi_ibus
 );
 
@@ -82,9 +83,10 @@ module TOP_IF (
     assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset} = IF_NPC;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.valid = (ID_Flush_Exception)?1'b1:(EXE_Flush_DataHazard || ID_Wr == 1'b0)?1'b0:1'b1;
     assign cpu_ibus.op    = 1'b0;
-    assign cpu_ibus.wstrb = 'x;
+    assign cpu_ibus.wstrb = '0;
     assign cpu_ibus.wdata = 'x;
     assign cpu_ibus.ready = ID_Wr;
+    assign cpu_ibus.storeType = '0;
 
     ICache U_ICache(
         .clk            (clk),
