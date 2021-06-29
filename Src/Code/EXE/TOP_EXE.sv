@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 20:00:23
+ * @LastEditTime: 2021-06-29 20:45:14
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,15 +27,10 @@ module TOP_EXE (
     output logic              EXE_Finish,
     output logic              EXE_MULTDIVStall,
     output logic [31:0]       EXE_BusA_L1,
-    output logic [31:0]       EXE_BusB_L1,
     output BranchType         EXE_BranchType,
     output logic [31:0]       EXE_PC,
     output logic [31:0]       EXE_Imm32,
-    output LoadType           EXE_LoadType,
-    output StoreType          EXE_StoreType,
-    output RegsWrType         EXE_RegsWrType,
-    output logic [31:0]       EXE_ALUOut,
-    output logic [3:0]        DCache_Wen
+    output LoadType           EXE_LoadType
 );
 
     logic [31:0]              EXE_BusA;
@@ -53,11 +48,14 @@ module TOP_EXE (
     logic [1:0]               EXE_ForwardA;
     logic [1:0]               EXE_ForwardB;
     logic [4:0]               EXE_Shamt;
+    logic [31:0]              EXE_BusB_L1;
     logic [31:0]              EXE_BusA_L2;
     logic [31:0]              EXE_BusB_L2;
-
+    
+    assign EXE_BranchType     = EMBus.EXE_BranchType;
+    assign EXE_PC             = EMBus.EXE_PC;
     assign EXE_LoadType       = EMBus.EXE_LoadType;
-    assign EMBus.EXE_OutB           = EXE_BusB_L1;
+    assign EMBus.EXE_OutB     = EXE_BusB_L1;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
