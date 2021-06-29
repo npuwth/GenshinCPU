@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-06-28 15:48:52
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-29 23:54:26
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -352,7 +352,14 @@
 `define EXE_ALUOp_DIVU      5'b10001
 `define EXE_ALUOp_MULT      5'b10010
 `define EXE_ALUOp_MULTU     5'b10011
-
-
+//count bits
+`define EXE_ALUOp_CLZ       5'b10100
+`define EXE_ALUOp_CLO       5'b10101
+//MADD MADDU MSUB MSUBU MUL
+`define EXE_ALUOp_MADD      5'b10110
+`define EXE_ALUOp_MADDU     5'b10111
+`define EXE_ALUOp_MSUB      5'b11000
+`define EXE_ALUOp_MSUBU     5'b11001
+`define EXE_ALUOp_MUL       5'b11010
 
 `endif
