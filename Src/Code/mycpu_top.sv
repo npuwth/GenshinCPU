@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-06-30 16:29:54
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-30 16:38:48
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -121,7 +121,7 @@ module mycpu_top (
 
     logic [31:0]               WB_Hi;
     logic [31:0]               WB_Lo;
-    
+    logic [1:0]                EXE_MultiExtendOp;           
     assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -219,6 +219,7 @@ module mycpu_top (
         .clk                   (aclk),
         .rst                   (aresetn),
         .MULT_DIV_finish       (EXE_Finish & HiLo_Not_Flush),
+        .EXE_MultiExtendOp     (EXE_MultiExtendOp),
         .HIWr                  (EXE_RegsWrType.HIWr & HiLo_Not_Flush), //把写HI，LO统一在EXE级
         .LOWr                  (EXE_RegsWrType.LOWr & HiLo_Not_Flush),
         .Data_Wr               (EXE_BusA_L1),
@@ -325,7 +326,8 @@ module mycpu_top (
         .EXE_PC (EXE_PC),
         .EXE_Imm32 (EXE_Imm32),
         .EXE_LoadType (EXE_LoadType),
-        .EXE_rt(EXE_rt)
+        .EXE_rt(EXE_rt),
+        .EXE_MultiExtendOp(EXE_MultiExtendOp)
     );
 
     TOP_MEM U_TOP_MEM ( 

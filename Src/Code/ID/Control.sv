@@ -1,8 +1,13 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
+<<<<<<< Updated upstream
  * @LastEditTime: 2021-06-30 16:13:54
  * @LastEditors: npuwth
+=======
+ * @LastEditTime: 2021-06-30 16:35:25
+ * @LastEditors: Seddon Shen
+>>>>>>> Stashed changes
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1298,13 +1303,57 @@ module Control(
       end
 
       OP_MADD:begin//有符号乘
-        //(HI,LO) ← (HI,LO) + (GPR[rs] × GPR[rt])
-        ID_ALUOp      = `EXE_ALUOp_CLZ;
+        ID_ALUOp      = `EXE_ALUOp_MADD;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+      OP_MADDU:begin//有符号乘
+        ID_ALUOp      = `EXE_ALUOp_MADDU;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+      OP_MSUB:begin//有符号乘
+        ID_ALUOp      = `EXE_ALUOp_MSUB;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+      OP_MSUBU:begin//有符号乘
+        ID_ALUOp      = `EXE_ALUOp_MSUBU;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeHILOEn;
         ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
