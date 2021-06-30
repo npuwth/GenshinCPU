@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-30 20:05:08
+ * @LastEditTime: 2021-07-01 00:13:06
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -35,7 +35,9 @@ module TOP_EXE (
     output logic [31:0]       EXE_Imm32,
     output LoadType           EXE_LoadType,
     output logic [4:0]        EXE_rt,
-    output logic [1:0]        EXE_MultiExtendOp//New add for MADD     
+    output logic [1:0]        EXE_MultiExtendOp,//New add for MADD   
+    output logic              EXE_IsTLBP,
+    output logic [31:0]       EXE_ALUOut  
 );
 
     logic [31:0]              EXE_BusA;
@@ -55,6 +57,7 @@ module TOP_EXE (
     logic [31:0]              EXE_BusB_L1;
     logic [31:0]              EXE_BusA_L2;
     logic [31:0]              EXE_BusB_L2;
+
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
     assign EXE_LoadType       = EMBus.EXE_LoadType;
@@ -62,6 +65,7 @@ module TOP_EXE (
     assign EXE_MULTDIVtoHI    = EMBus.EXE_Hi;
     assign EXE_MULTDIVtoLO    = EMBus.EXE_Lo;
     assign EXE_RegsWrType     = EMBus.EXE_RegsWrType;
+    assign EXE_ALUOut         = EMBus.EXE_ALUOut;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
@@ -109,7 +113,8 @@ module TOP_EXE (
         .EXE_RegsReadSel      (EXE_RegsReadSel ),
         .EXE_IsAImmeJump      (EMBus.EXE_IsAImmeJump ),
         .EXE_BranchType       (EMBus.EXE_BranchType ),
-        .EXE_Shamt            (EXE_Shamt )
+        .EXE_Shamt            (EXE_Shamt ),
+        .EXE_IsTLBP           (EXE_IsTLBP)
     );
 
 

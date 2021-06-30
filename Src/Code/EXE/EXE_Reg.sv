@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-29 20:13:02
+ * @LastEditTime: 2021-06-30 23:44:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -37,6 +37,7 @@ module EXE_Reg (
 	  input logic     [1:0]                ID_RegsReadSel,
 	  input logic 					               ID_IsAImmeJump,
 	  input BranchType                     ID_BranchType,
+    input logic                          ID_IsTLBP,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -58,8 +59,8 @@ module EXE_Reg (
 	  output logic     [1:0]               EXE_RegsReadSel,
 	  output logic 					               EXE_IsAImmeJump,
 	  output BranchType                    EXE_BranchType,
-    output logic     [4:0]               EXE_Shamt
-
+    output logic     [4:0]               EXE_Shamt,
+    output logic                         EXE_IsTLBP
 );
 
   always_ff @( posedge clk or negedge rst ) begin
@@ -85,6 +86,7 @@ module EXE_Reg (
       EXE_ALUSrcB                        <= 1'b0;
       EXE_Instr                          <= 32'b0;
       EXE_RegsReadSel                    <= 2'b0;
+      EXE_IsTLBP                         <= 1'b0;
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -108,6 +110,7 @@ module EXE_Reg (
       EXE_ALUSrcB                        <= ID_ALUSrcB;
       EXE_Instr                          <= ID_Instr;
       EXE_RegsReadSel                    <= ID_RegsReadSel;
+      EXE_IsTLBP                         <= ID_IsTLBP;
     end
   end
 

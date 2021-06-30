@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-30 23:18:44
+ * @LastEditTime: 2021-07-01 00:02:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -164,7 +164,7 @@ interface ID_EXE_Interface();
 	logic 		[4:0]	    ID_rs;	
 	logic 		[4:0]	    ID_rt;	
 	logic 		[4:0]	    ID_rd;
-	
+	logic                   ID_IsTLBP;
 	
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
@@ -199,7 +199,8 @@ interface ID_EXE_Interface();
 	output	                ID_ALUSrcA,
 	output	                ID_ALUSrcB,
 	output	                ID_BranchType,
-	output                  ID_RegsReadSel
+	output                  ID_RegsReadSel,
+	output                  ID_IsTLBP
 	);
 
 	modport EXE (
@@ -222,7 +223,8 @@ interface ID_EXE_Interface();
 	input	                ID_ALUSrcA,
 	input	                ID_ALUSrcB,
 	input	                ID_BranchType,
-	input                   ID_RegsReadSel
+	input                   ID_RegsReadSel,
+	input                   ID_IsTLBP
 	);
 	
 endinterface
@@ -409,7 +411,20 @@ interface CP0_MMU_Interface ();
 	logic                   CP0_d1;
 	logic                   CP0_v1;
 	logic                   CP0_g1;
-	logic [3:0]             CP0_Index; //16项的TLB，log16,所以位宽是4
+	logic [3:0]             CP0_index; //16项的TLB，log16,所以位宽是4
+    logic [18:0]            MMU_vpn2;
+	logic [7:0]             MMU_asid;
+	logic [19:0]            MMU_pfn0;
+	logic [2:0]             MMU_c0;
+	logic                   MMU_d0;
+	logic                   MMU_v0;
+	logic                   MMU_g0;
+	logic [19:0]            MMU_pfn1;
+	logic [2:0]             MMU_c1;
+	logic                   MMU_d1;
+	logic                   MMU_v1;
+	logic                   MMU_g1;
+	logic [3:0]             MMU_index;
 
 	modport CP0 ( 
     output                  CP0_vpn2,
@@ -424,7 +439,20 @@ interface CP0_MMU_Interface ();
 	output                  CP0_d1,
 	output                  CP0_v1,
 	output                  CP0_g1,
-	output                  CP0_Index
+	output                  CP0_index,
+	input                   MMU_vpn2,
+	input                   MMU_asid,
+	input                   MMU_pfn0,
+	input                   MMU_c0,
+	input                   MMU_d0,
+	input                   MMU_v0,
+	input                   MMU_g0,
+	input                   MMU_pfn1,
+	input                   MMU_c1,
+	input                   MMU_d1,
+	input                   MMU_v1,
+	input                   MMU_g1,
+	input                   MMU_index
 	);
 
 	modport MMU ( 
@@ -440,7 +468,20 @@ interface CP0_MMU_Interface ();
 	input                   CP0_d1,
 	input                   CP0_v1,
 	input                   CP0_g1,
-	input                   CP0_Index
+	input                   CP0_index,
+	output                  MMU_vpn2,
+	output                  MMU_asid,
+	output                  MMU_pfn0,
+	output                  MMU_c0,
+	output                  MMU_d0,
+	output                  MMU_v0,
+	output                  MMU_g0,
+	output                  MMU_pfn1,
+	output                  MMU_c1,
+	output                  MMU_d1,
+	output                  MMU_v1,
+	output                  MMU_g1,
+	output                  MMU_index
 	);
 
 endinterface

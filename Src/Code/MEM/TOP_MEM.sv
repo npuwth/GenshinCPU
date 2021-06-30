@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 20:09:58
+ * @LastEditTime: 2021-07-01 00:14:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,6 +22,7 @@ module TOP_MEM (
     input logic  [31:0]          CP0_Cause,
     input logic  [31:0]          CP0_EPC,
     input logic                  WB_Wr,//表示是否拥堵
+    input logic  [31:0]          Phsy_Daddr, 
     EXE_MEM_Interface            EMBus,
     MEM_WB_Interface             MWBus,
     CPU_Bus_Interface            cpu_dbus,
@@ -117,7 +118,7 @@ module TOP_MEM (
     //TODO 如果拥堵 需要将整个的访存请求都变为MEM级前的流水线寄存器的
     assign cpu_dbus.wdata                                 = EMBus.EXE_OutB;
     assign cpu_dbus.valid                                 = (WB_Wr== 1'b0)?1'b0:((EMBus.EXE_LoadType.ReadMem || EMBus.EXE_StoreType.DMWr )  ? 1 : 0);
-    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = EMBus.EXE_ALUOut;                 // inst_sram_addr_o 虚拟地址
+    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = Phsy_Daddr;                 // inst_sram_addr_o 虚拟地址
     assign cpu_dbus.op                                    = (EMBus.EXE_LoadType.ReadMem)? 1'b0
                                                             :(EMBus.EXE_StoreType.DMWr) ? 1'b1
                                                             :1'bx;

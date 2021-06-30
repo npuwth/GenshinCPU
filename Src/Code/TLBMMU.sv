@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-06-30 23:13:37
+ * @LastEditTime: 2021-07-01 00:05:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,13 +26,17 @@ module TLBMMU (
     logic                        s0_d;
     logic                        s0_v;     
 
-    logic [18:0]                 s1_vpn2;
-    logic                        s1_odd_page;      
+    logic [18:0]                 s1_vpn2;    
     logic                        s1_found;
     logic [3:0]                  s1_index;
     logic [2:0]                  s1_c;
     logic                        s1_d;
     logic                        s1_v; 
+
+    logic                        r_g;
+
+    assign CMBus.MMU_g0          = r_g; //读出的g存入g0和g1
+    assign CMBus.MMU_g1          = r_g;
 
     tlb U_TLB ( 
         .clk                     (clk ),
@@ -58,31 +62,31 @@ module TLBMMU (
         .s1_v                    (s1_v ),
         //write port
         .we                      (we ),
-        .w_index                 (w_index ),
-        .w_vpn2                  (w_vpn2 ),
-        .w_asid                  (w_asid ),
-        .w_g                     (w_g ),
-        .w_pfn0                  (w_pfn0 ),
-        .w_c0                    (w_c0 ),
-        .w_d0                    (w_d0 ),
-        .w_v0                    (w_v0 ),
-        .w_pfn1                  (w_pfn1 ),
-        .w_c1                    (w_c1 ),
-        .w_d1                    (w_d1 ),
-        .w_v1                    (w_v1 ),
+        .w_index                 (CMBus.CP0_index ),
+        .w_vpn2                  (CMBus.CP0_vpn2 ),
+        .w_asid                  (CMBus.CP0_asid ),
+        .w_g                     (CMBus.CP0_g0 & CMBus.CP0_g1 ), //写入的g是g0和g1的与
+        .w_pfn0                  (CMBus.CP0_pfn0 ),
+        .w_c0                    (CMBus.CP0_c0 ),
+        .w_d0                    (CMBus.CP0_d0 ),
+        .w_v0                    (CMBus.CP0_v0 ),
+        .w_pfn1                  (CMBus.CP0_pfn1 ),
+        .w_c1                    (CMBus.CP0_c1 ),
+        .w_d1                    (CMBus.CP0_d1 ),
+        .w_v1                    (CMBus.CP0_v1 ),
         //read port
-        .r_index                 (r_index ),
-        .r_vpn2                  (r_vpn2 ),
-        .r_asid                  (r_asid ),
+        .r_index                 (CMBus.CP0_index ),
+        .r_vpn2                  (CMBus.MMU_vpn2 ),
+        .r_asid                  (CMBus.MMU_asid ),
         .r_g                     (r_g ),
-        .r_pfn0                  (r_pfn0 ),
-        .r_c0                    (r_c0 ),
-        .r_d0                    (r_d0 ),
-        .r_v0                    (r_v0 ),
-        .r_pfn1                  (r_pfn1 ),
-        .r_c1                    (r_c1 ),
-        .r_d1                    (r_d1 ),
-        .r_v1                    ( r_v1)
+        .r_pfn0                  (CMBus.MMU_pfn0 ),
+        .r_c0                    (CMBus.MMU_c0 ),
+        .r_d0                    (CMBus.MMU_d0 ),
+        .r_v0                    (CMBus.MMU_v0 ),
+        .r_pfn1                  (CMBus.MMU_pfn1 ),
+        .r_c1                    (CMBus.MMU_c1 ),
+        .r_d1                    (CMBus.MMU_d1 ),
+        .r_v1                    (CMBus.MMU_v1)
     );
 
     always_comb begin
