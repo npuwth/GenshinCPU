@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-30 16:24:21
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-30 20:05:08
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -132,7 +132,7 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA_L1),
         .EXE_OutB             (EXE_BusB_L1),
         //-----------------output----------------------------//
-        .IFID_Flush           (ID_Flush_BranchSolvement)
+        .ID_Flush           (ID_Flush_BranchSolvement)
     );
     
     MUX3to1 U_MUXA_L1 (

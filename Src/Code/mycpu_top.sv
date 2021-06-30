@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-06-30 16:38:48
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-30 21:19:40
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -94,7 +94,8 @@ module mycpu_top (
     logic [31:0]               EXE_MULTDIVtoLO;           //EXE级乘除法运算结果写入LO
     RegsWrType                 EXE_RegsWrType;            //EXE级的写使能，用于HILO的写
     RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
-
+    RegsWrType                 WB_RegsWrType;
+    
     logic [4:0]                ID_rs;                     //来自ID级，用于DataHazard检测
     logic [4:0]                ID_rt;                     //来自ID级，用于DataHazard检测  
     logic [4:0]                ID_rd;                     //来自ID级，用于读CP0寄存器
@@ -289,7 +290,7 @@ module mycpu_top (
         .ID_Wr (ID_Wr ),
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
-        .WB_RegsWrType (WB_Final_Wr ),
+        .WB_RegsWrType (WB_RegsWrType ),
         .CP0_Bus (CP0_Bus ),
         .HI_Bus (HI_Bus ),
         .LO_Bus (LO_Bus ),
@@ -308,7 +309,7 @@ module mycpu_top (
         .resetn (aresetn ),
         .EXE_Flush (EXE_Flush ),
         .EXE_Wr (EXE_Wr ),
-        .WB_RegsWrType (WB_Final_Wr ), //???
+        .WB_RegsWrType (WB_RegsWrType ), //???
         .WB_Dst (WB_Dst ),
         .WB_Result (WB_Result ),
         .HiLo_Not_Flush (HiLo_Not_Flush ),
@@ -364,6 +365,7 @@ module mycpu_top (
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
         .WB_Final_Wr (WB_Final_Wr ),
+        .WB_RegsWrType (WB_RegsWrType),
         .WB_PC(WB_PC ),
         .WB_Hi (WB_Hi ),
         .WB_Lo (WB_Lo )
