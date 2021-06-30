@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-06-30 16:09:23
+ * @LastEditTime: 2021-06-30 16:13:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -25,14 +25,14 @@ module Control(
   	//output logic ID_DMWr,			 		// DataMemory 写信号
   	output ExceptinPipeType ID_ExceptType_new,	// 异常类型
 
-    output logic       ID_ALUSrcA,
-    output logic       ID_ALUSrcB,
-    output logic [1:0] ID_RegsReadSel,
-    output logic [1:0] ID_EXTOp,
+    output logic      ID_ALUSrcA,
+    output logic      ID_ALUSrcB,
+    output logic [1:0]ID_RegsReadSel,
+    output logic [1:0]ID_EXTOp,
 
-    output logic       ID_IsAImmeJump,
+    output logic      ID_IsAImmeJump,
 
-    output BranchType  ID_BranchType,
+    output BranchType ID_BranchType,
 
     output logic[1:0]  ID_rsrtRead
     );
@@ -267,6 +267,18 @@ module Control(
 				        end
 				        default: instrType = OP_INVALID;
 			          endcase
+            end
+            6'b011100:begin
+              unique case (funct)
+                6'b100001:instrType = OP_CLO;
+                6'b100000:instrType = OP_CLZ;
+                6'b000000:instrType = OP_MADD;
+                6'b000001:instrType = OP_MADDU;
+                6'b000100:instrType = OP_MSUB;
+                6'b000101:instrType = OP_MSUBU;
+                6'b000010:instrType = OP_MUL;
+                default:  instrType = OP_INVALID;
+              endcase
             end
 
             default:begin
@@ -1245,6 +1257,59 @@ module Control(
         ID_ExceptType_new = ID_ExceptType;
         ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
         ID_EXTOp      = 'x;                 //R型无关
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      //操作系统译码部分
+      //CLO、CLZ、MADD、MADDU、MSUB、MSUBU、MUL
+      OP_CLO:begin
+        //GPR[rd] ← count_leading_ones GPR[rs]
+        ID_ALUOp      = `EXE_ALUOp_CLO;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType_new = ID_ExceptType;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_CLZ:begin
+        //GPR[rd] ← count_leading_zeros GPR[rs]
+        ID_ALUOp      = `EXE_ALUOp_CLZ;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+      end
+
+      OP_MADD:begin//有符号乘
+        //(HI,LO) ← (HI,LO) + (GPR[rs] × GPR[rt])
+        ID_ALUOp      = `EXE_ALUOp_CLZ;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ExceptType = `ExceptionTypeZero;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
       end

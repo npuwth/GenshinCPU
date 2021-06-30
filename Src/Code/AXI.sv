@@ -374,7 +374,7 @@ module AXIInteract(
 
 
     assign ubus_wid     = 4'b0001;
-    assign ubus_wstrb   = 4'b1111;
+    assign ubus_wstrb   = UncacheAXIBus.wr_wstrb;  // 以支持uncache 的SB信号
     assign ubus_bready  = 1'b1;
 
     // 空闲信号的输出
@@ -902,7 +902,7 @@ module AXIInteract(
         end 
     end
 
-// FSM -- Dcache WR
+// FSM -- Uncache WR
     always_ff @(posedge clk or negedge resetn) begin
         if (resetn == `RstEnable) begin
             U_WR_pre_state  <= U_WR_EMPTY;

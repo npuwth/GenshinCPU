@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-06-29 23:04:48
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-30 15:21:24
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -111,20 +111,20 @@ interface AXI_UNCACHE_Interface();
   logic           wr_req;
   logic[31:0]     wr_addr;   // 写地址 
   logic[31:0]     wr_data;   // 写数据
-  logic           wr_rdy;    //就是说只要当slave axi模块可以接收之后才发出写请求  
-  logic [3:0]     wstrb;    //字节写使能 //TODO:增加对于字节写使能的支持  
+  logic [3:0]     wr_wstrb;  //字节写使能
+  logic           wr_rdy;    //就是说只要当slave axi模块可以接收之后才发出写请求    
   //写返回通道
   logic           wr_valid;  //表示已经写入
 
   modport master (//cache端口
   output rd_req,rd_addr,
-  output wr_req,wr_addr,wr_data,
+  output wr_req,wr_addr,wr_data,wr_wstrb,
   input rd_rdy,ret_valid,ret_data,wr_rdy,wr_valid
   );
 
   modport slave (//axi端口
   input rd_req,rd_addr,
-  input wr_req,wr_addr,wr_data,
+  input wr_req,wr_addr,wr_data,wr_wstrb,
   output rd_rdy,ret_valid,ret_data,wr_rdy,wr_valid
   );
 endinterface
