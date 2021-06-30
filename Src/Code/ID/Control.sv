@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-06-30 16:13:54
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-30 17:37:59
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,7 +13,6 @@
 
 module Control(
     input  logic[31:0] ID_Instr,
-    input  ExceptinPipeType ID_ExceptType,
 
     output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
   	output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
@@ -23,7 +22,7 @@ module Control(
   	//output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
   	output logic [1:0] ID_DstSel,   		// 寄存器写回信号选择（Dst）
   	//output logic ID_DMWr,			 		// DataMemory 写信号
-  	output ExceptinPipeType ID_ExceptType_new,	// 异常类型
+  	output ExceptinPipeType ID_ExceptType,	// 异常类型
 
     output logic      ID_ALUSrcA,
     output logic      ID_ALUSrcB,
@@ -297,7 +296,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;//选择ID级别读出的数据
@@ -313,7 +312,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      
@@ -329,7 +328,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn; 
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -345,7 +344,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -361,7 +360,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -377,7 +376,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -393,7 +392,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -409,7 +408,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -425,7 +424,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -441,7 +440,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -457,7 +456,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -473,7 +472,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -489,7 +488,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -505,7 +504,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -521,7 +520,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -537,7 +536,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -553,7 +552,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -569,7 +568,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -585,7 +584,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -601,7 +600,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -617,7 +616,7 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -633,7 +632,7 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -649,7 +648,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -665,7 +664,7 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -682,7 +681,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -698,7 +697,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -714,7 +713,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -730,7 +729,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -746,7 +745,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -762,7 +761,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //I型选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -778,7 +777,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -794,7 +793,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //I型选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -810,7 +809,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -825,7 +824,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -840,7 +839,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -855,7 +854,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
@@ -870,7 +869,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
@@ -885,7 +884,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType_new = ID_ExceptType; //关于异常
+        ID_ExceptType = `ExceptionTypeZero; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
@@ -901,7 +900,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -917,7 +916,7 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -933,7 +932,7 @@ module Control(
         ID_WbSel      = `WBSel_OutB;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_HI;      //ID级别的多选器
@@ -949,7 +948,7 @@ module Control(
         ID_WbSel      = `WBSel_OutB;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_LO;      //ID级别的多选器
@@ -965,7 +964,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeHIEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
@@ -982,7 +981,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeLOEn;
-        ID_ExceptType_new = ID_ExceptType;//关于异常
+        ID_ExceptType = `ExceptionTypeZero;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
@@ -1005,7 +1004,7 @@ module Control(
         ID_EXTOp      = 'x;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType_new = '{
+        ID_ExceptType = '{
                             Interrupt:1'b0,
                             Break:1'b1,
                             WrongAddressinIF:1'b0,
@@ -1031,7 +1030,7 @@ module Control(
         ID_EXTOp      = 'x;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType_new = '{
+        ID_ExceptType = '{
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
@@ -1056,7 +1055,7 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
@@ -1076,7 +1075,7 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
@@ -1096,7 +1095,7 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
@@ -1116,7 +1115,7 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
@@ -1136,7 +1135,7 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
@@ -1156,7 +1155,7 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
         ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
@@ -1176,7 +1175,7 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
         ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
@@ -1195,7 +1194,7 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
         ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
@@ -1217,7 +1216,7 @@ module Control(
         ID_EXTOp      = 'x;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType_new = '{  
+        ID_ExceptType = '{  
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
@@ -1238,7 +1237,7 @@ module Control(
         ID_ALUSrcA    = 'x;
         ID_ALUSrcB    = 'x;
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
         ID_EXTOp      = 'x;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
@@ -1254,7 +1253,7 @@ module Control(
         ID_ALUSrcA    = 'x;
         ID_ALUSrcB    = 'x;
         ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
         ID_EXTOp      = 'x;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
@@ -1271,7 +1270,7 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType_new = ID_ExceptType;
+        ID_ExceptType = `ExceptionTypeZero;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
@@ -1321,7 +1320,7 @@ module Control(
         ID_WbSel      = 'X;    //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = 'X;    //Rtype选rd
         ID_RegsWrType = 'X;    //写回哪里
-        ID_ExceptType_new = `ExceptionReserve;
+        ID_ExceptType = `ExceptionReserve;
         ID_ALUSrcA    = 'X; //MUXA选择regs
         ID_ALUSrcB    = 'X;  //MUXB选择regs
         ID_RegsReadSel= 'X;        //ID级选择RF读取结果

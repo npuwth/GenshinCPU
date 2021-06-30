@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:14:40
- * @LastEditTime: 2021-06-30 15:23:42
+ * @LastEditTime: 2021-06-30 20:52:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\NewCache\plru.sv
@@ -14,7 +14,7 @@ module PLRU #(
     input clk,
     input resetn,
 
-    input [SET_NUM-1:0] access,//表示这次命中了哪一路 这是独热码
+    input [SET_NUM-1:0] access, //表示这次命中了哪一路 这是独热码
     input update,               //表示命中了  不然就没法表示没有访存导致的不需要更新lru的情况
 
     output [$clog2(SET_NUM)-1:0] lru //表示 这次如果替换 替换哪一路

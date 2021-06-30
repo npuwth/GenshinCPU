@@ -21,7 +21,7 @@ module TOP_MEM (
     input logic  [31:0]          CP0_Status,
     input logic  [31:0]          CP0_Cause,
     input logic  [31:0]          CP0_EPC,
-    input logic                  WB_Wr,
+    input logic                  WB_Wr,//表示是否拥堵
     EXE_MEM_Interface            EMBus,
     MEM_WB_Interface             MWBus,
     CPU_Bus_Interface            cpu_dbus,

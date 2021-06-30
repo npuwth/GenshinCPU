@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-06-14 22:52:59
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-30 16:34:34
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -33,8 +33,11 @@
     end
     
     always_comb begin
-        if (virt_addr < 32'hA000_0000 && virt_addr > 32'h7FFF_FFFF) begin
-            isUncache = 1'b1;
+        // if (virt_addr < 32'hA000_0000 && virt_addr > 32'h7FFF_FFFF) begin
+        //     isUncache = 1'b1;
+        // end
+        if (virt_addr[31:16] !=16'hbfaf ) begin
+            isUncache = 1'b0;
         end
         else begin
             isUncache = 1'b1;

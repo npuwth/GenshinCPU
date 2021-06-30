@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 20:14:51
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-30 21:07:38
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -20,6 +20,7 @@ module TOP_WB (
     input logic                  WB_DisWr,
     MEM_WB_Interface             MWBus,
     WB_CP0_Interface             WCBus,
+    
     output logic [31:0]          WB_Result,
     output logic [4:0]           WB_Dst,
     output RegsWrType            WB_Final_Wr,
@@ -40,13 +41,14 @@ module TOP_WB (
 
     assign MWBus.WB_Dst          = WB_Dst;
     assign MWBus.WB_Result       = WB_Result;
-    assign MWBus.WB_RegsWrType   = WB_Final_Wr;
+    assign MWBus.WB_RegsWrType   = WB_RegsWrType;
+
     assign WCBus.WB_CP0Wr        = WB_Final_Wr.CP0Wr;
     assign WCBus.WB_Dst          = WB_Dst;
     assign WCBus.WB_Result       = WB_Result;
     assign WCBus.WB_ExceptType   = WB_ExceptType;
     assign WCBus.WB_PC           = WB_PC;
-    assign WCBus.WB_IsInDelaySlot  = WB_IsInDelaySlot;
+    assign WCBus.WB_IsInDelaySlot= WB_IsInDelaySlot;
     assign WCBus.WB_ALUOut       = WB_ALUOut;
 
     assign WB_Final_Wr = (WB_DisWr)? '0: WB_RegsWrType ;  // Dcache 停滞流水线时 wb级数据不能写入RF

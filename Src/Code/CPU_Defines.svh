@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-29 21:30:57
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-30 20:23:06
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -258,9 +258,9 @@ interface EXE_MEM_Interface();
     output                  EXE_ExceptType_final,		// 异常类型
 	output                  EXE_BranchType,
 	output                  DCache_Wen,         //DCache的字节写使能
-	input                   MEM_RegsWrType,
+	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
-	input                   MEM_Result
+	input                   MEM_Result          //
 	);
 
 	modport MEM (
@@ -312,9 +312,9 @@ interface MEM_WB_Interface();
 	modport MEM ( 
 	input                   WB_IsABranch,
 	input                   WB_IsAImmeJump,	
-	input                   WB_Dst,
+	input                   WB_Dst,          //下面三个是WB级给Exception的旁路
 	input                   WB_Result,
-	input                   WB_RegsWrType,
+	input                   WB_RegsWrType,   //
     output					MEM_ALUOut,		
 	output                  MEM_Hi,
 	output                  MEM_Lo,	
