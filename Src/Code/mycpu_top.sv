@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-06-29 22:40:37
+ * @LastEditTime: 2021-06-30 16:04:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -288,7 +288,7 @@ module mycpu_top (
         .ID_Wr (ID_Wr ),
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
-        .WB_RFWr (WB_Final_Wr.RFWr ),
+        .WB_RegsWrType (WB_Final_Wr ),
         .CP0_Bus (CP0_Bus ),
         .HI_Bus (HI_Bus ),
         .LO_Bus (LO_Bus ),
@@ -366,6 +366,7 @@ module mycpu_top (
         .WB_Lo (WB_Lo )
     );
     
+    tlb U_TLB ()
 
 endmodule
 
