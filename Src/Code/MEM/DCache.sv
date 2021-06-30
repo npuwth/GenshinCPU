@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-06-29 23:56:02
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-06-30 15:43:41
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -576,6 +576,10 @@ always_comb begin
       UBus.wr_data ='0;  
   end
 end
+
+
+
+assign UBus.wr_wstrb = req_buffer.wstrb;
 
 always_comb begin
   if (state == WAIT && req_buffer.op == 1'b0 && UBus.ret_valid == `Valid) begin
