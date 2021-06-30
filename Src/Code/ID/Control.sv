@@ -18,10 +18,7 @@
 
 module Control(
     input  logic[31:0] ID_Instr,
-<<<<<<< HEAD
-=======
     input  ExceptinPipeType IF_ExceptType,
->>>>>>> bee2c418f43597551fe705171923bacc71f83f82
 
     output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
   	output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）

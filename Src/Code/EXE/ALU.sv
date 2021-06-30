@@ -23,12 +23,8 @@ output ExceptinPipeType EXE_ExceptType_new;
 logic [31:0] EXE_ALUOut_r;
 logic [31:0] EXE_Countbit_Out;
 logic EXE_Countbit_Opt;
-<<<<<<< HEAD
-Countbit U_Courtbit(
-=======
 
 Countbit U_Countbit (                 //CLO,CLZ
->>>>>>> bee2c418f43597551fe705171923bacc71f83f82
     .option(EXE_Countbit_Opt),
     .value(EXE_ResultA),
     .count(EXE_Countbit_Out)
