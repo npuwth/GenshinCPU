@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-06-16 16:07:56
- * @LastEditTime: 2021-06-30 23:24:54
+ * @LastEditTime: 2021-06-30 23:28:56
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,7 +32,7 @@ module DataHazard (
             PC_Wr=1'b0;
             EXE_Flush=1'b1;
         end
-        else if ( EXE_Instr[31:21] == 11'b010000_00000 )
+        else if ( (EXE_Instr[31:21] == 11'b010000_00000) && )
         else begin
             ID_Wr=1'b1;  // 1的时候可以写
             PC_Wr=1'b1;
