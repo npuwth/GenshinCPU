@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:14:40
- * @LastEditTime: 2021-06-30 15:16:24
+ * @LastEditTime: 2021-06-30 15:23:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\NewCache\plru.sv
@@ -45,7 +45,7 @@ if(SET_NUM == 2) begin
             end
         end
     end
-end else if(SET_NUM == 4) begin
+end else  begin
     always_comb begin
         state_d = state;//好习惯啊
 
@@ -68,136 +68,7 @@ end else if(SET_NUM == 4) begin
             end
         endcase
     end
-end else if (SET_NUM == 8) begin
-    always_comb begin
-        state_d = state;
-
-        casez(access[3:0])
-            4'b1???: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            4'b01??: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            4'b001?: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            4'b0001: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end
-        endcase
-
-        casez(access)
-            8'b1???_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            8'b01??_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            8'b001?_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            8'b0001_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end
-            8'b0000_1???: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            8'b0000_01??: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            8'b0000_001?: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            8'b0000_0001: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end            
-        endcase
-    end
-end else begin //最高支持16
-    always_comb begin
-        state_d = state;
-
-        casez(access)
-            16'b1???_????_????_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            16'b01??_????_????_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            16'b001?_????_????_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            16'b0001_????_????_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end
-            16'b0000_1???_????_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            16'b0000_01??_????_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            16'b0000_001?_????_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            16'b0000_0001_????_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end
-            16'b1???_????_1???_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            16'b01??_????_1???_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            16'b001?_????_1???_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            16'b0001_????_1???_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end
-            16'b0000_1???_1???_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b0;
-            end
-            16'b0000_01??_1???_????: begin
-                state_d[2] = 1'b0;
-                state_d[0] = 1'b1;
-            end
-            16'b0000_001?_1???_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b0;
-            end
-            16'b0000_0001_1???_????: begin
-                state_d[2] = 1'b1;
-                state_d[1] = 1'b1;
-            end                     
-        endcase
-    end
-end
+end 
 endgenerate
 
 always_ff @(posedge clk) begin

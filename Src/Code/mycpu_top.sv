@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-06-29 20:30:36
+ * @LastEditTime: 2021-06-29 22:40:37
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,7 +57,7 @@ module mycpu_top (
     output [3:0]               debug_wb_rf_wen,    
     output [4:0]               debug_wb_rf_wnum   
 );
-    logic [5:0]                Interrupt;
+    AsynExceptType             Interrupt;
     logic [31:0]               WB_PC;                     //来自WB级
     logic [31:0]               WB_Result;                 //来自WB级
     logic [4:0]                WB_Dst;                    //来自WB级
@@ -277,6 +277,7 @@ module mycpu_top (
         .EXE_PC (EXE_PC ),
         .EXE_Imm32 (EXE_Imm32 ),
         .IIBus  ( IIBus.IF),
+        .cpu_ibus (cpu_ibus),
         .axi_ibus (axi_ibus)
     );
 
@@ -295,7 +296,9 @@ module mycpu_top (
         .IEBus (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_rsrtRead  (ID_rsrtRead ),
-        .ID_IsAImmeJump (ID_IsAImmeJump)
+        .ID_IsAImmeJump (ID_IsAImmeJump),
+        .ID_rs(ID_rs),
+        .ID_rt(ID_rt)
     );
 
     TOP_EXE U_TOP_EXE ( 
@@ -313,11 +316,15 @@ module mycpu_top (
         .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
         .EXE_Finish (EXE_Finish ),
         .EXE_MULTDIVStall  (EXE_MULTDIVStall),
+        .EXE_MULTDIVtoHI (EXE_MULTDIVtoHI),
+        .EXE_MULTDIVtoLO (EXE_MULTDIVtoLO),
         .EXE_BusA_L1 (EXE_BusA_L1),
         .EXE_BranchType (EXE_BranchType),
+        .EXE_RegsWrType (EXE_RegsWrType ),
         .EXE_PC (EXE_PC),
         .EXE_Imm32 (EXE_Imm32),
-        .EXE_LoadType (EXE_LoadType)
+        .EXE_LoadType (EXE_LoadType),
+        .EXE_rt(EXE_rt)
     );
 
     TOP_MEM U_TOP_MEM ( 
