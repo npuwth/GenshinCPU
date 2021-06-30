@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 22:00:34
+ * @LastEditTime: 2021-06-30 20:05:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,7 +34,8 @@ module TOP_EXE (
     output logic [31:0]       EXE_PC,
     output logic [31:0]       EXE_Imm32,
     output LoadType           EXE_LoadType,
-    output logic [4:0]        EXE_rt
+    output logic [4:0]        EXE_rt,
+    output logic [1:0]        EXE_MultiExtendOp//New add for MADD     
 );
 
     logic [31:0]              EXE_BusA;
@@ -54,7 +55,6 @@ module TOP_EXE (
     logic [31:0]              EXE_BusB_L1;
     logic [31:0]              EXE_BusA_L2;
     logic [31:0]              EXE_BusB_L2;
-    
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
     assign EXE_LoadType       = EMBus.EXE_LoadType;
@@ -132,7 +132,7 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA_L1),
         .EXE_OutB             (EXE_BusB_L1),
         //-----------------output----------------------------//
-        .IFID_Flush           (ID_Flush_BranchSolvement)
+        .ID_Flush           (ID_Flush_BranchSolvement)
     );
     
     MUX3to1 U_MUXA_L1 (
@@ -196,7 +196,8 @@ module TOP_EXE (
         .EXE_MULTDIVtoLO      (EMBus.EXE_Lo),
         .EXE_MULTDIVtoHI      (EMBus.EXE_Hi),
         .EXE_Finish           (EXE_Finish),
-        .EXE_MULTDIVStall     (EXE_MULTDIVStall)
+        .EXE_MULTDIVStall     (EXE_MULTDIVStall),
+        .EXE_MultiExtendOp    (EXE_MultiExtendOp)
     );
 
     DCacheWen U_DCACHEWEN(

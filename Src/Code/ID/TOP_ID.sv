@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-30 16:30:35
+ * @LastEditTime: 2021-06-30 17:41:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -121,6 +121,7 @@ module TOP_ID (
 //-----------------------------------------------------------------//
     Control U_Control (
         .ID_Instr            (IEBus.ID_Instr),
+        .IF_ExceptType       (IIBus.IF_ExceptType),
 //--------------------------out-------------------------------------//
         .ID_ALUOp            (IEBus.ID_ALUOp),
         .ID_LoadType         (IEBus.ID_LoadType),

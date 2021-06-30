@@ -1,8 +1,13 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
+<<<<<<< HEAD
  * @LastEditTime: 2021-06-30 15:52:25
  * @LastEditors: Please set LastEditors
+=======
+ * @LastEditTime: 2021-06-30 17:05:33
+ * @LastEditors: npuwth
+>>>>>>> bee2c418f43597551fe705171923bacc71f83f82
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\ALU.sv
  * 
@@ -18,11 +23,17 @@ output ExceptinPipeType EXE_ExceptType_new;
 logic [31:0] EXE_ALUOut_r;
 logic [31:0] EXE_Countbit_Out;
 logic EXE_Countbit_Opt;
+<<<<<<< HEAD
 Countbit U_Courtbit(
+=======
+
+Countbit U_Countbit (                 //CLO,CLZ
+>>>>>>> bee2c418f43597551fe705171923bacc71f83f82
     .option(EXE_Countbit_Opt),
     .value(EXE_ResultA),
     .count(EXE_Countbit_Out)
 );
+
 always_comb begin
     unique case (EXE_ALUOp)
         `EXE_ALUOp_ADD,`EXE_ALUOp_ADDU :  EXE_ALUOut_r = EXE_ResultA + EXE_ResultB;//可以直接相加

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-06-30 16:29:54
+ * @LastEditTime: 2021-06-30 21:19:40
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -94,7 +94,8 @@ module mycpu_top (
     logic [31:0]               EXE_MULTDIVtoLO;           //EXE级乘除法运算结果写入LO
     RegsWrType                 EXE_RegsWrType;            //EXE级的写使能，用于HILO的写
     RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
-
+    RegsWrType                 WB_RegsWrType;
+    
     logic [4:0]                ID_rs;                     //来自ID级，用于DataHazard检测
     logic [4:0]                ID_rt;                     //来自ID级，用于DataHazard检测  
     logic [4:0]                ID_rd;                     //来自ID级，用于读CP0寄存器
@@ -121,7 +122,7 @@ module mycpu_top (
 
     logic [31:0]               WB_Hi;
     logic [31:0]               WB_Lo;
-    
+    logic [1:0]                EXE_MultiExtendOp;           
     assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -219,6 +220,7 @@ module mycpu_top (
         .clk                   (aclk),
         .rst                   (aresetn),
         .MULT_DIV_finish       (EXE_Finish & HiLo_Not_Flush),
+        .EXE_MultiExtendOp     (EXE_MultiExtendOp),
         .HIWr                  (EXE_RegsWrType.HIWr & HiLo_Not_Flush), //把写HI，LO统一在EXE级
         .LOWr                  (EXE_RegsWrType.LOWr & HiLo_Not_Flush),
         .Data_Wr               (EXE_BusA_L1),
@@ -288,7 +290,7 @@ module mycpu_top (
         .ID_Wr (ID_Wr ),
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
-        .WB_RegsWrType (WB_Final_Wr ),
+        .WB_RegsWrType (WB_RegsWrType ),
         .CP0_Bus (CP0_Bus ),
         .HI_Bus (HI_Bus ),
         .LO_Bus (LO_Bus ),
@@ -307,7 +309,7 @@ module mycpu_top (
         .resetn (aresetn ),
         .EXE_Flush (EXE_Flush ),
         .EXE_Wr (EXE_Wr ),
-        .WB_RegsWrType (WB_Final_Wr ), //???
+        .WB_RegsWrType (WB_RegsWrType ), //???
         .WB_Dst (WB_Dst ),
         .WB_Result (WB_Result ),
         .HiLo_Not_Flush (HiLo_Not_Flush ),
@@ -325,7 +327,8 @@ module mycpu_top (
         .EXE_PC (EXE_PC),
         .EXE_Imm32 (EXE_Imm32),
         .EXE_LoadType (EXE_LoadType),
-        .EXE_rt(EXE_rt)
+        .EXE_rt(EXE_rt),
+        .EXE_MultiExtendOp(EXE_MultiExtendOp)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -362,6 +365,7 @@ module mycpu_top (
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
         .WB_Final_Wr (WB_Final_Wr ),
+        .WB_RegsWrType (WB_RegsWrType),
         .WB_PC(WB_PC ),
         .WB_Hi (WB_Hi ),
         .WB_Lo (WB_Lo )

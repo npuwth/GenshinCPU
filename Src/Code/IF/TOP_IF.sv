@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-29 21:26:09
+ * @LastEditTime: 2021-06-30 19:53:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,7 +46,8 @@ module TOP_IF (
     assign JumpAddr     = {ID_PCAdd4[31:28],IIBus.ID_Instr[25:0],2'b0};
     assign BranchAddr   = EXE_PC+4+{EXE_Imm32[29:0],2'b0};
 
-    assign IIBus.IF_PC    = IF_PC;
+    assign IIBus.IF_PC         = IF_PC;
+    assign IIBus.IF_ExceptType = '0; //现在没加tlb，所以先直接初始化成0
 
     PC U_PC ( 
         .clk            (clk),
