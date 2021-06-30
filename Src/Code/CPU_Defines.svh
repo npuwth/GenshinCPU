@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-06-29 21:30:57
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-30 17:42:52
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -35,6 +35,9 @@ typedef struct packed {
     logic Eret;               	// 异常返回指令
     logic WrWrongAddressinMEM;  // 地址错例外——数据写�?
     logic RdWrongAddressinMEM;  // 地址错例外——数据读�?
+	logic TLBRefill;            // TLB 重填例外
+	logic TLBInvalid;           // TLB 无效例外
+	logic TLBModified;          // TLB 修改例外
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
 typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常�?
@@ -129,12 +132,14 @@ interface IF_ID_Interface();
 
 	logic       [31:0]      IF_Instr;
 	logic       [31:0]      IF_PC;
+	ExceptinPipeType        IF_ExceptType;
 	logic       [31:0]      ID_Instr;
 	logic       [31:0]      ID_PC;
 
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
+	output                  IF_ExceptType,
 	input                   ID_Instr,
 	input                   ID_PC
     );
@@ -142,6 +147,7 @@ interface IF_ID_Interface();
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
+	output                  IF_ExceptType,
 	output                  ID_Instr,
 	output                  ID_PC
 	);

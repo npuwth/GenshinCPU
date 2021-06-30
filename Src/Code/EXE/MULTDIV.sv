@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-06-30 16:25:32
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-30 17:02:57
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\EXE\MULTDIV.sv
  * 
@@ -78,42 +78,46 @@ always_comb begin
     unique case (EXE_ALUOp)
         `EXE_ALUOp_MULT,`EXE_ALUOp_MADD,`EXE_ALUOp_MSUB:begin
             //Sign
-            if(EXE_ALUOp == `EXE_ALUOp_MULT)begin
-                Result_A33 = {EXE_ResultA[31],EXE_ResultA};
-                Result_B33 = {EXE_ResultB[31],EXE_ResultB};
-                Prod = $signed(Result_A33) * $signed(Result_B33);
-                if(EXE_ALUOp ==  `EXE_ALUOp_MULT)begin
-                    EXE_MultiExtendOp = 2'b00;
-                end
-                else if(EXE_ALUOp == `EXE_ALUOp_MADD)begin
-                    EXE_MultiExtendOp = 2'b01;
-                end
-                else if (EXE_ALUOp == `EXE_ALUOp_MSUB) begin
-                    EXE_MultiExtendOp = 2'b10;
-                end
-                else begin
-                    EXE_MultiExtendOp = 2'b00;
-                end
+            Result_A33 = {EXE_ResultA[31],EXE_ResultA};
+            Result_B33 = {EXE_ResultB[31],EXE_ResultB};
+            Prod = $signed(Result_A33) * $signed(Result_B33);
+            if(EXE_ALUOp ==  `EXE_ALUOp_MULT)begin
+                EXE_MultiExtendOp = 2'b00;
             end
+            else if(EXE_ALUOp == `EXE_ALUOp_MADD)begin
+                EXE_MultiExtendOp = 2'b01;
+            end
+            else if (EXE_ALUOp == `EXE_ALUOp_MSUB) begin
+                EXE_MultiExtendOp = 2'b10;
+            end
+            else begin
+                EXE_MultiExtendOp = 'x;
+            end
+        end
         `EXE_ALUOp_MULTU,`EXE_ALUOp_MADDU,`EXE_ALUOp_MSUBU:begin
             //Unsign
-                Result_A33 = {1'b0,EXE_ResultA};
-                Result_B33 = {1'b0,EXE_ResultB};
-                Prod = $signed(Result_A33) * $signed(Result_B33);
-                if(EXE_ALUOp ==  `EXE_ALUOp_MULTU)begin
-                    EXE_MultiExtendOp = 2'b00;
-                end
-                else if(EXE_ALUOp == `EXE_ALUOp_MADDU)begin
-                    EXE_MultiExtendOp = 2'b01;
-                end
-                else if (EXE_ALUOp == `EXE_ALUOp_MSUB) begin
-                    EXE_MultiExtendOp = 2'b10;
-                end
-                else begin
-                    EXE_MultiExtendOp = 2'b00;
-                end
+            Result_A33 = {1'b0,EXE_ResultA};
+            Result_B33 = {1'b0,EXE_ResultB};
+            Prod = $signed(Result_A33) * $signed(Result_B33);
+            if(EXE_ALUOp ==  `EXE_ALUOp_MULTU)begin
+                EXE_MultiExtendOp = 2'b00;
             end
-        default: Prod = 'x;//Do nothing
+            else if(EXE_ALUOp == `EXE_ALUOp_MADDU)begin
+                EXE_MultiExtendOp = 2'b01;
+            end
+            else if (EXE_ALUOp == `EXE_ALUOp_MSUB) begin
+                EXE_MultiExtendOp = 2'b10;
+            end
+            else begin
+                EXE_MultiExtendOp = 'x;
+            end
+            end
+        default:begin
+            Result_A33        = 'x;
+            Result_B33        = 'x;
+            Prod              = 'x;
+            EXE_MultiExtendOp = 'x;
+        end 
     endcase
     
 end 

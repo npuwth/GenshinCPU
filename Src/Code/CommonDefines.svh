@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-06-29 23:54:26
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-06-30 17:34:33
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -130,8 +130,7 @@
 `define IsException         2'b11
 `define IsNone              2'b00
 //***************************  与结构体有关的宏定义  ***************************
-`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //
-`define ExceptionReserve    {1'b0,1'b0,1'b1,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}
+`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //
 
 //RegsWrType 
 `define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}
