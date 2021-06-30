@@ -1,13 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
-<<<<<<< HEAD
- * @LastEditTime: 2021-06-30 20:23:06
- * @LastEditors: Please set LastEditors
-=======
- * @LastEditTime: 2021-06-30 17:42:52
+ * @LastEditTime: 2021-06-30 23:18:44
  * @LastEditors: npuwth
->>>>>>> bee2c418f43597551fe705171923bacc71f83f82
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -396,6 +391,56 @@ interface WB_CP0_Interface ();
 	input                   WB_PC,
 	input                   WB_IsInDelaySlot,
 	input                   WB_ALUOut
+	);
+
+endinterface
+
+interface CP0_MMU_Interface ();
+
+    logic [18:0]            CP0_vpn2;
+	logic [7:0]             CP0_asid;
+	logic [19:0]            CP0_pfn0;
+	logic [2:0]             CP0_c0;
+	logic                   CP0_d0;
+	logic                   CP0_v0;
+	logic                   CP0_g0;
+	logic [19:0]            CP0_pfn1;
+	logic [2:0]             CP0_c1;
+	logic                   CP0_d1;
+	logic                   CP0_v1;
+	logic                   CP0_g1;
+	logic [3:0]             CP0_Index; //16项的TLB，log16,所以位宽是4
+
+	modport CP0 ( 
+    output                  CP0_vpn2,
+	output                  CP0_asid,
+	output                  CP0_pfn0,
+	output                  CP0_c0,
+	output                  CP0_d0,
+	output                  CP0_v0,
+	output                  CP0_g0,
+	output                  CP0_pfn1,
+	output                  CP0_c1,
+	output                  CP0_d1,
+	output                  CP0_v1,
+	output                  CP0_g1,
+	output                  CP0_Index
+	);
+
+	modport MMU ( 
+    input                   CP0_vpn2,
+	input                   CP0_asid,
+	input                   CP0_pfn0,
+	input                   CP0_c0,
+	input                   CP0_d0,
+	input                   CP0_v0,
+	input                   CP0_g0,
+	input                   CP0_pfn1,
+	input                   CP0_c1,
+	input                   CP0_d1,
+	input                   CP0_v1,
+	input                   CP0_g1,
+	input                   CP0_Index
 	);
 
 endinterface
