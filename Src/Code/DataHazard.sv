@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-06-16 16:07:56
- * @LastEditTime: 2021-06-29 10:25:38
+ * @LastEditTime: 2021-06-30 23:24:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,6 +18,8 @@ module DataHazard (
     input logic [1:0] ID_rsrtRead,//[1]是rs [0]是rt 1'b1的时候是读
     input logic [4:0] EXE_rt,
     input logic EXE_ReadMEM,
+    input logic [31:0] EXE_Instr,
+    input logic [31:0] ID_Instr,
     //--------------------output-----------------------//
     output logic PC_Wr,
     output logic ID_Wr,
@@ -30,6 +32,7 @@ module DataHazard (
             PC_Wr=1'b0;
             EXE_Flush=1'b1;
         end
+        else if ( EXE_Instr[31:21] == 11'b010000_00000 )
         else begin
             ID_Wr=1'b1;  // 1的时候可以写
             PC_Wr=1'b1;
