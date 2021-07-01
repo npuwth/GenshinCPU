@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-01 17:23:31
+ * @LastEditTime: 2021-07-01 22:08:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -38,6 +38,7 @@ typedef struct packed {
 	logic TLBRefill;            // TLB 重填例外
 	logic TLBInvalid;           // TLB 无效例外
 	logic TLBModified;          // TLB 修改例外
+	// logic Trap;                 // Trap 例外
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
 typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常�?

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 17:08:08
+ * @LastEditTime: 2021-07-01 22:08:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -38,10 +38,6 @@ module TOP_WB (
     logic [1:0]                  WB_WbSel;
     ExceptinPipeType             WB_ExceptType;
     logic                        WB_IsInDelaySlot;
-
-    assign MWBus.WB_Dst          = WB_Dst;
-    assign MWBus.WB_Result       = WB_Result;
-    assign MWBus.WB_RegsWrType   = WB_RegsWrType;
 
     assign WCBus.WB_CP0Wr_MTC0   = WB_Final_Wr.CP0Wr;
     assign WCBus.WB_Dst          = WB_Dst;
