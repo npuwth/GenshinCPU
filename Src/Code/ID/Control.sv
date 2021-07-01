@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-06-30 23:39:50
+ * @LastEditTime: 2021-07-01 11:18:23
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -1315,7 +1315,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1330,7 +1330,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1345,7 +1345,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1360,7 +1360,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1376,7 +1376,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;

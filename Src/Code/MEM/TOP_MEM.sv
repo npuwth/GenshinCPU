@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 00:14:55
+ * @LastEditTime: 2021-07-01 15:36:39
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,6 @@ module TOP_MEM (
     input logic                  MEM_Wr,
     input logic  [31:0]          CP0_Status,
     input logic  [31:0]          CP0_Cause,
-    input logic  [31:0]          CP0_EPC,
     input logic                  WB_Wr,//表示是否拥堵
     input logic  [31:0]          Phsy_Daddr, 
     EXE_MEM_Interface            EMBus,
@@ -31,8 +30,7 @@ module TOP_MEM (
     output logic                 ID_Flush_Exception,
     output logic                 EXE_Flush_Exception,
     output logic                 MEM_Flush_Exception,
-    output logic [1:0]           IsExceptionOrEret,
-    output logic [31:0]          Exception_CP0_EPC
+    output logic [1:0]           IsExceptionOrEret
 );
 
 	StoreType     		         MEM_StoreType;
@@ -85,23 +83,18 @@ module TOP_MEM (
     Exception U_Exception(
         .clk                     (clk),
         .rst                     (resetn),
-        .MEM_RegsWrType_i        (MEM_RegsWrType),              
-        .ExceptType_i            (MEM_ExceptType),            
-        .CurrentPC_i             (MWBus.MEM_PC),                     
-        .CP0Status_i             (CP0_Status),
-        .CP0Cause_i              (CP0_Cause),
-        .CP0EPC_i                (CP0_EPC),
-        .WB_CP0RegWr_i           (MWBus.WB_RegsWrType.CP0Wr),             
-        .WB_CP0RegWrAddr_i       (MWBus.WB_Dst),                     
-        .WB_CP0RegWrData_i       (MWBus.WB_Result),                    
+        .MEM_RegsWrType          (MEM_RegsWrType),              
+        .MEM_ExceptType          (MEM_ExceptType),            
+        .MEM_PC                  (MWBus.MEM_PC),                     
+        .CP0_Status              (CP0_Status),
+        .CP0_Cause               (CP0_Cause),            
     //------------------------------out--------------------------------------------//
-        .MEM_RegsWrType_o        (MWBus.MEM_RegsWrType_final),            
-        .IFID_Flush              (ID_Flush_Exception),                
-        .IDEXE_Flush             (EXE_Flush_Exception),                       
-        .EXEMEM_Flush            (MEM_Flush_Exception),                           
-        .IsExceptionorEret       (IsExceptionOrEret),            
-        .ExceptType_o            (MWBus.MEM_ExceptType_final),          
-        .CP0EPC_o                (Exception_CP0_EPC)                        
+        .MEM_RegsWrType_final    (MWBus.MEM_RegsWrType_final),            
+        .ID_Flush                (ID_Flush_Exception),                
+        .EXE_Flush               (EXE_Flush_Exception),                       
+        .MEM_Flush               (MEM_Flush_Exception),                           
+        .IsExceptionOrEret       (IsExceptionOrEret),            
+        .MEM_ExceptType_final    (MWBus.MEM_ExceptType_final)                    
     );
     
     //------------------------------用于旁路的多选器-------------------------------//

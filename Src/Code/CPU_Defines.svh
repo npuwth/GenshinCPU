@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-01 00:02:46
+ * @LastEditTime: 2021-07-01 16:06:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -313,16 +313,10 @@ interface MEM_WB_Interface();
 	logic                   MEM_IsInDelaySlot;
 	logic                   WB_IsABranch;
 	logic                   WB_IsAImmeJump;
-	RegsWrType              WB_RegsWrType;
-    logic       [4:0]       WB_Dst;
-	logic       [31:0]      WB_Result;    
   
 	modport MEM ( 
 	input                   WB_IsABranch,
 	input                   WB_IsAImmeJump,	
-	input                   WB_Dst,          //下面三个是WB级给Exception的旁路
-	input                   WB_Result,
-	input                   WB_RegsWrType,   //
     output					MEM_ALUOut,		
 	output                  MEM_Hi,
 	output                  MEM_Lo,	
@@ -357,17 +351,15 @@ interface MEM_WB_Interface();
 	input					MEM_IsAImmeJump,
 	input                   MEM_IsInDelaySlot,
 	output                  WB_IsABranch,
-	output                  WB_IsAImmeJump,
-	output                  WB_Dst,
-	output                  WB_Result,
-	output                  WB_RegsWrType
+	output                  WB_IsAImmeJump
 	);
 
 endinterface
 
 interface WB_CP0_Interface ();
     
-	logic                   WB_CP0Wr;
+	logic                   WB_CP0Wr_MTC0;
+	logic                   WB_CP0Wr_TLBR;
 	logic [4:0]             WB_Dst;
 	logic [31:0]            WB_Result;
 	ExceptinPipeType        WB_ExceptType;
@@ -376,7 +368,8 @@ interface WB_CP0_Interface ();
 	logic [31:0]            WB_ALUOut;
 
 	modport WB ( 
-    output                  WB_CP0Wr,
+    output                  WB_CP0Wr_MTC0,
+	output                  WB_CP0Wr_TLBR,
 	output                  WB_Dst,
 	output                  WB_Result,
 	output                  WB_ExceptType,
@@ -386,7 +379,8 @@ interface WB_CP0_Interface ();
 	);
 
 	modport CP0 ( 
-    input                   WB_CP0Wr,
+    input                   WB_CP0Wr_MTC0,
+	input                   WB_CP0Wr_TLBR,
 	input                   WB_Dst,
 	input                   WB_Result,
 	input                   WB_ExceptType,

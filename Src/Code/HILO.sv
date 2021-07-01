@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-06-30 16:26:11
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-01 11:24:56
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -40,8 +40,22 @@ module HILO(
         
     //下面是旁路
     always_comb begin
-        if(MULT_DIV_finish == 1'b1)
-            HI_Rd = EXE_MULTDIVtoHI;
+        if(MULT_DIV_finish == 1'b1) begin
+            if (EXE_MultiExtendOp == 2'b00) begin
+                HI_Rd = EXE_MULTDIVtoHI;
+            end
+            else if (EXE_MultiExtendOp == 2'b01) begin
+                //ADD
+                HI_Rd = ProdAdd[63:32];
+            end
+            else if (EXE_MultiExtendOp == 2'b10) begin
+                //SUB
+                HI_Rd = ProdSub[63:32]; 
+            end
+            else begin
+                HI_Rd = EXE_MULTDIVtoHI;
+            end
+        end
         else if(HIWr == 1'b1)
             HI_Rd = Data_Wr;
         else begin
@@ -50,8 +64,22 @@ module HILO(
     end
 
     always_comb begin
-        if(MULT_DIV_finish == 1'b1)
-            LO_Rd = EXE_MULTDIVtoLO;
+        if(MULT_DIV_finish == 1'b1) begin
+            if (EXE_MultiExtendOp == 2'b00) begin
+                LO_Rd = EXE_MULTDIVtoLO;
+            end
+            else if (EXE_MultiExtendOp == 2'b01) begin
+                //ADD
+                LO_Rd = ProdAdd[31:0];
+            end
+            else if (EXE_MultiExtendOp == 2'b10) begin
+                //SUB
+                LO_Rd = ProdSub[31:0]; 
+            end
+            else begin
+                LO_Rd = EXE_MULTDIVtoLO;
+            end
+        end
         else if(LOWr == 1'b1)
             LO_Rd = Data_Wr;
         else begin
@@ -64,7 +92,7 @@ module HILO(
         if(rst == `RstEnable) begin
             HI <= `ZeroWord;
         end else if (MULT_DIV_finish == 1'b1) begin
-            if(EXE_MultiExtendOp == 2'b00)begin
+            if (EXE_MultiExtendOp == 2'b00) begin
                 HI <= EXE_MULTDIVtoHI;
             end
             else if (EXE_MultiExtendOp == 2'b01) begin
@@ -72,8 +100,8 @@ module HILO(
                 HI <= ProdAdd[63:32];
             end
             else if (EXE_MultiExtendOp == 2'b10) begin
-               //SUB
-               HI <= ProdSub[63:32]; 
+                //SUB
+                HI <= ProdSub[63:32]; 
             end
             else begin
                 HI <= EXE_MULTDIVtoHI;
@@ -86,7 +114,7 @@ module HILO(
         if(rst == `RstEnable) begin
             LO <= `ZeroWord;
         end else if (MULT_DIV_finish == 1'b1) begin
-            if(EXE_MultiExtendOp == 2'b00)begin
+            if (EXE_MultiExtendOp == 2'b00) begin
                 LO <= EXE_MULTDIVtoLO;
             end
             else if (EXE_MultiExtendOp == 2'b01) begin
@@ -94,8 +122,8 @@ module HILO(
                 LO <= ProdAdd[31:0];
             end
             else if (EXE_MultiExtendOp == 2'b10) begin
-               //SUB
-               LO <= ProdSub[31:0]; 
+                //SUB
+                LO <= ProdSub[31:0]; 
             end
             else begin
                 LO <= EXE_MULTDIVtoLO;
