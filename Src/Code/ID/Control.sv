@@ -1,8 +1,13 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
+<<<<<<< HEAD
  * @LastEditTime: 2021-06-30 22:00:20
  * @LastEditors: Please set LastEditors
+=======
+ * @LastEditTime: 2021-07-01 11:18:23
+ * @LastEditors: npuwth
+>>>>>>> 667401f78ebe29fd2be2033fb869441b041cf046
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -16,26 +21,29 @@ module Control(
     input  ExceptinPipeType IF_ExceptType,
 
     output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
-  	output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
-  	output StoreType   ID_StoreType,  		// Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
-  	output RegsWrType  ID_RegsWrType,		// 寄存器写信号打包
-  	output logic [1:0] ID_WbSel,    		// 写回信号选择
-  	//output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
-  	output logic [1:0] ID_DstSel,   		// 寄存器写回信号选择（Dst）
-  	//output logic ID_DMWr,			 		// DataMemory 写信号
-  	output ExceptinPipeType ID_ExceptType,	// 异常类型
+    output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
+    output StoreType   ID_StoreType,  		        // Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
+    output RegsWrType  ID_RegsWrType,		        // 寄存器写信号打包
+    output logic [1:0] ID_WbSel,    		        // 写回信号选择
+    //output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
+    output logic [1:0] ID_DstSel,   		        // 寄存器写回信号选择（Dst）
+    //output logic ID_DMWr,			 	// DataMemory 写信号
+    output ExceptinPipeType ID_ExceptType,	        // 异常类型
 
-    output logic      ID_ALUSrcA,
-    output logic      ID_ALUSrcB,
-    output logic [1:0]ID_RegsReadSel,
-    output logic [1:0]ID_EXTOp,
+    output logic       ID_ALUSrcA,
+    output logic       ID_ALUSrcB,
+    output logic [1:0] ID_RegsReadSel,
+    output logic [1:0] ID_EXTOp,
 
-    output logic      ID_IsAImmeJump,
+    output logic       ID_IsAImmeJump,
 
-    output BranchType ID_BranchType,
+    output BranchType  ID_BranchType,
 
-    output logic[1:0]  ID_rsrtRead
+    output logic [1:0] ID_rsrtRead,
+    output logic       ID_IsTLBP
     );
+
+    assign ID_IsTLBP = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
 
     logic [5:0]opcode;
     logic [5:0]funct;
@@ -1312,7 +1320,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1327,7 +1335,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1342,7 +1350,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1357,7 +1365,7 @@ module Control(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1365,6 +1373,24 @@ module Control(
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+      end
+
+      OP_TLBP:begin//search
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ExceptType = IF_ExceptType;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+
+
       end
 
       default:begin

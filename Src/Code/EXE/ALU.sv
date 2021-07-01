@@ -1,8 +1,13 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
+<<<<<<< HEAD
  * @LastEditTime: 2021-06-30 21:59:56
  * @LastEditors: Please set LastEditors
+=======
+ * @LastEditTime: 2021-06-30 21:53:50
+ * @LastEditors: npuwth
+>>>>>>> 667401f78ebe29fd2be2033fb869441b041cf046
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\ALU.sv
  * 

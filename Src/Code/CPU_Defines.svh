@@ -1,8 +1,13 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
+<<<<<<< HEAD
  * @LastEditTime: 2021-06-30 20:23:06
  * @LastEditors: Please set LastEditors
+=======
+ * @LastEditTime: 2021-07-01 16:06:29
+ * @LastEditors: npuwth
+>>>>>>> 667401f78ebe29fd2be2033fb869441b041cf046
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -164,7 +169,7 @@ interface ID_EXE_Interface();
 	logic 		[4:0]	    ID_rs;	
 	logic 		[4:0]	    ID_rt;	
 	logic 		[4:0]	    ID_rd;
-	
+	logic                   ID_IsTLBP;
 	
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
@@ -199,7 +204,8 @@ interface ID_EXE_Interface();
 	output	                ID_ALUSrcA,
 	output	                ID_ALUSrcB,
 	output	                ID_BranchType,
-	output                  ID_RegsReadSel
+	output                  ID_RegsReadSel,
+	output                  ID_IsTLBP
 	);
 
 	modport EXE (
@@ -222,7 +228,8 @@ interface ID_EXE_Interface();
 	input	                ID_ALUSrcA,
 	input	                ID_ALUSrcB,
 	input	                ID_BranchType,
-	input                   ID_RegsReadSel
+	input                   ID_RegsReadSel,
+	input                   ID_IsTLBP
 	);
 	
 endinterface
@@ -311,16 +318,10 @@ interface MEM_WB_Interface();
 	logic                   MEM_IsInDelaySlot;
 	logic                   WB_IsABranch;
 	logic                   WB_IsAImmeJump;
-	RegsWrType              WB_RegsWrType;
-    logic       [4:0]       WB_Dst;
-	logic       [31:0]      WB_Result;    
   
 	modport MEM ( 
 	input                   WB_IsABranch,
 	input                   WB_IsAImmeJump,	
-	input                   WB_Dst,          //下面三个是WB级给Exception的旁路
-	input                   WB_Result,
-	input                   WB_RegsWrType,   //
     output					MEM_ALUOut,		
 	output                  MEM_Hi,
 	output                  MEM_Lo,	
@@ -355,17 +356,15 @@ interface MEM_WB_Interface();
 	input					MEM_IsAImmeJump,
 	input                   MEM_IsInDelaySlot,
 	output                  WB_IsABranch,
-	output                  WB_IsAImmeJump,
-	output                  WB_Dst,
-	output                  WB_Result,
-	output                  WB_RegsWrType
+	output                  WB_IsAImmeJump
 	);
 
 endinterface
 
 interface WB_CP0_Interface ();
     
-	logic                   WB_CP0Wr;
+	logic                   WB_CP0Wr_MTC0;
+	logic                   WB_CP0Wr_TLBR;
 	logic [4:0]             WB_Dst;
 	logic [31:0]            WB_Result;
 	ExceptinPipeType        WB_ExceptType;
@@ -374,7 +373,8 @@ interface WB_CP0_Interface ();
 	logic [31:0]            WB_ALUOut;
 
 	modport WB ( 
-    output                  WB_CP0Wr,
+    output                  WB_CP0Wr_MTC0,
+	output                  WB_CP0Wr_TLBR,
 	output                  WB_Dst,
 	output                  WB_Result,
 	output                  WB_ExceptType,
@@ -384,13 +384,103 @@ interface WB_CP0_Interface ();
 	);
 
 	modport CP0 ( 
-    input                   WB_CP0Wr,
+    input                   WB_CP0Wr_MTC0,
+	input                   WB_CP0Wr_TLBR,
 	input                   WB_Dst,
 	input                   WB_Result,
 	input                   WB_ExceptType,
 	input                   WB_PC,
 	input                   WB_IsInDelaySlot,
 	input                   WB_ALUOut
+	);
+
+endinterface
+
+interface CP0_MMU_Interface ();
+
+    logic [18:0]            CP0_vpn2;
+	logic [7:0]             CP0_asid;
+	logic [19:0]            CP0_pfn0;
+	logic [2:0]             CP0_c0;
+	logic                   CP0_d0;
+	logic                   CP0_v0;
+	logic                   CP0_g0;
+	logic [19:0]            CP0_pfn1;
+	logic [2:0]             CP0_c1;
+	logic                   CP0_d1;
+	logic                   CP0_v1;
+	logic                   CP0_g1;
+	logic [3:0]             CP0_index; //16项的TLB，log16,所以位宽是4
+    logic [18:0]            MMU_vpn2;
+	logic [7:0]             MMU_asid;
+	logic [19:0]            MMU_pfn0;
+	logic [2:0]             MMU_c0;
+	logic                   MMU_d0;
+	logic                   MMU_v0;
+	logic                   MMU_g0;
+	logic [19:0]            MMU_pfn1;
+	logic [2:0]             MMU_c1;
+	logic                   MMU_d1;
+	logic                   MMU_v1;
+	logic                   MMU_g1;
+	logic [3:0]             MMU_index;
+
+	modport CP0 ( 
+    output                  CP0_vpn2,
+	output                  CP0_asid,
+	output                  CP0_pfn0,
+	output                  CP0_c0,
+	output                  CP0_d0,
+	output                  CP0_v0,
+	output                  CP0_g0,
+	output                  CP0_pfn1,
+	output                  CP0_c1,
+	output                  CP0_d1,
+	output                  CP0_v1,
+	output                  CP0_g1,
+	output                  CP0_index,
+	input                   MMU_vpn2,
+	input                   MMU_asid,
+	input                   MMU_pfn0,
+	input                   MMU_c0,
+	input                   MMU_d0,
+	input                   MMU_v0,
+	input                   MMU_g0,
+	input                   MMU_pfn1,
+	input                   MMU_c1,
+	input                   MMU_d1,
+	input                   MMU_v1,
+	input                   MMU_g1,
+	input                   MMU_index
+	);
+
+	modport MMU ( 
+    input                   CP0_vpn2,
+	input                   CP0_asid,
+	input                   CP0_pfn0,
+	input                   CP0_c0,
+	input                   CP0_d0,
+	input                   CP0_v0,
+	input                   CP0_g0,
+	input                   CP0_pfn1,
+	input                   CP0_c1,
+	input                   CP0_d1,
+	input                   CP0_v1,
+	input                   CP0_g1,
+	input                   CP0_index,
+	output                  MMU_vpn2,
+	output                  MMU_asid,
+	output                  MMU_pfn0,
+	output                  MMU_c0,
+	output                  MMU_d0,
+	output                  MMU_v0,
+	output                  MMU_g0,
+	output                  MMU_pfn1,
+	output                  MMU_c1,
+	output                  MMU_d1,
+	output                  MMU_v1,
+	output                  MMU_g1,
+	output                  MMU_index
 	);
 
 endinterface

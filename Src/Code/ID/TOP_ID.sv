@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-30 17:41:25
+ * @LastEditTime: 2021-06-30 23:41:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -136,7 +136,8 @@ module TOP_ID (
         .ID_EXTOp            (ID_EXTOp),
         .ID_IsAImmeJump      (IEBus.ID_IsAImmeJump),
         .ID_BranchType       (IEBus.ID_BranchType),
-        .ID_rsrtRead         (ID_rsrtRead)
+        .ID_rsrtRead         (ID_rsrtRead),
+        .ID_IsTLBP           (IEBus.ID_IsTLBP)
     );
 
 endmodule  

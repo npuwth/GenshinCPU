@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-06-30 21:19:40
+ * @LastEditTime: 2021-07-01 15:26:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -107,7 +107,6 @@ module mycpu_top (
     BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
     logic [31:0]               EXE_PC;                    //来自EXE级，用于生成NPC
     logic [31:0]               EXE_Imm32;                 //来自EXE级，用于生成NPC  
-    logic [31:0]               Exception_CP0_EPC;         //来自CP0的EPC寄存器，传至IF，用于NPC     
     
     logic [31:0]               CP0_BadVAddr;              //CP0寄存器
     logic [31:0]               CP0_Count;                 //CP0寄存器
@@ -122,7 +121,13 @@ module mycpu_top (
 
     logic [31:0]               WB_Hi;
     logic [31:0]               WB_Lo;
-    logic [1:0]                EXE_MultiExtendOp;           
+    logic [1:0]                EXE_MultiExtendOp;    
+    logic                      EXE_IsTLBP;
+    logic [31:0]               EXE_ALUOut;
+    logic [31:0]               Phsy_Daddr;
+    logic [31:0]               IF_NPC;
+    logic [31:0]               Phsy_Iaddr;
+
     assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -139,6 +144,7 @@ module mycpu_top (
     EXE_MEM_Interface           EMBus();
     MEM_WB_Interface            MWBus();
     WB_CP0_Interface            WCBus();
+    CP0_MMU_Interface           CMBus();
 
     WrFlushControl U_WRFlushControl (
         .ID_Flush_Exception     (ID_Flush_Exception),
@@ -237,17 +243,18 @@ module mycpu_top (
         .CP0_RdData (CP0_Bus ),
         .Interrupt (Interrupt ),
         .WCBus (WCBus.CP0 ),
+        .CMBus (CMBus.CP0),
         //-------------------output----------------------//
-        .CP0_BadVAddr (CP0_BadVAddr ),
-        .CP0_Count (CP0_Count ),
-        .CP0_Compare (CP0_Compare ),
-        .CP0_Status (CP0_Status ),
-        .CP0_Cause (CP0_Cause ),
-        .CP0_EPC (CP0_EPC ),
-        .CP0_Index (CP0_Index ),
-        .CP0_EntryHi (CP0_EntryHi ),
-        .CP0_EntryLo0 (CP0_EntryLo0 ),
-        .CP0_EntryLo1 (CP0_EntryLo1 )
+        .CP0_BadVAddr_Rd (CP0_BadVAddr ),
+        .CP0_Count_Rd (CP0_Count ),
+        .CP0_Compare_Rd (CP0_Compare ),
+        .CP0_Status_Rd (CP0_Status ),
+        .CP0_Cause_Rd (CP0_Cause ),
+        .CP0_EPC_Rd (CP0_EPC ),
+        .CP0_Index_Rd (CP0_Index ),
+        .CP0_EntryHi_Rd (CP0_EntryHi ),
+        .CP0_EntryLo0_Rd (CP0_EntryLo0 ),
+        .CP0_EntryLo1_Rd (CP0_EntryLo1 )
     );
 
     DataHazard U_DataHazard ( 
@@ -267,7 +274,7 @@ module mycpu_top (
         .clk (aclk ),
         .resetn (aresetn ),
         .PC_Wr (PC_Wr ),
-        .MEM_CP0Epc (Exception_CP0_EPC ),
+        .MEM_CP0Epc (CP0_EPC ),
         .EXE_BusA_L1 (EXE_BusA_L1 ),
         .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
         .ID_IsAImmeJump (ID_IsAImmeJump ),
@@ -278,9 +285,11 @@ module mycpu_top (
         .EXE_Flush_DataHazard (EXE_Flush_DataHazard ),
         .EXE_PC (EXE_PC ),
         .EXE_Imm32 (EXE_Imm32 ),
+        .Phsy_Iaddr(Phsy_Iaddr),
         .IIBus  ( IIBus.IF),
         .cpu_ibus (cpu_ibus),
-        .axi_ibus (axi_ibus)
+        .axi_ibus (axi_ibus),
+        .IF_NPC (IF_NPC)
     );
 
     TOP_ID U_TOP_ID ( 
@@ -328,7 +337,9 @@ module mycpu_top (
         .EXE_Imm32 (EXE_Imm32),
         .EXE_LoadType (EXE_LoadType),
         .EXE_rt(EXE_rt),
-        .EXE_MultiExtendOp(EXE_MultiExtendOp)
+        .EXE_MultiExtendOp(EXE_MultiExtendOp),
+        .EXE_IsTLBP(EXE_IsTLBP),
+        .EXE_ALUOut(EXE_ALUOut)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -338,8 +349,8 @@ module mycpu_top (
         .MEM_Wr (MEM_Wr ),
         .CP0_Status (CP0_Status ),
         .CP0_Cause (CP0_Cause ),
-        .CP0_EPC (CP0_EPC ),
         .WB_Wr (WB_Wr),
+        .Phsy_Daddr(Phsy_Daddr),
         .EMBus (EMBus.MEM ),
         .MWBus (MWBus.MEM ),
         .cpu_dbus (cpu_dbus),
@@ -349,8 +360,7 @@ module mycpu_top (
         .ID_Flush_Exception (ID_Flush_Exception ),
         .EXE_Flush_Exception (EXE_Flush_Exception ),
         .MEM_Flush_Exception (MEM_Flush_Exception ),
-        .IsExceptionOrEret (IsExceptionOrEret ),
-        .Exception_CP0_EPC  ( Exception_CP0_EPC)
+        .IsExceptionOrEret (IsExceptionOrEret )
     );
 
     TOP_WB U_TOP_WB ( 
@@ -369,6 +379,16 @@ module mycpu_top (
         .WB_PC(WB_PC ),
         .WB_Hi (WB_Hi ),
         .WB_Lo (WB_Lo )
+    );
+
+    TLBMMU U_TLBMMU ( 
+        .clk (aclk ),
+        .Virt_Iaddr (IF_NPC ),
+        .Virt_Daddr (EXE_ALUOut ),
+        .EXE_IsTLBP (EXE_IsTLBP ),
+        .CMBus (CMBus.MMU ),
+        .Phsy_Iaddr (Phsy_Iaddr ),
+        .Phsy_Daddr  ( Phsy_Daddr)
     );
 
 endmodule

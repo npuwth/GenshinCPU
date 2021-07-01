@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-06-30 19:53:15
+ * @LastEditTime: 2021-07-01 00:18:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,13 +28,14 @@ module TOP_IF (
     input logic         EXE_Flush_DataHazard,
     input logic [31:0]  EXE_PC,
     input logic [31:0]  EXE_Imm32,
+    input logic [31:0]  Phsy_Iaddr,
     IF_ID_Interface     IIBus,
     CPU_Bus_Interface   cpu_ibus,
-    AXI_Bus_Interface   axi_ibus
+    AXI_Bus_Interface   axi_ibus,
+    output logic [31:0] IF_NPC
 );
 
     logic   [31:0]      IF_PC;
-    logic   [31:0]      IF_NPC;
     logic   [2:0]       PCSel;
     logic   [31:0]      ID_PCAdd4;
     logic   [31:0]      PC_4;
@@ -81,7 +82,7 @@ module TOP_IF (
 
     //---------------------------------cache--------------------------------//
     assign IIBus.IF_Instr = cpu_ibus.rdata;
-    assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset} = IF_NPC;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
+    assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset} = Phsy_Iaddr;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.valid = (ID_Flush_Exception)?1'b1:(EXE_Flush_DataHazard || ID_Wr == 1'b0)?1'b0:1'b1;
     assign cpu_ibus.op    = 1'b0;
     assign cpu_ibus.wstrb = '0;

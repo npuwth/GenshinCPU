@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-06-29 17:50:50
+ * @LastEditTime: 2021-07-01 16:30:02
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,22 +22,33 @@ module cp0_reg (
     output logic [31:0]     CP0_RdData,              //读出的CP0某个寄存器的值   
     // 异常相关输入接口           
     input AsynExceptType    Interrupt,                 //6个外部硬件中断输入 
-    WB_CP0_Interface        WCBus,      
-    output logic   [31:0]   CP0_BadVAddr,               //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
-    output logic   [31:0]   CP0_Count,                  //9号寄存器  Count寄存器的值
-    output logic   [31:0]   CP0_Compare,                //11号寄存器 Compare寄存器的值
-    output logic   [31:0]   CP0_Status,                 //12号寄存器 Status寄存器的值
-    output logic   [31:0]   CP0_Cause,                  //13号寄存器 Cause寄存器的值
-    output logic   [31:0]   CP0_EPC,                    //14号寄存器 EPC寄存器的值
-    output logic   [31:0]   CP0_Index,                  //0号
-    output logic   [31:0]   CP0_EntryHi,                //10号
-    output logic   [31:0]   CP0_EntryLo0,               //2号
-    output logic   [31:0]   CP0_EntryLo1                //3号
+    WB_CP0_Interface        WCBus,     
+    CP0_MMU_Interface       CMBus, 
+    output logic   [31:0]   CP0_BadVAddr_Rd,               //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
+    output logic   [31:0]   CP0_Count_Rd,                  //9号寄存器  Count寄存器的值
+    output logic   [31:0]   CP0_Compare_Rd,                //11号寄存器 Compare寄存器的值
+    output logic   [31:0]   CP0_Status_Rd,                 //12号寄存器 Status寄存器的值
+    output logic   [31:0]   CP0_Cause_Rd,                  //13号寄存器 Cause寄存器的值
+    output logic   [31:0]   CP0_EPC_Rd,                    //14号寄存器 EPC寄存器的值
+    output logic   [31:0]   CP0_Index_Rd,                  //0号
+    output logic   [31:0]   CP0_EntryHi_Rd,                //10号
+    output logic   [31:0]   CP0_EntryLo0_Rd,               //2号
+    output logic   [31:0]   CP0_EntryLo1_Rd                //3号
     );
 
-    logic           [5:0]   Hardwareint;
+    logic   [5:0]           Hardwareint;
     logic                   TimCount2;
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
+    logic   [31:0]          CP0_BadVAddr;               //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
+    logic   [31:0]          CP0_Count;                  //9号寄存器  Count寄存器的值
+    logic   [31:0]          CP0_Compare;                //11号寄存器 Compare寄存器的值
+    logic   [31:0]          CP0_Status;                 //12号寄存器 Status寄存器的值
+    logic   [31:0]          CP0_Cause;                  //13号寄存器 Cause寄存器的值
+    logic   [31:0]          CP0_EPC;                    //14号寄存器 EPC寄存器的值
+    logic   [31:0]          CP0_Index;                  //0号
+    logic   [31:0]          CP0_EntryHi;                //10号
+    logic   [31:0]          CP0_EntryLo0;               //2号
+    logic   [31:0]          CP0_EntryLo1;               //3号
 
     assign Hardwareint = 
         {
@@ -69,7 +80,7 @@ module cp0_reg (
         else begin
             CP0_Cause[15:10]               <= Hardwareint;    //Cause寄存器的10-15位保存6个外部中断状态（1代表有中断需要处理）
             
-            if (WCBus.WB_CP0Wr == `WriteEnable && WCBus.WB_Dst == `CP0_REG_COUNT ) begin 
+            if (WCBus.WB_CP0Wr_MTC0 == `WriteEnable && WCBus.WB_Dst == `CP0_REG_COUNT ) begin 
                 CP0_Count                  <= WCBus.WB_Result;   //将输入数据写入到Count寄存器中
                 TimCount2                  <= 1'b0;
             end else begin
@@ -80,7 +91,7 @@ module cp0_reg (
             end 
             // 当Compare寄存器不为0，且Count寄存器的值等于Compare寄存器的值时，
             // 将输出信号CP0_TimerInterrupt置为1，表示时钟中断发生
-            if(CP0_Compare != `ZeroWord && CP0_Count == CP0_Compare && (WCBus.WB_CP0Wr != `WriteEnable || WCBus.WB_Dst != `CP0_REG_COMPARE)) begin
+            if(CP0_Compare != `ZeroWord && CP0_Count == CP0_Compare && (WCBus.WB_CP0Wr_MTC0 != `WriteEnable || WCBus.WB_Dst != `CP0_REG_COMPARE)) begin
                 CP0_TimerInterrupt         <= `InterruptAssert;  // 发生中断
                 CP0_Cause[30]              <= 1'b1;  // 中断标记位置1
             end
@@ -88,7 +99,7 @@ module cp0_reg (
             //                     对CP0中寄存器的写操作：时序逻辑
             //  PRId、Config不可以写，Cause寄存器只有其中的IP[1:0]、IV、WP三个字段可写
             //******************************************************************************
-            if(WCBus.WB_CP0Wr == `WriteEnable) begin
+            if(WCBus.WB_CP0Wr_MTC0 == `WriteEnable) begin
                 unique case(WCBus.WB_Dst)
                     `CP0_REG_COMPARE:begin     //写Compare寄存器
                         CP0_Compare        <= WCBus.WB_Result;
@@ -105,10 +116,38 @@ module cp0_reg (
                     `CP0_REG_CAUSE:begin       //写Cause寄存器
                         CP0_Cause[9:8]     <= WCBus.WB_Result[9:8];  //Cause寄存器只有IP[1:0]字段是可写的
                     end
+                    `CP0_REG_ENTRYHI:begin
+                        CP0_EntryHi[31:13] <= WCBus.WB_Result[31:13];
+                        CP0_EntryHi[7:0]   <= WCBus.WB_Result[7:0];
+                    end
+                    `CP0_REG_INDEX:begin
+                        CP0_Index[3:0]     <= WCBus.WB_Result[3:0]; 
+                    end
+                    `CP0_REG_ENTRYLO0:begin
+                        CP0_EntryLo0[29:0] <= WCBus.WB_Result[29:0];
+                    end
+                    `CP0_REG_ENTRYLO1:begin 
+                        CP0_EntryLo1[29:0] <= WCBus.WB_Result[29:0];
+                    end
                 default:begin
                     CP0_EPC <= CP0_EPC;
                 end
                 endcase
+            end
+            else if(WCBus.WB_CP0Wr_TLBR == `WriteEnable) begin
+                CP0_Index[3:0]             <= CMBus.MMU_index;
+                CP0_EntryHi[31:13]         <= CMBus.MMU_vpn2;
+                CP0_EntryHi[7:0]           <= CMBus.MMU_asid;
+                CP0_EntryLo0[25:6]         <= CMBus.MMU_pfn0;
+                CP0_EntryLo0[5:3]          <= CMBus.MMU_c0;
+                CP0_EntryLo0[2]            <= CMBus.MMU_d0;
+                CP0_EntryLo0[1]            <= CMBus.MMU_v0;
+                CP0_EntryLo0[0]            <= CMBus.MMU_g0;
+                CP0_EntryLo1[25:6]         <= CMBus.MMU_pfn1;
+                CP0_EntryLo1[5:3]          <= CMBus.MMU_c1;
+                CP0_EntryLo1[2]            <= CMBus.MMU_d1;
+                CP0_EntryLo1[1]            <= CMBus.MMU_v1;
+                CP0_EntryLo1[0]            <= CMBus.MMU_g1;
             end
             // `ifdef DEBUG
             //     $monitor("CP0:BadVAddr=%8X,Count=%8X,Compare=%8X,Status=%8X,Cause=%8X,EPC=%8X",
@@ -263,7 +302,6 @@ module cp0_reg (
                     CP0_Status[1]          <= 1'b1;
                     CP0_Cause[6:2]         <= 5'b00100;
                     CP0_BadVAddr           <= WCBus.WB_ALUOut;
-
                 end
         end
     end
@@ -271,18 +309,118 @@ module cp0_reg (
     //read port
     always_comb begin
         case(CP0_RdAddr)
-            `CP0_REG_COUNT:      CP0_RdData = CP0_Count;
-            `CP0_REG_COMPARE:    CP0_RdData = CP0_Compare;
-            `CP0_REG_STATUS:     CP0_RdData = CP0_Status;
-            `CP0_REG_CAUSE:      CP0_RdData = CP0_Cause;
-            `CP0_REG_EPC:        CP0_RdData = CP0_EPC;
-            `CP0_REG_BADVADDR:   CP0_RdData = CP0_BadVAddr;
-            `CP0_REG_INDEX:      CP0_RdData = CP0_Index;
-            `CP0_REG_ENTRYHI:    CP0_RdData = CP0_EntryHi;
-            `CP0_REG_ENTRYLO0:   CP0_RdData = CP0_EntryLo0;
-            `CP0_REG_ENTRYLO1:   CP0_RdData = CP0_EntryLo1;
+            `CP0_REG_COUNT:      CP0_RdData = CP0_Count_Rd;
+            `CP0_REG_COMPARE:    CP0_RdData = CP0_Compare_Rd;
+            `CP0_REG_STATUS:     CP0_RdData = CP0_Status_Rd;
+            `CP0_REG_CAUSE:      CP0_RdData = CP0_Cause_Rd;
+            `CP0_REG_EPC:        CP0_RdData = CP0_EPC_Rd;
+            `CP0_REG_BADVADDR:   CP0_RdData = CP0_BadVAddr_Rd;
+            `CP0_REG_INDEX:      CP0_RdData = CP0_Index_Rd;
+            `CP0_REG_ENTRYHI:    CP0_RdData = CP0_EntryHi_Rd;
+            `CP0_REG_ENTRYLO0:   CP0_RdData = CP0_EntryLo0_Rd;
+            `CP0_REG_ENTRYLO1:   CP0_RdData = CP0_EntryLo1_Rd;
             default:             CP0_RdData = 'x;
         endcase
     end
-    
+
+//以下为旁路
+    always_comb  begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_STATUS)) begin
+            CP0_Status_Rd    =  WCBus.WB_Result;
+        end 
+        else begin
+            CP0_Status_Rd    =  CP0_Status;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_EPC)) begin
+            CP0_EPC_Rd       =  WCBus.WB_Result;
+        end else begin
+            CP0_EPC_Rd       =  CP0_EPC;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_COMPARE)) begin
+            CP0_Compare_Rd       =  WCBus.WB_Result;
+        end else begin
+            CP0_Compare_Rd       =  CP0_Compare;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_COUNT)) begin
+            CP0_Count_Rd       =  WCBus.WB_Result;
+        end else begin
+            CP0_Count_Rd       =  CP0_Count;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_CAUSE)) begin
+            CP0_Cause_Rd[7:0] = '0;
+            CP0_Cause_Rd[9:8] = WCBus.WB_Result[9:8];          //IP[1:0]字段
+            CP0_Cause_Rd[21:10] = '0;
+            CP0_Cause_Rd[22]  = WCBus.WB_Result[22];           //WP字段
+            CP0_Cause_Rd[23]  = WCBus.WB_Result[23];           //IV字段
+            CP0_Cause_Rd[31:24] = '0;
+        end else begin
+            CP0_Cause_Rd      = CP0_Cause;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_INDEX)) begin
+            CP0_Index_Rd       =  {CP0_Index[31:4],WCBus.WB_Result[3:0]};
+        end else if(WCBus.WB_CP0Wr_TLBR) begin
+            CP0_Index_Rd       =  {CP0_Index[31:4],CMBus.MMU_index};
+        end else begin
+            CP0_Index_Rd       =  CP0_Index;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_ENTRYHI)) begin
+            CP0_EntryHi_Rd       =  {WCBus.WB_Result[31:13],5'b0,WCBus.WB_Result[7:0]};
+        end else if(WCBus.WB_CP0Wr_TLBR) begin
+            CP0_EntryHi_Rd       =  {CMBus.MMU_vpn2,5'b0,CMBus.MMU_asid};
+        end else begin
+            CP0_EntryHi_Rd       =  CP0_EntryHi;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_ENTRYLO0)) begin
+            CP0_EntryLo0_Rd       =  {6'b0,WCBus.WB_Result[25:0]};
+        end else if(WCBus.WB_CP0Wr_TLBR) begin
+            CP0_EntryLo0_Rd       =  {6'b0,CMBus.MMU_pfn0,CMBus.MMU_c0,CMBus.MMU_d0,CMBus.MMU_v0,CMBus.MMU_g0};
+        end else begin
+            CP0_EntryLo0_Rd       =  CP0_EntryLo0;
+        end
+    end
+
+    always_comb begin
+        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_ENTRYLO1)) begin
+            CP0_EntryLo1_Rd       =  {6'b0,WCBus.WB_Result[25:0]};
+        end else if(WCBus.WB_CP0Wr_TLBR) begin
+            CP0_EntryLo1_Rd       =  {6'b0,CMBus.MMU_pfn1,CMBus.MMU_c1,CMBus.MMU_d1,CMBus.MMU_v1,CMBus.MMU_g1};
+        end else begin
+            CP0_EntryLo1_Rd       =  CP0_EntryLo1;
+        end
+    end
+
+    assign CMBus.CP0_index      = CP0_Index_Rd[3:0];
+    assign CMBus.CP0_vpn2       = CP0_EntryHi_Rd[31:13];
+    assign CMBus.CP0_asid       = CP0_EntryHi_Rd[7:0];
+    assign CMBus.CP0_pfn0       = CP0_EntryLo0_Rd[25:6];
+    assign CMBus.CP0_c0         = CP0_EntryLo0_Rd[5:3];
+    assign CMBus.CP0_d0         = CP0_EntryLo0_Rd[2];
+    assign CMBus.CP0_v0         = CP0_EntryLo0_Rd[1];
+    assign CMBus.CP0_g0         = CP0_EntryLo0_Rd[0];
+    assign CMBus.CP0_pfn1       = CP0_EntryLo1_Rd[25:6];
+    assign CMBus.CP0_c1         = CP0_EntryLo1_Rd[5:3];
+    assign CMBus.CP0_d1         = CP0_EntryLo1_Rd[2];
+    assign CMBus.CP0_v1         = CP0_EntryLo1_Rd[1];
+    assign CMBus.CP0_g1         = CP0_EntryLo1_Rd[0];
 endmodule
