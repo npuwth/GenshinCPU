@@ -1,13 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
-<<<<<<< HEAD
  * @LastEditTime: 2021-06-30 20:23:06
  * @LastEditors: Please set LastEditors
-=======
- * @LastEditTime: 2021-06-30 17:42:52
- * @LastEditors: npuwth
->>>>>>> bee2c418f43597551fe705171923bacc71f83f82
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -145,7 +140,7 @@ interface IF_ID_Interface();
 	output  				IF_Instr,
 	output  			    IF_PC,
 	output                  IF_ExceptType,
-	input                   ID_Instr,
+	input                   ID_Instr, //用于生成npc
 	input                   ID_PC
     );
 

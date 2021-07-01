@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-06-30 15:43:41
+ * @LastEditTime: 2021-07-01 12:46:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
@@ -530,8 +530,8 @@ assign dirty_addr = (Count0 == 1'b1) ? {tagV0.tagout,req_buffer.index,4'b0000}
 
 
 assign AXIBus.wr_addr = dirty_addr;
-assign AXIBus.wr_data = (Count0 == 1'b1) ? {data0[0].dout,data0[1].dout,data0[2].dout,data0[3].dout}
-                                         : {data1[0].dout,data1[1].dout,data1[2].dout,data1[3].dout}  ;
+assign AXIBus.wr_data = (Count0 == 1'b1) ? {data0[3].dout,data0[2].dout,data0[1].dout,data0[0].dout}
+                                         : {data1[3].dout,data1[2].dout,data1[1].dout,data1[0].dout}  ;
 always_comb begin
   if (state == MISSDIRTY) begin
     AXIBus.wr_req = `Enable;
