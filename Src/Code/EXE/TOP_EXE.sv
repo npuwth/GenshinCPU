@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 00:13:06
+ * @LastEditTime: 2021-07-01 17:29:38
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -92,6 +92,9 @@ module TOP_EXE (
         .ID_RegsReadSel       (IEBus.ID_RegsReadSel ),
         .ID_IsAImmeJump       (IEBus.ID_IsAImmeJump ),
         .ID_BranchType        (IEBus.ID_BranchType ),
+        .ID_IsTLBP            (IEBus.ID_IsTLBP),
+        .ID_IsTLBW            (IEBus.ID_IsTLBW),
+        .ID_IsTLBR            (IEBus.ID_IsTLBR),
     //-------------------------output-----------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -114,7 +117,9 @@ module TOP_EXE (
         .EXE_IsAImmeJump      (EMBus.EXE_IsAImmeJump ),
         .EXE_BranchType       (EMBus.EXE_BranchType ),
         .EXE_Shamt            (EXE_Shamt ),
-        .EXE_IsTLBP           (EXE_IsTLBP)
+        .EXE_IsTLBP           (EXE_IsTLBP),
+        .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
+        .EXE_IsTLBR           (EMBus.EXE_IsTLBR)
     );
 
 

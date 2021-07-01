@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 16:05:11
+ * @LastEditTime: 2021-07-01 17:08:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -43,7 +43,7 @@ module TOP_WB (
     assign MWBus.WB_Result       = WB_Result;
     assign MWBus.WB_RegsWrType   = WB_RegsWrType;
 
-    assign WCBus.WB_CP0Wr        = WB_Final_Wr.CP0Wr;
+    assign WCBus.WB_CP0Wr_MTC0   = WB_Final_Wr.CP0Wr;
     assign WCBus.WB_Dst          = WB_Dst;
     assign WCBus.WB_Result       = WB_Result;
     assign WCBus.WB_ExceptType   = WB_ExceptType;

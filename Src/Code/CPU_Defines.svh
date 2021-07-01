@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-01 16:06:29
+ * @LastEditTime: 2021-07-01 17:23:31
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -165,6 +165,8 @@ interface ID_EXE_Interface();
 	logic 		[4:0]	    ID_rt;	
 	logic 		[4:0]	    ID_rd;
 	logic                   ID_IsTLBP;
+	logic                   ID_IsTLBW;
+	logic                   ID_IsTLBR;
 	
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
@@ -200,7 +202,9 @@ interface ID_EXE_Interface();
 	output	                ID_ALUSrcB,
 	output	                ID_BranchType,
 	output                  ID_RegsReadSel,
-	output                  ID_IsTLBP
+	output                  ID_IsTLBP,
+	output                  ID_IsTLBW,
+	output                  ID_IsTLBR
 	);
 
 	modport EXE (
@@ -224,7 +228,9 @@ interface ID_EXE_Interface();
 	input	                ID_ALUSrcB,
 	input	                ID_BranchType,
 	input                   ID_RegsReadSel,
-	input                   ID_IsTLBP
+	input                   ID_IsTLBP,
+	input                   ID_IsTLBW,
+	input                   ID_IsTLBR
 	);
 	
 endinterface
@@ -249,6 +255,8 @@ interface EXE_MEM_Interface();
   	ExceptinPipeType 		EXE_ExceptType_final;		// 异常类型
 	BranchType              EXE_BranchType;
 	logic       [3:0]       DCache_Wen;
+	logic                   EXE_IsTLBW;
+	logic                   EXE_IsTLBR;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -266,6 +274,8 @@ interface EXE_MEM_Interface();
     output                  EXE_ExceptType_final,		// 异常类型
 	output                  EXE_BranchType,
 	output                  DCache_Wen,         //DCache的字节写使能
+	output                  EXE_IsTLBW,
+	output                  EXE_IsTLBR,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
 	input                   MEM_Result          //
@@ -287,6 +297,8 @@ interface EXE_MEM_Interface();
     input                   EXE_ExceptType_final,		// 异常类型
 	input                   EXE_BranchType,
 	input                   DCache_Wen,
+	input                   EXE_IsTLBW,
+	input                   EXE_IsTLBR,
 	output                  MEM_RegsWrType,
 	output                  MEM_Dst,
 	output                  MEM_Result
@@ -313,6 +325,8 @@ interface MEM_WB_Interface();
 	logic                   MEM_IsInDelaySlot;
 	logic                   WB_IsABranch;
 	logic                   WB_IsAImmeJump;
+	logic                   MEM_IsTLBW;
+	logic                   MEM_IsTLBR;
   
 	modport MEM ( 
 	input                   WB_IsABranch,
@@ -331,7 +345,9 @@ interface MEM_WB_Interface();
 	output					MEM_ExceptType_final,
 	output					MEM_IsABranch,
 	output					MEM_IsAImmeJump,
-	output                  MEM_IsInDelaySlot
+	output                  MEM_IsInDelaySlot,
+	output                  MEM_IsTLBW,
+	output                  MEM_IsTLBR
 	);
 
 	modport WB ( 
@@ -350,6 +366,8 @@ interface MEM_WB_Interface();
 	input					MEM_IsABranch,
 	input					MEM_IsAImmeJump,
 	input                   MEM_IsInDelaySlot,
+	input                   MEM_IsTLBW,
+	input                   MEM_IsTLBR,
 	output                  WB_IsABranch,
 	output                  WB_IsAImmeJump
 	);
@@ -366,6 +384,7 @@ interface WB_CP0_Interface ();
 	logic [31:0]            WB_PC;
 	logic                   WB_IsInDelaySlot;
 	logic [31:0]            WB_ALUOut;
+	logic                   WB_IsTLBR;
 
 	modport WB ( 
     output                  WB_CP0Wr_MTC0,
@@ -375,7 +394,8 @@ interface WB_CP0_Interface ();
 	output                  WB_ExceptType,
 	output                  WB_PC,
 	output                  WB_IsInDelaySlot,
-	output                  WB_ALUOut
+	output                  WB_ALUOut,
+	output                  WB_IsTLBR
 	);
 
 	modport CP0 ( 
@@ -386,7 +406,8 @@ interface WB_CP0_Interface ();
 	input                   WB_ExceptType,
 	input                   WB_PC,
 	input                   WB_IsInDelaySlot,
-	input                   WB_ALUOut
+	input                   WB_ALUOut,
+	input                   WB_IsTLBR
 	);
 
 endinterface
@@ -419,6 +440,7 @@ interface CP0_MMU_Interface ();
 	logic                   MMU_v1;
 	logic                   MMU_g1;
 	logic [3:0]             MMU_index;
+	logic                   MMU_s1found;
 
 	modport CP0 ( 
     output                  CP0_vpn2,
@@ -446,7 +468,8 @@ interface CP0_MMU_Interface ();
 	input                   MMU_d1,
 	input                   MMU_v1,
 	input                   MMU_g1,
-	input                   MMU_index
+	input                   MMU_index,
+	input                   MMU_s1found
 	);
 
 	modport MMU ( 
@@ -475,7 +498,8 @@ interface CP0_MMU_Interface ();
 	output                  MMU_d1,
 	output                  MMU_v1,
 	output                  MMU_g1,
-	output                  MMU_index
+	output                  MMU_index,
+    output                  MMU_s1found
 	);
 
 endinterface

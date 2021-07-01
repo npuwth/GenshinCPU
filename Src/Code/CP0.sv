@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-01 16:30:02
+ * @LastEditTime: 2021-07-01 17:06:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -19,6 +19,7 @@ module cp0_reg (
     input logic             rst,
     // read port        
     input logic  [4:0]      CP0_RdAddr,                 //要读取的CP0寄存器的地址
+    input                   EXE_IsTLBP,
     output logic [31:0]     CP0_RdData,              //读出的CP0某个寄存器的值   
     // 异常相关输入接口           
     input AsynExceptType    Interrupt,                 //6个外部硬件中断输入 
@@ -75,7 +76,7 @@ module cp0_reg (
             CP0_EntryLo0       <= `ZeroWord;
             CP0_EntryLo1       <= `ZeroWord;
             CP0_TimerInterrupt <= `InterruptNotAssert;
-            TimCount2           <= 1'b0;
+            TimCount2          <= 1'b0;
         end 
         else begin
             CP0_Cause[15:10]               <= Hardwareint;    //Cause寄存器的10-15位保存6个外部中断状态（1代表有中断需要处理）
@@ -99,6 +100,14 @@ module cp0_reg (
             //                     对CP0中寄存器的写操作：时序逻辑
             //  PRId、Config不可以写，Cause寄存器只有其中的IP[1:0]、IV、WP三个字段可写
             //******************************************************************************
+            if(EXE_IsTLBP == 1'b1) begin
+                CP0_Index                  <= {~CMBus.MMU_s1found,27'b0,CMBus.MMU_index};
+            end else if(WCBus.WB_CP0Wr_TLBR == `WriteEnable) begin
+                CP0_Index[3:0]             <= CMBus.MMU_index;
+            end
+            else if(WCBus.WB_CP0Wr_MTC0 == `WriteEnable && WCBus.WB_Dst == `CP0_REG_INDEX) begin
+                CP0_Index[3:0]     <= WCBus.WB_Result[3:0]; 
+            end
             if(WCBus.WB_CP0Wr_MTC0 == `WriteEnable) begin
                 unique case(WCBus.WB_Dst)
                     `CP0_REG_COMPARE:begin     //写Compare寄存器
@@ -120,9 +129,6 @@ module cp0_reg (
                         CP0_EntryHi[31:13] <= WCBus.WB_Result[31:13];
                         CP0_EntryHi[7:0]   <= WCBus.WB_Result[7:0];
                     end
-                    `CP0_REG_INDEX:begin
-                        CP0_Index[3:0]     <= WCBus.WB_Result[3:0]; 
-                    end
                     `CP0_REG_ENTRYLO0:begin
                         CP0_EntryLo0[29:0] <= WCBus.WB_Result[29:0];
                     end
@@ -135,7 +141,6 @@ module cp0_reg (
                 endcase
             end
             else if(WCBus.WB_CP0Wr_TLBR == `WriteEnable) begin
-                CP0_Index[3:0]             <= CMBus.MMU_index;
                 CP0_EntryHi[31:13]         <= CMBus.MMU_vpn2;
                 CP0_EntryHi[7:0]           <= CMBus.MMU_asid;
                 CP0_EntryLo0[25:6]         <= CMBus.MMU_pfn0;
@@ -371,7 +376,9 @@ module cp0_reg (
     end
 
     always_comb begin
-        if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_INDEX)) begin
+        if(EXE_IsTLBP == 1'b1) begin
+            CP0_Index_Rd       =  {~CMBus.MMU_s1found,27'b0,CMBus.MMU_index};
+        end else if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_INDEX)) begin
             CP0_Index_Rd       =  {CP0_Index[31:4],WCBus.WB_Result[3:0]};
         end else if(WCBus.WB_CP0Wr_TLBR) begin
             CP0_Index_Rd       =  {CP0_Index[31:4],CMBus.MMU_index};
