@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-06-30 15:21:24
+ * @LastEditTime: 2021-07-02 23:51:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
@@ -45,6 +45,7 @@ interface CPU_Bus_Interface();            // 只需要满足读的请求 icache�
   logic [3:0] 	offset;    //  
   logic [3:0] 	wstrb;     //  Icache 用不到
   StoreType     storeType;
+  LoadType      loadType;
   logic [31:0]  wdata;     //  Icache 用不到
   logic     		addr_ok;   //  表示访存请求可以接受（空闲
   logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
@@ -80,7 +81,7 @@ interface AXI_Bus_Interface();
   logic           wr_req;    // dcache store未命中
   // logic[2:0]      wr_type;   //     用不到
   logic[31:0]     wr_addr;   // 写地址 
-
+  
   logic[127:0]    wr_data;   // 写数据
   logic           wr_rdy; //就是说只要当slave axi模块可以接收之后才发出写请求
   //写返回通道
@@ -104,6 +105,7 @@ interface AXI_UNCACHE_Interface();
   logic           rd_req;
   logic[31:0]     rd_addr;
   logic           rd_rdy;
+  LoadType        loadType;
   //读返回通道
   logic           ret_valid;
   logic[31:0]     ret_data;
@@ -115,6 +117,7 @@ interface AXI_UNCACHE_Interface();
   logic           wr_rdy;    //就是说只要当slave axi模块可以接收之后才发出写请求    
   //写返回通道
   logic           wr_valid;  //表示已经写入
+
 
   modport master (//cache端口
   output rd_req,rd_addr,
