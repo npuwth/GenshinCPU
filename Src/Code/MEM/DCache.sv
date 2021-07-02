@@ -1,13 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
-<<<<<<< HEAD
- * @LastEditTime: 2021-07-02 18:54:50
+ * @LastEditTime: 2021-07-03 00:06:01
  * @LastEditors: Please set LastEditors
-=======
- * @LastEditTime: 2021-07-02 14:55:24
- * @LastEditors: npuwth
->>>>>>> 39c6b54317d6e8f87dcd0518fccb76158b70afb8
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -73,6 +68,7 @@ module DCache(
     logic[3:0] wstrb;
     logic[31:0] wdata;
     StoreType  storeType;
+    LoadType   loadType;
   } RequestType;
 
   typedef struct  packed{
@@ -585,7 +581,7 @@ end
 
 
 assign UBus.wr_wstrb = req_buffer.wstrb;
-
+assign UBus.loadType = req_buffer.loadType;
 always_comb begin
   if (state == WAIT && req_buffer.op == 1'b0 && UBus.ret_valid == `Valid) begin
     unCache_rdata_en = `WriteEnable;
@@ -626,7 +622,7 @@ always_comb begin
   end
 end
 
-  assign req_buffer_new = (req_buffer_en ? {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata,CPUBus.storeType } : req_buffer);
+  assign req_buffer_new = (req_buffer_en ? {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata,CPUBus.storeType,CPUBus.loadType } : req_buffer);
   always_ff @( posedge clk ) begin //request_buffer
     if(resetn == `RstEnable)begin
       req_buffer <='0;
