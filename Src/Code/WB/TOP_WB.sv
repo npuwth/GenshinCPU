@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 22:10:57
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-02 12:28:03
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -39,7 +39,7 @@ module TOP_WB (
     ExceptinPipeType             WB_ExceptType;
     logic                        WB_IsInDelaySlot;
 
-    assign WCBus.WB_CP0Wr_MTC0   = WB_Final_Wr.CP0Wr;
+    assign WCBus.WB_CP0Wr_MTC0   = WB_RegsWrType.CP0Wr;
     assign WCBus.WB_Dst          = WB_Dst;
     assign WCBus.WB_Result       = WB_Result;
     assign WCBus.WB_ExceptType   = WB_ExceptType;
@@ -91,6 +91,7 @@ module TOP_WB (
         .WB_DMOut             (WB_DMOut),
         .WB_ALUOut            (WB_ALUOut),
         .WB_LoadType          (WB_LoadType),
+        //output
         .WB_DMResult          (WB_DMResult)
     );
 

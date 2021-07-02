@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-06-30 22:17:08
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-02 11:26:14
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -38,7 +38,7 @@
         // if (virt_addr < 32'hA000_0000 && virt_addr > 32'h7FFF_FFFF) begin
         //     isUncache = 1'b1;
         // end
-        if (virt_addr[31:16] !=16'hbfaf ) begin
+        if (virt_addr[31:16] !=16'h1faf ) begin
             isUncache = 1'b0;
         end
         else begin

@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-01 17:06:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-02 11:39:59
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -416,6 +416,8 @@ module cp0_reg (
             CP0_EntryLo1_Rd       =  CP0_EntryLo1;
         end
     end
+
+    assign CP0_BadVAddr_Rd      = CP0_BadVAddr;
 
     assign CMBus.CP0_index      = CP0_Index_Rd[3:0];
     assign CMBus.CP0_vpn2       = CP0_EntryHi_Rd[31:13];
