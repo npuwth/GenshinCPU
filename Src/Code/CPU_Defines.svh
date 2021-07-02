@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-02 11:05:48
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-02 15:39:36
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -38,7 +38,8 @@ typedef struct packed {
 	logic TLBRefill;            // TLB 重填例外
 	logic TLBInvalid;           // TLB 无效例外
 	logic TLBModified;          // TLB 修改例外
-	// logic Trap;                 // Trap 例外
+	logic Refetch;              // 重取（自己定义的，用于TLBR，TLBR）
+	logic Trap;                 // Trap 例外
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
 typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常�?
@@ -256,6 +257,7 @@ interface EXE_MEM_Interface();
   	ExceptinPipeType 		EXE_ExceptType_final;		// 异常类型
 	BranchType              EXE_BranchType;
 	logic       [3:0]       DCache_Wen;
+	logic                   EXE_IsTLBP;
 	logic                   EXE_IsTLBW;
 	logic                   EXE_IsTLBR;
 
@@ -275,6 +277,7 @@ interface EXE_MEM_Interface();
     output                  EXE_ExceptType_final,		// 异常类型
 	output                  EXE_BranchType,
 	output                  DCache_Wen,         //DCache的字节写使能
+	output                  EXE_IsTLBP,
 	output                  EXE_IsTLBW,
 	output                  EXE_IsTLBR,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
@@ -298,6 +301,7 @@ interface EXE_MEM_Interface();
     input                   EXE_ExceptType_final,		// 异常类型
 	input                   EXE_BranchType,
 	input                   DCache_Wen,
+	input                   EXE_IsTLBP,
 	input                   EXE_IsTLBW,
 	input                   EXE_IsTLBR,
 	output                  MEM_RegsWrType,

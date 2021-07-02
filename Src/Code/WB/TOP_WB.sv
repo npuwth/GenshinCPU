@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-02 12:28:03
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-02 15:26:31
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -27,7 +27,8 @@ module TOP_WB (
     output RegsWrType            WB_RegsWrType,
     output logic [31:0]          WB_PC,
     output logic [31:0]          WB_Hi,
-    output logic [31:0]          WB_Lo
+    output logic [31:0]          WB_Lo,
+    output logic                 WB_IsTLBW
 );
     logic [31:0]                 WB_DMOut;
     logic [31:0]                 WB_ALUOut;
@@ -38,8 +39,10 @@ module TOP_WB (
     logic [1:0]                  WB_WbSel;
     ExceptinPipeType             WB_ExceptType;
     logic                        WB_IsInDelaySlot;
+    logic                        WB_IsTLBR;
 
     assign WCBus.WB_CP0Wr_MTC0   = WB_RegsWrType.CP0Wr;
+    assign WCBus.WB_CP0Wr_TLBR   = WB_IsTLBR;
     assign WCBus.WB_Dst          = WB_Dst;
     assign WCBus.WB_Result       = WB_Result;
     assign WCBus.WB_ExceptType   = WB_ExceptType;
@@ -69,6 +72,8 @@ module TOP_WB (
         .MEM_IsABranch        (MWBus.MEM_IsABranch ),
         .MEM_IsAImmeJump      (MWBus.MEM_IsAImmeJump ),
         .MEM_IsInDelaySlot    (MWBus.MEM_IsInDelaySlot ),
+        .MEM_IsTLBW           (MWBus.MEM_IsTLBW),
+        .MEM_IsTLBR           (MWBus.MEM_IsTLBR),
         //-------------------------out----------------------------//
         .WB_ALUOut            (WB_ALUOut ),
         .WB_Hi                (WB_Hi ),
@@ -84,7 +89,9 @@ module TOP_WB (
         .WB_ExceptType        (WB_ExceptType ),
         .WB_IsABranch         (MWBus.WB_IsABranch ),
         .WB_IsAImmeJump       (MWBus.WB_IsAImmeJump ),
-        .WB_IsInDelaySlot     (WB_IsInDelaySlot )
+        .WB_IsInDelaySlot     (WB_IsInDelaySlot ),
+        .WB_IsTLBW            (WB_IsTLBW),
+        .WB_IsTLBR            (WB_IsTLBR)
     );
 
     EXT2 U_EXT2(

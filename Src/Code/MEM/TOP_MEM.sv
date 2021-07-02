@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 15:36:39
+ * @LastEditTime: 2021-07-02 15:57:35
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,10 @@ module TOP_MEM (
     output logic                 ID_Flush_Exception,
     output logic                 EXE_Flush_Exception,
     output logic                 MEM_Flush_Exception,
-    output logic [1:0]           IsExceptionOrEret
+    output logic [1:0]           IsExceptionOrEret,
+    output logic [31:0]          Virt_Daddr,
+    output logic                 MEM_IsTLBP,
+    output logic [31:0]          MEM_PC
 );
 
 	StoreType     		         MEM_StoreType;
@@ -42,6 +45,7 @@ module TOP_MEM (
     assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
     assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType_final;
     assign EMBus.MEM_Dst = MWBus.MEM_Dst;
+    assign MEM_PC        = MWBus.MEM_PC;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -63,6 +67,9 @@ module TOP_MEM (
         .EXE_ExceptType_final    (EMBus.EXE_ExceptType_final ),
         .EXE_Hi                  (EMBus.EXE_Hi ),
         .EXE_Lo                  (EMBus.EXE_Lo ),
+        .EXE_IsTLBP              (EMBus.EXE_IsTLBP),
+        .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
+        .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MWBus.MEM_ALUOut ),
         .MEM_OutB                (MWBus.MEM_OutB ),
@@ -77,7 +84,10 @@ module TOP_MEM (
         .MEM_WbSel               (MWBus.MEM_WbSel ),
         .MEM_ExceptType          (MEM_ExceptType ),
         .MEM_Hi                  (MWBus.MEM_Hi ),
-        .MEM_Lo                  (MWBus.MEM_Lo )
+        .MEM_Lo                  (MWBus.MEM_Lo ),
+        .MEM_IsTLBP              (MEM_IsTLBP),
+        .MEM_IsTLBW              (MWBus.MEM_IsTLBW),
+        .MEM_IsTLBR              (MWBus.MEM_IsTLBR)
     );
 
     Exception U_Exception(
@@ -111,7 +121,7 @@ module TOP_MEM (
     //TODO 如果拥堵 需要将整个的访存请求都变为MEM级前的流水线寄存器的
     assign cpu_dbus.wdata                                 = EMBus.EXE_OutB;
     assign cpu_dbus.valid                                 = (WB_Wr== 1'b0)?1'b0:((EMBus.EXE_LoadType.ReadMem || EMBus.EXE_StoreType.DMWr )  ? 1 : 0);
-    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = Phsy_Daddr;                 // inst_sram_addr_o 虚拟地址
+    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = EMBus.EXE_ALUOut;                 // inst_sram_addr_o 虚拟地址
     assign cpu_dbus.op                                    = (EMBus.EXE_LoadType.ReadMem)? 1'b0
                                                             :(EMBus.EXE_StoreType.DMWr) ? 1'b1
                                                             :1'bx;
@@ -123,9 +133,11 @@ module TOP_MEM (
     DCache U_DCACHE(
         .clk            (clk),
         .resetn         (resetn),
+        .Phsy_Daddr     (Phsy_Daddr),
         .CPUBus         (cpu_dbus.slave),
         .AXIBus         (axi_dbus.master),
-        .UBus           (axi_ubus.master)
+        .UBus           (axi_ubus.master),
+        .Virt_Daddr     (Virt_Daddr)
     );
 
 endmodule

@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-01 15:41:19
+ * @LastEditTime: 2021-07-02 15:51:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,8 +29,11 @@
  );
 
 always_comb begin
-    if (MEM_ExceptType_final != `ExceptionTypeZero)begin
-        if (MEM_ExceptType.Eret == 1'b1) begin
+    if (MEM_ExceptType_final != `ExceptionTypeZero )begin
+        if (MEM_ExceptType.Refetch == 1'b1) begin
+            IsExceptionOrEret  = `IsRefetch;
+        end
+        else if (MEM_ExceptType.Eret == 1'b1) begin
             IsExceptionOrEret  = `IsEret;
         end
         else begin
@@ -59,6 +62,10 @@ assign MEM_ExceptType_final.Eret                = MEM_ExceptType.Eret;
 assign MEM_ExceptType_final.WrWrongAddressinMEM = MEM_ExceptType.WrWrongAddressinMEM;
 assign MEM_ExceptType_final.RdWrongAddressinMEM = MEM_ExceptType.RdWrongAddressinMEM;
 assign MEM_ExceptType_final.Overflow            = MEM_ExceptType.Overflow;
-
+assign MEM_ExceptType_final.TLBRefill           = MEM_ExceptType.TLBRefill;
+assign MEM_ExceptType_final.TLBInvalid          = MEM_ExceptType.TLBInvalid;
+assign MEM_ExceptType_final.TLBModified         = MEM_ExceptType.TLBModified;
+assign MEM_ExceptType_final.Refetch             = MEM_ExceptType.Refetch;
+assign MEM_ExceptType_final.Trap                = MEM_ExceptType.Trap;
 endmodule
 

@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-01 22:10:47
+ * @LastEditTime: 2021-07-02 16:23:43
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,6 +14,8 @@
 module Control(
     input  logic[31:0] ID_Instr,
     input  ExceptinPipeType IF_ExceptType,
+    input  logic EXE_IsTLBR,
+    input  logic EXE_IsTLBW,
 
     output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
     output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
@@ -51,6 +53,7 @@ module Control(
     logic [4:0]rd;
     logic [4:0]shamt;
     InstrType instrType;
+    logic IsReserved;
 
 
     assign opcode = ID_Instr[31:26];
@@ -304,13 +307,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end 
 
       OP_ADDI:begin
@@ -320,13 +323,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      
         ID_EXTOp      = `EXTOP_SIGN;   
         ID_IsAImmeJump = `IsNotAImmeJump;    
-        ID_BranchType = '0;         
+        ID_BranchType = '0; 
+        IsReserved    = 1'b0;        
       end
 
       OP_ADDU:begin
@@ -336,13 +339,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn; 
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 'x;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_ADDIU:begin
@@ -352,13 +355,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;        
+        ID_BranchType = '0; 
+        IsReserved    = 1'b0;       
       end
 
       OP_SUB:begin
@@ -368,13 +371,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;       
       end
 
       OP_SUBU:begin
@@ -384,13 +387,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;    
+        IsReserved    = 1'b0;     
       end
 
       OP_SLT:begin
@@ -400,13 +403,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;       
       end
 
       OP_SLTI:begin
@@ -416,13 +419,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;     
+        IsReserved    = 1'b0;    
       end
 
       OP_SLTU:begin
@@ -432,13 +435,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 'x;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;       
       end
 
       OP_SLTIU:begin
@@ -448,13 +451,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0; 
+        IsReserved    = 1'b0;        
       end
 
       OP_DIV:begin
@@ -464,13 +467,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;    
+        IsReserved    = 1'b0;     
       end
 
       OP_DIVU:begin
@@ -480,13 +483,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;       
       end
 
       OP_MULT:begin
@@ -496,13 +499,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;         
       end
 
       OP_MULTU:begin
@@ -512,13 +515,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;         
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;       
       end
 
       OP_BEQ:begin
@@ -528,13 +531,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1};         
+        ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
+        IsReserved    = 1'b0;        
       end
 
       OP_BNE:begin
@@ -544,13 +547,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_BGEZ:begin
@@ -560,13 +563,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_BGTZ:begin
@@ -576,13 +579,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGT,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_BLEZ:begin
@@ -592,13 +595,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLE,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_BLTZ:begin
@@ -608,13 +611,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_BGEZAL:begin
@@ -624,13 +627,13 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_BLTZAL:begin
@@ -640,13 +643,13 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_J:begin
@@ -656,13 +659,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_JAL:begin
@@ -672,13 +675,13 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       /******* OP3.4  ******/
@@ -689,13 +692,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 // 
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
        OP_ANDI:begin
@@ -705,13 +708,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_LUI:begin
@@ -721,13 +724,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_LUI;         //高位加载
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_NOR:begin
@@ -737,13 +740,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_OR:begin
@@ -753,13 +756,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_ORI:begin
@@ -769,13 +772,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //I型选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
         ID_IsAImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_XOR:begin
@@ -785,13 +788,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_XORI:begin
@@ -801,13 +804,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rt;         //I型选rt
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;  //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;   //MUXB选择imm
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = `EXTOP_ZERO;        //imm16zero_extened
         ID_IsAImmeJump = `IsNotAImmeJump;    
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_SLLV:begin
@@ -817,13 +820,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       OP_SLL:begin
         ID_ALUOp      = `EXE_ALUOp_SLL;     //ALU操作
@@ -832,13 +835,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       OP_SRAV:begin
         ID_ALUOp      = `EXE_ALUOp_SRAV;    //ALU操作
@@ -847,13 +850,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       OP_SRA:begin
         ID_ALUOp      = `EXE_ALUOp_SRA;    //ALU操作
@@ -862,13 +865,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       OP_SRLV:begin
         ID_ALUOp      = `EXE_ALUOp_SRLV;    //ALU操作
@@ -877,13 +880,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = 'x;
+        IsReserved    = 1'b0;
       end
       OP_SRL:begin
         ID_ALUOp      = `EXE_ALUOp_SRL;    //ALU操作
@@ -892,13 +895,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
-        ID_ExceptType = IF_ExceptType; //关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Shamt; //MUXA选择regs
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;  //MUXB选择regs
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = 'x;
+        IsReserved    = 1'b0;
       end
 
       OP_JR:begin
@@ -908,13 +911,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
         ID_DstSel     = `DstSel_rd;//d
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_JALR:begin
@@ -924,13 +927,13 @@ module Control(
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
         ID_DstSel     = `DstSel_31;//31
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
+        IsReserved    = 1'b0;
       end
 
       OP_MFHI:begin
@@ -940,13 +943,13 @@ module Control(
         ID_WbSel      = `WBSel_OutB;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_HI;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_MFLO:begin
@@ -956,13 +959,13 @@ module Control(
         ID_WbSel      = `WBSel_OutB;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_LO;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_MTHI:begin
@@ -972,13 +975,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeHIEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
     
 
@@ -989,13 +992,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF
         ID_DstSel     = `DstSel_rd;//rd,d
         ID_RegsWrType = `RegsWrTypeLOEn;
-        ID_ExceptType = IF_ExceptType;//关于异常
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel = `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       
       //自陷指令
@@ -1012,20 +1015,7 @@ module Control(
         ID_EXTOp      = 'x;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{
-                            Interrupt:1'b0,
-                            Break:1'b1,
-                            WrongAddressinIF:1'b0,
-                            ReservedInstruction:1'b0,
-                            Overflow:1'b0,
-                            Syscall:1'b0,
-                            Eret:1'b0,
-                            WrWrongAddressinMEM:1'b0,
-                            RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
-                            TLBModified:1'b0
-        };//关于Break异常
+        IsReserved    = 1'b0;
       end
 
       OP_SYSCALL:begin
@@ -1041,20 +1031,7 @@ module Control(
         ID_EXTOp      = 'x;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{
-                            Interrupt:1'b0,
-                            Break:1'b0,
-                            WrongAddressinIF:1'b0,
-                            ReservedInstruction:1'b0,
-                            Overflow:1'b0,
-                            Syscall:1'b1,
-                            Eret:1'b0,
-                            WrWrongAddressinMEM:1'b0,
-                            RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
-                            TLBModified:1'b0
-        };//关于SYSCALL
+        IsReserved    = 1'b0;
       end
 
       //访存指令
@@ -1069,13 +1046,13 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_LBU:begin
@@ -1089,13 +1066,13 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_LH:begin
@@ -1109,13 +1086,13 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_LHU:begin
@@ -1129,13 +1106,13 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;      
+        ID_BranchType = '0;    
+        IsReserved    = 1'b0;  
       end
 
       OP_LW:begin
@@ -1149,13 +1126,13 @@ module Control(
         ID_WbSel      = `WBSel_DMResult;
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;      
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;    
       end
 
       OP_SB:begin
@@ -1169,12 +1146,12 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
         ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;          
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;          
       end
 
 
@@ -1189,12 +1166,12 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
         ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;          
+        ID_BranchType = '0;   
+        IsReserved    = 1'b0;       
       end
 
       OP_SW:begin
@@ -1208,12 +1185,12 @@ module Control(
         ID_DstSel     = `DstSel_rt;//rt
         ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
         ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;          
+        ID_BranchType = '0;    
+        IsReserved    = 1'b0;      
       end
 
       //特权指令  
@@ -1230,20 +1207,7 @@ module Control(
         ID_EXTOp      = 'x;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
-        ID_ExceptType = '{  
-                            Interrupt:1'b0,
-                            Break:1'b0,
-                            WrongAddressinIF:1'b0,
-                            ReservedInstruction:1'b0,
-                            Overflow:1'b0,
-                            Syscall:1'b0,
-                            Eret:1'b1,
-                            WrWrongAddressinMEM:1'b0,
-                            RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
-                            TLBModified:1'b0
-        };//关于ERET
+        IsReserved    = 1'b0;
       end
       OP_MFC0:begin
         ID_ALUOp      = `EXE_ALUOp_D;
@@ -1254,11 +1218,11 @@ module Control(
         ID_ALUSrcA    = 'x;
         ID_ALUSrcB    = 'x;
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;
         ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
         ID_EXTOp      = 'x;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
     
       OP_MTC0:begin
@@ -1270,11 +1234,11 @@ module Control(
         ID_ALUSrcA    = 'x;
         ID_ALUSrcB    = 'x;
         ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
-        ID_ExceptType = IF_ExceptType;
         ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
         ID_EXTOp      = 'x;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       //操作系统译码部分
@@ -1287,13 +1251,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_CLZ:begin
@@ -1304,13 +1268,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeRFEn;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_MADD:begin//有符号乘
@@ -1320,13 +1284,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_MADDU:begin//有符号乘
@@ -1336,13 +1300,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       
       OP_MSUB:begin//有符号乘
@@ -1352,13 +1316,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       
       OP_MSUBU:begin//有符号乘
@@ -1368,13 +1332,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_TLBP:begin//search
@@ -1384,13 +1348,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
       
       OP_TLBWI:begin//search
@@ -1400,13 +1364,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_TLBR:begin//search
@@ -1416,13 +1380,13 @@ module Control(
         ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ExceptType = IF_ExceptType;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;
         ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       default:begin
@@ -1432,24 +1396,13 @@ module Control(
         ID_WbSel      = 'X;    //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = 'X;    //Rtype选rd
         ID_RegsWrType = 'X;    //写回哪里
-        ID_ExceptType.Interrupt                 = 1'b0;
-        ID_ExceptType.WrongAddressinIF          = 1'b0;
-        ID_ExceptType.ReservedInstruction       = 1'b1;
-        ID_ExceptType.Overflow                  = 1'b0;
-        ID_ExceptType.Syscall                   = 1'b0;
-        ID_ExceptType.Break                     = 1'b0;
-        ID_ExceptType.Eret                      = 1'b0;
-        ID_ExceptType.WrWrongAddressinMEM       = 1'b0;
-        ID_ExceptType.RdWrongAddressinMEM       = 1'b0;
-        ID_ExceptType.TLBRefill                 = IF_ExceptType.TLBRefill;
-        ID_ExceptType.TLBInvalid                = IF_ExceptType.TLBInvalid;
-        ID_ExceptType.TLBModified               = 1'b0;
         ID_ALUSrcA    = 'X; //MUXA选择regs
         ID_ALUSrcB    = 'X;  //MUXB选择regs
         ID_RegsReadSel= 'X;        //ID级选择RF读取结果
         ID_EXTOp      = 'X;                 //R型无关
         ID_IsAImmeJump = 'X;
-        ID_BranchType = 'X;        
+        ID_BranchType = 'X;
+        IsReserved    = 1'b1;        
       end
 
       
@@ -1457,7 +1410,100 @@ module Control(
     endcase
   end 
 
-    
+always_comb begin
+  if(instrType == OP_BREAK) begin
+    ID_ExceptType = '{
+                            Interrupt:1'b0,
+                            Break:1'b1,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b0,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0,
+                            TLBRefill:IF_ExceptType.TLBRefill,
+                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBModified:1'b0,
+                            Refetch:1'b0,
+                            Trap:1'b0
+        };//关于Break异常
+  end
+  else if(instrType == OP_SYSCALL) begin
+    ID_ExceptType = '{
+                            Interrupt:1'b0,
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b1,
+                            Eret:1'b0,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0,
+                            TLBRefill:IF_ExceptType.TLBRefill,
+                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBModified:1'b0,
+                            Refetch:1'b0,
+                            Trap:1'b0
+        };//关于SYSCALL
+  end
+  else if(instrType == OP_ERET) begin
+    ID_ExceptType = '{  
+                            Interrupt:1'b0,
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b1,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0,
+                            TLBRefill:IF_ExceptType.TLBRefill,
+                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBModified:1'b0,
+                            Refetch:1'b0,
+                            Trap:1'b0
+        };//关于ERET
+  end
+  else begin
+    if(EXE_IsTLBW == 1'b1 || EXE_IsTLBR == 1'b1) begin
+      ID_ExceptType = '{  
+                            Interrupt:1'b0,
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b0,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0,
+                            TLBRefill:IF_ExceptType.TLBRefill,
+                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBModified:1'b0,
+                            Refetch:1'b1,
+                            Trap:1'b0
+        };//
+    end
+    else begin
+      ID_ExceptType = '{  
+                            Interrupt:1'b0,
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:IsReserved,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b0,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0,
+                            TLBRefill:IF_ExceptType.TLBRefill,
+                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBModified:1'b0,
+                            Refetch:1'b0,
+                            Trap:1'b0
+        };//
+    end
+  end
+end 
 
 
 endmodule

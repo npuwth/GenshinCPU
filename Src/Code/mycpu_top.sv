@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-01 16:45:08
+ * @LastEditTime: 2021-07-02 16:27:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -122,11 +122,16 @@ module mycpu_top (
     logic [31:0]               WB_Hi;
     logic [31:0]               WB_Lo;
     logic [1:0]                EXE_MultiExtendOp;    
-    logic                      EXE_IsTLBP;
-    logic [31:0]               EXE_ALUOut;
+    logic                      MEM_IsTLBP;
+    logic [31:0]               Virt_Daddr;
     logic [31:0]               Phsy_Daddr;
     logic [31:0]               IF_NPC;
+    logic [31:0]               Virt_Iaddr;
     logic [31:0]               Phsy_Iaddr;
+    logic                      WB_IsTLBW;
+    logic [31:0]               MEM_PC;
+    logic                      EXE_IsTLBW;
+    logic                      EXE_IsTLBR;
 
     assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
@@ -240,7 +245,7 @@ module mycpu_top (
         .clk (aclk ),
         .rst (aresetn ),
         .CP0_RdAddr (ID_rd ),
-        .EXE_IsTLBP (EXE_IsTLBP),
+        .EXE_IsTLBP (MEM_IsTLBP),
         .CP0_RdData (CP0_Bus ),
         .Interrupt (Interrupt ),
         .WCBus (WCBus.CP0 ),
@@ -287,10 +292,12 @@ module mycpu_top (
         .EXE_PC (EXE_PC ),
         .EXE_Imm32 (EXE_Imm32 ),
         .Phsy_Iaddr(Phsy_Iaddr),
+        .MEM_PC (MEM_PC),
         .IIBus  ( IIBus.IF),
         .cpu_ibus (cpu_ibus),
         .axi_ibus (axi_ibus),
-        .IF_NPC (IF_NPC)
+        .IF_NPC (IF_NPC),
+        .Virt_Iaddr(Virt_Iaddr)
     );
 
     TOP_ID U_TOP_ID ( 
@@ -306,6 +313,8 @@ module mycpu_top (
         .LO_Bus (LO_Bus ),
         .IIBus (IIBus.ID ),
         .IEBus (IEBus.ID ),
+        .EXE_IsTLBW (EXE_IsTLBW),
+        .EXE_IsTLBR (EXE_IsTLBR),
         //-------------------------------output-------------------//
         .ID_rsrtRead  (ID_rsrtRead ),
         .ID_IsAImmeJump (ID_IsAImmeJump),
@@ -339,8 +348,8 @@ module mycpu_top (
         .EXE_LoadType (EXE_LoadType),
         .EXE_rt(EXE_rt),
         .EXE_MultiExtendOp(EXE_MultiExtendOp),
-        .EXE_IsTLBP(EXE_IsTLBP),
-        .EXE_ALUOut(EXE_ALUOut)
+        .EXE_IsTLBW(EXE_IsTLBW),
+        .EXE_IsTLBR(EXE_IsTLBR)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -361,7 +370,10 @@ module mycpu_top (
         .ID_Flush_Exception (ID_Flush_Exception ),
         .EXE_Flush_Exception (EXE_Flush_Exception ),
         .MEM_Flush_Exception (MEM_Flush_Exception ),
-        .IsExceptionOrEret (IsExceptionOrEret )
+        .IsExceptionOrEret (IsExceptionOrEret ),
+        .Virt_Daddr(Virt_Daddr),
+        .MEM_IsTLBP(MEM_IsTLBP),
+        .MEM_PC(MEM_PC)
     );
 
     TOP_WB U_TOP_WB ( 
@@ -379,14 +391,16 @@ module mycpu_top (
         .WB_RegsWrType (WB_RegsWrType),
         .WB_PC(WB_PC ),
         .WB_Hi (WB_Hi ),
-        .WB_Lo (WB_Lo )
+        .WB_Lo (WB_Lo ),
+        .WB_IsTLBW (WB_IsTLBW)
     );
 
     TLBMMU U_TLBMMU ( 
         .clk (aclk ),
-        .Virt_Iaddr (IF_NPC ),
-        .Virt_Daddr (EXE_ALUOut ),
-        .EXE_IsTLBP (EXE_IsTLBP ),
+        .Virt_Iaddr (Virt_Iaddr ),
+        .Virt_Daddr (Virt_Iaddr ),
+        .EXE_IsTLBP (MEM_IsTLBP ),
+        .WB_IsTLBW (WB_IsTLBW),
         .CMBus (CMBus.MMU ),
         .Phsy_Iaddr (Phsy_Iaddr ),
         .Phsy_Daddr  ( Phsy_Daddr)

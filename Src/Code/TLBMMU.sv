@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-02 11:04:40
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-02 15:32:26
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -16,6 +16,7 @@ module TLBMMU (
     input logic [31:0]           Virt_Iaddr,
     input logic [31:0]           Virt_Daddr,
     input logic                  EXE_IsTLBP,//表示是否是TLBP指令
+    input logic                  WB_IsTLBW,
     CP0_MMU_Interface            CMBus,
     output logic [31:0]          Phsy_Iaddr,
     output logic [31:0]          Phsy_Daddr
@@ -64,7 +65,7 @@ module TLBMMU (
         .s1_d                    (s1_d ),
         .s1_v                    (s1_v ),
         //write port
-        .we                      (we ),
+        .we                      (WB_IsTLBW ),
         .w_index                 (CMBus.CP0_index ),
         .w_vpn2                  (CMBus.CP0_vpn2 ),
         .w_asid                  (CMBus.CP0_asid ),

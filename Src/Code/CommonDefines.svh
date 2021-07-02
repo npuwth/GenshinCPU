@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-06-30 17:34:33
+ * @LastEditTime: 2021-07-02 15:51:07
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -126,11 +126,12 @@
 `define CP0_REG_ENTRYLO1    5'd3
 `define CP0_REG_RANDOM      5'd1
 
+`define IsRefetch           2'b01
 `define IsEret              2'b10
 `define IsException         2'b11
 `define IsNone              2'b00
 //***************************  与结构体有关的宏定义  ***************************
-`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //
+`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //
 
 //RegsWrType 
 `define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}

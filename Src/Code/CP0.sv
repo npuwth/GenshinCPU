@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-02 11:39:59
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-02 15:34:50
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -19,7 +19,7 @@ module cp0_reg (
     input logic             rst,
     // read port        
     input logic  [4:0]      CP0_RdAddr,                 //要读取的CP0寄存器的地址
-    input                   EXE_IsTLBP,
+    input                   MEM_IsTLBP,
     output logic [31:0]     CP0_RdData,              //读出的CP0某个寄存器的值   
     // 异常相关输入接口           
     input AsynExceptType    Interrupt,                 //6个外部硬件中断输入 
@@ -100,7 +100,7 @@ module cp0_reg (
             //                     对CP0中寄存器的写操作：时序逻辑
             //  PRId、Config不可以写，Cause寄存器只有其中的IP[1:0]、IV、WP三个字段可写
             //******************************************************************************
-            if(EXE_IsTLBP == 1'b1) begin
+            if(MEM_IsTLBP == 1'b1) begin
                 CP0_Index                  <= {~CMBus.MMU_s1found,27'b0,CMBus.MMU_index};
             end else if(WCBus.WB_CP0Wr_TLBR == `WriteEnable) begin
                 CP0_Index[3:0]             <= CMBus.MMU_index;
@@ -376,7 +376,7 @@ module cp0_reg (
     end
 
     always_comb begin
-        if(EXE_IsTLBP == 1'b1) begin
+        if(MEM_IsTLBP == 1'b1) begin
             CP0_Index_Rd       =  {~CMBus.MMU_s1found,27'b0,CMBus.MMU_index};
         end else if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_INDEX)) begin
             CP0_Index_Rd       =  {CP0_Index[31:4],WCBus.WB_Result[3:0]};

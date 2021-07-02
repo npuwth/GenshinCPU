@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-05 20:20:45
- * @LastEditTime: 2021-07-02 11:26:14
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-02 14:49:17
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,7 +13,6 @@
 
  module MMU (
      input logic [31:0]virt_addr,
-     output logic [31:0]phsy_addr,
      output logic isUncache
  );
      
@@ -31,8 +30,6 @@
             
     //     end
     // end
-
-    assign phsy_addr = virt_addr;
     
     always_comb begin
         // if (virt_addr < 32'hA000_0000 && virt_addr > 32'h7FFF_FFFF) begin
