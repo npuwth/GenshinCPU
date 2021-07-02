@@ -1,8 +1,13 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
+<<<<<<< HEAD
  * @LastEditTime: 2021-07-02 18:54:50
  * @LastEditors: Please set LastEditors
+=======
+ * @LastEditTime: 2021-07-02 14:55:24
+ * @LastEditors: npuwth
+>>>>>>> 39c6b54317d6e8f87dcd0518fccb76158b70afb8
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -12,12 +17,14 @@
 module DCache(
     input logic clk,
     input logic resetn,
+    input logic [31:0] Phsy_Daddr,
+    output logic [31:0] Virt_Daddr,
     CPU_Bus_Interface  CPUBus,//slave
     AXI_Bus_Interface  AXIBus, //master
     AXI_UNCACHE_Interface UBus
   );
 
-
+  assign Virt_Daddr = {req_buffer.tag,req_buffer.index,req_buffer.offset};
 
   typedef struct packed {
             logic en;
@@ -97,8 +104,6 @@ module DCache(
   DataType [`WordsPerCacheLine-1:0] data0;//第0路的data banks
   DataType [`WordsPerCacheLine-1:0] data1;//第1路的data banks
 
-  PhysicalAddressType phsy_addr;
-
   RequestType req_buffer;
   RequestType req_buffer_new;
   
@@ -139,14 +144,14 @@ end
 assign tagV0.en      = req.valid | isStore;
 assign tagV0.we      = (isStore)?way0_web:way0_we;//当在refill状态 并且 ret_valid有效时 并且换的还是这一路
 assign tagV0.addr    = (isStore)?store_buffer.index : req.index;
-assign tagV0.tagin   = (isStore)?store_buffer.tag : phsy_addr[31:12];
+assign tagV0.tagin   = (isStore)?store_buffer.tag : Phsy_Daddr[31:12];
 assign tagV0.validin = 1'b1;
 
 
 assign tagV1.en      = req.valid | isStore;
 assign tagV1.we      = (isStore)?way1_web:way1_we;
 assign tagV1.addr    = (isStore)?store_buffer.index :req.index;
-assign tagV1.tagin   = (isStore)?store_buffer.tag :phsy_addr[31:12];
+assign tagV1.tagin   = (isStore)?store_buffer.tag :Phsy_Daddr[31:12];
 assign tagV1.validin = 1'b1;
 
 // 对tagV0/1_en的赋值 // 当在refill状态 并且 ret_valid有效时 并且换的还是这一路
@@ -232,7 +237,7 @@ end
 //TODO: storebuffer的赋值
 always_ff @(posedge clk ) begin
   store_buffer.index <= req_buffer.index;
-  store_buffer.tag <= phsy_addr[31:12];
+  store_buffer.tag <= Phsy_Daddr[31:12];
   store_buffer.way0_hit <= way0_hit;
   store_buffer.way1_hit <= way1_hit;
   store_buffer.wstrb   <= req_buffer.wstrb;
@@ -517,7 +522,7 @@ always_ff @(posedge clk) begin
 end
 
 ////对AXIBus 的output进行赋值
-assign AXIBus.rd_addr = {phsy_addr[31:12],req_buffer.index,4'b0000};
+assign AXIBus.rd_addr = {Phsy_Daddr[31:12],req_buffer.index,4'b0000};
 always_comb begin
   if (state == MISSCLEAN || state == WRITEBACK) begin
     AXIBus.rd_req = `Enable;
@@ -547,7 +552,7 @@ always_comb begin
     unique case (req_buffer.op)
       1'b0:begin
         UBus.rd_req = `Enable;
-        UBus.rd_addr = phsy_addr;
+        UBus.rd_addr = Phsy_Daddr;
         UBus.wr_req ='0;
         UBus.wr_addr = '0;
         UBus.wr_data ='0;
@@ -556,7 +561,7 @@ always_comb begin
       UBus.rd_req ='0;
         UBus.rd_addr = '0;
         UBus.wr_req  = `Enable;
-        UBus.wr_addr = {phsy_addr[31:2],2'b00};
+        UBus.wr_addr = {Phsy_Daddr[31:2],2'b00};
         UBus.wr_data = wdata;
       end
       default: begin
@@ -603,8 +608,8 @@ always_ff @(posedge clk) begin
 end
 
 //-----------------判断是否命中----------------------
-  assign way0_hit = (tagV0.validout )& (tagV0.tagout == phsy_addr[31:12]);
-  assign way1_hit = (tagV1.validout )& (tagV1.tagout == phsy_addr[31:12]);
+  assign way0_hit = (tagV0.validout )& (tagV0.tagout == Phsy_Daddr[31:12]);
+  assign way1_hit = (tagV1.validout )& (tagV1.tagout == Phsy_Daddr[31:12]);
   assign cache_hit = way0_hit | way1_hit;
 
 // req_buffer
@@ -633,7 +638,6 @@ end
 
   MMU MMU_dut (
         .virt_addr ({req_buffer.tag,req_buffer.index,req_buffer.offset} ),
-        .phsy_addr (phsy_addr),
         .isUncache (isUncache )
       );//虚实地址转换
 

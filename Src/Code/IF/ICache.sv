@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-02 18:56:33
+ * @LastEditTime: 2021-07-02 23:57:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
@@ -11,11 +11,13 @@
 module ICache(
     input logic clk,
     input logic resetn,
+    input logic [31:0] Phsy_Iaddr,
+    output logic [31:0] Virt_Iaddr,
     CPU_Bus_Interface  CPUBus,//slave
     AXI_Bus_Interface  AXIBus //master
   );
 
-
+  assign Virt_Iaddr = {req_buffer.tag,req_buffer.index,req_buffer.offset};
 
   typedef struct packed {
             logic en;
@@ -73,8 +75,6 @@ module ICache(
   DataType [`WordsPerCacheLine-1:0] data0;//第0路的data banks
   DataType [`WordsPerCacheLine-1:0] data1;//第1路的data banks
 
-  PhysicalAddressType phsy_addr;
-
   RequestType req_buffer;
   RequestType req_buffer_new;
   
@@ -106,14 +106,14 @@ end
 assign tagV0.en      = req.valid;
 assign tagV0.we      = way0_we;//当在refill状态 并且 ret_valid有效时 并且换的还是这一路
 assign tagV0.addr    = req.index;
-assign tagV0.tagin   = phsy_addr[31:12];
+assign tagV0.tagin   = Phsy_Iaddr[31:12];
 assign tagV0.validin = 1'b1;
 
 
 assign tagV1.en      = req.valid;
 assign tagV1.we      = way1_we;
 assign tagV1.addr    = req.index;
-assign tagV1.tagin   = phsy_addr[31:12];
+assign tagV1.tagin   = Phsy_Iaddr[31:12];
 assign tagV1.validin = 1'b1;
 
 // 对tagV0/1_en的赋值 // 当在refill状态 并且 ret_valid有效时 并且换的还是这一路
@@ -276,7 +276,7 @@ always_ff @(posedge clk) begin
 end
 
 ////对AXIBus 的output进行赋值
-assign AXIBus.rd_addr = {phsy_addr[31:12],req_buffer.index,4'b0000};
+assign AXIBus.rd_addr = {Phsy_Iaddr[31:12],req_buffer.index,4'b0000};
 always_comb begin
   if (state == MISS) begin
     AXIBus.rd_req = `Enable;
@@ -286,8 +286,8 @@ end
 
 
 //-----------------判断是否命中----------------------
-  assign way0_hit = (tagV0.validout )& (tagV0.tagout == phsy_addr[31:12]);
-  assign way1_hit = (tagV1.validout )& (tagV1.tagout == phsy_addr[31:12]);
+  assign way0_hit = (tagV0.validout )& (tagV0.tagout == Phsy_Iaddr[31:12]);
+  assign way1_hit = (tagV1.validout )& (tagV1.tagout == Phsy_Iaddr[31:12]);
   assign cache_hit = way0_hit | way1_hit;
 
 // req_buffer
@@ -313,14 +313,7 @@ end
       req_buffer <= req_buffer_new;
     end
   end
-
-  MMU MMU_dut (
-        .virt_addr ({req_buffer.tag,req_buffer.index,req_buffer.offset} ),
-        .phsy_addr (phsy_addr)
-      );//虚实地址转换
-
-
-
+  
   inst_ram_TagV TagV0(//第一路的tag 使用最后一位作为valid
                   //input
                   .clka(clk),

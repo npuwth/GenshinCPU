@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 17:14:36
+ * @LastEditTime: 2021-07-02 16:25:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,6 +23,8 @@ module TOP_ID (
     input logic [31:0]       CP0_Bus,
     input logic [31:0]       HI_Bus,
     input logic [31:0]       LO_Bus,
+    input logic              EXE_IsTLBW,
+    input logic              EXE_IsTLBR,
     IF_ID_Interface          IIBus,//TODO: 不如改成IF_ID_Bus 
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//
@@ -122,6 +124,8 @@ module TOP_ID (
     Control U_Control (
         .ID_Instr            (IEBus.ID_Instr),
         .IF_ExceptType       (IIBus.IF_ExceptType),
+        .EXE_IsTLBW          (EXE_IsTLBW),
+        .EXE_IsTLBR          (EXE_IsTLBR),
 //--------------------------out-------------------------------------//
         .ID_ALUOp            (IEBus.ID_ALUOp),
         .ID_LoadType         (IEBus.ID_LoadType),

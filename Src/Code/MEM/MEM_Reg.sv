@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-06-29 20:12:24
+ * @LastEditTime: 2021-07-02 17:34:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -39,6 +39,9 @@ module MEM_Reg (
 	
     input  logic    [31:0]          EXE_Hi,
     input  logic    [31:0]          EXE_Lo,
+    input  logic                    EXE_IsTLBP,
+    input  logic                    EXE_IsTLBW,
+    input  logic                    EXE_IsTLBR, 
  //----------------------------------------------------------//   
     output logic	[31:0] 		    MEM_ALUOut,	
     output logic    [31:0]          MEM_OutB,	
@@ -59,7 +62,10 @@ module MEM_Reg (
 	output ExceptinPipeType 		MEM_ExceptType,
 	
     output logic    [31:0]          MEM_Hi,
-    output logic    [31:0]          MEM_Lo
+    output logic    [31:0]          MEM_Lo,
+    output logic                    MEM_IsTLBP,
+    output logic                    MEM_IsTLBW,
+    output logic                    MEM_IsTLBR
 );
 
     always_ff @( posedge clk ,negedge rst ) begin
@@ -78,6 +84,9 @@ module MEM_Reg (
             MEM_Instr               <= 32'b0;
             MEM_Hi                  <= 32'b0;
             MEM_Lo                  <= 32'b0;
+            MEM_IsTLBP              <= 1'b0;
+            MEM_IsTLBW              <= 1'b0;
+            MEM_IsTLBR              <= 1'b0;
         end
         else if( MEM_Wr ) begin
             MEM_ALUOut              <= EXE_ALUOut;
@@ -94,6 +103,9 @@ module MEM_Reg (
             MEM_Instr               <= EXE_Instr;
             MEM_Hi                  <= EXE_Hi;
             MEM_Lo                  <= EXE_Lo;
+            MEM_IsTLBP              <= EXE_IsTLBP;
+            MEM_IsTLBW              <= EXE_IsTLBW;
+            MEM_IsTLBR              <= EXE_IsTLBR;
         end
     end
 endmodule

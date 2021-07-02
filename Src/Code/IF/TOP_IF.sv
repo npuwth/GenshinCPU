@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-01 00:18:24
+ * @LastEditTime: 2021-07-02 15:55:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,10 +29,12 @@ module TOP_IF (
     input logic [31:0]  EXE_PC,
     input logic [31:0]  EXE_Imm32,
     input logic [31:0]  Phsy_Iaddr,
+    input logic [31:0]  MEM_PC,
     IF_ID_Interface     IIBus,
     CPU_Bus_Interface   cpu_ibus,
     AXI_Bus_Interface   axi_ibus,
-    output logic [31:0] IF_NPC
+    output logic [31:0] IF_NPC,
+    output logic [31:0] Virt_Iaddr
 );
 
     logic   [31:0]      IF_PC;
@@ -66,6 +68,7 @@ module TOP_IF (
         .d3             (32'hBFC00380),
         .d4             (BranchAddr),
         .d5             (EXE_BusA_L1),
+        .d6             (MEM_PC),
         .sel8_to_1      (PCSel),
         //---------------output----------------//
         .y              (IF_NPC)
@@ -82,7 +85,7 @@ module TOP_IF (
 
     //---------------------------------cache--------------------------------//
     assign IIBus.IF_Instr = cpu_ibus.rdata;
-    assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset} = Phsy_Iaddr;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
+    assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset} = IF_NPC;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.valid = (ID_Flush_Exception)?1'b1:(EXE_Flush_DataHazard || ID_Wr == 1'b0)?1'b0:1'b1;
     assign cpu_ibus.op    = 1'b0;
     assign cpu_ibus.wstrb = '0;
@@ -93,8 +96,10 @@ module TOP_IF (
     ICache U_ICache(
         .clk            (clk),
         .resetn         (resetn),
+        .Phsy_Iaddr     (Phsy_Iaddr),
         .CPUBus         (cpu_ibus.slave),
-        .AXIBus         (axi_ibus.master)
+        .AXIBus         (axi_ibus.master),
+        .Virt_Iaddr     (Virt_Iaddr)
     );
 
 endmodule
