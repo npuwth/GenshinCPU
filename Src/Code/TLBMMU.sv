@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-01 16:53:08
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-02 11:04:40
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -22,13 +22,15 @@ module TLBMMU (
 );
     logic                        s0_found;
     logic [3:0]                  s0_index;
+    logic [19:0]                 s0_pfn;
     logic [2:0]                  s0_c;
     logic                        s0_d;
     logic                        s0_v;     
 
-    logic [18:0]                 s1_vpn2;    
+    logic [18:0]                 s1_vpn2;    //访存和指令TLBP复用
     logic                        s1_found;
     logic [3:0]                  s1_index;
+    logic [19:0]                 s1_pfn;
     logic [2:0]                  s1_c;
     logic                        s1_d;
     logic                        s1_v; 
