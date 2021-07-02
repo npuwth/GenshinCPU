@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-02 16:27:44
+ * @LastEditTime: 2021-07-02 17:32:04
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -245,7 +245,7 @@ module mycpu_top (
         .clk (aclk ),
         .rst (aresetn ),
         .CP0_RdAddr (ID_rd ),
-        .EXE_IsTLBP (MEM_IsTLBP),
+        .MEM_IsTLBP (MEM_IsTLBP),
         .CP0_RdData (CP0_Bus ),
         .Interrupt (Interrupt ),
         .WCBus (WCBus.CP0 ),
@@ -398,7 +398,7 @@ module mycpu_top (
     TLBMMU U_TLBMMU ( 
         .clk (aclk ),
         .Virt_Iaddr (Virt_Iaddr ),
-        .Virt_Daddr (Virt_Iaddr ),
+        .Virt_Daddr (Virt_Daddr ),
         .EXE_IsTLBP (MEM_IsTLBP ),
         .WB_IsTLBW (WB_IsTLBW),
         .CMBus (CMBus.MMU ),

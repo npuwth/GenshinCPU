@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-02 15:17:00
+ * @LastEditTime: 2021-07-02 17:34:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -40,8 +40,8 @@ module MEM_Reg (
     input  logic    [31:0]          EXE_Hi,
     input  logic    [31:0]          EXE_Lo,
     input  logic                    EXE_IsTLBP,
-    input  logic    [31:0]          EXE_IsTLBW,
-    input  logic    [31:0]          EXE_IsTLBR, 
+    input  logic                    EXE_IsTLBW,
+    input  logic                    EXE_IsTLBR, 
  //----------------------------------------------------------//   
     output logic	[31:0] 		    MEM_ALUOut,	
     output logic    [31:0]          MEM_OutB,	
