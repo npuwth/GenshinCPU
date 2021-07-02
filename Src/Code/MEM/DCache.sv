@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-01 12:46:23
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-02 14:47:24
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -12,12 +12,14 @@
 module DCache(
     input logic clk,
     input logic resetn,
+    input logic 
+    output logic [19:0] Virt_Daddr,
     CPU_Bus_Interface  CPUBus,//slave
     AXI_Bus_Interface  AXIBus, //master
     AXI_UNCACHE_Interface UBus
   );
 
-
+  assign Virt_Daddr = req_buffer.tag;
 
   typedef struct packed {
             logic en;
