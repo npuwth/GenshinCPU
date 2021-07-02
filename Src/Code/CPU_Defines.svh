@@ -1,13 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
-<<<<<<< HEAD
- * @LastEditTime: 2021-06-30 20:23:06
- * @LastEditors: Please set LastEditors
-=======
  * @LastEditTime: 2021-07-01 16:06:29
  * @LastEditors: npuwth
->>>>>>> 667401f78ebe29fd2be2033fb869441b041cf046
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:

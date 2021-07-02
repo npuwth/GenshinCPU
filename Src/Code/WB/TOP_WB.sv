@@ -1,13 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
-<<<<<<< HEAD
- * @LastEditTime: 2021-06-30 22:00:28
+ * @LastEditTime: 2021-07-01 22:08:33
  * @LastEditors: Please set LastEditors
-=======
- * @LastEditTime: 2021-07-01 16:05:11
- * @LastEditors: npuwth
->>>>>>> 667401f78ebe29fd2be2033fb869441b041cf046
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -44,9 +39,9 @@ module TOP_WB (
     ExceptinPipeType             WB_ExceptType;
     logic                        WB_IsInDelaySlot;
 
-    assign MWBus.WB_Dst          = WB_Dst;
-    assign MWBus.WB_Result       = WB_Result;
-    assign MWBus.WB_RegsWrType   = WB_RegsWrType;
+    // assign MWBus.WB_Dst          = WB_Dst;
+    // assign MWBus.WB_Result       = WB_Result;
+    // assign MWBus.WB_RegsWrType   = WB_RegsWrType;
 
     assign WCBus.WB_CP0Wr        = WB_Final_Wr.CP0Wr;
     assign WCBus.WB_Dst          = WB_Dst;

@@ -1,13 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
-<<<<<<< HEAD
- * @LastEditTime: 2021-06-30 22:00:20
- * @LastEditors: Please set LastEditors
-=======
  * @LastEditTime: 2021-07-01 11:18:23
  * @LastEditors: npuwth
->>>>>>> 667401f78ebe29fd2be2033fb869441b041cf046
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:

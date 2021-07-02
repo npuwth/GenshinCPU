@@ -40,10 +40,25 @@ always_ff @(posedge clk) begin// write the RF
     end
 end
 
+
+
 always_comb begin // readData
-    ID_BusA = regs[ID_rs];
-    ID_BusB = regs[ID_rt];
+
+    if (RFWr && WB_Dst == ID_rs) begin
+        ID_BusA = WB_Result;
+    end else begin
+        ID_BusA = regs[ID_rs];
+    end
 end
     
+
+always_comb begin // readData
+
+    if (RFWr && WB_Dst == ID_rt) begin
+        ID_BusB = WB_Result;
+    end else begin
+        ID_BusB = regs[ID_rt];
+    end
+end
 endmodule
 
