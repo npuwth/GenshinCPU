@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-01 15:26:15
+ * @LastEditTime: 2021-07-01 16:45:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -240,6 +240,7 @@ module mycpu_top (
         .clk (aclk ),
         .rst (aresetn ),
         .CP0_RdAddr (ID_rd ),
+        .EXE_IsTLBP (EXE_IsTLBP),
         .CP0_RdData (CP0_Bus ),
         .Interrupt (Interrupt ),
         .WCBus (WCBus.CP0 ),

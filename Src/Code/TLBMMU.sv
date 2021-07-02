@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-01 00:05:50
+ * @LastEditTime: 2021-07-01 16:53:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -37,6 +37,7 @@ module TLBMMU (
 
     assign CMBus.MMU_g0          = r_g; //读出的g存入g0和g1
     assign CMBus.MMU_g1          = r_g;
+    assign CMBus.MMU_s1found     = s1_found;
 
     tlb U_TLB ( 
         .clk                     (clk ),
