@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-07-01 11:24:56
+ * @LastEditTime: 2021-07-02 10:48:45
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -35,8 +35,8 @@ module HILO(
     logic [`RegBus] LO;
     logic [63:0] ProdinHILO = {HI,LO};//HILO原结果
     logic [63:0] ProdinEXE  = {EXE_MULTDIVtoHI,EXE_MULTDIVtoLO};//EXE计算得到的结果
-    logic [63:0] ProdAdd    = ProdinHILO + ProdinEXE;
-    logic [63:0] ProdSub    = ProdinHILO - ProdinEXE;
+    logic [63:0] ProdAdd    = ProdinEXE;
+    logic [63:0] ProdSub    = ProdinEXE;
         
     //下面是旁路
     always_comb begin
