@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-02 16:29:37
+ * @LastEditTime: 2021-07-04 10:45:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -37,7 +37,8 @@ module TOP_EXE (
     output logic [4:0]        EXE_rt,
     output logic [1:0]        EXE_MultiExtendOp,//New add for MADD   
     output logic              EXE_IsTLBW,
-    output logic              EXE_IsTLBR 
+    output logic              EXE_IsTLBR,
+    output logic [31:0]       EXE_Instr 
 );
 
     logic [31:0]              EXE_BusA;
@@ -67,6 +68,7 @@ module TOP_EXE (
     assign EXE_RegsWrType     = EMBus.EXE_RegsWrType;
     assign EXE_IsTLBW         = EMBus.EXE_IsTLBW;
     assign EXE_IsTLBR         = EMBus.EXE_IsTLBR;
+    assign EXE_Instr          = EMBus.EXE_Instr;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),

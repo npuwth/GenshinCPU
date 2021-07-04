@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-02 16:25:19
+ * @LastEditTime: 2021-07-04 13:10:51
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,7 +32,8 @@ module TOP_ID (
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
     output logic [4:0]       ID_rs,
     output logic [4:0]       ID_rt,
-    output logic [4:0]       ID_rd
+    output logic [4:0]       ID_rd,
+    output logic [31:0]      ID_Instr
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
@@ -41,8 +42,6 @@ module TOP_ID (
     logic [31:0]             RF_BusB_Final;
     logic                    ID_RF_ForwardA;
     logic                    ID_RF_ForwardB;
-    logic [31:0]             CP0_Bus_new;
-    logic                    ID_CP0_Forward;
 
     assign IIBus.ID_Instr = IEBus.ID_Instr;
     assign IIBus.ID_PC    = IEBus.ID_PC;
@@ -50,6 +49,7 @@ module TOP_ID (
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
     assign ID_rd          = IEBus.ID_rd;
+    assign ID_Instr       = IEBus.ID_Instr;
 
     ID_Reg U_ID_Reg ( //TODO: 端口的连线还没改好
         .clk                 (clk ),
@@ -102,21 +102,12 @@ module TOP_ID (
         .sel2_to_1           (ID_RF_ForwardB),
         .y                   (RF_BusB_Final)
     );
-//-------------------对CP0读出的数据进行WB/ID级旁路-----------------------//
-    assign ID_CP0_Forward = WB_RegsWrType.CP0Wr && (WB_Dst == IEBus.ID_rd);
-    
-    MUX2to1 #(32) U_MUX_CP0_FORWARD ( 
-        .d0(CP0_Bus),
-        .d1(WB_Result),
-        .sel2_to_1(ID_CP0_Forward),
-        .y(CP0_Bus_new)
-    );
 
     MUX4to1 #(32) U_MUXBUSB ( 
         .d0                  (RF_BusB_Final),
         .d1                  (HI_Bus),
         .d2                  (LO_Bus),
-        .d3                  (CP0_Bus_new),
+        .d3                  (CP0_Bus),
         .sel4_to_1           (IEBus.ID_RegsReadSel),
         .y                   (IEBus.ID_BusB)
     );
