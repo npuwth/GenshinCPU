@@ -229,11 +229,14 @@ module AXIInteract(
     // U$ 读通道
     UncacheRD      U_RD_pre_state;
     UncacheRD      U_RD_next_state;
-    logic [31:0]  U_RD_Addr;
-    logic [31:0]  AXI_U_RData;
+    LoadType       U_RD_LoadType;
+    logic [31:0]   U_RD_Addr;
+    logic [31:0]   AXI_U_RData;
     // U$ 写通道
+    logic [3:0]    U_WR_Wstrb;
     UncacheWR      U_WR_pre_state;
     UncacheWR      U_WR_next_state;
+
     logic [31:0]  U_WR_Addr;
     logic [31:0]  AXI_U_WData;
 // 锁存请求时的数据
@@ -278,11 +281,14 @@ module AXIInteract(
     // 锁存 U$ RD
     always_ff @(posedge clk or negedge resetn) begin
         if (resetn == `RstEnable) begin
-            U_RD_Addr <= '0;
+            U_RD_Addr     <= '0;
+            U_RD_LoadType <= '0;
+
         end 
         else begin  
             if (UncacheAXIBus.rd_req == 1'b1 && U_RD_pre_state == U_RD_EMPTY) begin
-                U_RD_Addr <= UncacheAXIBus.rd_addr;
+                U_RD_Addr     <= UncacheAXIBus.rd_addr;
+                U_RD_LoadType <= UncacheAXIBus.loadType;
             end
         end 
     end
@@ -292,11 +298,13 @@ module AXIInteract(
         if (resetn == `RstEnable) begin
             U_WR_Addr   <= '0;
             AXI_U_WData <= '0;
+            U_WR_Wstrb  <= '0;
         end 
         else begin  
             if (UncacheAXIBus.wr_req == 1'b1 && U_WR_pre_state == U_WR_EMPTY) begin
                 U_WR_Addr   <= UncacheAXIBus.wr_addr;
                 AXI_U_WData <= UncacheAXIBus.wr_data;
+                U_WR_Wstrb  <= UncacheAXIBus.wr_wstrb;
             end 
         end 
     end
@@ -358,7 +366,9 @@ module AXIInteract(
     assign ubus_arid     = 4'b0011;
     assign ubus_arlen    = 4'b0000; // 传输事件只有一个
     // assign ubus_arsize   = 3'b010; // 4字节
-    assign ubus_arsize   = {1'b0,UncacheAXIBus.loadType}; // 根据LB LH LW调整Uncache的arsize
+    assign ubus_arsize   = (U_RD_LoadType.size == 2'b10) ? 3'b000: // lb
+                           (U_RD_LoadType.size == 2'b01) ? 3'b001: // lh
+                           3'b010;//lw          // 根据LB LH LW调整Uncache的arsize  
     assign ubus_arburst  = 2'b01;
     assign ubus_arlock   = '0;
     assign ubus_arcache  = '0;
@@ -375,7 +385,7 @@ module AXIInteract(
 
 
     assign ubus_wid     = 4'b0001;
-    assign ubus_wstrb   = UncacheAXIBus.wr_wstrb;  // 以支持uncache 的SB信号
+    assign ubus_wstrb   = U_WR_Wstrb;  // 使用所存下来的信号。以支持uncache的SB
     assign ubus_bready  = 1'b1;
 
     // 空闲信号的输出

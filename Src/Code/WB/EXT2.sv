@@ -22,7 +22,6 @@ logic IsUncache;
 assign IsUncache = (WB_ALUOut[31:16] == 16'hbfaf && WB_LoadType.ReadMem == 1'b1 ) ? 1'b1 : 1'b0;
 
     always_comb begin
-      if (IsUncache == 1'b0) begin
         unique case({WB_LoadType.sign,WB_LoadType.size})
           `LOADTYPE_LW: begin
             WB_DMResult = WB_DMOut;  //LW
@@ -64,52 +63,6 @@ assign IsUncache = (WB_ALUOut[31:16] == 16'hbfaf && WB_LoadType.ReadMem == 1'b1 
           end
         endcase
       end 
-      else if (IsUncache == 1'b1) begin 
-          // Uncache的情况
-          unique case({WB_LoadType.sign,WB_LoadType.size})
-          `LOADTYPE_LW: begin
-            WB_DMResult = WB_DMOut;  //LW
-          end 
-          `LOADTYPE_LH: begin
-            // if(WB_ALUOut[1] == 1'b0) //LH
-            WB_DMResult = {{16{WB_DMOut[15]}},WB_DMOut[15:0]};
-            // else
-            //   WB_DMResult = {{16{WB_DMOut[15]}},WB_DMOut[15:0]}; 
-          end
-          `LOADTYPE_LHU: begin
-            // if(WB_ALUOut[1] == 1'b0) //LHU
-            WB_DMResult = {16'b0,WB_DMOut[15:0]};
-            // else
-            //   WB_DMResult = {16'b0,WB_DMOut[15:0]};
-          end
-          `LOADTYPE_LB: begin
-            // if(WB_ALUOut[1:0] == 2'b00) //LB
-            //   WB_DMResult = {{24{WB_DMOut[7]}},WB_DMOut[7:0]};
-            // else if(WB_ALUOut[1:0] == 2'b01)
-            WB_DMResult = {{24{WB_DMOut[7]}},WB_DMOut[7:0]};
-            // else if(WB_ALUOut[1:0] == 2'b10)
-            //   WB_DMResult = {{24{WB_DMOut[7]}},WB_DMOut[23:16]};
-            // else
-            //   WB_DMResult = {{24{WB_DMOut[7]}},WB_DMOut[31:24]};
-          end
-          `LOADTYPE_LBU: begin
-            // if(WB_ALUOut[1:0] == 2'b00) //LBU
-            WB_DMResult = {24'b0,WB_DMOut[7:0]};
-            // else if(WB_ALUOut[1:0] == 2'b01)
-            //   WB_DMResult = {24'b0,WB_DMOut[15:8]};
-            // else if(WB_ALUOut[1:0] == 2'b10)
-            //   WB_DMResult = {24'b0,WB_DMOut[23:16]};
-            // else
-            //   WB_DMResult = {24'b0,WB_DMOut[31:24]};
-           end
-          default: begin
-            WB_DMResult = 32'bx;
-          end
-        endcase
-      end
-      else begin
-          WB_DMResult = 32'bx;
-      end
-    end
+
 
 endmodule

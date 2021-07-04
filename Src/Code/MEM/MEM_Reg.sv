@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-02 17:34:18
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 09:48:09
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -68,7 +68,7 @@ module MEM_Reg (
     output logic                    MEM_IsTLBR
 );
 
-    always_ff @( posedge clk ,negedge rst ) begin
+    always_ff @( posedge clk  ) begin
         if( ( rst == `RstEnable )|| ( MEM_Flush == `FlushEnable )) begin
             MEM_ALUOut              <= 32'b0;
             MEM_PC                  <= 32'b0;

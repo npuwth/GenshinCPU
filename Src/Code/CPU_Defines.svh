@@ -106,7 +106,7 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 
 typedef struct packed {
     logic 		    	sign;//使用0表示unsigned 1表示signed
-    logic   [1:0]   	size;//这个表示�? 00 byte 01 half  10 word
+    logic   [1:0]   	size;//这个表示�? 00 word 01 half  00 word
 	logic               ReadMem;//只有Load才能触发ReadMem
 } LoadType;//
 
