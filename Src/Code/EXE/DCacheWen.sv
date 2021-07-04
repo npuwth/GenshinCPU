@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-06-29 14:37:52
+ * @LastEditTime: 2021-07-04 12:00:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
@@ -66,14 +66,19 @@ module DCacheWen(
       
   end
 
-  assign EXE_ExceptType_new.Interrupt = EXE_ExceptType.Interrupt;
-  assign EXE_ExceptType_new.WrongAddressinIF = EXE_ExceptType.WrongAddressinIF;
+  assign EXE_ExceptType_new.Interrupt           = EXE_ExceptType.Interrupt;
+  assign EXE_ExceptType_new.WrongAddressinIF    = EXE_ExceptType.WrongAddressinIF;
   assign EXE_ExceptType_new.ReservedInstruction = EXE_ExceptType.ReservedInstruction;
-  assign EXE_ExceptType_new.Syscall = EXE_ExceptType.Syscall;
-  assign EXE_ExceptType_new.Break = EXE_ExceptType.Break;
-  assign EXE_ExceptType_new.Eret = EXE_ExceptType.Eret;
+  assign EXE_ExceptType_new.Syscall             = EXE_ExceptType.Syscall;
+  assign EXE_ExceptType_new.Break               = EXE_ExceptType.Break;
+  assign EXE_ExceptType_new.Eret                = EXE_ExceptType.Eret;
   assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_StoreType.DMWr&&(((EXE_StoreType.size == `STORETYPE_SW)&&(EXE_ALUOut[1:0] != 2'b00))||((EXE_StoreType.size == `STORETYPE_SH)&&(EXE_ALUOut[0] != 1'b0)));
   assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_LoadType.ReadMem&&(((EXE_LoadType.size == 2'b00)&&(EXE_ALUOut[1:0] != 2'b00))||((EXE_LoadType.size == 2'b01)&&(EXE_ALUOut[0] != 1'b0)));
-  assign EXE_ExceptType_new.Overflow = EXE_ExceptType.Overflow;
+  assign EXE_ExceptType_new.Overflow            = EXE_ExceptType.Overflow;
+  assign EXE_ExceptType_new.TLBRefill           = EXE_ExceptType.TLBRefill;
+  assign EXE_ExceptType_new.TLBInvalid          = EXE_ExceptType.TLBInvalid;
+  assign EXE_ExceptType_new.TLBModified         = EXE_ExceptType.TLBModified;
+  assign EXE_ExceptType_new.Refetch             = EXE_ExceptType.Refetch;
+  assign EXE_ExceptType_new.Trap                = EXE_ExceptType.Trap;
 
 endmodule

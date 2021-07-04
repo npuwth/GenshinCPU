@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-06-28 22:15:29
+ * @LastEditTime: 2021-07-04 16:29:14
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,7 +18,9 @@ module WrFlushControl(
     input logic       MEM_Flush_Exception, //异常产生在EXE/MEM级的flush
     input logic       DH_PCWr,             // Load & R型的数据冒险 & （前load 后 store的冒险 —— 以删除）  1代表没有出现该异常，流水线可以流动
     input logic       DH_IDWr,             // Load & R型的数据冒险 & （前load 后 store的冒险 —— 以删除）
+    input logic       DH_EXEWr,
     input logic       EXE_Flush_DataHazard, // 数据冒险产生的flush  
+    input logic       MEM_Flush_DataHazard,
     input logic       DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
     input logic [1:0] IsExceptionorEret,      // 用于生成HILO的flush信号
     input logic       BranchFailed,             // 分支预测失败时，产生的flush
@@ -118,7 +120,7 @@ module WrFlushControl(
             ID_Wr   = 1'b0;
         end
         else begin
-             if (DH_PCWr == 1'b0 || DIVMULTBusy == 1'b1) begin  // 数据冒险 & 乘除法
+             if (DH_IDWr == 1'b0 || DIVMULTBusy == 1'b1) begin  // 数据冒险 & 乘除法
                 ID_Wr = 1'b0;
             end
             else begin
@@ -199,10 +201,10 @@ module WrFlushControl(
             EXE_Flush = 1'b1;
         end 
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
-             EXE_Flush = 1'b0;
+            EXE_Flush = 1'b0;
         end
         else if  (EXE_Flush_DataHazard == 1'b1) begin   // Dcache 空闲的情况下，才考虑数据冒险的情况 
-                EXE_Flush = 1'b1;
+            EXE_Flush = 1'b1;
         end
         else begin
             EXE_Flush = 1'b0;
@@ -214,6 +216,9 @@ module WrFlushControl(
         if (MEM_Flush_Exception == `FlushEnable) begin
             MEM_Flush = 1'b1;
         end
+        // else if (MEM_Flush_DataHazard == 1'b1) begin
+        //     MEM_Flush = 1'b1;
+        // end
         else begin
             MEM_Flush = 1'b0;
         end

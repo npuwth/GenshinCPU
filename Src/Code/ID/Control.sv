@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-02 16:23:43
+ * @LastEditTime: 2021-07-04 13:11:17
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -10,6 +10,7 @@
  */
 
 `include "../CPU_Defines.svh"
+`define COMPILE_FULL_M
 
 module Control(
     input  logic[31:0] ID_Instr,
@@ -290,7 +291,6 @@ module Control(
                 default:  instrType = OP_INVALID;
               endcase
             end
-
             default:begin
                 instrType = OP_INVALID;
             end

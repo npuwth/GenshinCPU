@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-03 09:48:44
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-04 13:21:49
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -102,8 +102,6 @@ module cp0_reg (
             //******************************************************************************
             if(MEM_IsTLBP == 1'b1) begin
                 CP0_Index                  <= {~CMBus.MMU_s1found,27'b0,CMBus.MMU_index};
-            end else if(WCBus.WB_CP0Wr_TLBR == `WriteEnable) begin
-                CP0_Index[3:0]             <= CMBus.MMU_index;
             end
             else if(WCBus.WB_CP0Wr_MTC0 == `WriteEnable && WCBus.WB_Dst == `CP0_REG_INDEX) begin
                 CP0_Index[3:0]     <= WCBus.WB_Result[3:0]; 
@@ -130,10 +128,10 @@ module cp0_reg (
                         CP0_EntryHi[7:0]   <= WCBus.WB_Result[7:0];
                     end
                     `CP0_REG_ENTRYLO0:begin
-                        CP0_EntryLo0[29:0] <= WCBus.WB_Result[29:0];
+                        CP0_EntryLo0[25:0] <= WCBus.WB_Result[25:0];
                     end
                     `CP0_REG_ENTRYLO1:begin 
-                        CP0_EntryLo1[29:0] <= WCBus.WB_Result[29:0];
+                        CP0_EntryLo1[25:0] <= WCBus.WB_Result[25:0];
                     end
                 default:begin
                     CP0_EPC <= CP0_EPC;
@@ -380,8 +378,6 @@ module cp0_reg (
             CP0_Index_Rd       =  {~CMBus.MMU_s1found,27'b0,CMBus.MMU_index};
         end else if((WCBus.WB_CP0Wr_MTC0 == `WriteEnable) && (WCBus.WB_Dst == `CP0_REG_INDEX)) begin
             CP0_Index_Rd       =  {CP0_Index[31:4],WCBus.WB_Result[3:0]};
-        end else if(WCBus.WB_CP0Wr_TLBR) begin
-            CP0_Index_Rd       =  {CP0_Index[31:4],CMBus.MMU_index};
         end else begin
             CP0_Index_Rd       =  CP0_Index;
         end

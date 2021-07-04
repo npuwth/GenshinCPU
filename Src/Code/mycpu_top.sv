@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-04 10:43:47
+ * @LastEditTime: 2021-07-04 15:56:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -66,7 +66,9 @@ module mycpu_top (
     logic                      MEM_Flush_Exception;       //来自exception
     logic                      DH_PCWr;                   //来自DataHazard
     logic                      DH_IDWr;                   //来自DataHazard
+    logic                      DH_EXEWr;                  //来自DataHazard
     logic                      EXE_Flush_DataHazard;      //来自DataHazard
+    logic                      MEM_Flush_DataHazard;      //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法
     logic [1:0]                IsExceptionOrEret;         //来自MEM级，表示有异常或异常返回
     logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
@@ -160,7 +162,9 @@ module mycpu_top (
         .MEM_Flush_Exception    (MEM_Flush_Exception),
         .DH_PCWr                (DH_PCWr),
         .DH_IDWr                (DH_IDWr),
+        .DH_EXEWr               (DH_EXEWr),
         .EXE_Flush_DataHazard   (EXE_Flush_DataHazard), // 以上三个是数据冒险的3个控制信号
+        .MEM_Flush_DataHazard   (MEM_Flush_DataHazard),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         .IsExceptionorEret      (IsExceptionOrEret),
         .BranchFailed           (ID_Flush_BranchSolvement),
@@ -279,7 +283,9 @@ module mycpu_top (
         //output
         .PC_Wr(DH_PCWr),
         .ID_Wr(DH_IDWr),
-        .EXE_Flush(EXE_Flush_DataHazard)
+        .EXE_Flush(EXE_Flush_DataHazard),
+        .EXE_Wr(DH_EXEWr),
+        .MEM_Flush(MEM_Flush_DataHazard)
     );
 
     TOP_IF U_TOP_IF ( 
