@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-03 00:03:26
+ * @LastEditTime: 2021-07-03 10:10:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
@@ -120,13 +120,13 @@ interface AXI_UNCACHE_Interface();
 
 
   modport master (//cache端口
-  output rd_req,rd_addr,
+  output rd_req,rd_addr,loadType,
   output wr_req,wr_addr,wr_data,wr_wstrb,
   input rd_rdy,ret_valid,ret_data,wr_rdy,wr_valid
   );
 
   modport slave (//axi端口
-  input rd_req,rd_addr,
+  input rd_req,rd_addr,loadType,
   input wr_req,wr_addr,wr_data,wr_wstrb,
   output rd_rdy,ret_valid,ret_data,wr_rdy,wr_valid
   );

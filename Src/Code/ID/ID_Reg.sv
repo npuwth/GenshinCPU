@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-06-29 18:08:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 09:47:46
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -30,7 +30,7 @@ module ID_Reg (
 
 );
 
-  always_ff @( posedge clk or negedge rst ) begin
+  always_ff @( posedge clk  ) begin
     if( (rst == `RstEnable) || (ID_Flush == `FlushEnable) ) begin
       ID_Instr                         <= 32'b0;
       ID_Imm16                         <= 16'b0;

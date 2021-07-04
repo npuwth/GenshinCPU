@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-03 00:06:01
+ * @LastEditTime: 2021-07-04 09:07:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
@@ -124,13 +124,13 @@ module DCache(
 //----------------------------对req的选择 如果isAgain高电平 那就引入 req_buffer的内容 不然就是
 always_comb begin 
   if (CPUBus.flush == `FlushEnable) begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType };
+    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType,CPUBus.loadType };
   end
   else if(isAgain == 1'b1 || (state == LOOKUP && cache_hit== `MISS))begin
     req = req_buffer;
   end
   else begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata ,CPUBus.storeType};
+    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata ,CPUBus.storeType,CPUBus.loadType};
   end
 end
 

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-02 15:23:12
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 09:48:18
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -56,7 +56,7 @@ module WB_Reg (
     output logic                        WB_IsTLBR
 );
 
-  always_ff @(posedge clk ,negedge rst) begin
+  always_ff @(posedge clk ) begin
     if( rst == `RstEnable || WB_Flush == `FlushEnable) begin
       WB_WbSel                          <= 2'b0;
       WB_PC                             <= 32'b0;
