@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-06-30 17:02:57
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 09:49:07
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\EXE\MULTDIV.sv
  * 
@@ -61,7 +61,7 @@ logic  [1:0]    prestate;
 
 
 
-always_ff @(posedge clk or negedge rst) begin
+always_ff @(posedge clk ) begin
     if (!rst) begin
             dividend_tdata <= `ZeroWord;
             divisor_tdata  <= `ZeroWord;
@@ -123,7 +123,7 @@ always_comb begin
 end 
 
 // 除法的状态机
-always_ff @(posedge clk or negedge rst) begin
+always_ff @(posedge clk ) begin
         if (!rst) prestate <= T;
         else      prestate <= nextstate;
 end

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-07 14:52:54
- * @LastEditTime: 2021-07-02 10:48:45
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 10:01:06
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -88,7 +88,7 @@ module HILO(
     end
 
     
-    always @ ( posedge clk or negedge rst) begin
+    always @ ( posedge clk ) begin
         if(rst == `RstEnable) begin
             HI <= `ZeroWord;
         end else if (MULT_DIV_finish == 1'b1) begin
@@ -110,7 +110,7 @@ module HILO(
             HI <= Data_Wr;
         end 
     end
-    always @ ( posedge clk or negedge rst) begin
+    always @ ( posedge clk ) begin
         if(rst == `RstEnable) begin
             LO <= `ZeroWord;
         end else if (MULT_DIV_finish == 1'b1) begin

@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-02 15:34:50
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 09:48:44
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -63,7 +63,7 @@ module cp0_reg (
     //******************************************************************************
     //                     对CP0中寄存器的初始化复位
     //******************************************************************************
-    always_ff @ ( posedge clk or negedge rst) begin
+    always_ff @ ( posedge clk ) begin
         if(rst == `RstEnable) begin
             CP0_BadVAddr       <= `ZeroWord;
             CP0_Count          <= `ZeroWord;

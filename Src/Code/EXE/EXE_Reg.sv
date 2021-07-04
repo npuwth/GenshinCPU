@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-01 17:26:24
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-03 09:47:10
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -67,7 +67,7 @@ module EXE_Reg (
     output logic                         EXE_IsTLBR
 );
 
-  always_ff @( posedge clk or negedge rst ) begin
+  always_ff @( posedge clk  ) begin
     if( (rst == `RstEnable) || (EXE_Flush == `FlushEnable) ) begin
       EXE_BusA                           <= 32'b0;
       EXE_BusB                           <= 32'b0;

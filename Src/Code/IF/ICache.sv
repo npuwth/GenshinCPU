@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-02 14:59:47
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-02 23:57:46
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -56,7 +56,7 @@ module ICache(
     logic[31:0] wdata;
   } RequestType;
 
-
+  
 
   RequestType req;//从cpu和request_buffer中选择出来的请求
   logic isAgain;  //是否是未命中 需要再次查找
@@ -468,8 +468,36 @@ REFILL->IDLE  AXI接口模块数据有效
            end
          end
 
+logic [31:0] req_count;
+  logic [31:0] miss_count;
+  logic flag;
 
+  always_ff @( posedge clk) begin : miss_count_
+    if (resetn == 1'b0) begin
+      miss_count<='0;
+    end else begin
+      if (flag==1 && cache_hit==1'b0) begin
+        miss_count <= miss_count+1; 
+      end else begin
+        miss_count <= miss_count;
+      end
+    end
+  end 
 
+    always_ff @( posedge clk) begin : req_count_
+    if (resetn == 1'b0) begin
+      req_count <='0;
+      flag <=0;
+    end else begin
+      if (CPUBus.valid==1'b1 && CPUBus.addr_ok ==1'b1) begin
+        req_count <= req_count+1; 
+        flag<=1;
+      end else begin
+        req_count <= req_count;
+        flag<=0;
+      end
+    end
+  end 
 
 
 

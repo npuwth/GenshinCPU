@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-02 14:55:24
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-04 09:07:56
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -68,6 +68,7 @@ module DCache(
     logic[3:0] wstrb;
     logic[31:0] wdata;
     StoreType  storeType;
+    LoadType   loadType;
   } RequestType;
 
   typedef struct  packed{
@@ -123,13 +124,13 @@ module DCache(
 //----------------------------对req的选择 如果isAgain高电平 那就引入 req_buffer的内容 不然就是
 always_comb begin 
   if (CPUBus.flush == `FlushEnable) begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType };
+    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType,CPUBus.loadType };
   end
   else if(isAgain == 1'b1 || (state == LOOKUP && cache_hit== `MISS))begin
     req = req_buffer;
   end
   else begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata ,CPUBus.storeType};
+    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata ,CPUBus.storeType,CPUBus.loadType};
   end
 end
 
@@ -580,7 +581,7 @@ end
 
 
 assign UBus.wr_wstrb = req_buffer.wstrb;
-
+assign UBus.loadType = req_buffer.loadType;
 always_comb begin
   if (state == WAIT && req_buffer.op == 1'b0 && UBus.ret_valid == `Valid) begin
     unCache_rdata_en = `WriteEnable;
@@ -621,7 +622,7 @@ always_comb begin
   end
 end
 
-  assign req_buffer_new = (req_buffer_en ? {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata,CPUBus.storeType } : req_buffer);
+  assign req_buffer_new = (req_buffer_en ? {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata,CPUBus.storeType,CPUBus.loadType } : req_buffer);
   always_ff @( posedge clk ) begin //request_buffer
     if(resetn == `RstEnable)begin
       req_buffer <='0;
@@ -917,6 +918,35 @@ REFILL->IDLE  AXI接口模块数据有效
              end
            end
 
+  logic [31:0] req_count;
+  logic [31:0] miss_count;
+  logic flag;
 
+  always_ff @( posedge clk) begin : miss_count_
+    if (resetn == 1'b0) begin
+      miss_count<='0;
+    end else begin
+      if (flag==1 && cache_hit==1'b0) begin
+        miss_count <= miss_count+1; 
+      end else begin
+        miss_count <= miss_count;
+      end
+    end
+  end 
+
+    always_ff @( posedge clk) begin : req_count_
+    if (resetn == 1'b0) begin
+      req_count <='0;
+      flag <=0;
+    end else begin
+      if (CPUBus.valid==1'b1 && CPUBus.addr_ok ==1'b1) begin
+        req_count <= req_count+1; 
+        flag<=1;
+      end else begin
+        req_count <= req_count;
+        flag<=0;
+      end
+    end
+  end 
 
        endmodule

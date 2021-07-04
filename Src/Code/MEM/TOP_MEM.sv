@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-04 10:46:09
+ * @LastEditTime: 2021-07-04 10:47:40
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -131,7 +131,7 @@ module TOP_MEM (
     assign cpu_dbus.ready                                 = WB_Wr;
     assign cpu_dbus.storeType                             = EMBus.EXE_StoreType;
     assign cpu_dbus.wstrb                                 = EMBus.DCache_Wen;
-    
+    assign cpu_dbus.loadType                              = EMBus.EXE_LoadType;
     DCache U_DCACHE(
         .clk            (clk),
         .resetn         (resetn),
