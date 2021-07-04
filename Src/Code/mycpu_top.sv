@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-02 17:32:04
+ * @LastEditTime: 2021-07-04 10:43:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -132,6 +132,9 @@ module mycpu_top (
     logic [31:0]               MEM_PC;
     logic                      EXE_IsTLBW;
     logic                      EXE_IsTLBR;
+    logic [31:0]               ID_Instr;
+    logic [31:0]               EXE_Instr;
+    logic [31:0]               MEM_Instr;
 
     assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
@@ -268,6 +271,9 @@ module mycpu_top (
         .ID_rs(ID_rs),
         .ID_rt(ID_rt),
         .ID_rsrtRead(ID_rsrtRead),
+        .ID_Instr (ID_Instr),
+        .EXE_Instr (EXE_Instr),
+        .MEM_Instr (MEM_Instr),
         .EXE_rt(EXE_rt),
         .EXE_ReadMEM(EXE_LoadType.ReadMem),
         //output
@@ -320,7 +326,8 @@ module mycpu_top (
         .ID_IsAImmeJump (ID_IsAImmeJump),
         .ID_rs(ID_rs),
         .ID_rt(ID_rt),
-        .ID_rd(ID_rd)
+        .ID_rd(ID_rd),
+        .ID_Instr(ID_Instr)
     );
 
     TOP_EXE U_TOP_EXE ( 
@@ -349,7 +356,8 @@ module mycpu_top (
         .EXE_rt(EXE_rt),
         .EXE_MultiExtendOp(EXE_MultiExtendOp),
         .EXE_IsTLBW(EXE_IsTLBW),
-        .EXE_IsTLBR(EXE_IsTLBR)
+        .EXE_IsTLBR(EXE_IsTLBR),
+        .EXE_Instr(EXE_Instr)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -373,7 +381,8 @@ module mycpu_top (
         .IsExceptionOrEret (IsExceptionOrEret ),
         .Virt_Daddr(Virt_Daddr),
         .MEM_IsTLBP(MEM_IsTLBP),
-        .MEM_PC(MEM_PC)
+        .MEM_PC(MEM_PC),
+        .MEM_Instr(MEM_Instr)
     );
 
     TOP_WB U_TOP_WB ( 
