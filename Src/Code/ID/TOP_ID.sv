@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-02 16:25:19
+ * @LastEditTime: 2021-07-04 10:44:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,7 +32,8 @@ module TOP_ID (
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
     output logic [4:0]       ID_rs,
     output logic [4:0]       ID_rt,
-    output logic [4:0]       ID_rd
+    output logic [4:0]       ID_rd,
+    output logic [31:0]      ID_Instr
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
@@ -50,6 +51,7 @@ module TOP_ID (
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
     assign ID_rd          = IEBus.ID_rd;
+    assign ID_Instr       = IEBus.ID_Instr;
 
     ID_Reg U_ID_Reg ( //TODO: 端口的连线还没改好
         .clk                 (clk ),
