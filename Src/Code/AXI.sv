@@ -357,7 +357,8 @@ module AXIInteract(
 /********************* ubus ******************/
     assign ubus_arid     = 4'b0011;
     assign ubus_arlen    = 4'b0000; // 传输事件只有一个
-    assign ubus_arsize   = 3'b010; // 4字节
+    // assign ubus_arsize   = 3'b010; // 4字节
+    assign ubus_arsize   = {1'b0,UncacheAXIBus.loadType}; // 根据LB LH LW调整Uncache的arsize
     assign ubus_arburst  = 2'b01;
     assign ubus_arlock   = '0;
     assign ubus_arcache  = '0;

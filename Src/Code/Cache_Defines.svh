@@ -121,13 +121,13 @@ interface AXI_UNCACHE_Interface();
 
   modport master (//cache端口
   output rd_req,rd_addr,
-  output wr_req,wr_addr,wr_data,wr_wstrb,
+  output wr_req,wr_addr,wr_data,wr_wstrb,loadType,
   input rd_rdy,ret_valid,ret_data,wr_rdy,wr_valid
   );
 
   modport slave (//axi端口
   input rd_req,rd_addr,
-  input wr_req,wr_addr,wr_data,wr_wstrb,
+  input wr_req,wr_addr,wr_data,wr_wstrb,loadType,
   output rd_rdy,ret_valid,ret_data,wr_rdy,wr_valid
   );
 endinterface
