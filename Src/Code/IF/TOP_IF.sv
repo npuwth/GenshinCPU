@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-02 15:55:28
+ * @LastEditTime: 2021-07-04 23:56:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,11 +30,13 @@ module TOP_IF (
     input logic [31:0]  EXE_Imm32,
     input logic [31:0]  Phsy_Iaddr,
     input logic [31:0]  MEM_PC,
+    input ExceptinPipeType IF_ExceptType_new,
     IF_ID_Interface     IIBus,
     CPU_Bus_Interface   cpu_ibus,
     AXI_Bus_Interface   axi_ibus,
     output logic [31:0] IF_NPC,
-    output logic [31:0] Virt_Iaddr
+    output logic [31:0] Virt_Iaddr,
+    output ExceptinPipeType IF_ExceptType
 );
 
     logic   [31:0]      IF_PC;
@@ -49,8 +51,9 @@ module TOP_IF (
     assign JumpAddr     = {ID_PCAdd4[31:28],IIBus.ID_Instr[25:0],2'b0};
     assign BranchAddr   = EXE_PC+4+{EXE_Imm32[29:0],2'b0};
 
+    assign IF_ExceptType       = '0;
     assign IIBus.IF_PC         = IF_PC;
-    assign IIBus.IF_ExceptType = '0; //现在没加tlb，所以先直接初始化成0
+    assign IIBus.IF_ExceptType = IF_ExceptType_new; //现在没加tlb，所以先直接初始化成0
 
     PC U_PC ( 
         .clk            (clk),

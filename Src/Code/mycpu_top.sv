@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-04 15:56:09
+ * @LastEditTime: 2021-07-05 19:57:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -305,6 +305,7 @@ module mycpu_top (
         .EXE_Imm32 (EXE_Imm32 ),
         .Phsy_Iaddr(Phsy_Iaddr),
         .MEM_PC (MEM_PC),
+        //--------------------output-----------------//
         .IIBus  ( IIBus.IF),
         .cpu_ibus (cpu_ibus),
         .axi_ibus (axi_ibus),
@@ -414,11 +415,16 @@ module mycpu_top (
         .clk (aclk ),
         .Virt_Iaddr (Virt_Iaddr ),
         .Virt_Daddr (Virt_Daddr ),
-        .EXE_IsTLBP (MEM_IsTLBP ),
+        .MEM_Type (MEM_Type),
+        .IF_ExceptType(IF_ExceptType),
+        .MEM_ExceptType(MEM_ExceptType),
+        .MEM_IsTLBP (MEM_IsTLBP ),
         .WB_IsTLBW (WB_IsTLBW),
         .CMBus (CMBus.MMU ),
         .Phsy_Iaddr (Phsy_Iaddr ),
-        .Phsy_Daddr  ( Phsy_Daddr)
+        .Phsy_Daddr  ( Phsy_Daddr),
+        .IF_ExceptType_new(IF_ExceptType_new),
+        .MEM_ExceptType_new(MEM_ExceptType_new)
     );
 
 endmodule
