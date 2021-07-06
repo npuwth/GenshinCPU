@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-06 21:31:42
+ * @LastEditTime: 2021-07-06 22:28:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -152,7 +152,7 @@ typedef struct packed {
 
 typedef struct packed {
 	logic    [31:13]	 VPN2;
-	logic    [7:0]       C0;
+	logic    [7:0]       ASID;
 } CP0_EntryHi;
 
 typedef struct packed {
