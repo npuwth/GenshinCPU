@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-06 11:54:25
+ * @LastEditTime: 2021-07-06 16:46:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -125,11 +125,10 @@ module mycpu_top (
     logic [31:0]               IF_NPC;
     logic [31:0]               Virt_Iaddr;
     logic [31:0]               Phsy_Iaddr;
-    logic                      WB_IsTLBW;
+    logic                      MEM_IsTLBW;
     logic [31:0]               MEM_PC;
 
 
-    assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                       //4位字节写使能
@@ -222,32 +221,6 @@ module mycpu_top (
         .m_axi_bvalid           (bvalid ),
         .m_axi_bready           (bready)
     );
-
-    
-
-    cp0_reg U_CP0(
-        .clk (aclk ),
-        .rst (aresetn ),
-        .CP0_RdAddr (ID_rd ),
-        .MEM_IsTLBP (MEM_IsTLBP),
-        .CP0_RdData (CP0_Bus ),
-        .Interrupt (Interrupt ),
-        .WCBus (WCBus.CP0 ),
-        .CMBus (CMBus.CP0),
-        //-------------------output----------------------//
-        .CP0_BadVAddr_Rd (CP0_BadVAddr ),
-        .CP0_Count_Rd (CP0_Count ),
-        .CP0_Compare_Rd (CP0_Compare ),
-        .CP0_Status_Rd (CP0_Status ),
-        .CP0_Cause_Rd (CP0_Cause ),
-        .CP0_EPC_Rd (CP0_EPC ),
-        .CP0_Index_Rd (CP0_Index ),
-        .CP0_EntryHi_Rd (CP0_EntryHi ),
-        .CP0_EntryLo0_Rd (CP0_EntryLo0 ),
-        .CP0_EntryLo1_Rd (CP0_EntryLo1 )
-    );
-
-
 
     TOP_IF U_TOP_IF ( 
         .clk (aclk ),
@@ -345,6 +318,7 @@ module mycpu_top (
         .IsExceptionOrEret (IsExceptionOrEret ),
         .Virt_Daddr(Virt_Daddr),
         .MEM_IsTLBP(MEM_IsTLBP),
+        .MEM_IsTLBW(MEM_IsTLBW),
         .MEM_PC(MEM_PC),
         .MEM_Instr(MEM_Instr)
     );
@@ -364,8 +338,7 @@ module mycpu_top (
         .WB_RegsWrType (WB_RegsWrType),
         .WB_PC(WB_PC ),
         .WB_Hi (WB_Hi ),
-        .WB_Lo (WB_Lo ),
-        .WB_IsTLBW (WB_IsTLBW)
+        .WB_Lo (WB_Lo )
     );
 
     TLBMMU U_TLBMMU ( 
@@ -376,7 +349,7 @@ module mycpu_top (
         .IF_ExceptType(IF_ExceptType),
         .MEM_ExceptType(MEM_ExceptType),
         .MEM_IsTLBP (MEM_IsTLBP ),
-        .WB_IsTLBW (WB_IsTLBW),
+        .MEM_IsTLBW (MEM_IsTLBW),
         .CMBus (CMBus.MMU ),
         .Phsy_Iaddr (Phsy_Iaddr ),
         .Phsy_Daddr  ( Phsy_Daddr),

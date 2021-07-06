@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 11:34:07
+ * @LastEditTime: 2021-07-06 16:33:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,6 +34,7 @@ module TOP_MEM (
     output logic [1:0]           IsExceptionOrEret,
     output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
+    output logic                 MEM_IsTLBW,
     output logic [31:0]          MEM_PC,
     output logic [31:0]          MEM_Instr
 );
@@ -51,6 +52,7 @@ module TOP_MEM (
     assign EMBus.MEM_Dst = MWBus.MEM_Dst;
     assign MEM_PC        = MWBus.MEM_PC;
     assign MEM_Instr     = MWBus.MEM_Instr;
+    assign MEM_IsTLBW    = MWBus.MEM_IsTLBW;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),

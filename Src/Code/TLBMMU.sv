@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-04 23:47:14
+ * @LastEditTime: 2021-07-06 16:31:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -19,7 +19,7 @@ module TLBMMU (
     input ExceptinPipeType       IF_ExceptType,
     input ExceptinPipeType       MEM_ExceptType,
     input logic                  MEM_IsTLBP,//表示是否是TLBP指令
-    input logic                  WB_IsTLBW,
+    input logic                  MEM_IsTLBW,
     CP0_MMU_Interface            CMBus,
     output logic [31:0]          Phsy_Iaddr,
     output logic [31:0]          Phsy_Daddr,
@@ -70,7 +70,7 @@ module TLBMMU (
         .s1_d                    (s1_d ),
         .s1_v                    (s1_v ),
         //write port
-        .we                      (WB_IsTLBW ),
+        .we                      (MEM_IsTLBW ),
         .w_index                 (CMBus.CP0_index ),
         .w_vpn2                  (CMBus.CP0_vpn2 ),
         .w_asid                  (CMBus.CP0_asid ),
