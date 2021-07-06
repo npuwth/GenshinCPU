@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-02 15:39:36
+ * @LastEditTime: 2021-07-06 11:34:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -169,7 +169,6 @@ interface ID_EXE_Interface();
 	logic                   ID_IsTLBP;
 	logic                   ID_IsTLBW;
 	logic                   ID_IsTLBR;
-	
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  		// StoreType信号
@@ -182,6 +181,10 @@ interface ID_EXE_Interface();
 	logic       [1:0]       ID_RegsReadSel;
 	logic 					ID_IsAImmeJump;
 	BranchType              ID_BranchType;
+    logic                   EXE_IsTLBW;
+    logic                   EXE_IsTLBR;
+	logic                   EXE_rt;
+	LoadType                EXE_LoadType;
 
 	modport ID (
 	output                  ID_BusA,            //从RF中读出的A数据
@@ -206,7 +209,11 @@ interface ID_EXE_Interface();
 	output                  ID_RegsReadSel,
 	output                  ID_IsTLBP,
 	output                  ID_IsTLBW,
-	output                  ID_IsTLBR
+	output                  ID_IsTLBR,
+	input                   EXE_IsTLBR,
+	input                   EXE_IsTLBW,
+	input                   EXE_rt,
+	input                   EXE_LoadType
 	);
 
 	modport EXE (
@@ -232,7 +239,11 @@ interface ID_EXE_Interface();
 	input                   ID_RegsReadSel,
 	input                   ID_IsTLBP,
 	input                   ID_IsTLBW,
-	input                   ID_IsTLBR
+	input                   ID_IsTLBR,
+	output                  EXE_IsTLBR,
+	output                  EXE_IsTLBW,
+	output                  EXE_rt,
+	output                  EXE_LoadType
 	);
 	
 endinterface
@@ -260,6 +271,7 @@ interface EXE_MEM_Interface();
 	logic                   EXE_IsTLBP;
 	logic                   EXE_IsTLBW;
 	logic                   EXE_IsTLBR;
+	logic       [1:0]       EXE_RegsReadSel;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -280,6 +292,7 @@ interface EXE_MEM_Interface();
 	output                  EXE_IsTLBP,
 	output                  EXE_IsTLBW,
 	output                  EXE_IsTLBR,
+	output                  EXE_RegsReadSel,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
 	input                   MEM_Result          //
@@ -304,6 +317,7 @@ interface EXE_MEM_Interface();
 	input                   EXE_IsTLBP,
 	input                   EXE_IsTLBW,
 	input                   EXE_IsTLBR,
+	input                   EXE_RegsReadSel,
 	output                  MEM_RegsWrType,
 	output                  MEM_Dst,
 	output                  MEM_Result

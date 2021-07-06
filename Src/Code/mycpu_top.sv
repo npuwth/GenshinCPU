@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-06 09:07:18
+ * @LastEditTime: 2021-07-06 11:54:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -66,9 +66,7 @@ module mycpu_top (
     logic                      MEM_Flush_Exception;       //来自exception
     logic                      DH_PCWr;                   //来自DataHazard
     logic                      DH_IDWr;                   //来自DataHazard
-    logic                      DH_EXEWr;                  //来自DataHazard
     logic                      EXE_Flush_DataHazard;      //来自DataHazard
-    logic                      MEM_Flush_DataHazard;      //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法
     logic [1:0]                IsExceptionOrEret;         //来自MEM级，表示有异常或异常返回
     logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
@@ -103,9 +101,6 @@ module mycpu_top (
     logic [4:0]                ID_rd;                     //来自ID级，用于读CP0寄存器
     logic [31:0]               CP0_Bus;                   //ID级从CP0读出的数据
 
-    logic [1:0]                ID_rsrtRead;               //来自ID级，用于DataHazard检测
-    logic [4:0]                EXE_rt;                    //来自EXE级，用于DataHazard检测
-    LoadType                   EXE_LoadType;              //来自EXE级，用于DataHazard检测
     BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
     logic [31:0]               EXE_PC;                    //来自EXE级，用于生成NPC
     logic [31:0]               EXE_Imm32;                 //来自EXE级，用于生成NPC  
@@ -132,11 +127,7 @@ module mycpu_top (
     logic [31:0]               Phsy_Iaddr;
     logic                      WB_IsTLBW;
     logic [31:0]               MEM_PC;
-    logic                      EXE_IsTLBW;
-    logic                      EXE_IsTLBR;
-    logic [31:0]               ID_Instr;
-    logic [31:0]               EXE_Instr;
-    logic [31:0]               MEM_Instr;
+
 
     assign Interrupt = {ext_int[0],ext_int[1],ext_int[2],ext_int[3],ext_int[4],ext_int[5]};  //硬件中断信号
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
@@ -162,9 +153,7 @@ module mycpu_top (
         .MEM_Flush_Exception    (MEM_Flush_Exception),
         .DH_PCWr                (DH_PCWr),
         .DH_IDWr                (DH_IDWr),
-        .DH_EXEWr               (DH_EXEWr),
         .EXE_Flush_DataHazard   (EXE_Flush_DataHazard), // 以上三个是数据冒险的3个控制信号
-        .MEM_Flush_DataHazard   (MEM_Flush_DataHazard),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         .IsExceptionorEret      (IsExceptionOrEret),
         .BranchFailed           (ID_Flush_BranchSolvement),
@@ -234,19 +223,7 @@ module mycpu_top (
         .m_axi_bready           (bready)
     );
 
-    HILO U_HILO (
-        .clk                   (aclk),
-        .rst                   (aresetn),
-        .MULT_DIV_finish       (EXE_Finish & HiLo_Not_Flush),
-        .EXE_MultiExtendOp     (EXE_MultiExtendOp),
-        .HIWr                  (EXE_RegsWrType.HIWr & HiLo_Not_Flush), //把写HI，LO统一在EXE级
-        .LOWr                  (EXE_RegsWrType.LOWr & HiLo_Not_Flush),
-        .Data_Wr               (EXE_BusA_L1),
-        .EXE_MULTDIVtoLO       (EXE_MULTDIVtoLO),
-        .EXE_MULTDIVtoHI       (EXE_MULTDIVtoHI),
-        .HI_Rd                 (HI_Bus),
-        .LO_Rd                 (LO_Bus)
-    );
+    
 
     cp0_reg U_CP0(
         .clk (aclk ),
@@ -270,23 +247,7 @@ module mycpu_top (
         .CP0_EntryLo1_Rd (CP0_EntryLo1 )
     );
 
-    DataHazard U_DataHazard ( 
-        //input
-        .ID_rs(ID_rs),
-        .ID_rt(ID_rt),
-        .ID_rsrtRead(ID_rsrtRead),
-        .ID_Instr (ID_Instr),
-        .EXE_Instr (EXE_Instr),
-        .MEM_Instr (MEM_Instr),
-        .EXE_rt(EXE_rt),
-        .EXE_ReadMEM(EXE_LoadType.ReadMem),
-        //output
-        .PC_Wr(DH_PCWr),
-        .ID_Wr(DH_IDWr),
-        .EXE_Flush(EXE_Flush_DataHazard),
-        .EXE_Wr(DH_EXEWr),
-        .MEM_Flush(MEM_Flush_DataHazard)
-    );
+
 
     TOP_IF U_TOP_IF ( 
         .clk (aclk ),
@@ -321,20 +282,18 @@ module mycpu_top (
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
         .WB_RegsWrType (WB_RegsWrType ),
-        .CP0_Bus (CP0_Bus ),
         .HI_Bus (HI_Bus ),
         .LO_Bus (LO_Bus ),
         .IIBus (IIBus.ID ),
         .IEBus (IEBus.ID ),
-        .EXE_IsTLBW (EXE_IsTLBW),
-        .EXE_IsTLBR (EXE_IsTLBR),
         //-------------------------------output-------------------//
-        .ID_rsrtRead  (ID_rsrtRead ),
         .ID_IsAImmeJump (ID_IsAImmeJump),
         .ID_rs(ID_rs),
         .ID_rt(ID_rt),
         .ID_rd(ID_rd),
-        .ID_Instr(ID_Instr)
+        .DH_PCWr(DH_PCWr),
+        .DH_IDWr(DH_IDWr),
+        .EXE_Flush_DataHazard(EXE_Flush_DataHazard)
     );
 
     TOP_EXE U_TOP_EXE ( 
@@ -361,10 +320,7 @@ module mycpu_top (
         .EXE_Imm32 (EXE_Imm32),
         .EXE_LoadType (EXE_LoadType),
         .EXE_rt(EXE_rt),
-        .EXE_MultiExtendOp(EXE_MultiExtendOp),
-        .EXE_IsTLBW(EXE_IsTLBW),
-        .EXE_IsTLBR(EXE_IsTLBR),
-        .EXE_Instr(EXE_Instr)
+        .EXE_MultiExtendOp(EXE_MultiExtendOp)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -381,6 +337,7 @@ module mycpu_top (
         .cpu_dbus (cpu_dbus),
         .axi_dbus (axi_dbus),
         .axi_ubus (axi_ubus),
+        .CP0_Bus  (CP0_Bus),
         //--------------------------output-------------------------//
         .ID_Flush_Exception (ID_Flush_Exception ),
         .EXE_Flush_Exception (EXE_Flush_Exception ),

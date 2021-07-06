@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-04 10:47:40
+ * @LastEditTime: 2021-07-06 11:34:07
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,6 +22,7 @@ module TOP_MEM (
     input logic  [31:0]          CP0_Cause,
     input logic                  WB_Wr,//表示是否拥堵
     input logic  [31:0]          Phsy_Daddr, 
+    input logic  [31:0]          CP0_Bus,
     EXE_MEM_Interface            EMBus,
     MEM_WB_Interface             MWBus,
     CPU_Bus_Interface            cpu_dbus,
@@ -41,6 +42,8 @@ module TOP_MEM (
 	RegsWrType                   MEM_RegsWrType;
 	ExceptinPipeType 	         MEM_ExceptType;
     logic                        MEM_Forward_data_sel;
+    logic [31:0]                 RFHILO_Bus;
+    logic [1:0]                  MEM_RegsReadSel;
     
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
@@ -72,9 +75,10 @@ module TOP_MEM (
         .EXE_IsTLBP              (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
+        .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MWBus.MEM_ALUOut ),
-        .MEM_OutB                (MWBus.MEM_OutB ),
+        .MEM_OutB                (RFHILO_Bus ),
         .MEM_PC                  (MWBus.MEM_PC ),
         .MEM_Instr               (MWBus.MEM_Instr ),
         .MEM_IsABranch           (MWBus.MEM_IsABranch ),
@@ -89,7 +93,8 @@ module TOP_MEM (
         .MEM_Lo                  (MWBus.MEM_Lo ),
         .MEM_IsTLBP              (MEM_IsTLBP),
         .MEM_IsTLBW              (MWBus.MEM_IsTLBW),
-        .MEM_IsTLBR              (MWBus.MEM_IsTLBR)
+        .MEM_IsTLBR              (MWBus.MEM_IsTLBR),
+        .MEM_RegsReadSel         (MEM_RegsReadSel)
     );
 
     Exception U_Exception(
@@ -140,6 +145,15 @@ module TOP_MEM (
         .AXIBus         (axi_dbus.master),
         .UBus           (axi_ubus.master),
         .Virt_Daddr     (Virt_Daddr)
+    );
+
+    MUX4to1 #(32) U_MUX_OutB2 ( 
+        .d0             (RFHILO_Bus),
+        .d1             (RFHILO_Bus),
+        .d2             (RFHILO_Bus),
+        .d3             (CP0_Bus),
+        .sel4_to_1      (MEM_RegsReadSel),
+        .y              (MWBus.MEM_OutB)
     );
 
 endmodule
