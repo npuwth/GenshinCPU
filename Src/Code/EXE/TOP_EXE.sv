@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 11:43:10
+ * @LastEditTime: 2021-07-06 21:50:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,7 +27,6 @@ module TOP_EXE (
     output logic              EXE_MULTDIVStall,
     output logic [31:0]       EXE_BusA_L1,//给IF
     output BranchType         EXE_BranchType,
-    output RegsWrType         EXE_RegsWrType,
     output logic [31:0]       EXE_PC,
     output logic [31:0]       EXE_Imm32
 );
@@ -57,9 +56,6 @@ module TOP_EXE (
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
-    assign EXE_MULTDIVtoHI    = EMBus.EXE_Hi;
-    assign EXE_MULTDIVtoLO    = EMBus.EXE_Lo;
-    assign EXE_RegsWrType     = EMBus.EXE_RegsWrType;
     assign IEBus.EXE_IsTLBR   = EMBus.EXE_IsTLBR;
     assign IEBUs.EXE_IsTLBW   = EMBus.EXE_IsTLBW;
     assign IEBus.EXE_rt       = EXE_rt;
@@ -111,7 +107,7 @@ module TOP_EXE (
         .EXE_ExceptType       (EXE_ExceptType ),
         .EXE_ALUSrcA          (EXE_ALUSrcA ),
         .EXE_ALUSrcB          (EXE_ALUSrcB ),
-        .EXE_RegsReadSel      (EXE_RegsReadSel ),
+        .EXE_RegsReadSel      (EMBus.EXE_RegsReadSel ),
         .EXE_IsAImmeJump      (EMBus.EXE_IsAImmeJump ),
         .EXE_BranchType       (EMBus.EXE_BranchType ),
         .EXE_Shamt            (EXE_Shamt ),
@@ -175,7 +171,7 @@ module TOP_EXE (
         .d0                   (EXE_BusB_L1),
         .d1                   (HI_Bus),
         .d2                   (LO_Bus),
-        .sel4_to_1            (EXE_RegsReadSel),
+        .sel4_to_1            (EMBus.EXE_RegsReadSel),
         .y                    (EMBus.EXE_OutB)
     );
 
@@ -198,7 +194,7 @@ module TOP_EXE (
     );
 
     MULTDIV U_MULTDIV(
-        .clk                 (clk),    
+        .clk                  (clk),    
         .rst                  (resetn),            
         .EXE_ResultA          (EXE_BusA_L1),
         .EXE_ResultB          (EXE_BusB_L1),

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 16:45:48
+ * @LastEditTime: 2021-07-06 21:30:26
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,9 +24,7 @@ module TOP_WB (
     output logic [4:0]           WB_Dst,
     output RegsWrType            WB_Final_Wr,
     output RegsWrType            WB_RegsWrType,
-    output logic [31:0]          WB_PC,
-    output logic [31:0]          WB_Hi,
-    output logic [31:0]          WB_Lo
+    output logic [31:0]          WB_PC
 );
     logic [31:0]                 WB_DMOut;
     logic [31:0]                 WB_ALUOut;

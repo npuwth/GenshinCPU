@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-06 11:34:54
+ * @LastEditTime: 2021-07-06 21:31:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -463,43 +463,43 @@ interface MEM_WB_Interface();
 
 endinterface
 
-interface WB_CP0_Interface ();
+// interface WB_CP0_Interface ();
     
-	logic                   WB_CP0Wr_MTC0;
-	logic                   WB_CP0Wr_TLBR;
-	logic [4:0]             WB_Dst;
-	logic [31:0]            WB_Result;
-	ExceptinPipeType        WB_ExceptType;
-	logic [31:0]            WB_PC;
-	logic                   WB_IsInDelaySlot;
-	logic [31:0]            WB_ALUOut;
-	logic                   WB_IsTLBR;
+// 	logic                   WB_CP0Wr_MTC0;
+// 	logic                   WB_CP0Wr_TLBR;
+// 	logic [4:0]             WB_Dst;
+// 	logic [31:0]            WB_Result;
+// 	ExceptinPipeType        WB_ExceptType;
+// 	logic [31:0]            WB_PC;
+// 	logic                   WB_IsInDelaySlot;
+// 	logic [31:0]            WB_ALUOut;
+// 	logic                   WB_IsTLBR;
 
-	modport WB ( 
-    output                  WB_CP0Wr_MTC0,
-	output                  WB_CP0Wr_TLBR,
-	output                  WB_Dst,
-	output                  WB_Result,
-	output                  WB_ExceptType,
-	output                  WB_PC,
-	output                  WB_IsInDelaySlot,
-	output                  WB_ALUOut,
-	output                  WB_IsTLBR
-	);
+// 	modport WB ( 
+//     output                  WB_CP0Wr_MTC0,
+// 	output                  WB_CP0Wr_TLBR,
+// 	output                  WB_Dst,
+// 	output                  WB_Result,
+// 	output                  WB_ExceptType,
+// 	output                  WB_PC,
+// 	output                  WB_IsInDelaySlot,
+// 	output                  WB_ALUOut,
+// 	output                  WB_IsTLBR
+// 	);
 
-	modport CP0 ( 
-    input                   WB_CP0Wr_MTC0,
-	input                   WB_CP0Wr_TLBR,
-	input                   WB_Dst,
-	input                   WB_Result,
-	input                   WB_ExceptType,
-	input                   WB_PC,
-	input                   WB_IsInDelaySlot,
-	input                   WB_ALUOut,
-	input                   WB_IsTLBR
-	);
+// 	modport CP0 ( 
+//     input                   WB_CP0Wr_MTC0,
+// 	input                   WB_CP0Wr_TLBR,
+// 	input                   WB_Dst,
+// 	input                   WB_Result,
+// 	input                   WB_ExceptType,
+// 	input                   WB_PC,
+// 	input                   WB_IsInDelaySlot,
+// 	input                   WB_ALUOut,
+// 	input                   WB_IsTLBR
+// 	);
 
-endinterface
+// endinterface
 
 interface CP0_MMU_Interface ();
 

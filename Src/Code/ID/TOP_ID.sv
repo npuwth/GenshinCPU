@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 11:52:36
+ * @LastEditTime: 2021-07-06 21:39:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,12 +22,8 @@ module TOP_ID (
     input RegsWrType         WB_RegsWrType,
     IF_ID_Interface          IIBus,//TODO: 不如改成IF_ID_Bus 
     ID_EXE_Interface         IEBus,
-    //---------------------------output------------------------------//
-    output logic [1:0]       ID_rsrtRead,  //用于数据旁路与阻塞    
+    //---------------------------output------------------------------//   
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
-    output logic [4:0]       ID_rs,
-    output logic [4:0]       ID_rt,
-    output logic [4:0]       ID_rd,
     output logic             DH_IDWr,
     output logic             DH_PCWr,
     output logic             EXE_Flush_DataHazard
@@ -39,15 +35,11 @@ module TOP_ID (
     logic                    ID_RF_ForwardA;
     logic                    ID_RF_ForwardB;
 
-    assign IIBus.ID_Instr = IEBus.ID_Instr;
-    assign IIBus.ID_PC    = IEBus.ID_PC;
+    assign IIBus.ID_Instr = IEBus.ID_Instr;//用于IF级的NPC
+    assign IIBus.ID_PC    = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
-    assign ID_rs          = IEBus.ID_rs;
-    assign ID_rt          = IEBus.ID_rt;
-    assign ID_rd          = IEBus.ID_rd;
-    assign ID_Instr       = IEBus.ID_Instr;
 
-    ID_Reg U_ID_Reg ( //TODO: 端口的连线还没改好
+    ID_Reg U_ID_Reg ( 
         .clk                 (clk ),
         .rst                 (resetn ),
         .ID_Flush            (ID_Flush ),
@@ -126,17 +118,16 @@ module TOP_ID (
     );
 
     DataHazard U_DataHazard ( 
-        //input
-        .ID_rs(ID_rs),
-        .ID_rt(ID_rt),
-        .ID_rsrtRead(ID_rsrtRead),
-        .EXE_rt(IEBus.EXE_rt),
-        .EXE_ReadMEM(IEBus.EXE_LoadType.ReadMem),
-        .EXE_Instr (IEBus.EXE_Instr),
-        //output
-        .PC_Wr(DH_PCWr),
-        .ID_Wr(DH_IDWr),
-        .EXE_Flush(EXE_Flush_DataHazard)
+        .ID_rs               (ID_rs),
+        .ID_rt               (ID_rt),
+        .ID_rsrtRead         (ID_rsrtRead),//这个信号在Control里的生成有问题
+        .EXE_rt              (IEBus.EXE_rt),
+        .EXE_ReadMEM         (IEBus.EXE_LoadType.ReadMem),
+        .EXE_Instr           (IEBus.EXE_Instr),
+        //-----------------------output-----------------------//
+        .PC_Wr               (DH_PCWr),
+        .ID_Wr               (DH_IDWr),
+        .EXE_Flush           (EXE_Flush_DataHazard)
     );
 
 endmodule  

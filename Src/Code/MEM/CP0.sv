@@ -39,17 +39,13 @@ module cp0_reg (
     logic                   TimCount2;
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
     
-    logic   [31:0]          CP0_BadVAddr;               //8号寄存器  BadVAddr寄存器的值:最新地址相关例外的出错地址
-    logic   [31:0]          CP0_Count;                  //9号寄存器  Count寄存器的值
-    logic   [31:0]          CP0_Compare;                //11号寄存器 Compare寄存器的值
-    logic   [31:0]          CP0_Status;                 //12号寄存器 Status寄存器的值
-    logic   [31:0]          CP0_Cause;                  //13号寄存器 Cause寄存器的值
-    logic   [31:0]          CP0_EPC;                    //14号寄存器 EPC寄存器的值
-    logic   [31:0]          CP0_Index;                  //0号
-    logic   [31:0]          CP0_EntryHi;                //10号
-    logic   [31:0]          CP0_EntryLo0;               //2号
-    logic   [31:0]          CP0_EntryLo1;               //3号
-
+    cp0_regs CP0;
+    
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.
+        end
+    end
 
 
 

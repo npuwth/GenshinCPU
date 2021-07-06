@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-06 16:46:57
+ * @LastEditTime: 2021-07-06 22:06:49
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,17 +57,17 @@ module mycpu_top (
     output [3:0]               debug_wb_rf_wen,    
     output [4:0]               debug_wb_rf_wnum   
 );
-    AsynExceptType             Interrupt;
-    logic [31:0]               WB_PC;                     //来自WB级
-    logic [31:0]               WB_Result;                 //来自WB级
-    logic [4:0]                WB_Dst;                    //来自WB级
+    logic [31:0]               WB_PC;                     //来自WB级,用于Debug
+    logic [31:0]               WB_Result;                 //来自WB级,用于Debug
+    logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
+    RegsWrType                 WB_Final_Wr;               //来自
     logic                      ID_Flush_Exception;        //来自exception
     logic                      EXE_Flush_Exception;       //来自exception
     logic                      MEM_Flush_Exception;       //来自exception
     logic                      DH_PCWr;                   //来自DataHazard
     logic                      DH_IDWr;                   //来自DataHazard
     logic                      EXE_Flush_DataHazard;      //来自DataHazard
-    logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法
+    logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [1:0]                IsExceptionOrEret;         //来自MEM级，表示有异常或异常返回
     logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
     logic                      ID_IsAImmeJump;            //来自ID级，表示是j，jal跳转
@@ -85,55 +85,27 @@ module mycpu_top (
     logic                      WB_DisWr;                  //来自WRFlushControl,传至WB级，用于生成WB_Final_Wr
     logic                      HiLo_Not_Flush;            //来自WRFlushControl,传至HILO寄存器
 
-    logic                      EXE_Finish;                //来自EXE，用于乘除法是否结束  
-
     logic [31:0]               EXE_BusA_L1;               //来自EXE，用于MT指令写HiLo，也用于生成jr的npc
-    logic [31:0]               HI_Bus;                    //ID级从HI读出的数据，放入TOP_ID
-    logic [31:0]               LO_Bus;                    //ID级从LO读出的数据，放入TOP_ID
-    logic [31:0]               EXE_MULTDIVtoHI;           //EXE级乘除法运算结果写入HI
-    logic [31:0]               EXE_MULTDIVtoLO;           //EXE级乘除法运算结果写入LO
-    RegsWrType                 EXE_RegsWrType;            //EXE级的写使能，用于HILO的写
-    RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
-    RegsWrType                 WB_RegsWrType;
     
-    logic [4:0]                ID_rs;                     //来自ID级，用于DataHazard检测
-    logic [4:0]                ID_rt;                     //来自ID级，用于DataHazard检测  
-    logic [4:0]                ID_rd;                     //来自ID级，用于读CP0寄存器
-    logic [31:0]               CP0_Bus;                   //ID级从CP0读出的数据
+    RegsWrType                 WB_RegsWrType;             //WB级的写使能
 
     BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
-    logic [31:0]               EXE_PC;                    //来自EXE级，用于生成NPC
-    logic [31:0]               EXE_Imm32;                 //来自EXE级，用于生成NPC  
-    
-    logic [31:0]               CP0_BadVAddr;              //CP0寄存器
-    logic [31:0]               CP0_Count;                 //CP0寄存器
-    logic [31:0]               CP0_Compare;               //CP0寄存器
-    logic [31:0]               CP0_Status;                //CP0寄存器
-    logic [31:0]               CP0_Cause;                 //CP0寄存器
-    logic [31:0]               CP0_EPC;                   //CP0寄存器 
-    logic [31:0]               CP0_Index;                 //CP0寄存器
-    logic [31:0]               CP0_EntryHi;               //CP0寄存器 
-    logic [31:0]               CP0_EntryLo0;              //CP0寄存器 
-    logic [31:0]               CP0_EntryLo1;              //CP0寄存器 
-
-    logic [31:0]               WB_Hi;
-    logic [31:0]               WB_Lo;
-    logic [1:0]                EXE_MultiExtendOp;    
-    logic                      MEM_IsTLBP;
-    logic [31:0]               Virt_Daddr;
-    logic [31:0]               Phsy_Daddr;
-    logic [31:0]               IF_NPC;
-    logic [31:0]               Virt_Iaddr;
-    logic [31:0]               Phsy_Iaddr;
-    logic                      MEM_IsTLBW;
-    logic [31:0]               MEM_PC;
-
-
+    logic [31:0]               EXE_PC;                    //来自EXE级，传至IF，用于生成NPC
+    logic [31:0]               EXE_Imm32;                 //来自EXE级，传至IF，用于生成NPC  
+    //----------------------------------------------关于TLBMMU-----------------------------------------------------//
+    logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
+    logic [31:0]               Virt_Daddr;                //传至TLBMMU，用于TLB转换
+    logic [31:0]               Phsy_Daddr;                //传至TLBMMU，用于TLB转换
+    logic [31:0]               Virt_Iaddr;                //传至TLBMMU，用于TLB转换
+    logic [31:0]               Phsy_Iaddr;                //传至TLBMMU，用于TLB转换
+    logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
+    logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
+    //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
-    assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                       //4位字节写使能
+    assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;                                                        //写回寄存器的地址
-
+    //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_Bus_Interface           cpu_ibus();
     CPU_Bus_Interface           cpu_dbus();
     AXI_Bus_Interface           axi_ibus();
@@ -145,7 +117,7 @@ module mycpu_top (
     MEM_WB_Interface            MWBus();
     WB_CP0_Interface            WCBus();
     CP0_MMU_Interface           CMBus();
-
+    //--------------------------------------------------------------------------------------------------------------//
     WrFlushControl U_WRFlushControl (
         .ID_Flush_Exception     (ID_Flush_Exception),
         .EXE_Flush_Exception    (EXE_Flush_Exception),
@@ -243,7 +215,6 @@ module mycpu_top (
         .IIBus  ( IIBus.IF),
         .cpu_ibus (cpu_ibus),
         .axi_ibus (axi_ibus),
-        .IF_NPC (IF_NPC),
         .Virt_Iaddr(Virt_Iaddr)
     );
 
@@ -255,15 +226,10 @@ module mycpu_top (
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
         .WB_RegsWrType (WB_RegsWrType ),
-        .HI_Bus (HI_Bus ),
-        .LO_Bus (LO_Bus ),
         .IIBus (IIBus.ID ),
         .IEBus (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump (ID_IsAImmeJump),
-        .ID_rs(ID_rs),
-        .ID_rt(ID_rt),
-        .ID_rd(ID_rd),
         .DH_PCWr(DH_PCWr),
         .DH_IDWr(DH_IDWr),
         .EXE_Flush_DataHazard(EXE_Flush_DataHazard)
@@ -282,18 +248,11 @@ module mycpu_top (
         .EMBus (EMBus.EXE ),
         //--------------------------output-------------------------//
         .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
-        .EXE_Finish (EXE_Finish ),
         .EXE_MULTDIVStall  (EXE_MULTDIVStall),
-        .EXE_MULTDIVtoHI (EXE_MULTDIVtoHI),
-        .EXE_MULTDIVtoLO (EXE_MULTDIVtoLO),
         .EXE_BusA_L1 (EXE_BusA_L1),
         .EXE_BranchType (EXE_BranchType),
-        .EXE_RegsWrType (EXE_RegsWrType ),
         .EXE_PC (EXE_PC),
-        .EXE_Imm32 (EXE_Imm32),
-        .EXE_LoadType (EXE_LoadType),
-        .EXE_rt(EXE_rt),
-        .EXE_MultiExtendOp(EXE_MultiExtendOp)
+        .EXE_Imm32 (EXE_Imm32)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -301,8 +260,6 @@ module mycpu_top (
         .resetn (aresetn ),
         .MEM_Flush (MEM_Flush ),
         .MEM_Wr (MEM_Wr ),
-        .CP0_Status (CP0_Status ),
-        .CP0_Cause (CP0_Cause ),
         .WB_Wr (WB_Wr),
         .Phsy_Daddr(Phsy_Daddr),
         .EMBus (EMBus.MEM ),
@@ -310,7 +267,6 @@ module mycpu_top (
         .cpu_dbus (cpu_dbus),
         .axi_dbus (axi_dbus),
         .axi_ubus (axi_ubus),
-        .CP0_Bus  (CP0_Bus),
         //--------------------------output-------------------------//
         .ID_Flush_Exception (ID_Flush_Exception ),
         .EXE_Flush_Exception (EXE_Flush_Exception ),
@@ -319,8 +275,7 @@ module mycpu_top (
         .Virt_Daddr(Virt_Daddr),
         .MEM_IsTLBP(MEM_IsTLBP),
         .MEM_IsTLBW(MEM_IsTLBW),
-        .MEM_PC(MEM_PC),
-        .MEM_Instr(MEM_Instr)
+        .MEM_PC(MEM_PC)
     );
 
     TOP_WB U_TOP_WB ( 
@@ -330,15 +285,12 @@ module mycpu_top (
         .WB_Wr (WB_Wr ),
         .WB_DisWr (WB_DisWr ),
         .MWBus (MWBus.WB ),
-        .WCBus (WCBus.WB ),
         //--------------------------output-------------------------//
         .WB_Result (WB_Result ),
         .WB_Dst (WB_Dst ),
         .WB_Final_Wr (WB_Final_Wr ),
         .WB_RegsWrType (WB_RegsWrType),
-        .WB_PC(WB_PC ),
-        .WB_Hi (WB_Hi ),
-        .WB_Lo (WB_Lo )
+        .WB_PC(WB_PC )
     );
 
     TLBMMU U_TLBMMU ( 

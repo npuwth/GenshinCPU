@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 16:33:50
+ * @LastEditTime: 2021-07-06 22:07:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,11 +18,8 @@ module TOP_MEM (
     input logic                  resetn,
     input logic                  MEM_Flush,
     input logic                  MEM_Wr,
-    input logic  [31:0]          CP0_Status,
-    input logic  [31:0]          CP0_Cause,
     input logic                  WB_Wr,//表示是否拥堵
     input logic  [31:0]          Phsy_Daddr, 
-    input logic  [31:0]          CP0_Bus,
     EXE_MEM_Interface            EMBus,
     MEM_WB_Interface             MWBus,
     CPU_Bus_Interface            cpu_dbus,
@@ -35,23 +32,21 @@ module TOP_MEM (
     output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
     output logic                 MEM_IsTLBW,
-    output logic [31:0]          MEM_PC,
-    output logic [31:0]          MEM_Instr
+    output logic [31:0]          MEM_PC
 );
 
 	StoreType     		         MEM_StoreType;
-	RegsWrType                   MEM_RegsWrType;
+	RegsWrType                   MEM_RegsWrType; 
 	ExceptinPipeType 	         MEM_ExceptType;
     logic                        MEM_Forward_data_sel;
     logic [31:0]                 RFHILO_Bus;
     logic [1:0]                  MEM_RegsReadSel;
-    
+
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
     assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType_final;
     assign EMBus.MEM_Dst = MWBus.MEM_Dst;
     assign MEM_PC        = MWBus.MEM_PC;
-    assign MEM_Instr     = MWBus.MEM_Instr;
     assign MEM_IsTLBW    = MWBus.MEM_IsTLBW;
 
     MEM_Reg U_MEM_Reg ( 
