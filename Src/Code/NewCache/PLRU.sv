@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:14:40
- * @LastEditTime: 2021-06-30 20:52:54
+ * @LastEditTime: 2021-07-04 12:36:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\NewCache\plru.sv
@@ -14,7 +14,7 @@ module PLRU #(
     input clk,
     input resetn,
 
-    input [SET_NUM-1:0] access, //表示这次命中了哪一路 这是独热码
+    input [SET_NUM-1:0] access, //表示这次命中了哪一路 这是独热码 access的第i位 表示第i路命中
     input update,               //表示命中了  不然就没法表示没有访存导致的不需要更新lru的情况
 
     output [$clog2(SET_NUM)-1:0] lru //表示 这次如果替换 替换哪一路
@@ -27,7 +27,7 @@ generate
 if(SET_NUM == 2) begin
     assign lru = state;
 end else begin
-    assign lru = state[2] == 1'b0 ? state[2-:2] : {state[2], state[0]};
+    assign lru = state[2] == 1'b0 ? state[2-:2] : {state[2], state[0]}; //state[2-:2] 即 state[2:1]
 end
 endgenerate
 
@@ -47,7 +47,7 @@ if(SET_NUM == 2) begin
     end
 end else  begin
     always_comb begin
-        state_d = state;//好习惯啊
+        state_d = state;    //好习惯啊
 
         casez(access)
             4'b1???: begin
