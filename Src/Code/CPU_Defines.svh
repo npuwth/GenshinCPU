@@ -127,6 +127,76 @@ typedef struct packed {
 	logic 					isBranch;
 } BranchType;
 
+// CP0 registers
+
+typedef struct packed {
+	logic    [31:31]	 P;
+	logic    [3:0]       Index;
+} CP0_Index;
+
+typedef struct packed {
+	logic    [25:6]	     PFN0;
+	logic    [5:3]       C0;
+	logic    [2:2]       D0;
+	logic    [1:1]       V0;
+	logic    [0:0]       G0;
+} CP0_EntryLo0;
+
+typedef struct packed {
+	logic    [25:6]	     PFN1;
+	logic    [5:3]       C1;
+	logic    [2:2]       D1;
+	logic    [1:1]       V1;
+	logic    [0:0]       G1;
+} CP0_EntryLo1;
+
+typedef struct packed {
+	logic    [31:13]	 VPN2;
+	logic    [7:0]       C0;
+} CP0_EntryHi;
+
+typedef struct packed {
+	// logic cu3, cu2, cu1, cu0;
+	// logic rp, fr, re, mx;
+	// logic px, bev, ts, sr;
+	// logic nmi, zero;
+	// logic [1:0] impl;
+	// logic [7:0] im;
+	// logic kx, sx, ux, um;
+	// logic r0, erl, exl, ie;
+	logic  [7:0] IM7_0;
+	logic  [1:1] EXL;
+	logic  [0:0] IE;
+} CP0_Status;
+
+typedef struct packed {
+	// logic bd, zero30;
+	// logic [1:0] ce;
+	// logic [3:0] zero27_24;
+	// logic iv, wp;
+	// logic [5:0] zero21_16;
+	// logic [7:0] ip;
+	// logic zero7;
+	// logic [4:0] exc_code;
+	// logic [1:0] zero1_0;
+	logic [31:31] BD;
+	logic [30:30] TI;
+	logic [15:10] IP7_2;
+	logic [9:8]   IP1_0;
+	logic [6:2]   ExcCode;
+} CP0_Cause;
+
+typedef struct packed {
+	CP0_Index       Index;
+	CP0_EntryLo0    EntryLo0;
+	CP0_EntryLo1    EntryLo1;
+	logic [31:0]    BadVAddr;
+	logic [31:0]    Count;
+	CP0_EntryHi     EntryHi;
+	logic [31:0]    Compare;
+	CP0_Status      Status;
+	CP0_Cause  	    Cause;
+} cp0_regs;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
 //-------------------------------------------------------------------------------------------------//
