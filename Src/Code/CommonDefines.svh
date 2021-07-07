@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-02 15:51:07
+ * @LastEditTime: 2021-07-07 19:58:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -108,11 +108,26 @@
 
 //***************************  与CP0有关的宏定义  ***************************
 
-`define InterruptNotAssert  1'b0     // 取消中断的声明
-`define InterruptAssert     1'b1     // 开启中断的声明
-`define InDelaySlot         1'b1     // 延迟槽指令
-`define ZeroWord            32'h0    // 寄存器32位全0信号
-
+`define InterruptNotAssert      1'b0     // 取消中断的声明
+`define InterruptAssert         1'b1     // 开启中断的声明
+`define IsInDelaySlot           1'b1     // 延迟槽指令
+`define ZeroWord                32'h0    // 寄存器32位全0信号
+//异常定义
+`define EX_None                 4'b0     //无异常
+`define EX_Interrupt            4'b0001  //
+`define EX_WrongAddressinIF     4'b0010
+`define EX_ReservedInstruction  4'b0011
+`define EX_Syscall              4'b0100
+`define EX_Break                4'b0101
+`define EX_Eret                 4'b0110
+`define EX_Trap                 4'b0111
+`define EX_Overflow             4'b1000
+`define EX_WrWrongAddressinMEM  4'b1001
+`define EX_RdWrongAddressinMEM  4'b1010
+`define EX_TLBRefill            4'b1011
+`define EX_TLBInvalid           4'b1100
+`define EX_TLBModified          4'b1101
+`define EX_Refetch              4'b1110  
 // CP0寄存器的宏定义  （序号定义）
 `define CP0_REG_BADVADDR    5'd8
 `define CP0_REG_COUNT       5'd9

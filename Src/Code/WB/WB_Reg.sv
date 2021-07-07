@@ -34,8 +34,6 @@ module WB_Reg (
 	  input logic                         MEM_IsABranch,
 	  input logic                         MEM_IsAImmeJump,
 	  input logic                         MEM_IsInDelaySlot,
-    input logic                         MEM_IsTLBW,
-    input logic                         MEM_IsTLBR,
 //------------------------------------------------------------------//
     output logic		[31:0] 		          WB_ALUOut,	
     output logic    [31:0]              WB_Hi,
@@ -51,9 +49,7 @@ module WB_Reg (
 	  output ExceptinPipeType 		        WB_ExceptType,
 	  output logic                        WB_IsABranch,
 	  output logic                        WB_IsAImmeJump,
-	  output logic                        WB_IsInDelaySlot,
-    output logic                        WB_IsTLBW,
-    output logic                        WB_IsTLBR
+	  output logic                        WB_IsInDelaySlot
 );
 
   always_ff @(posedge clk ) begin
@@ -73,8 +69,6 @@ module WB_Reg (
       WB_Instr                          <= 32'b0;
       WB_Hi                             <= 32'b0;
       WB_Lo                             <= 32'b0;
-      WB_IsTLBW                         <= 1'b0;
-      WB_IsTLBR                         <= 1'b0;
     end
     else if( WB_Wr ) begin
       WB_WbSel                          <= MEM_WbSel;
@@ -92,8 +86,6 @@ module WB_Reg (
       WB_Instr                          <= MEM_Instr;
       WB_Hi                             <= MEM_Hi;
       WB_Lo                             <= MEM_Lo;
-      WB_IsTLBW                         <= MEM_IsTLBW;
-      WB_IsTLBR                         <= MEM_IsTLBR;
     end
   end
 

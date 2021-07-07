@@ -18,8 +18,11 @@
     input RegsWrType           MEM_RegsWrType,  
     input ExceptinPipeType     MEM_ExceptType,        //译码执行阶段收集到的异常信息
     input logic [31:0]         MEM_PC,                //用于判断取指令地址错例外
-    input logic [31:0]         CP0_Status,            //CP0 status寄存器
-    input logic [31:0]         CP0_Cause,             //CP0 cause寄存器
+    input logic [7:0]          CP0_Status_IM7_0,
+    input logic                CP0_Status_EXL,
+    input logic                CP0_Status_IE,
+    input logic [7:2]          CP0_Cause_IP7_2,
+    input logic [1:0]          CP0_Cause_IP1_0,
     output RegsWrType          MEM_RegsWrType_final,  //要向下一级传递的RegsWrType
     output logic               ID_Flush,              //Flush信号
     output logic               EXE_Flush,
@@ -53,7 +56,7 @@ always_comb begin
     end
 end
 
-assign MEM_ExceptType_final.Interrupt           = (((CP0_Cause[15:8] & CP0_Status[15:8]) != 8'b0) && (CP0_Status[1] == 1'b0) && (CP0_Status[0] == 1'b1)) ?1'b1:1'b0;
+assign MEM_ExceptType_final.Interrupt           = ((({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) && CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1)) ?1'b1:1'b0;
 assign MEM_ExceptType_final.WrongAddressinIF    = (MEM_PC[1:0] != 2'b00 )?1'b1:1'b0;
 assign MEM_ExceptType_final.ReservedInstruction = MEM_ExceptType.ReservedInstruction;
 assign MEM_ExceptType_final.Syscall             = MEM_ExceptType.Syscall;

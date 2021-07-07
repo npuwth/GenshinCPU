@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-06 22:06:49
+ * @LastEditTime: 2021-07-07 22:19:53
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -262,8 +262,10 @@ module mycpu_top (
         .MEM_Wr (MEM_Wr ),
         .WB_Wr (WB_Wr),
         .Phsy_Daddr(Phsy_Daddr),
+        .Interrupt(ext_int),
         .EMBus (EMBus.MEM ),
         .MWBus (MWBus.MEM ),
+        .CMBus (CMBus ),
         .cpu_dbus (cpu_dbus),
         .axi_dbus (axi_dbus),
         .axi_ubus (axi_ubus),

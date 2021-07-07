@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-06 22:28:30
+ * @LastEditTime: 2021-07-07 22:22:43
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -342,6 +342,7 @@ interface EXE_MEM_Interface();
 	logic                   EXE_IsTLBW;
 	logic                   EXE_IsTLBR;
 	logic       [1:0]       EXE_RegsReadSel;
+	logic       [4:0]       EXE_rd;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -363,6 +364,7 @@ interface EXE_MEM_Interface();
 	output                  EXE_IsTLBW,
 	output                  EXE_IsTLBR,
 	output                  EXE_RegsReadSel,
+	output                  EXE_rd,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
 	input                   MEM_Result          //
@@ -388,6 +390,7 @@ interface EXE_MEM_Interface();
 	input                   EXE_IsTLBW,
 	input                   EXE_IsTLBR,
 	input                   EXE_RegsReadSel,
+	input                   EXE_rd,
 	output                  MEM_RegsWrType,
 	output                  MEM_Dst,
 	output                  MEM_Result
@@ -414,12 +417,18 @@ interface MEM_WB_Interface();
 	logic                   MEM_IsInDelaySlot;
 	logic                   WB_IsABranch;
 	logic                   WB_IsAImmeJump;
-	logic                   MEM_IsTLBW;
-	logic                   MEM_IsTLBR;
+	ExceptinPipeType        WB_ExceptType;
+	logic       [31:0]      WB_PC;
+	logic                   WB_IsInDelaySlot;
+	logic       [31:0]      WB_ALUOut;
   
 	modport MEM ( 
 	input                   WB_IsABranch,
 	input                   WB_IsAImmeJump,	
+	input                   WB_ExceptType,
+	input                   WB_PC,
+	input                   WB_IsInDelaySlot,
+	input                   WB_ALUOut,
     output					MEM_ALUOut,		
 	output                  MEM_Hi,
 	output                  MEM_Lo,	
@@ -434,9 +443,7 @@ interface MEM_WB_Interface();
 	output					MEM_ExceptType_final,
 	output					MEM_IsABranch,
 	output					MEM_IsAImmeJump,
-	output                  MEM_IsInDelaySlot,
-	output                  MEM_IsTLBW,
-	output                  MEM_IsTLBR
+	output                  MEM_IsInDelaySlot
 	);
 
 	modport WB ( 
@@ -455,10 +462,12 @@ interface MEM_WB_Interface();
 	input					MEM_IsABranch,
 	input					MEM_IsAImmeJump,
 	input                   MEM_IsInDelaySlot,
-	input                   MEM_IsTLBW,
-	input                   MEM_IsTLBR,
 	output                  WB_IsABranch,
-	output                  WB_IsAImmeJump
+	output                  WB_IsAImmeJump,
+	output                   WB_ExceptType,
+	output                   WB_PC,
+	output                   WB_IsInDelaySlot,
+	output                   WB_ALUOut
 	);
 
 endinterface
@@ -502,34 +511,34 @@ endinterface
 // endinterface
 
 interface CP0_MMU_Interface ();
-
-    logic [18:0]            CP0_vpn2;
-	logic [7:0]             CP0_asid;
-	logic [19:0]            CP0_pfn0;
-	logic [2:0]             CP0_c0;
-	logic                   CP0_d0;
-	logic                   CP0_v0;
-	logic                   CP0_g0;
-	logic [19:0]            CP0_pfn1;
-	logic [2:0]             CP0_c1;
-	logic                   CP0_d1;
-	logic                   CP0_v1;
-	logic                   CP0_g1;
-	logic [3:0]             CP0_index; //16项的TLB，log16,所以位宽是4
-    logic [18:0]            MMU_vpn2;
-	logic [7:0]             MMU_asid;
-	logic [19:0]            MMU_pfn0;
-	logic [2:0]             MMU_c0;
-	logic                   MMU_d0;
-	logic                   MMU_v0;
-	logic                   MMU_g0;
-	logic [19:0]            MMU_pfn1;
-	logic [2:0]             MMU_c1;
-	logic                   MMU_d1;
-	logic                   MMU_v1;
-	logic                   MMU_g1;
-	logic [3:0]             MMU_index;
-	logic                   MMU_s1found;
+     
+    logic [18:0]            CP0_vpn2;   //用于查TLB和写TLB  
+	logic [7:0]             CP0_asid;   //用于查TLB和写TLB  
+	logic [19:0]            CP0_pfn0;   //用于查TLB和写TLB  
+	logic [2:0]             CP0_c0;     //用于查TLB和写TLB
+	logic                   CP0_d0;     //用于查TLB和写TLB
+	logic                   CP0_v0;     //用于查TLB和写TLB
+	logic                   CP0_g0;     //用于查TLB和写TLB
+	logic [19:0]            CP0_pfn1;   //用于查TLB和写TLB  
+	logic [2:0]             CP0_c1;     //用于查TLB和写TLB
+	logic                   CP0_d1;     //用于查TLB和写TLB
+	logic                   CP0_v1;     //用于查TLB和写TLB
+	logic                   CP0_g1;     //用于查TLB和写TLB
+	logic [3:0]             CP0_index;  //16项的TLB，log16,所以位宽是4
+    logic [18:0]            MMU_vpn2;   //用于TLBR，写CP0    
+	logic [7:0]             MMU_asid;   //用于TLBR，写CP0  
+	logic [19:0]            MMU_pfn0;   //用于TLBR，写CP0  
+	logic [2:0]             MMU_c0;     //用于TLBR，写CP0
+	logic                   MMU_d0;     //用于TLBR，写CP0
+	logic                   MMU_v0;     //用于TLBR，写CP0
+	logic                   MMU_g0;     //用于TLBR，写CP0
+	logic [19:0]            MMU_pfn1;   //用于TLBR，写CP0 
+	logic [2:0]             MMU_c1;     //用于TLBR，写CP0
+	logic                   MMU_d1;     //用于TLBR，写CP0
+	logic                   MMU_v1;     //用于TLBR，写CP0
+	logic                   MMU_g1;     //用于TLBR，写CP0
+	logic [3:0]             MMU_index;  //用于TLBP，写CP0
+	logic                   MMU_s1found;//用于TLBP，写CP0
 
 	modport CP0 ( 
     output                  CP0_vpn2,

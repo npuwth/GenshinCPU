@@ -35,7 +35,6 @@ module TOP_WB (
     logic [1:0]                  WB_WbSel;
     ExceptinPipeType             WB_ExceptType;
     logic                        WB_IsInDelaySlot;
-    logic                        WB_IsTLBR;
 
     assign WB_Final_Wr = (WB_DisWr)? '0: WB_RegsWrType ;  // Dcache 停滞流水线时 wb级数据不能写入RF
     
@@ -59,8 +58,6 @@ module TOP_WB (
         .MEM_IsABranch        (MWBus.MEM_IsABranch ),
         .MEM_IsAImmeJump      (MWBus.MEM_IsAImmeJump ),
         .MEM_IsInDelaySlot    (MWBus.MEM_IsInDelaySlot ),
-        .MEM_IsTLBW           (MWBus.MEM_IsTLBW),
-        .MEM_IsTLBR           (MWBus.MEM_IsTLBR),
         //-------------------------out----------------------------//
         .WB_ALUOut            (WB_ALUOut ),
         .WB_Hi                (WB_Hi ),
@@ -76,9 +73,7 @@ module TOP_WB (
         .WB_ExceptType        (WB_ExceptType ),
         .WB_IsABranch         (MWBus.WB_IsABranch ),
         .WB_IsAImmeJump       (MWBus.WB_IsAImmeJump ),
-        .WB_IsInDelaySlot     (WB_IsInDelaySlot ),
-        .WB_IsTLBW            (WB_IsTLBW),
-        .WB_IsTLBR            (WB_IsTLBR)
+        .WB_IsInDelaySlot     (WB_IsInDelaySlot )
     );
 
     EXT2 U_EXT2(

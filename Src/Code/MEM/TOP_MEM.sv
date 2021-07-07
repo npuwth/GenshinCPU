@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 22:07:22
+ * @LastEditTime: 2021-07-07 22:19:07
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,8 +20,10 @@ module TOP_MEM (
     input logic                  MEM_Wr,
     input logic                  WB_Wr,//表示是否拥堵
     input logic  [31:0]          Phsy_Daddr, 
+    input logic  [5:0]           Interrupt,//中断
     EXE_MEM_Interface            EMBus,
     MEM_WB_Interface             MWBus,
+    CP0_MMU_Bus                  CMBus,
     CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
@@ -41,6 +43,14 @@ module TOP_MEM (
     logic                        MEM_Forward_data_sel;
     logic [31:0]                 RFHILO_Bus;
     logic [1:0]                  MEM_RegsReadSel;
+    logic [4:0]                  MEM_rd;
+    logic [31:0]                 MEM_Result;
+    //传给Exception
+    logic [7:0]                  CP0_Status_IM7_0;
+    logic                        CP0_Status_EXL;
+    logic                        CP0_Status_IE;
+    logic [7:2]                  CP0_Cause_IP7_2;
+    logic [1:0]                  CP0_Cause_IP1_0;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
@@ -48,6 +58,7 @@ module TOP_MEM (
     assign EMBus.MEM_Dst = MWBus.MEM_Dst;
     assign MEM_PC        = MWBus.MEM_PC;
     assign MEM_IsTLBW    = MWBus.MEM_IsTLBW;
+    assign EMBus.MEM_Result = MEM_Result;//传给EXE用于旁路
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -73,6 +84,7 @@ module TOP_MEM (
         .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
+        .EXE_rd                  (EMBus.EXE_rd),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MWBus.MEM_ALUOut ),
         .MEM_OutB                (RFHILO_Bus ),
@@ -90,8 +102,9 @@ module TOP_MEM (
         .MEM_Lo                  (MWBus.MEM_Lo ),
         .MEM_IsTLBP              (MEM_IsTLBP),
         .MEM_IsTLBW              (MWBus.MEM_IsTLBW),
-        .MEM_IsTLBR              (MWBus.MEM_IsTLBR),
-        .MEM_RegsReadSel         (MEM_RegsReadSel)
+        .MEM_IsTLBR              (MEM_IsTLBR),
+        .MEM_RegsReadSel         (MEM_RegsReadSel),
+        .MEM_rd                  (MEM_rd)
     );
 
     Exception U_Exception(
@@ -100,8 +113,11 @@ module TOP_MEM (
         .MEM_RegsWrType          (MEM_RegsWrType),              
         .MEM_ExceptType          (MEM_ExceptType),            
         .MEM_PC                  (MWBus.MEM_PC),                     
-        .CP0_Status              (CP0_Status),
-        .CP0_Cause               (CP0_Cause),            
+        .CP0_Status_IM7_0        (CP0_Status_IM7_0 ),
+        .CP0_Status_EXL          (CP0_Status_EXL ),
+        .CP0_Status_IE           (CP0_Status_IE ),
+        .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
+        .CP0_Cause_IP1_0         ( CP0_Cause_IP1_0),      
     //------------------------------out--------------------------------------------//
         .MEM_RegsWrType_final    (MWBus.MEM_RegsWrType_final),            
         .ID_Flush                (ID_Flush_Exception),                
@@ -110,6 +126,31 @@ module TOP_MEM (
         .IsExceptionOrEret       (IsExceptionOrEret),            
         .MEM_ExceptType_final    (MWBus.MEM_ExceptType_final)                    
     );
+
+    cp0_reg U_CP0 (
+        .clk (clk ),
+        .rst (resetn ),
+        .Interrupt (Interrupt ),
+        .CP0_RdAddr (MEM_rd ),
+        .CP0_RdData (CP0_Bus ),
+        .MEM_RegsWrType (MEM_RegsWrType ),
+        .MEM_Dst (MWBus.MEM_Dst ),
+        .MEM_Result (MEM_Result ),
+        .MEM_IsTLBP (MEM_IsTLBP ),
+        .MEM_IsTLBR (MEM_IsTLBR ),
+        .CMBus (CMBus.CP0 ),
+        .WB_ExceptType (MWBus.WB_ExceptType ),
+        .WB_PC (MWBus.WB_PC ),
+        .WB_IsInDelaySlot (MWBus.WB_IsInDelaySlot ),
+        .WB_ALUOut (MWBus.WB_ALUOut ),
+        //---------------output----------------//
+        .CP0_Status_IM7_0 (CP0_Status_IM7_0 ),
+        .CP0_Status_EXL (CP0_Status_EXL ),
+        .CP0_Status_IE (CP0_Status_IE ),
+        .CP0_Cause_IP7_2 (CP0_Cause_IP7_2 ),
+        .CP0_Cause_IP1_0  ( CP0_Cause_IP1_0)
+  );
+
     
     //------------------------------用于旁路的多选器-------------------------------//
     assign MEM_Forward_data_sel= (MWBus.MEM_WbSel == `WBSel_OutB)?1'b1:1'b0;
@@ -118,7 +159,7 @@ module TOP_MEM (
         .d0                      (MWBus.MEM_ALUOut),
         .d1                      (MWBus.MEM_OutB),
         .sel2_to_1               (MEM_Forward_data_sel),
-        .y                       (EMBus.MEM_Result)
+        .y                       (MEM_Result)
     );
     //---------------------------------------------------------------------------//
 //--------------------------------------------cache-------------------------------//

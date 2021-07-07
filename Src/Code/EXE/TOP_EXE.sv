@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-06 21:50:15
+ * @LastEditTime: 2021-07-07 22:23:26
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,7 +34,6 @@ module TOP_EXE (
     logic [31:0]              EXE_BusA;
     logic [31:0]              EXE_BusB;
     logic [4:0]               EXE_rs;
-    logic [4:0]               EXE_rd;
     logic [4:0]               EXE_ALUOp;
     logic [1:0]               EXE_DstSel;
     logic                     EXE_ALUSrcA;
@@ -97,7 +96,7 @@ module TOP_EXE (
         .EXE_Instr            (EMBus.EXE_Instr ),
         .EXE_rs               (EXE_rs ),
         .EXE_rt               (EXE_rt ),
-        .EXE_rd               (EXE_rd ),
+        .EXE_rd               (EMBus.EXE_rd ),
         .EXE_ALUOp            (EXE_ALUOp ),
         .EXE_LoadType         (EMBus.EXE_LoadType ),
         .EXE_StoreType        (EMBus.EXE_StoreType ),
@@ -176,7 +175,7 @@ module TOP_EXE (
     );
 
     MUX3to1#(5) U_EXEDstSrc(
-        .d0                   (EXE_rd),
+        .d0                   (EMBus.EXE_rd),
         .d1                   (EXE_rt),
         .d2                   (5'd31),
         .sel3_to_1            (EXE_DstSel),
