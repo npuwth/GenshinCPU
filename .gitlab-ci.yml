@@ -167,7 +167,7 @@ perf_test_simulation:
       - $CI_COMMIT_MESSAGE =~ /\[PERF\]/i
   script:
     #- chmod -R 777 /home
-    - ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
+    - sudo ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
     - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
