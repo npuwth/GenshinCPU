@@ -56,7 +56,7 @@ cpu_simulation:
   # script:
   #   - echo start to compile the project
   script:
-    - chmod -R 777 /home
+    #- chmod -R 777 /home
     - echo start to compile the project
 #    - sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
 #    - export SIMULATION=sim_1
@@ -89,7 +89,7 @@ axi_simulation:
   # script:
   #   - echo start to compile the project
   script:
-    - chmod -R 777 /home
+    #- chmod -R 777 /home
     - echo start to compile the project
 #    - sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
 #    - export SIMULATION=sim_1
@@ -160,7 +160,7 @@ perf_test_simulation:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[PERF\]/i
   script:
-    - chmod -R 777 /home
+    #- chmod -R 777 /home
     - ${VIVADO_PATH} -mode tcl -source /root/scripts/runsimulation-axi.tcl /root/Desktop/ci-genshin/perf_test_v0.01/project_1/project_1.xpr
   artifacts:
     paths:
