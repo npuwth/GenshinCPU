@@ -34,7 +34,7 @@ stages:
 
 
 before_script:
-  #- chmod -R 777 /tools/
+  - sudo chmod -R 777 /home/gitlab-runner/
   # - git checkout ${PROJECT_DIR}/${PROJECT_NAME}.srcs/sources_1/bd/bd_soc/ip
   # - git checkout loongson/soc_axi_func/rtl/xilinx_ip
   # - git checkout loongson/soc_axi_perf/rtl/xilinx_ip
