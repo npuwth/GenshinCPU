@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-06 16:31:47
+ * @LastEditTime: 2021-07-08 17:46:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -15,7 +15,8 @@ module TLBMMU (
     input logic                  clk,
     input logic [31:0]           Virt_Iaddr,
     input logic [31:0]           Virt_Daddr,
-    input logic [1:0]            MEM_Type,  //表示是load还是store,0表示无，1表示load，2表示store
+    input LoadType               MEM_LoadType,
+    input StoreType              MEM_StoreType,
     input ExceptinPipeType       IF_ExceptType,
     input ExceptinPipeType       MEM_ExceptType,
     input logic                  MEM_IsTLBP,//表示是否是TLBP指令
@@ -140,54 +141,82 @@ module TLBMMU (
     assign IF_ExceptType_new.Overflow               = IF_ExceptType.Overflow;
     assign IF_ExceptType_new.Refetch                = IF_ExceptType.Refetch;
     assign IF_ExceptType_new.Trap                   = IF_ExceptType.Trap;
+    assign IF_ExceptType_new.RdTLBRefillinMEM       = IF_ExceptType.RdTLBRefillinMEM;
+    assign IF_ExceptType_new.RdTLBInvalidinMEM      = IF_ExceptType.RdTLBInvalidinMEM;
+    assign IF_ExceptType_new.WrTLBRefillinMEM       = IF_ExceptType.WrTLBRefillinMEM;
+    assign IF_ExceptType_new.WrTLBInvalidinMEM      = IF_ExceptType.WrTLBInvalidinMEM;
     assign IF_ExceptType_new.TLBModified            = IF_ExceptType.TLBModified;
 
     always_comb begin
         if(s0_found == 1'b0 && (Virt_Iaddr > 32'hbfff_ffff || Virt_Iaddr < 32'h8000_0000)) begin
-            IF_ExceptType_new.TLBRefill             = 1'b1;
-            IF_ExceptType_new.TLBInvalid            = 1'b0;  
+            IF_ExceptType_new.TLBRefillinIF         = 1'b1;
+            IF_ExceptType_new.TLBInvalidinIF        = 1'b0;  
         end          
         else if(s0_found == 1'b1 && s0_v == 1'b0 && (Virt_Iaddr > 32'hbfff_ffff || Virt_Iaddr < 32'h8000_0000)) begin
-            IF_ExceptType_new.TLBRefill             = 1'b0;
-            IF_ExceptType_new.TLBInvalid            = 1'b1; 
+            IF_ExceptType_new.TLBRefillinIF         = 1'b0;
+            IF_ExceptType_new.TLBInvalidinIF        = 1'b1; 
         end
         else begin
-            IF_ExceptType_new.TLBRefill             = 1'b0;
-            IF_ExceptType_new.TLBInvalid            = 1'b0; 
+            IF_ExceptType_new.TLBRefillinIF         = 1'b0;
+            IF_ExceptType_new.TLBInvalidinIF        = 1'b0; 
         end
     end
 
-    assign MEM_ExceptType_new.Interrupt              = MEM_ExceptType.Interrupt;
-    assign MEM_ExceptType_new.WrongAddressinIF       = MEM_ExceptType.WrongAddressinIF;
-    assign MEM_ExceptType_new.ReservedInstruction    = MEM_ExceptType.ReservedInstruction;
-    assign MEM_ExceptType_new.Syscall                = MEM_ExceptType.Syscall;
-    assign MEM_ExceptType_new.Break                  = MEM_ExceptType.Break;
-    assign MEM_ExceptType_new.Eret                   = MEM_ExceptType.Eret;
-    assign MEM_ExceptType_new.WrWrongAddressinMEM    = MEM_ExceptType.WrWrongAddressinMEM;
-    assign MEM_ExceptType_new.RdWrongAddressinMEM    = MEM_ExceptType.RdWrongAddressinMEM;
-    assign MEM_ExceptType_new.Overflow               = MEM_ExceptType.Overflow;
-    assign MEM_ExceptType_new.Refetch                = MEM_ExceptType.Refetch;
-    assign MEM_ExceptType_new.Trap                   = MEM_ExceptType.Trap;
+    assign MEM_ExceptType_new.Interrupt             = MEM_ExceptType.Interrupt;
+    assign MEM_ExceptType_new.WrongAddressinIF      = MEM_ExceptType.WrongAddressinIF;
+    assign MEM_ExceptType_new.ReservedInstruction   = MEM_ExceptType.ReservedInstruction;
+    assign MEM_ExceptType_new.Syscall               = MEM_ExceptType.Syscall;
+    assign MEM_ExceptType_new.Break                 = MEM_ExceptType.Break;
+    assign MEM_ExceptType_new.Eret                  = MEM_ExceptType.Eret;
+    assign MEM_ExceptType_new.WrWrongAddressinMEM   = MEM_ExceptType.WrWrongAddressinMEM;
+    assign MEM_ExceptType_new.RdWrongAddressinMEM   = MEM_ExceptType.RdWrongAddressinMEM;
+    assign MEM_ExceptType_new.Overflow              = MEM_ExceptType.Overflow;
+    assign MEM_ExceptType_new.Refetch               = MEM_ExceptType.Refetch;
+    assign MEM_ExceptType_new.Trap                  = MEM_ExceptType.Trap;
+    assign MEM_ExceptType_new.TLBRefillinIF         = MEM_ExceptType.TLBRefillinIF;
+    assign MEM_ExceptType_new.TLBInvalidinIF        = MEM_ExceptType.TLBInvalidinIF;
     
     always_comb begin
-        if(s1_found == 1'b0 && MEM_Type != 2'b0 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
-            MEM_ExceptType_new.TLBRefill             = 1'b1;
-            MEM_ExceptType_new.TLBInvalid            = 1'b0;
+        if(s1_found == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+            MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b1;
+            MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
+            MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
         end
-        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_Type != 2'b0 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
-            MEM_ExceptType_new.TLBRefill             = 1'b0;
-            MEM_ExceptType_new.TLBInvalid            = 1'b1;
+        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+            MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b1;
+            MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
         end
-        else if(s1_found == 1'b1 && s1_v == 1'b1 && s1_d == 1'b0 && MEM_Type == 2'b10 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
-            MEM_ExceptType_new.TLBRefill             = 1'b0;
-            MEM_ExceptType_new.TLBInvalid            = 1'b0;
+        if(s1_found == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+            MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
+            MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b1;
+            MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
+            MEM_ExceptType_new.TLBModified           = 1'b0;
+        end
+        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+            MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
+            MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b1;
+            MEM_ExceptType_new.TLBModified           = 1'b0;
+        end
+        else if(s1_found == 1'b1 && s1_v == 1'b1 && s1_d == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+            MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
+            MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b1;
         end
         else begin
-            MEM_ExceptType_new.TLBRefill             = 1'b0;
-            MEM_ExceptType_new.TLBInvalid            = 1'b0;
+            MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
+            MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
+            MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
         end
     end

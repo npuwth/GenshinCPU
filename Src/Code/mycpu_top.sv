@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-08 12:13:33
+ * @LastEditTime: 2021-07-08 17:52:14
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -68,7 +68,7 @@ module mycpu_top (
     logic                      DH_IDWr;                   //来自DataHazard
     logic                      EXE_Flush_DataHazard;      //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
-    logic [1:0]                IsExceptionOrEret;         //来自MEM级，表示有异常或异常返回
+    logic [2:0]                EX_Entry_Sel;         //来自MEM级，表示有异常或异常返回
     logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
     logic                      ID_IsAImmeJump;            //来自ID级，表示是j，jal跳转
     logic [31:0]               CP0_EPC;                   //来自MEM级的EPC
@@ -102,10 +102,12 @@ module mycpu_top (
     logic [31:0]               Phsy_Iaddr;                //传至TLBMMU，用于TLB转换
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
     logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
-    ExceptinPipeType           IF_ExceptType;           
-    ExceptinPipeType           IF_ExceptType_new;
-    ExceptinPipeType           MEM_ExceptType;
-    ExceptinPipeType           MEM_ExceptType_new;    
+    ExceptinPipeType           IF_ExceptType;             //用于TLB例外的判断        
+    ExceptinPipeType           IF_ExceptType_new;         //用于TLB例外的判断   
+    ExceptinPipeType           MEM_ExceptType;            //用于TLB例外的判断    
+    ExceptinPipeType           MEM_ExceptType_new;        //用于TLB例外的判断    
+    LoadType                   MEM_LoadType;              //用于TLB例外的判断 
+    StoreType                  MEM_StoreType;             //用于TLB例外的判断 
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -131,7 +133,7 @@ module mycpu_top (
         .DH_IDWr                (DH_IDWr),
         .EXE_Flush_DataHazard   (EXE_Flush_DataHazard), // 以上三个是数据冒险的3个控制信号
         .DIVMULTBusy            (EXE_MULTDIVStall),
-        .IsExceptionorEret      (IsExceptionOrEret),
+        .EX_Entry_Sel      (EX_Entry_Sel),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .Icache_data_ok         (cpu_ibus.data_ok),
@@ -208,7 +210,7 @@ module mycpu_top (
         .EXE_BusA_L1 (EXE_BusA_L1 ),
         .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
         .ID_IsAImmeJump (ID_IsAImmeJump ),
-        .IsExceptionOrEret (IsExceptionOrEret ),
+        .EX_Entry_Sel (EX_Entry_Sel ),
         .EXE_BranchType (EXE_BranchType ),
         .ID_Wr (ID_Wr ),
         .ID_Flush_Exception (ID_Flush_Exception ),
@@ -283,13 +285,15 @@ module mycpu_top (
         .ID_Flush_Exception (ID_Flush_Exception ),
         .EXE_Flush_Exception (EXE_Flush_Exception ),
         .MEM_Flush_Exception (MEM_Flush_Exception ),
-        .IsExceptionOrEret (IsExceptionOrEret ),
+        .EX_Entry_Sel (EX_Entry_Sel ),
         .Virt_Daddr(Virt_Daddr),
         .MEM_IsTLBP(MEM_IsTLBP),
         .MEM_IsTLBW(MEM_IsTLBW),
         .MEM_PC(MEM_PC),
         .CP0_EPC(CP0_EPC),
-        .MEM_ExceptType(MEM_ExceptType)
+        .MEM_ExceptType(MEM_ExceptType),
+        .MEM_LoadType (MEM_LoadType),
+        .MEM_StoreType (MEM_StoreType)
     );
 
     TOP_WB U_TOP_WB ( 
@@ -311,7 +315,8 @@ module mycpu_top (
         .clk (aclk ),
         .Virt_Iaddr (Virt_Iaddr ),
         .Virt_Daddr (Virt_Daddr ),
-        // .MEM_Type (MEM_Type),
+        .MEM_LoadType (MEM_LoadType),
+        .MEM_StoreType (MEM_StoreType),
         .IF_ExceptType(IF_ExceptType),
         .MEM_ExceptType(MEM_ExceptType),
         .MEM_IsTLBP (MEM_IsTLBP ),

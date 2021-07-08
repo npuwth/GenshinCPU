@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-08 11:38:49
+ * @LastEditTime: 2021-07-08 17:21:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,7 @@ module WrFlushControl(
     input logic       DH_IDWr,             // Load & R型的数据冒险 & （前load 后 store的冒险 —— 以删除）
     input logic       EXE_Flush_DataHazard, // 数据冒险产生的flush  
     input logic       DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
-    input logic [1:0] IsExceptionorEret,      // 用于生成HILO的flush信号
+    input logic [2:0] EX_Entry_Sel,      // 用于生成HILO的flush信号
     input logic       BranchFailed,             // 分支预测失败时，产生的flush
     input logic       ID_IsAImmeJump,           // ID级 的 J JAL指令
     input logic       Icache_data_ok,           // Icache信号 用于判断IF/ID写使能信号是否可以打开
@@ -257,7 +257,7 @@ module WrFlushControl(
 
     // HILO的flush
     always_comb begin
-        HiLo_Not_Flush =  (IsExceptionorEret == `IsNone) ? 1'b1:1'b0;
+        HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
     end
 
 

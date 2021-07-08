@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-07-04 12:00:18
+ * @LastEditTime: 2021-07-08 19:20:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
@@ -17,7 +17,10 @@ module DCacheWen(
   input StoreType          EXE_StoreType,
   input LoadType           EXE_LoadType,
   input ExceptinPipeType   EXE_ExceptType,
-  
+  input logic              MEM_IsTLBR,
+  input logic              MEM_IsTLBW,
+  input logic [31:0]       MEM_Instr,
+  input logic [4:0]        MEM_Dst,
   output ExceptinPipeType  EXE_ExceptType_new,  
   output logic [3:0]       cache_wen        //字节信号写使能
 );
@@ -75,10 +78,14 @@ module DCacheWen(
   assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_StoreType.DMWr&&(((EXE_StoreType.size == `STORETYPE_SW)&&(EXE_ALUOut[1:0] != 2'b00))||((EXE_StoreType.size == `STORETYPE_SH)&&(EXE_ALUOut[0] != 1'b0)));
   assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_LoadType.ReadMem&&(((EXE_LoadType.size == 2'b00)&&(EXE_ALUOut[1:0] != 2'b00))||((EXE_LoadType.size == 2'b01)&&(EXE_ALUOut[0] != 1'b0)));
   assign EXE_ExceptType_new.Overflow            = EXE_ExceptType.Overflow;
-  assign EXE_ExceptType_new.TLBRefill           = EXE_ExceptType.TLBRefill;
-  assign EXE_ExceptType_new.TLBInvalid          = EXE_ExceptType.TLBInvalid;
+  assign EXE_ExceptType_new.TLBRefillinIF       = EXE_ExceptType.TLBRefillinIF;
+  assign EXE_ExceptType_new.TLBInvalidinIF      = EXE_ExceptType.TLBInvalidinIF;
+  assign EXE_ExceptType_new.RdTLBRefillinMEM    = EXE_ExceptType.RdTLBRefillinMEM;
+  assign EXE_ExceptType_new.RdTLBInvalidinMEM   = EXE_ExceptType.RdTLBInvalidinMEM;
+  assign EXE_ExceptType_new.WrTLBRefillinMEM    = EXE_ExceptType.WrTLBRefillinMEM; 
+  assign EXE_ExceptType_new.WrTLBInvalidinMEM   = EXE_ExceptType.WrTLBInvalidinMEM;   
   assign EXE_ExceptType_new.TLBModified         = EXE_ExceptType.TLBModified;
-  assign EXE_ExceptType_new.Refetch             = EXE_ExceptType.Refetch;
+  assign EXE_ExceptType_new.Refetch             = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_Instr[31:21] == 11'b01000000100 && MEM_Dst == `CP0_REG_ENTRYHI));
   assign EXE_ExceptType_new.Trap                = EXE_ExceptType.Trap;
 
 endmodule

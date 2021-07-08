@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-04 13:11:17
+ * @LastEditTime: 2021-07-08 19:28:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -1422,8 +1422,12 @@ always_comb begin
                             Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            RdTLBRefillinMEM:1'b0,
+                            RdTLBInvalidinMEM:1'b0,
+                            WrTLBRefillinMEM:1'b0,
+                            WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
                             Refetch:1'b0,
                             Trap:1'b0
@@ -1440,8 +1444,12 @@ always_comb begin
                             Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            RdTLBRefillinMEM:1'b0,
+                            RdTLBInvalidinMEM:1'b0,
+                            WrTLBRefillinMEM:1'b0,
+                            WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
                             Refetch:1'b0,
                             Trap:1'b0
@@ -1458,34 +1466,19 @@ always_comb begin
                             Eret:1'b1,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            RdTLBRefillinMEM:1'b0,
+                            RdTLBInvalidinMEM:1'b0,
+                            WrTLBRefillinMEM:1'b0,
+                            WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
                             Refetch:1'b0,
                             Trap:1'b0
         };//关于ERET
   end
   else begin
-    if(EXE_IsTLBW == 1'b1 || EXE_IsTLBR == 1'b1) begin
-      ID_ExceptType = '{  
-                            Interrupt:1'b0,
-                            Break:1'b0,
-                            WrongAddressinIF:1'b0,
-                            ReservedInstruction:1'b0,
-                            Overflow:1'b0,
-                            Syscall:1'b0,
-                            Eret:1'b0,
-                            WrWrongAddressinMEM:1'b0,
-                            RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
-                            TLBModified:1'b0,
-                            Refetch:1'b1,
-                            Trap:1'b0
-        };//
-    end
-    else begin
-      ID_ExceptType = '{  
+    ID_ExceptType = '{  
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
@@ -1495,15 +1488,18 @@ always_comb begin
                             Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefill:IF_ExceptType.TLBRefill,
-                            TLBInvalid:IF_ExceptType.TLBInvalid,
+                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            RdTLBRefillinMEM:1'b0,
+                            RdTLBInvalidinMEM:1'b0,
+                            WrTLBRefillinMEM:1'b0,
+                            WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
                             Refetch:1'b0,
                             Trap:1'b0
         };//
     end
   end
-end 
 
 
 endmodule

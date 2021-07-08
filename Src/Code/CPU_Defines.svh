@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-07 23:40:04
+ * @LastEditTime: 2021-07-08 18:06:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,22 +27,26 @@ typedef struct packed {
 
 typedef struct packed {
 	logic Interrupt;	 	  	// 中断信号
-    logic WrongAddressinIF;   	// 地址错例外——取�?
+    logic WrongAddressinIF;   	// 地址错例外——取指
     logic ReservedInstruction;	// 保留指令例外
     logic Overflow;           	// 整型溢出例外
     logic Syscall;            	// 系统调用例外
     logic Break;              	// 断点例外
     logic Eret;               	// 异常返回指令
-    logic WrWrongAddressinMEM;  // 地址错例外——数据写�?
-    logic RdWrongAddressinMEM;  // 地址错例外——数据读�?
-	logic TLBRefill;            // TLB 重填例外
-	logic TLBInvalid;           // TLB 无效例外
+    logic WrWrongAddressinMEM;  // 地址错例外——数据写
+    logic RdWrongAddressinMEM;  // 地址错例外——数据读
+	logic TLBRefillinIF;        // 取指TLB重填例外
+	logic TLBInvalidinIF;       // 取指TLB无效例外
+	logic RdTLBRefillinMEM;     // 取数TLB重填例外  
+	logic RdTLBInvalidinMEM;    // 取数TLB无效例外  
+	logic WrTLBRefillinMEM;     // 写数TLB重填例外     
+	logic WrTLBInvalidinMEM;    // 写数TLB无效例外
 	logic TLBModified;          // TLB 修改例外
-	logic Refetch;              // 重取（自己定义的，用于TLBR，TLBR）
+	logic Refetch;              // 重取（自己定义的，用于TLBR，TLBW，MTC0的EntryHi）
 	logic Trap;                 // Trap 例外
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
-typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常�?
+typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常量
 	/* shift */
 	OP_SLL, OP_SRL, OP_SRA, OP_SLLV, OP_SRLV, OP_SRAV,
 	/* unconditional jump (reg) */
@@ -102,7 +106,7 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	`endif
 	/* invalid */
 	OP_INVALID
-} InstrType;//一个枚举变量类�? 你可以在译码这个过程中使用，这个我是照抄Tsinghua�?
+} InstrType;//一个枚举变量类型 你可以在译码这个过程中使用，这个我是照抄Tsinghua
 
 typedef struct packed {
     logic 		    	sign;//使用0表示unsigned 1表示signed
@@ -252,8 +256,6 @@ interface ID_EXE_Interface();
 	logic       [1:0]       ID_RegsReadSel;
 	logic 					ID_IsAImmeJump;
 	BranchType              ID_BranchType;
-    logic                   EXE_IsTLBW;
-    logic                   EXE_IsTLBR;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic       [31:0]      EXE_Instr;
@@ -282,8 +284,6 @@ interface ID_EXE_Interface();
 	output                  ID_IsTLBP,
 	output                  ID_IsTLBW,
 	output                  ID_IsTLBR,
-	input                   EXE_IsTLBR,
-	input                   EXE_IsTLBW,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_Instr
@@ -313,8 +313,6 @@ interface ID_EXE_Interface();
 	input                   ID_IsTLBP,
 	input                   ID_IsTLBW,
 	input                   ID_IsTLBR,
-	output                  EXE_IsTLBR,
-	output                  EXE_IsTLBW,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_Instr
@@ -335,9 +333,6 @@ interface EXE_MEM_Interface();
   	LoadType        		EXE_LoadType;	 	// LoadType信号 
   	StoreType       		EXE_StoreType;  	// StoreType信号
   	RegsWrType      		EXE_RegsWrType;		// 寄存器写信号打包
-	RegsWrType              MEM_RegsWrType;
-	logic       [4:0]       MEM_Dst;
-	logic       [31:0]      MEM_Result;
   	logic 		[1:0]   	EXE_WbSel;        	// 选择写回数据
   	ExceptinPipeType 		EXE_ExceptType_final;		// 异常类型
 	BranchType              EXE_BranchType;
@@ -347,6 +342,12 @@ interface EXE_MEM_Interface();
 	logic                   EXE_IsTLBR;
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
+	RegsWrType              MEM_RegsWrType;
+	logic       [4:0]       MEM_Dst;
+	logic       [31:0]      MEM_Result;
+	logic                   MEM_IsTLBR;
+	logic                   MEM_IsTLBW;
+	logic       [31:0]      MEM_Instr;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -371,7 +372,10 @@ interface EXE_MEM_Interface();
 	output                  EXE_rd,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
-	input                   MEM_Result          //
+	input                   MEM_Result,          //
+	input                   MEM_IsTLBR,
+	input                   MEM_IsTLBW,
+	input                   MEM_Instr
 	);
 
 	modport MEM (
@@ -397,7 +401,10 @@ interface EXE_MEM_Interface();
 	input                   EXE_rd,
 	output                  MEM_RegsWrType,
 	output                  MEM_Dst,
-	output                  MEM_Result
+	output                  MEM_Result,
+	output                  MEM_IsTLBR,
+	output                  MEM_IsTLBW,
+	output                  MEM_Instr
 	);
 
 endinterface

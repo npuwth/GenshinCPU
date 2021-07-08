@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-07 23:19:49
+ * @LastEditTime: 2021-07-08 18:15:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,7 @@ module TOP_ID (
     input logic [31:0]       WB_Result,  //写寄存器堆来自WB
     input logic [4:0]        WB_Dst,
     input RegsWrType         WB_RegsWrType,
-    IF_ID_Interface          IIBus,//TODO: 不如改成IF_ID_Bus 
+    IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
@@ -96,8 +96,6 @@ module TOP_ID (
     Control U_Control (
         .ID_Instr            (IEBus.ID_Instr),
         .IF_ExceptType       (IIBus.IF_ExceptType),
-        .EXE_IsTLBW          (IEBus.EXE_IsTLBW),
-        .EXE_IsTLBR          (IEBus.EXE_IsTLBR),
 //--------------------------out-------------------------------------//
         .ID_ALUOp            (IEBus.ID_ALUOp),
         .ID_LoadType         (IEBus.ID_LoadType),

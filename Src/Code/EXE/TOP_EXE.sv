@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-07 23:37:07
+ * @LastEditTime: 2021-07-08 18:07:56
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,10 +57,9 @@ module TOP_EXE (
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
-    assign IEBus.EXE_IsTLBR   = EMBus.EXE_IsTLBR;
-    assign IEBus.EXE_IsTLBW   = EMBus.EXE_IsTLBW;
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EMBus.EXE_LoadType; 
+    assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
@@ -210,13 +209,17 @@ module TOP_EXE (
     );
 
     DCacheWen U_DCACHEWEN(
-        .EXE_ALUOut(EMBus.EXE_ALUOut),
-        .EXE_StoreType(EMBus.EXE_StoreType),
-        .EXE_LoadType(EMBus.EXE_LoadType),
-        .EXE_ExceptType(EXE_ExceptType_new),
+        .EXE_ALUOut           (EMBus.EXE_ALUOut),
+        .EXE_StoreType        (EMBus.EXE_StoreType),
+        .EXE_LoadType         (EMBus.EXE_LoadType),
+        .EXE_ExceptType       (EXE_ExceptType_new),
+        .MEM_IsTLBR           (EMBus.MEM_IsTLBR),
+        .MEM_IsTLBW           (EMBus.MEM_IsTLBW),
+        .MEM_Instr            (EMBus.MEM_Instr),
+        .MEM_Dst              (EMBus.MEM_Dst),
         //-----------------output-------------------------//
-        .EXE_ExceptType_new(EMBus.EXE_ExceptType_final),
-        .cache_wen(EMBus.DCache_Wen)                   //给出dcache的写使能信号，
+        .EXE_ExceptType_new   (EMBus.EXE_ExceptType_final),
+        .cache_wen            (EMBus.DCache_Wen)                   //给出dcache的写使能信号，
     );
 
     HILO U_HILO (

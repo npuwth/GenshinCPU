@@ -241,7 +241,7 @@ module AXIInteract(
     logic [31:0]  AXI_U_WData;
 // 锁存请求时的数据
     // 锁存 I$ RD
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             I_RD_Addr <= '0;
         end 
@@ -253,7 +253,7 @@ module AXIInteract(
     end
 
     // 锁存 D$ RD
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             D_RD_Addr <= '0;
         end 
@@ -265,7 +265,7 @@ module AXIInteract(
     end
 
     // 锁存 D$ WR
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             D_WR_Addr   <= '0;
             AXI_D_WData <= '0;
@@ -279,7 +279,7 @@ module AXIInteract(
     end
 
     // 锁存 U$ RD
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             U_RD_Addr     <= '0;
             U_RD_LoadType <= '0;
@@ -294,7 +294,7 @@ module AXIInteract(
     end
 
     // 锁存 U$ WR
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             U_WR_Addr   <= '0;
             AXI_U_WData <= '0;
@@ -397,7 +397,7 @@ module AXIInteract(
     assign UncacheAXIBus.wr_rdy  = (U_WR_pre_state == U_WR_EMPTY )  ? 1'b1 : 1'b0;
 
 // FSM -- Icache RD 
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             I_RD_pre_state  <= I_RD_EMPTY;
             //I_RD_next_state <= I_RD_EMPTY;
@@ -518,7 +518,7 @@ module AXIInteract(
         end
     end
     // AXI brust数据的获取
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             AXI_I_RData  <= 128'b0; 
         end 
@@ -546,7 +546,7 @@ module AXIInteract(
     end
 
 // FSM -- Dcache RD 
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             D_RD_pre_state  <= D_RD_EMPTY;
             //D_RD_next_state <= D_RD_EMPTY;
@@ -667,7 +667,7 @@ module AXIInteract(
         end
     end
     // AXI brust数据的获取
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             AXI_D_RData  <= 128'b0; 
         end 
@@ -694,7 +694,7 @@ module AXIInteract(
         end 
     end
 // FSM -- Dcache WR
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             D_WR_pre_state  <= D_WR_EMPTY;
            //s D_WR_next_state = D_WR_EMPTY;
@@ -822,7 +822,7 @@ module AXIInteract(
     end
 
 // FSM -- Uncache RD 
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             U_RD_pre_state  <= U_RD_EMPTY;
         end 
@@ -904,7 +904,7 @@ module AXIInteract(
         end
     end
     // AXI brust数据的获取
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             AXI_U_RData  <= 32'b0; 
         end 
@@ -914,7 +914,7 @@ module AXIInteract(
     end
 
 // FSM -- Uncache WR
-    always_ff @(posedge clk or negedge resetn) begin
+    always_ff @(posedge clk) begin
         if (resetn == `RstEnable) begin
             U_WR_pre_state  <= U_WR_EMPTY;
         end 

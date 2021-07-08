@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-08 12:01:01
+ * @LastEditTime: 2021-07-08 18:15:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,17 +32,18 @@ module TOP_MEM (
     output logic                 ID_Flush_Exception,
     output logic                 EXE_Flush_Exception,
     output logic                 MEM_Flush_Exception,
-    output logic [1:0]           IsExceptionOrEret,
+    output logic [2:0]           EX_Entry_Sel,
     output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
     output logic                 MEM_IsTLBW,
     output logic                 MEM_IsTLBR,
     output logic [31:0]          MEM_PC,
     output logic [31:0]          CP0_EPC,
-    output ExceptinPipeType      MEM_ExceptType
+    output ExceptinPipeType      MEM_ExceptType,
+    output LoadType              MEM_LoadType,
+    output StoreType             MEM_StoreType
 );
 
-	StoreType     		         MEM_StoreType;
 	RegsWrType                   MEM_RegsWrType; 
     logic                        MEM_Forward_data_sel;
     logic [31:0]                 RFHILO_Bus;
@@ -62,8 +63,13 @@ module TOP_MEM (
     assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
     assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType_final;
     assign EMBus.MEM_Dst = MWBus.MEM_Dst;
-    assign MEM_PC        = MWBus.MEM_PC;
     assign EMBus.MEM_Result = MEM_Result;//传给EXE用于旁路
+    assign EMBus.MEM_IsTLBR = MEM_IsTLBR;
+    assign EMBus.MEM_IsTLBW = MEM_IsTLBW;
+    assign EMBus.MEM_Instr  = MWBus.MEM_Instr;
+    assign MEM_PC        = MWBus.MEM_PC;
+    assign MEM_LoadType  = MWBus.MEM_LoadType;
+
     assign MEM_Final_Wr = (MEM_DisWr)? '0: MEM_RegsWrType ;
 
     MEM_Reg U_MEM_Reg ( 
@@ -125,7 +131,7 @@ module TOP_MEM (
         .ID_Flush                (ID_Flush_Exception),                
         .EXE_Flush               (EXE_Flush_Exception),                       
         .MEM_Flush               (MEM_Flush_Exception),                           
-        .IsExceptionOrEret       (IsExceptionOrEret),            
+        .EX_Entry_Sel       (EX_Entry_Sel),            
         .MEM_ExceptType_final    (MWBus.MEM_ExceptType_final)                    
     );
 

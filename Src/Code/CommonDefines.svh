@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-07 19:58:54
+ * @LastEditTime: 2021-07-08 17:18:51
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -113,21 +113,24 @@
 `define IsInDelaySlot           1'b1     // 延迟槽指令
 `define ZeroWord                32'h0    // 寄存器32位全0信号
 //异常定义
-`define EX_None                 4'b0     //无异常
-`define EX_Interrupt            4'b0001  //
-`define EX_WrongAddressinIF     4'b0010
-`define EX_ReservedInstruction  4'b0011
-`define EX_Syscall              4'b0100
-`define EX_Break                4'b0101
-`define EX_Eret                 4'b0110
-`define EX_Trap                 4'b0111
-`define EX_Overflow             4'b1000
-`define EX_WrWrongAddressinMEM  4'b1001
-`define EX_RdWrongAddressinMEM  4'b1010
-`define EX_TLBRefill            4'b1011
-`define EX_TLBInvalid           4'b1100
-`define EX_TLBModified          4'b1101
-`define EX_Refetch              4'b1110  
+`define EX_None                 5'b00000  //无异常，Refetch被认为不是异常，也包括在这里面
+`define EX_Interrupt            5'b00001  //
+`define EX_WrongAddressinIF     5'b00010
+`define EX_ReservedInstruction  5'b00011
+`define EX_Syscall              5'b00100
+`define EX_Break                5'b00101
+`define EX_Eret                 5'b00110
+`define EX_Trap                 5'b00111
+`define EX_Overflow             5'b01000
+`define EX_WrWrongAddressinMEM  5'b01001
+`define EX_RdWrongAddressinMEM  5'b01010
+`define EX_TLBRefillinIF        5'b01011
+`define EX_TLBInvalidinIF       5'b01100
+`define EX_RdTLBRefillinMEM     5'b01101
+`define EX_RdTLBInvalidinMEM    5'b01110
+`define EX_WrTLBRefillinMEM     5'b01111
+`define EX_WrTLBInvalidinMEM    5'b10000
+`define EX_TLBModified          5'b10001
 // CP0寄存器的宏定义  （序号定义）
 `define CP0_REG_BADVADDR    5'd8
 `define CP0_REG_COUNT       5'd9
@@ -141,12 +144,13 @@
 `define CP0_REG_ENTRYLO1    5'd3
 `define CP0_REG_RANDOM      5'd1
 
-`define IsRefetch           2'b01
-`define IsEret              2'b10
-`define IsException         2'b11
-`define IsNone              2'b00
+`define IsNone              3'b000
+`define IsRefetch           3'b001
+`define IsEret              3'b010
+`define IsException         3'b011
+`define IsRefill            3'b100
 //***************************  与结构体有关的宏定义  ***************************
-`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //
+`define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //18个例外
 
 //RegsWrType 
 `define RegsWrTypeRFEn      '{1'b1,1'b0,1'b0,1'b0}

@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-08 15:57:42
+ * @LastEditTime: 2021-07-08 17:14:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -45,7 +45,7 @@ module cp0_reg (
 
     logic                   Count2;
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
-    logic  [3:0]            ExcType;
+    logic  [4:0]            ExcType;
     logic  [6:0]            Interrupt_final;
 
     assign                  CP0_Status_IM7_0 = CP0.Status.IM7_0;
@@ -59,9 +59,11 @@ module cp0_reg (
     cp0_regs CP0;
     
 
-    always_comb begin
+    always_comb begin  //优先级可以查看MIPS文档第三册56页
         if(WB_ExceptType.Interrupt == 1'b1)                ExcType = `EX_Interrupt;
         else if(WB_ExceptType.WrongAddressinIF == 1'b1)    ExcType = `EX_WrongAddressinIF;
+        else if(WB_ExceptType.TLBRefillinIF ==1'b1)        ExcType = `EX_TLBRefillinIF;
+        else if(WB_ExceptType.TLBInvalidinIF == 1'b1)      ExcType = `EX_TLBInvalidinIF;
         else if(WB_ExceptType.ReservedInstruction == 1'b1) ExcType = `EX_ReservedInstruction;
         else if(WB_ExceptType.Syscall == 1'b1)             ExcType = `EX_Syscall;
         else if(WB_ExceptType.Break == 1'b1)               ExcType = `EX_Break;
@@ -70,8 +72,10 @@ module cp0_reg (
         else if(WB_ExceptType.Overflow == 1'b1)            ExcType = `EX_Overflow;
         else if(WB_ExceptType.WrWrongAddressinMEM == 1'b1) ExcType = `EX_WrWrongAddressinMEM;
         else if(WB_ExceptType.RdWrongAddressinMEM == 1'b1) ExcType = `EX_RdWrongAddressinMEM;
-        else if(WB_ExceptType.TLBRefill == 1'b1)           ExcType = `EX_TLBRefill;
-        else if(WB_ExceptType.TLBInvalid == 1'b1)          ExcType = `EX_TLBInvalid;
+        else if(WB_ExceptType.RdTLBRefillinMEM == 1'b1)    ExcType = `EX_RdTLBRefillinMEM;
+        else if(WB_ExceptType.WrTLBRefillinMEM == 1'b1)    ExcType = `EX_WrTLBRefillinMEM;
+        else if(WB_ExceptType.RdTLBInvalidinMEM == 1'b1)   ExcType = `EX_RdTLBInvalidinMEM;  
+        else if(WB_ExceptType.WrTLBInvalidinMEM == 1'b1)   ExcType = `EX_WrTLBInvalidinMEM;
         else if(WB_ExceptType.TLBModified == 1'b1)         ExcType = `EX_TLBModified;
         else                                               ExcType = `EX_None;
     end
@@ -152,6 +156,12 @@ module cp0_reg (
         else if (ExcType == `EX_WrWrongAddressinMEM || ExcType == `EX_RdWrongAddressinMEM) begin
             CP0.BadVAddr                   <= WB_ALUOut;
         end
+        else if (ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
+            CP0.BadVAddr                   <= WB_PC;
+        end
+        else if (ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM) begin
+            CP0.BadVAddr                   <= WB_ALUOut;
+        end
     end
     
     //CP0_REG_COUNT
@@ -193,6 +203,12 @@ module cp0_reg (
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_ENTRYHI) begin
             CP0.EntryHi.VPN2               <= MEM_Result[31:13];
             CP0.EntryHi.ASID               <= MEM_Result[7:0];
+        end
+        else if(ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
+            CP0.EntryHi.VPN2               <= WB_PC[31:13];
+        end
+        else if(ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM) begin
+            CP0.EntryHi.VPN2               <= WB_ALUOut[31:13];
         end
     end
 
@@ -301,9 +317,13 @@ module cp0_reg (
                 `EX_Overflow:             CP0.Cause.ExcCode<=5'h0c;        
                 `EX_WrWrongAddressinMEM:  CP0.Cause.ExcCode<=5'h05;        
                 `EX_RdWrongAddressinMEM:  CP0.Cause.ExcCode<=5'h04;
-                `EX_TLBRefill:            CP0.Cause.ExcCode<=5'h02;        //TODO: TLB读写未修改
-                `EX_TLBInvalid:           CP0.Cause.ExcCode<=5'h02;        //TODO: TLB读写未修改
-                `EX_TLBModified:          CP0.Cause.ExcCode<=5'h01;   
+                `EX_TLBRefillinIF:        CP0.Cause.ExcCode<=5'h02;//TLBL        
+                `EX_TLBInvalidinIF:       CP0.Cause.ExcCode<=5'h02;//TLBL       
+                `EX_RdTLBRefillinMEM:     CP0.Cause.ExcCode<=5'h02;//TLBL       
+                `EX_RdTLBInvalidinMEM:    CP0.Cause.ExcCode<=5'h02;//TLBL
+                `EX_WrTLBRefillinMEM:     CP0.Cause.ExcCode<=5'h03;//TLBS
+                `EX_WrTLBInvalidinMEM:    CP0.Cause.ExcCode<=5'h03;//TLBS
+                `EX_TLBModified:          CP0.Cause.ExcCode<=5'h01;//Mod
                 default:                  CP0.Cause.ExcCode<=CP0.Cause.ExcCode;
             endcase
         end

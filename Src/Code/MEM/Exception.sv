@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-07 23:07:41
+ * @LastEditTime: 2021-07-08 19:37:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,20 +27,23 @@
     output logic               ID_Flush,              //Flush信号
     output logic               EXE_Flush,
     output logic               MEM_Flush,
-    output logic [1:0]         IsExceptionOrEret,     //用于生成NPC
+    output logic [2:0]         EX_Entry_Sel,     //用于生成NPC
     output ExceptinPipeType    MEM_ExceptType_final   //最终的异常类型
  );
 
 always_comb begin
     if (MEM_ExceptType_final != `ExceptionTypeZero )begin
         if (MEM_ExceptType.Refetch == 1'b1) begin
-            IsExceptionOrEret  = `IsRefetch;
+            EX_Entry_Sel  = `IsRefetch;
+        end
+        else if(MEM_ExceptType.TLBRefillinIF == 1'b1 || MEM_ExceptType.RdTLBRefillinMEM == 1'b1 || MEM_ExceptType.WrTLBRefillinMEM == 1'b1) begin
+            EX_Entry_Sel  = `IsRefill;
         end
         else if (MEM_ExceptType.Eret == 1'b1) begin
-            IsExceptionOrEret  = `IsEret;
+            EX_Entry_Sel  = `IsEret;
         end
         else begin
-            IsExceptionOrEret  = `IsException;
+            EX_Entry_Sel  = `IsException;
         end
         ID_Flush               = `FlushEnable;
         EXE_Flush              = `FlushEnable;
@@ -48,7 +51,7 @@ always_comb begin
         MEM_RegsWrType_final   = `RegsWrTypeDisable;
     end 
     else begin
-        IsExceptionOrEret      = `IsNone;
+        EX_Entry_Sel      = `IsNone;
         ID_Flush               = `FlushDisable;
         EXE_Flush              = `FlushDisable;
         MEM_Flush              = `FlushDisable;
@@ -66,8 +69,12 @@ assign MEM_ExceptType_final.Eret                = MEM_ExceptType.Eret;
 assign MEM_ExceptType_final.WrWrongAddressinMEM = MEM_ExceptType.WrWrongAddressinMEM;
 assign MEM_ExceptType_final.RdWrongAddressinMEM = MEM_ExceptType.RdWrongAddressinMEM;
 assign MEM_ExceptType_final.Overflow            = MEM_ExceptType.Overflow;
-assign MEM_ExceptType_final.TLBRefill           = MEM_ExceptType.TLBRefill;
-assign MEM_ExceptType_final.TLBInvalid          = MEM_ExceptType.TLBInvalid;
+assign MEM_ExceptType_final.TLBRefillinIF       = MEM_ExceptType.TLBRefillinIF;
+assign MEM_ExceptType_final.TLBInvalidinIF      = MEM_ExceptType.TLBInvalidinIF;
+assign MEM_ExceptType_final.RdTLBRefillinMEM    = MEM_ExceptType.RdTLBRefillinMEM;
+assign MEM_ExceptType_final.RdTLBInvalidinMEM   = MEM_ExceptType.RdTLBInvalidinMEM;
+assign MEM_ExceptType_final.WrTLBRefillinMEM    = MEM_ExceptType.WrTLBRefillinMEM; 
+assign MEM_ExceptType_final.WrTLBInvalidinMEM   = MEM_ExceptType.WrTLBInvalidinMEM;   
 assign MEM_ExceptType_final.TLBModified         = MEM_ExceptType.TLBModified;
 assign MEM_ExceptType_final.Refetch             = MEM_ExceptType.Refetch;
 assign MEM_ExceptType_final.Trap                = MEM_ExceptType.Trap;
