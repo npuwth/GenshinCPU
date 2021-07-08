@@ -68,6 +68,7 @@ cpu_simulation:
     - export FLAG='\-\-\-\-PASS!!!'
     - ${VIVADO_PATH} -mode tcl -source /root/scripts/runsimulation.tcl /root/Desktop/project_1/project_1.xpr
     - bash /root/scripts/check_simulation.sh
+    - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
       - /root/Desktop/project_1/project_1.sim/sim_1/behav/xsim/simulate.log
@@ -101,6 +102,7 @@ axi_simulation:
     - export FLAG='\-\-\-\-PASS!!!'
     - ${VIVADO_PATH} -mode tcl -source /root/scripts/runsimulation-axi.tcl /root/project_axi/project_axi.xpr
     - bash /root/scripts/check_simulation.sh
+    - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
       - /root/project_axi/project_axi.sim/sim_1/behav/xsim/simulate.log
@@ -166,6 +168,7 @@ perf_test_simulation:
   script:
     #- chmod -R 777 /home
     - ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
+    - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
       - /tools/project_perf/project_perf.sim/sim_1/behav/xsim/simulate.log
@@ -197,10 +200,12 @@ perf_test_bitstream:
       - $CI_COMMIT_MESSAGE =~ /\[pbit\]/i
   script:
     - ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /tools/project_perf/project_perf.xpr
+    - sudo cp -r /tools/project_perf/project_perf.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit
+    - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
-      - /tools/project_perf/project_perf.runs/impl_1/soc_axi_lite_top.bit
-      - /tools/project_perf/project_perf.runs/*/runme.log
+      - /testbit/impl_1/soc_axi_lite_top.bit
+      - /testbit/*/runme.log
     when: always
 
 
