@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-08 12:13:33
+ * @LastEditTime: 2021-07-08 12:54:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,7 +57,7 @@ module mycpu_top (
     output [3:0]               debug_wb_rf_wen,    
     output [4:0]               debug_wb_rf_wnum   
 );
-    logic [31:0]               WB_PC;                     //来自WB级,用于Debug
+    logic [31:0]               WB_PC;                     //来自WB级,用于Debug  
     logic [31:0]               WB_Result;                 //来自WB级,用于Debug
     logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
     RegsWrType                 WB_Final_Wr;               //来自
