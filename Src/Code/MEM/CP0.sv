@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-08 10:51:10
+ * @LastEditTime: 2021-07-08 13:30:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -202,7 +202,7 @@ module cp0_reg (
             CP0.Compare                    <= 'x;
         end 
         else if (MEM_RegsWrType.CP0Wr == 1'b1  && MEM_Dst == `CP0_REG_COMPARE ) begin 
-            CP0.Count                      <= MEM_Result;
+            CP0.Compare                    <= MEM_Result;
         end
     end
     //Time Interrupt
