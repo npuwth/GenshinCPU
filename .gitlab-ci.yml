@@ -185,7 +185,7 @@ func_test_bitstream:
       - /root/project_axi/project_axi.runs/*/runme.log
     when: always
 
-
+#pbit生成bit流测试
 perf_test_bitstream:
   tags:
     - vivado
