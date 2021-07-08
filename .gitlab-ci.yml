@@ -198,6 +198,7 @@ perf_test_bitstream:
   only:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[pbit\]/i
+      #test
   script:
     - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /tools/project_perf/project_perf.xpr
     - sudo cp -r /tools/project_perf/project_perf.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit
