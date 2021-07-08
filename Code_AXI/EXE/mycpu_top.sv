@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-08 11:39:58
+ * @LastEditTime: 2021-07-08 12:13:33
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -147,6 +147,7 @@ module mycpu_top (
         .ID_Flush               (ID_Flush),
         .EXE_Flush              (EXE_Flush),
         .MEM_Flush              (MEM_Flush),
+        .MEM_DisWr              (MEM_DisWr),
         .WB_Flush               (WB_Flush),
         .WB_DisWr               (WB_DisWr),
         .HiLo_Not_Flush         (HiLo_Not_Flush),
