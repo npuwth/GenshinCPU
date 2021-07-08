@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-06-30 20:07:16
+ * @LastEditTime: 2021-07-08 15:50:19
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -13,8 +13,7 @@ module BranchSolve (
     input BranchType      EXE_BranchType,
     input logic [31:0]    EXE_OutA,
     input logic [31:0]    EXE_OutB,
-    output logic          ID_Flush,
-    output logic          EXE_Flush
+    output logic          ID_Flush
 );
 
     always_comb begin

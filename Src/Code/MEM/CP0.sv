@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-08 13:30:46
+ * @LastEditTime: 2021-07-08 15:57:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,7 +26,7 @@ module cp0_reg (
     input logic  [4:0]      MEM_Dst,
     input logic  [31:0]     MEM_Result,
     //write port from tlb
-    input                   MEM_IsTLBP,                //写index寄存器
+    input logic             MEM_IsTLBP,                //写index寄存器
     input logic             MEM_IsTLBR,                //写EntryHi，EntryLo0，EntryLo1
     CP0_MMU_Interface       CMBus, 
     //exception
@@ -132,7 +132,7 @@ module cp0_reg (
             CP0.EntryLo1.V1                <= CMBus.MMU_v1;
             CP0.EntryLo1.G1                <= CMBus.MMU_g1;
         end
-        else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_ENTRYLO0) begin
+        else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_ENTRYLO1) begin
             CP0.EntryLo1.PFN1              <= MEM_Result[25:6];
             CP0.EntryLo1.C1                <= MEM_Result[5:3];
             CP0.EntryLo1.D1                <= MEM_Result[2];
