@@ -1,14 +1,17 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-08 11:02:35
+ * @LastEditTime: 2021-07-08 23:05:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
  */
+`include "Cache_Defines.svh"
+`include "CPU_Defines.svh"
+
 module AXIInteract #(
-    parameter icache_line_size=8,//icache块大小
-    parameter dcache_line_size=8 //dcache块大小
+    parameter ICACHE_LINE_SIZE=8,//icache块大小
+    parameter DCACHE_LINE_SIZE=8 //dcache块大小
 ) (
     //external signals
     input logic clk,
@@ -234,19 +237,337 @@ module AXIInteract #(
     } uncache_t;//通用的uncache机制 icache可能读 dcache会读会写
 
 
+    typedef struct packed {
+        logic [31:0]                    addr;
+        logic [DCACHE_LINE_SIZE*8-1:0]  wdata;
+    } request_wb_t;
 
-    cache_rd_t iState,iState_next;
-    cache_rd_t dState,dState_next;
+    localparam int  ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE*2);//icache的计数器的位宽
+    localparam int  DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE*2);//dcache的计数器的位宽
+
+    cache_rd_t istate,istate_next;
+    cache_rd_t dstate,dstate_next;
     
-    cache_wb_t iState_wb,iState_wb_next;
-    cache_wb_t dState_wb,dState_wb_next;
+    cache_wb_t istate_wb,istate_wb_next;
+    cache_wb_t dstate_wb,dstate_wb_next;
 
-    uncache_t iState_uncache,iState_uncache_next;
-    uncache_t dState_uncache,dState_uncache_next;
+    uncache_t istate_uncache,istate_uncache_next;
+    uncache_t dstate_uncache,dstate_uncache_next;
 
-    always_ff @( posedge clk ) begin : iState_block
-        iState <= iState_next;
+    logic [ICACHE_CNT_WIDTH-1:0] iburst_cnt,iburst_cnt_next;//读计数器
+    logic [DCACHE_CNT_WIDTH-1:0] dburst_cnt,dburst_cnt_next;//dcache计数器
+
+    logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器
+
+    logic [31:0] icache_rd_addr;
+    logic [ICACHE_LINE_SIZE-1:0][31:0] icache_line_recv;
+
+    logic [31:0] dcache_rd_addr;
+    logic [DCACHE_LINE_SIZE-1:0][31:0] dcache_line_recv;
+
+    always_ff @( posedge clk ) begin : istate_block
+        if (resetn == `RstEnable) begin
+            istate <= IDLE;
+        end else begin
+            istate <= istate_next;
+        end
+        
     end
     
+    always_comb begin : istate_next_block
+        istate_next = IDLE;
+
+        unique case (istate)
+            IDLE:begin
+                if (ibus.rd_req) begin
+                    istate_next = REQ;
+                end else begin
+                    istate_next = IDLE;
+                end
+            end
+            REQ:begin
+                if (ibus_arready) begin
+                    istate_next = WAIT;
+                end else begin
+                    istate_next = REQ;
+                end
+            end
+            WAIT:begin
+                if (ibus_rlast &ibus_rvalid) begin
+                    istate_next = FINISH;
+                end else begin
+                    istate_next = WAIT;
+                end
+            end
+            FINISH:begin
+                istate_next =IDLE;
+            end
+        endcase
+    end
+
+// icache读计数器  如果不在req状态计数器将清零
+    always_ff @(posedge clk ) begin : iburst_cnt_block
+        if (resetn == `RstEnable | ~(istate==REQ) ) begin
+            iburst_cnt <= '0;
+        end else begin
+            iburst_cnt <= iburst_cnt_next;
+        end
+    end
+
+    always_comb begin : iburst_cnt_next_block
+        if (ibus_rvalid) begin
+            iburst_cnt_next = iburst_cnt +1;
+        end else begin
+            iburst_cnt_next = iburst_cnt;
+        end
+    end
+//对于icache读地址的控制
+    always_ff @(posedge clk ) begin : icache_rd_addr_block
+        if (resetn == `RstEnable) begin
+            icache_rd_addr <='0;
+        end else if (istate == REQ) begin
+            icache_rd_addr <= icache_rd_addr;
+        end else begin
+            icache_rd_addr <= ibus.rd_addr;
+        end
+    end
+//对于icache读出数据的锁存
+    always_ff @(posedge clk ) begin : icache_line_recv_block
+        if (resetn == `RstEnable) begin
+            icache_line_recv <='0;
+        end else begin
+            icache_line_recv[iburst_cnt] <= ibus_rdata;
+        end
+    end
+
+    /********************* ibus ******************/
+    // master -> slave
+    assign ibus_arid      = '0;
+    assign ibus_arlen     = 4'b0011;      // 传输4拍
+    assign ibus_arsize    = 3'b010;       // 每次传输4字节
+    assign ibus_arburst   = 2'b01;
+    assign ibus_arlock    = '0;
+    assign ibus_arcache   = '0;
+    assign ibus_arprot    = '0;
+    
+
+    // master -> slave
+    assign ibus_awid      = '0;           
+    assign ibus_awlen     = '0;
+    assign ibus_awsize    = '0;
+    assign ibus_awburst   = '0;
+    assign ibus_awlock    = '0;
+    assign ibus_awcache   = '0;
+    assign ibus_awprot    = '0;
+    assign ibus_awvalid   = '0;
+    assign ibus_awaddr    = '0;
+    // master -> slave
+    assign ibus_wid       = '0;
+    assign ibus_wdata     = '0;
+    assign ibus_wstrb     = '0;
+    assign ibus_wlast     = '0;
+    assign ibus_wvalid    = '0;
+    assign ibus_bready    = '0;
+    //发送命令
+    assign ibus_arvalid   = (istate == REQ) ? 1'b1 : 1'b0;
+    assign ibus_araddr    = icache_rd_addr;
+    assign ibus_rready    = (istate == WAIT) ? 1'b1 : 1'b0;
+
+    //ibus上的赋值
+    assign ibus.ret_valid = (istate == FINISH) ? 1'b1 : 1'b0;
+    assign ibus.ret_data  = icache_line_recv;
+
+
+//dcache读状态机
+     always_ff @( posedge clk ) begin : dstate_block
+        if (resetn == `RstEnable) begin
+            dstate <= IDLE;
+        end else begin
+            dstate <= dstate_next;
+        end
+        
+    end
+    
+    always_comb begin : dstate_next_block
+        dstate_next = IDLE;
+
+        unique case (istate)
+            IDLE:begin
+                if (ibus.rd_req) begin
+                    istate_next = REQ;
+                end else begin
+                    istate_next = IDLE;
+                end
+            end
+            REQ:begin
+                if (ibus_arready) begin
+                    istate_next = WAIT;
+                end else begin
+                    istate_next = REQ;
+                end
+            end
+            WAIT:begin
+                if (ibus_rlast &ibus_rvalid) begin
+                    istate_next = FINISH;
+                end else begin
+                    istate_next = WAIT;
+                end
+            end
+            FINISH:begin
+                istate_next =IDLE;
+            end
+        endcase
+    end
+
+// icache读计数器  如果不在req状态计数器将清零
+    always_ff @(posedge clk ) begin : iburst_cnt_block
+        if (resetn == `RstEnable | ~(istate==REQ) ) begin
+            iburst_cnt <= '0;
+        end else begin
+            iburst_cnt <= iburst_cnt_next;
+        end
+    end
+
+    always_comb begin : iburst_cnt_next_block
+        if (ibus_rvalid) begin
+            iburst_cnt_next = iburst_cnt +1;
+        end else begin
+            iburst_cnt_next = iburst_cnt;
+        end
+    end
+//对于icache读地址的控制
+    always_ff @(posedge clk ) begin : icache_rd_addr_block
+        if (resetn == `RstEnable) begin
+            icache_rd_addr <='0;
+        end else if (istate == REQ) begin
+            icache_rd_addr <= icache_rd_addr;
+        end else begin
+            icache_rd_addr <= ibus.rd_addr;
+        end
+    end
+//对于icache读出数据的锁存
+    always_ff @(posedge clk ) begin : icache_line_recv_block
+        if (resetn == `RstEnable) begin
+            icache_line_recv <='0;
+        end else begin
+            icache_line_recv[iburst_cnt] <= ibus_rdata;
+        end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    axi_crossbar_cache biu (//TODO: ICACHE 的UNCACHE尚未实现
+        .aclk             ( clk     ),
+        .aresetn          ( resetn        ),
+        
+        .s_axi_arid       ( {ibus_arid   ,dbus_arid    ,ubus_arid   } ),
+        .s_axi_araddr     ( {ibus_araddr ,dbus_araddr  ,ubus_araddr } ),
+        .s_axi_arlen      ( {ibus_arlen  ,dbus_arlen   ,ubus_arlen  } ),
+        .s_axi_arsize     ( {ibus_arsize ,dbus_arsize  ,ubus_arsize } ),
+        .s_axi_arburst    ( {ibus_arburst,dbus_arburst ,ubus_arburst} ),
+        .s_axi_arlock     ( {ibus_arlock ,dbus_arlock  ,ubus_arlock } ),
+        .s_axi_arcache    ( {ibus_arcache,dbus_arcache ,ubus_arcache} ),
+        .s_axi_arprot     ( {ibus_arprot ,dbus_arprot  ,ubus_arprot } ),
+        .s_axi_arqos      ( 0                                         ),
+        .s_axi_arvalid    ( {ibus_arvalid,dbus_arvalid ,ubus_arvalid} ),
+        .s_axi_arready    ( {ibus_arready,dbus_arready ,ubus_arready} ),
+        .s_axi_rid        ( {ibus_rid    ,dbus_rid     ,ubus_rid    } ),
+        .s_axi_rdata      ( {ibus_rdata  ,dbus_rdata   ,ubus_rdata  } ),
+        .s_axi_rresp      ( {ibus_rresp  ,dbus_rresp   ,ubus_rresp  } ),
+        .s_axi_rlast      ( {ibus_rlast  ,dbus_rlast   ,ubus_rlast  } ),
+        .s_axi_rvalid     ( {ibus_rvalid ,dbus_rvalid  ,ubus_rvalid } ),
+        .s_axi_rready     ( {ibus_rready ,dbus_rready  ,ubus_rready } ),
+        .s_axi_awid       ( {ibus_awid   ,dbus_awid    ,ubus_awid   } ),
+        .s_axi_awaddr     ( {ibus_awaddr ,dbus_awaddr  ,ubus_awaddr } ),
+        .s_axi_awlen      ( {ibus_awlen  ,dbus_awlen   ,ubus_awlen  } ),
+        .s_axi_awsize     ( {ibus_awsize ,dbus_awsize  ,ubus_awsize } ),
+        .s_axi_awburst    ( {ibus_awburst,dbus_awburst ,ubus_awburst} ),
+        .s_axi_awlock     ( {ibus_awlock ,dbus_awlock  ,ubus_awlock } ),
+        .s_axi_awcache    ( {ibus_awcache,dbus_awcache ,ubus_awcache} ),
+        .s_axi_awprot     ( {ibus_awprot ,dbus_awprot  ,ubus_awprot } ),
+        .s_axi_awqos      ( 0                                         ),
+        .s_axi_awvalid    ( {ibus_awvalid,dbus_awvalid ,ubus_awvalid} ),
+        .s_axi_awready    ( {ibus_awready,dbus_awready ,ubus_awready} ),
+        .s_axi_wid        ( {ibus_wid    ,dbus_wid     ,ubus_wid    } ),
+        .s_axi_wdata      ( {ibus_wdata  ,dbus_wdata   ,ubus_wdata  } ),
+        .s_axi_wstrb      ( {ibus_wstrb  ,dbus_wstrb   ,ubus_wstrb  } ),
+        .s_axi_wlast      ( {ibus_wlast  ,dbus_wlast   ,ubus_wlast  } ),
+        .s_axi_wvalid     ( {ibus_wvalid ,dbus_wvalid  ,ubus_wvalid } ),
+        .s_axi_wready     ( {ibus_wready ,dbus_wready  ,ubus_wready } ),
+        .s_axi_bid        ( {ibus_bid    ,dbus_bid     ,ubus_bid    } ),
+        .s_axi_bresp      ( {ibus_bresp  ,dbus_bresp   ,ubus_bresp  } ),
+        .s_axi_bvalid     ( {ibus_bvalid ,dbus_bvalid  ,ubus_bvalid } ),
+        .s_axi_bready     ( {ibus_bready ,dbus_bready  ,ubus_bready } ),
+        
+        .m_axi_arid       ( m_axi_arid          ),
+        .m_axi_araddr     ( m_axi_araddr        ),
+        .m_axi_arlen      ( m_axi_arlen         ),
+        .m_axi_arsize     ( m_axi_arsize        ),
+        .m_axi_arburst    ( m_axi_arburst       ),
+        .m_axi_arlock     ( m_axi_arlock        ),
+        .m_axi_arcache    ( m_axi_arcache       ),
+        .m_axi_arprot     ( m_axi_arprot        ),
+        .m_axi_arqos      (                     ),
+        .m_axi_arvalid    ( m_axi_arvalid       ),
+        .m_axi_arready    ( m_axi_arready       ),
+        .m_axi_rid        ( m_axi_rid           ),
+        .m_axi_rdata      ( m_axi_rdata         ),
+        .m_axi_rresp      ( m_axi_rresp         ),
+        .m_axi_rlast      ( m_axi_rlast         ),
+        .m_axi_rvalid     ( m_axi_rvalid        ),
+        .m_axi_rready     ( m_axi_rready        ),
+        .m_axi_awid       ( m_axi_awid          ),
+        .m_axi_awaddr     ( m_axi_awaddr        ),
+        .m_axi_awlen      ( m_axi_awlen         ),
+        .m_axi_awsize     ( m_axi_awsize        ),
+        .m_axi_awburst    ( m_axi_awburst       ),
+        .m_axi_awlock     ( m_axi_awlock        ),
+        .m_axi_awcache    ( m_axi_awcache       ),
+        .m_axi_awprot     ( m_axi_awprot        ),
+        .m_axi_awqos      (                     ),
+        .m_axi_awvalid    ( m_axi_awvalid       ),
+        .m_axi_awready    ( m_axi_awready       ),
+        .m_axi_wid        ( m_axi_wid           ),
+        .m_axi_wdata      ( m_axi_wdata         ),
+        .m_axi_wstrb      ( m_axi_wstrb         ),
+        .m_axi_wlast      ( m_axi_wlast         ),
+        .m_axi_wvalid     ( m_axi_wvalid        ),
+        .m_axi_wready     ( m_axi_wready        ),
+        .m_axi_bid        ( m_axi_bid           ),
+        .m_axi_bresp      ( m_axi_bresp         ),
+        .m_axi_bvalid     ( m_axi_bvalid        ),
+        .m_axi_bready     ( m_axi_bready        )
+    );
+
 
 endmodule
