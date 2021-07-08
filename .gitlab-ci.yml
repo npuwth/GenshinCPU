@@ -46,6 +46,7 @@ git_check:
   # script:
   #   - echo start to compile the project
   script:
+    - pwd
     - echo you success send the file to the server!
 
 cpu_simulation:
