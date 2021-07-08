@@ -33,6 +33,7 @@ stages:
 
 
 before_script:
+  chmod -R 777 /tools/
   # - git checkout ${PROJECT_DIR}/${PROJECT_NAME}.srcs/sources_1/bd/bd_soc/ip
   # - git checkout loongson/soc_axi_func/rtl/xilinx_ip
   # - git checkout loongson/soc_axi_perf/rtl/xilinx_ip
@@ -161,10 +162,10 @@ perf_test_simulation:
       - $CI_COMMIT_MESSAGE =~ /\[PERF\]/i
   script:
     #- chmod -R 777 /home
-    - ${VIVADO_PATH} -mode tcl -source /root/scripts/runsimulation-axi.tcl /root/Desktop/ci-genshin/perf_test_v0.01/project_1/project_1.xpr
+    - ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
   artifacts:
     paths:
-      - /root/Desktop/ci-genshin/perf_test_v0.01/project_1/project_1.sim/sim_1/behav/xsim/simulate.log
+      - /tools/project_perf/project_perf.sim/sim_1/behav/xsim/simulate.log
     when: always
 
 
