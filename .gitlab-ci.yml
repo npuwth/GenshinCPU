@@ -201,12 +201,12 @@ perf_test_bitstream:
       #test
   script:
     - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /tools/project_perf/project_perf.xpr
-    - sudo cp -r /tools/project_perf/project_perf.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit
+    - sudo cp -r /tools/project_perf/project_perf.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit/
     - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
-      - /testbit/impl_1/soc_axi_lite_top.bit
-      - /testbit/*/runme.log
+      - ./testbit/impl_1/soc_axi_lite_top.bit
+      - ./testbit/*/runme.log
     when: always
 
 
