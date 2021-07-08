@@ -154,7 +154,7 @@ axi_simulation:
 #     paths:
 #       - loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/*/behav/xsim/simulate.log
 #     when: always
-
+#测一下共同跑
   
 perf_test_simulation:
   tags:
