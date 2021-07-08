@@ -167,7 +167,7 @@ perf_test_simulation:
       - $CI_COMMIT_MESSAGE =~ /\[PERF\]/i
   script:
     #- chmod -R 777 /home
-    - sudo ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
+    - ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
     - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
@@ -184,7 +184,7 @@ func_test_bitstream:
       - $CI_COMMIT_MESSAGE =~ /\[fbit\]/i
   script:
     - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /root/project_axi/project_axi.xpr
-    - sudo chmod -R 777 /home/gitlab-runner/
+    #所有的vivado运行都要加sudo
   artifacts:
     paths:
       - /root/project_axi/project_axi.runs/impl_1/soc_axi_lite_top.bit
