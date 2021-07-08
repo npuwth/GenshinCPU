@@ -100,7 +100,7 @@ axi_simulation:
 #    - export SIMULATION=sim_1
     - export LOG_PATH=/root/project_axi/project_axi.sim/sim_1/behav/xsim/simulate.log
     - export FLAG='\-\-\-\-PASS!!!'
-    - ${VIVADO_PATH} -mode tcl -source /root/scripts/runsimulation-axi.tcl /root/project_axi/project_axi.xpr
+    - sudo ${VIVADO_PATH} -mode tcl -source /root/scripts/runsimulation-axi.tcl /root/project_axi/project_axi.xpr
     - bash /root/scripts/check_simulation.sh
     - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
