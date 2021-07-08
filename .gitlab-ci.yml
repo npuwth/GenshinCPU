@@ -92,7 +92,7 @@ axi_simulation:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[AXI\]/i
   # script:
-  #   - echo start to compile the project
+  #   - echo start to compile the projectAXI
   script:
     #- chmod -R 777 /home
     - echo start to compile the project
