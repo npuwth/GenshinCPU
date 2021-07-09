@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-08 18:07:56
+ * @LastEditTime: 2021-07-09 15:27:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -80,7 +80,7 @@ module TOP_EXE (
         .ID_RegsWrType        (IEBus.ID_RegsWrType ),
         .ID_WbSel             (IEBus.ID_WbSel ),
         .ID_DstSel            (IEBus.ID_DstSel ),
-        .ID_ExceptType        (IEBus.ID_ExceptType ),
+        .ID_ExceptType        (IEBus.ID_ExceptType_new ),
         .ID_ALUSrcA           (IEBus.ID_ALUSrcA ),
         .ID_ALUSrcB           (IEBus.ID_ALUSrcB ),
         .ID_RegsReadSel       (IEBus.ID_RegsReadSel ),

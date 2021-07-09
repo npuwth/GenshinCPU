@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-08 18:06:29
+ * @LastEditTime: 2021-07-09 15:26:59
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -250,7 +250,7 @@ interface ID_EXE_Interface();
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	ID_WbSel;        	// 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器使能
-  	ExceptinPipeType 		ID_ExceptType;		// 异常类型
+  	ExceptinPipeType 		ID_ExceptType_new;		// 异常类型
 	logic                   ID_ALUSrcA;
 	logic                   ID_ALUSrcB;
 	logic       [1:0]       ID_RegsReadSel;
@@ -276,7 +276,7 @@ interface ID_EXE_Interface();
   	output	                ID_RegsWrType,		// 寄存器写信号打包
   	output	                ID_WbSel,        	// 选择写回数据
   	output	                ID_DstSel,   		// 选择目标寄存器使能
-  	output	                ID_ExceptType,		// 异常类型
+  	output	                ID_ExceptType_new,		// 异常类型
 	output	                ID_ALUSrcA,
 	output	                ID_ALUSrcB,
 	output	                ID_BranchType,
@@ -305,7 +305,7 @@ interface ID_EXE_Interface();
   	input	                ID_RegsWrType,		// 寄存器写信号打包
   	input	                ID_WbSel,        	// 选择写回数据
   	input	                ID_DstSel,   		// 选择目标寄存器使能
-  	input	                ID_ExceptType,		// 异常类型
+  	input	                ID_ExceptType_new,		// 异常类型
 	input	                ID_ALUSrcA,
 	input	                ID_ALUSrcB,
 	input	                ID_BranchType,

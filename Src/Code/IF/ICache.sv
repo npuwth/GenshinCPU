@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-02 23:57:46
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-09 13:51:29
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -12,6 +12,8 @@ module ICache(
     input logic clk,
     input logic resetn,
     input logic [31:0] Phsy_Iaddr,
+    input logic PC_Wr,
+    input logic I_IsCached,
     output logic [31:0] Virt_Iaddr,
     CPU_Bus_Interface  CPUBus,//slave
     AXI_Bus_Interface  AXIBus //master
@@ -286,8 +288,8 @@ end
 
 
 //-----------------判断是否命中----------------------
-  assign way0_hit = (tagV0.validout )& (tagV0.tagout == Phsy_Iaddr[31:12]);
-  assign way1_hit = (tagV1.validout )& (tagV1.tagout == Phsy_Iaddr[31:12]);
+  assign way0_hit = ((tagV0.validout )& (tagV0.tagout == Phsy_Iaddr[31:12]))? 1'b1:1'b0;
+  assign way1_hit = ((tagV1.validout )& (tagV1.tagout == Phsy_Iaddr[31:12]))? 1'b1:1'b0;
   assign cache_hit = way0_hit | way1_hit;
 
 // req_buffer
@@ -297,6 +299,9 @@ always_comb begin
     req_buffer_en = 1'b1;
   end
   else if ( (state == LOOKUP && cache_hit == `MISS) || isAgain ==1'b1 ) begin//如果未命中 保持req_buffer不变 或者需要再次LOOKUP时 保持req_buffer不变
+    req_buffer_en = 1'b0;
+  end
+  else if (PC_Wr == 1'b0) begin
     req_buffer_en = 1'b0;
   end
   else begin
@@ -396,7 +401,11 @@ REFILL->IDLE  AXI接口模块数据有效
     end
     //如果不复位
     else if ( CPUBus.flush == `FlushEnable) begin
-      nextState=LOOKUP;
+      if (CPUBus.valid == 1'b1) begin
+        nextState=LOOKUP;
+      end else begin
+        nextState=IDLE;
+      end
     end
     else
     begin

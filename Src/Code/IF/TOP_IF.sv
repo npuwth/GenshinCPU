@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-08 17:24:56
+ * @LastEditTime: 2021-07-09 12:16:33
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,6 +29,7 @@ module TOP_IF (
     input logic [31:0]  EXE_PC,
     input logic [31:0]  EXE_Imm32,
     input logic [31:0]  Phsy_Iaddr,
+    input logic         I_IsCached,
     input logic [31:0]  MEM_PC,
     input ExceptinPipeType IF_ExceptType_new,
     IF_ID_Interface     IIBus,
@@ -101,6 +102,8 @@ module TOP_IF (
         .clk            (clk),
         .resetn         (resetn),
         .Phsy_Iaddr     (Phsy_Iaddr),
+        .I_IsCached     (I_IsCached),
+        .PC_Wr          (PC_Wr),
         .CPUBus         (cpu_ibus.slave),
         .AXIBus         (axi_ibus.master),
         .Virt_Iaddr     (Virt_Iaddr)

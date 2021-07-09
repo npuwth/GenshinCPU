@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-08 17:52:14
+ * @LastEditTime: 2021-07-09 12:18:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -100,6 +100,10 @@ module mycpu_top (
     logic [31:0]               Phsy_Daddr;                //传至TLBMMU，用于TLB转换
     logic [31:0]               Virt_Iaddr;                //传至TLBMMU，用于TLB转换
     logic [31:0]               Phsy_Iaddr;                //传至TLBMMU，用于TLB转换
+    logic                      I_IsCached;                //指示Cache属性
+    logic                      D_IsCached;                //指示Cache属性
+    logic                      I_IsTLBException;          //指示TLB例外
+    logic                      D_IsTLBException;          //指示TLB例外
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
     logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
     ExceptinPipeType           IF_ExceptType;             //用于TLB例外的判断        
@@ -133,13 +137,15 @@ module mycpu_top (
         .DH_IDWr                (DH_IDWr),
         .EXE_Flush_DataHazard   (EXE_Flush_DataHazard), // 以上三个是数据冒险的3个控制信号
         .DIVMULTBusy            (EXE_MULTDIVStall),
-        .EX_Entry_Sel      (EX_Entry_Sel),
+        .EX_Entry_Sel           (EX_Entry_Sel),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .Icache_data_ok         (cpu_ibus.data_ok),
         .Icache_busy            (~cpu_ibus.addr_ok),  // addr_ok = 1表示cache空闲
         .Dcache_data_ok         (cpu_dbus.data_ok),
         .Dcache_busy            (~cpu_dbus.addr_ok),  // addr_ok = 1表示cache空闲
+        .I_IsTLBException       (I_IsTLBException),
+        .D_IsTLBException       (D_IsTLBException),
         //-------------------------------- output-----------------------------//
         .PC_Wr                  (PC_Wr),
         .ID_Wr                  (ID_Wr),
@@ -218,6 +224,7 @@ module mycpu_top (
         .EXE_PC (EXE_PC ),
         .EXE_Imm32 (EXE_Imm32 ),
         .Phsy_Iaddr(Phsy_Iaddr),
+        .I_IsCached(I_IsCached),
         .MEM_PC (MEM_PC),
         .IF_ExceptType_new(IF_ExceptType_new),
         //--------------------output-----------------//
@@ -272,6 +279,7 @@ module mycpu_top (
         .MEM_Wr (MEM_Wr ),
         .WB_Wr (WB_Wr),
         .Phsy_Daddr(Phsy_Daddr),
+        .D_IsCached(D_IsCached),
         .Interrupt(ext_int),
         .MEM_ExceptType_new(MEM_ExceptType_new),
         .MEM_DisWr(MEM_DisWr),
@@ -322,8 +330,13 @@ module mycpu_top (
         .MEM_IsTLBP (MEM_IsTLBP ),
         .MEM_IsTLBW (MEM_IsTLBW),
         .CMBus (CMBus.MMU ),
+        //--------------------------output-----------------//
         .Phsy_Iaddr (Phsy_Iaddr ),
         .Phsy_Daddr  ( Phsy_Daddr),
+        .I_IsCached  (I_IsCached),
+        .D_IsCached  (D_IsCached),
+        .I_IsTLBException (I_IsTLBException),
+        .D_IsTLBException (D_IsTLBException),
         .IF_ExceptType_new(IF_ExceptType_new),
         .MEM_ExceptType_new(MEM_ExceptType_new)
     );

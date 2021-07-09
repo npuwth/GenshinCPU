@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-08 17:14:13
+ * @LastEditTime: 2021-07-08 21:34:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -159,7 +159,7 @@ module cp0_reg (
         else if (ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
             CP0.BadVAddr                   <= WB_PC;
         end
-        else if (ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM) begin
+        else if (ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM || ExcType == `EX_TLBModified) begin
             CP0.BadVAddr                   <= WB_ALUOut;
         end
     end
@@ -207,7 +207,7 @@ module cp0_reg (
         else if(ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
             CP0.EntryHi.VPN2               <= WB_PC[31:13];
         end
-        else if(ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM) begin
+        else if(ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM || ExcType == `EX_TLBModified) begin
             CP0.EntryHi.VPN2               <= WB_ALUOut[31:13];
         end
     end
