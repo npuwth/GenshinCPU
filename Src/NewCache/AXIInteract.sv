@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-08 23:05:39
+ * @LastEditTime: 2021-07-09 12:13:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -248,7 +248,7 @@ module AXIInteract #(
     cache_rd_t istate,istate_next;
     cache_rd_t dstate,dstate_next;
     
-    cache_wb_t istate_wb,istate_wb_next;
+//  cache_wb_t istate_wb,istate_wb_next;
     cache_wb_t dstate_wb,dstate_wb_next;
 
     uncache_t istate_uncache,istate_uncache_next;
@@ -260,10 +260,13 @@ module AXIInteract #(
     logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器
 
     logic [31:0] icache_rd_addr;
-    logic [ICACHE_LINE_SIZE-1:0][31:0] icache_line_recv;
+    logic [ICACHE_LINE_SIZE*2-1:0][31:0] icache_line_recv;
 
     logic [31:0] dcache_rd_addr;
-    logic [DCACHE_LINE_SIZE-1:0][31:0] dcache_line_recv;
+    logic [DCACHE_LINE_SIZE*2-1:0][31:0] dcache_line_recv;
+
+    logic [31:0] dcache_wb_addr;
+    logic [DCACHE_LINE_SIZE-1:0]
 
     always_ff @( posedge clk ) begin : istate_block
         if (resetn == `RstEnable) begin
@@ -343,7 +346,7 @@ module AXIInteract #(
     /********************* ibus ******************/
     // master -> slave
     assign ibus_arid      = '0;
-    assign ibus_arlen     = 4'b0011;      // 传输4拍
+    assign ibus_arlen     = ICACHE_LINE_SIZE*2;      // 传输4拍
     assign ibus_arsize    = 3'b010;       // 每次传输4字节
     assign ibus_arburst   = 2'b01;
     assign ibus_arlock    = '0;
@@ -391,76 +394,143 @@ module AXIInteract #(
     always_comb begin : dstate_next_block
         dstate_next = IDLE;
 
-        unique case (istate)
+        unique case (dstate)
             IDLE:begin
-                if (ibus.rd_req) begin
-                    istate_next = REQ;
+                if (dbus.rd_req) begin
+                    dstate_next = REQ;
                 end else begin
-                    istate_next = IDLE;
+                    dstate_next = IDLE;
                 end
             end
             REQ:begin
-                if (ibus_arready) begin
-                    istate_next = WAIT;
+                if (dbus_arready) begin
+                    dstate_next = WAIT;
                 end else begin
-                    istate_next = REQ;
+                    dstate_next = REQ;
                 end
             end
             WAIT:begin
-                if (ibus_rlast &ibus_rvalid) begin
-                    istate_next = FINISH;
+                if (dbus_rlast &dbus_rvalid) begin
+                    dstate_next = FINISH;
                 end else begin
-                    istate_next = WAIT;
+                    dstate_next = WAIT;
                 end
             end
             FINISH:begin
-                istate_next =IDLE;
+                dstate_next =IDLE;
             end
         endcase
     end
 
 // icache读计数器  如果不在req状态计数器将清零
-    always_ff @(posedge clk ) begin : iburst_cnt_block
-        if (resetn == `RstEnable | ~(istate==REQ) ) begin
-            iburst_cnt <= '0;
+    always_ff @(posedge clk ) begin : dburst_cnt_block
+        if (resetn == `RstEnable | ~(dstate==REQ) ) begin
+            dburst_cnt <= '0;
         end else begin
-            iburst_cnt <= iburst_cnt_next;
+            dburst_cnt <= dburst_cnt_next;
         end
     end
 
-    always_comb begin : iburst_cnt_next_block
-        if (ibus_rvalid) begin
-            iburst_cnt_next = iburst_cnt +1;
+    always_comb begin : dburst_cnt_next_block
+        if (dbus_rvalid) begin
+            dburst_cnt_next = dburst_cnt +1;
         end else begin
-            iburst_cnt_next = iburst_cnt;
+            dburst_cnt_next = dburst_cnt;
         end
     end
-//对于icache读地址的控制
-    always_ff @(posedge clk ) begin : icache_rd_addr_block
+//对于d`cache读地址的控制
+    always_ff @(posedge clk ) begin : dcache_rd_addr_block
         if (resetn == `RstEnable) begin
-            icache_rd_addr <='0;
+            dcache_rd_addr <='0;
         end else if (istate == REQ) begin
-            icache_rd_addr <= icache_rd_addr;
+            dcache_rd_addr <= dcache_rd_addr;
         end else begin
-            icache_rd_addr <= ibus.rd_addr;
+            dcache_rd_addr <= dbus.rd_addr;
         end
     end
-//对于icache读出数据的锁存
-    always_ff @(posedge clk ) begin : icache_line_recv_block
+//对于dcache读出数据的锁存
+    always_ff @(posedge clk ) begin : dcache_line_recv_block
         if (resetn == `RstEnable) begin
-            icache_line_recv <='0;
+            dcache_line_recv <='0;
         end else begin
-            icache_line_recv[iburst_cnt] <= ibus_rdata;
+            dcache_line_recv[dburst_cnt] <= dbus_rdata;
+        end
+    end
+/********************* dbus ******************/
+    assign dbus_arid      = 4'b0001;
+    assign dbus_arlen     = DCACHE_LINE_SIZE*2;//一次读两个cache line
+    assign dbus_arsize    = 3'b010;
+    assign dbus_arburst   = 2'b01;
+    assign dbus_arlock    = '0;
+    assign dbus_arcache   = '0;
+    assign dbus_arprot    = '0;
+
+
+    assign dbus_awid      = 4'b0001;
+    assign dbus_awlen     = DCACHE_LINE_SIZE;        // 写的话还是一块一块写
+    assign dbus_awsize    = 3'b010;         // 传输32bit 
+    assign dbus_awburst   = 2'b01;          // increase模式
+    assign dbus_awlock    = '0;
+    assign dbus_awcache   = '0;
+    assign dbus_awprot    = '0;
+
+
+    assign dbus_wid       = 4'b0001;
+    assign dbus_wstrb     = 4'b1111;
+    assign dbus_bready    = 1'b1;
+
+    //发送命令
+    assign dbus_arvalid   = (dstate == REQ) ? 1'b1 :1'b0;
+    assign dbus_araddr    = dcache_rd_addr;
+    assign dbus_rready    = (dstate == WAIT) ? 1'b1 : 1'b0;
+
+    //dbus上的赋值
+    assign dbus.ret_valid = (dstate == FINISH)? 1'b1:1'b0;
+    assign dbus.ret_data  = dcache_line_recv;
+
+//dcache写状态机 因为write buffer的存在
+    always_ff @( posedge clk ) begin : dstate_wb_block
+        if (resetn == `RstEnable) begin
+            dstate_wb <=  WB_IDLE;
+        end else begin
+            dstate_wb <= dstate_wb_next;
         end
     end
 
+    always_comb begin : dstate_wb_next_block
+        dstate_wb_next = WB_IDLE;
 
-
-
-
-
-
-
+        unique case (dstate_wb)
+            WB_IDLE:begin
+                if (dbus.wr_req) begin
+                    dstate_wb_next = WB_REQ;
+                end else begin
+                    dstate_wb_next = WB_IDLE;
+                end
+            end
+            WB_REQ:begin
+                if (dbus_awready ) begin
+                    dstate_wb_next = WB_WAIT;
+                end else begin
+                    dstate_wb_next = WB_REQ;
+                end
+            WB_WAIT:begin
+                if (dbus_wready == 1'b1 && dbus_wlast == 1'b1 ) begin
+                    dstate_wb_next = WB_FINISH;
+                end else begin
+                    dstate_wb_next = WB_WAIT;
+                end
+            end
+            WB_FINISH:begin
+                if (dbus_bvalid) begin
+                    dstate_wb_next = WB_IDLE;
+                end else begin
+                    dstate_wb_next = WB_FINISH;
+                end
+            end
+        endcase
+        
+    end
 
 
 
