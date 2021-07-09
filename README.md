@@ -3,7 +3,7 @@
  1. Uncache的 lb 指令的Arsize未修改      -> 已修复
  2. 旁路 HILO移到EXE级 CP0移到MEM级      -> 已修复
  3. 重构CP0 & 中断的bug修复              -> 已修复
- 4. 乘法的bug                            -> 已修复
+ 4. 乘法的bug                             -> 已修复
 
 ## TODO:
 
