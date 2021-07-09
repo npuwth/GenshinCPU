@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-08 18:15:42
+ * @LastEditTime: 2021-07-09 15:26:21
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -35,6 +35,7 @@ module TOP_ID (
     logic                    ID_RF_ForwardA;
     logic                    ID_RF_ForwardB;
     logic [1:0]              ID_rsrtRead;
+    ExceptinPipeType         ID_ExceptType;
 
     assign IIBus.ID_Instr = IEBus.ID_Instr;//用于IF级的NPC
     assign IIBus.ID_PC    = IEBus.ID_PC;   //用于IF级的NPC
@@ -47,13 +48,15 @@ module TOP_ID (
         .ID_Wr               (ID_Wr ),
         .IF_Instr            (IIBus.IF_Instr ),
         .IF_PC               (IIBus.IF_PC ),
+        .IF_ExceptType       (IIBus.IF_ExceptType),
     //------------------out----------------------------------------//        
         .ID_Instr            (IEBus.ID_Instr ),
         .ID_Imm16            (ID_Imm16 ),
         .ID_rs               (IEBus.ID_rs ),
         .ID_rt               (IEBus.ID_rt ),
         .ID_rd               (IEBus.ID_rd ),
-        .ID_PC               (IEBus.ID_PC )
+        .ID_PC               (IEBus.ID_PC ),
+        .ID_ExceptType       (ID_ExceptType)
     );
 
     EXT U_EXT ( 
@@ -95,7 +98,7 @@ module TOP_ID (
 //-----------------------------------------------------------------//
     Control U_Control (
         .ID_Instr            (IEBus.ID_Instr),
-        .IF_ExceptType       (IIBus.IF_ExceptType),
+        .ID_ExceptType       (ID_ExceptType),
 //--------------------------out-------------------------------------//
         .ID_ALUOp            (IEBus.ID_ALUOp),
         .ID_LoadType         (IEBus.ID_LoadType),
@@ -103,7 +106,7 @@ module TOP_ID (
         .ID_RegsWrType       (IEBus.ID_RegsWrType),
         .ID_WbSel            (IEBus.ID_WbSel),
         .ID_DstSel           (IEBus.ID_DstSel),
-        .ID_ExceptType       (IEBus.ID_ExceptType),
+        .ID_ExceptType_new   (IEBus.ID_ExceptType_new),
         .ID_ALUSrcA          (IEBus.ID_ALUSrcA),
         .ID_ALUSrcB          (IEBus.ID_ALUSrcB),
         .ID_RegsReadSel      (IEBus.ID_RegsReadSel),

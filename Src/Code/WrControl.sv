@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-08 17:21:19
+ * @LastEditTime: 2021-07-09 12:15:31
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,7 +27,8 @@ module WrFlushControl(
     input logic       Icache_busy,              // Icache信号 表示Icache是否要暂停流水线
     input logic       Dcache_data_ok,           // Icache信号 用于判断IF/ID写使能信号是否可以打开
     input logic       Dcache_busy,              // Icache信号 表示Icache是否要暂停流水线
-      
+    input logic       I_IsTLBException,
+    input logic       D_IsTLBException,
 
     output logic      PC_Wr,
     output logic      ID_Wr,
@@ -57,7 +58,7 @@ module WrFlushControl(
     // assign DIVMULTBusy = EXE_MULTDIVStall;                // 乘除法器状态机的busy信号（stall为1，时busy信号为1）
     // Icache Flush
     always_comb begin
-        if (Exception == `FlushEnable) begin
+        if (Exception == `FlushEnable || I_IsTLBException == `FlushEnable) begin
             IcacheFlush = 1'b1;
         end
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
@@ -71,7 +72,7 @@ module WrFlushControl(
     end
     // Dcache Flush
     always_comb begin
-        if (Exception == `FlushEnable) begin
+        if (Exception == `FlushEnable || D_IsTLBException == `FlushEnable) begin
             DcacheFlush = 1'b1;
         end
         else begin

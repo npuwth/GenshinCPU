@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-08 17:46:24
+ * @LastEditTime: 2021-07-09 12:19:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,6 +23,10 @@ module TLBMMU (
     input logic                  MEM_IsTLBW,
     CP0_MMU_Interface            CMBus,
     output logic [31:0]          Phsy_Iaddr,
+    output logic                 I_IsCached,
+    output logic                 D_IsCached,
+    output logic                 I_IsTLBException,
+    output logic                 D_IsTLBException,
     output logic [31:0]          Phsy_Daddr,
     output ExceptinPipeType      IF_ExceptType_new,
     output ExceptinPipeType      MEM_ExceptType_new
@@ -47,6 +51,7 @@ module TLBMMU (
     assign CMBus.MMU_g0          = r_g; //读出的g存入g0和g1
     assign CMBus.MMU_g1          = r_g;
     assign CMBus.MMU_s1found     = s1_found;
+    assign CMBus.MMU_index       = s1_index;
 
     tlb U_TLB ( 
         .clk                     (clk ),
@@ -151,14 +156,17 @@ module TLBMMU (
         if(s0_found == 1'b0 && (Virt_Iaddr > 32'hbfff_ffff || Virt_Iaddr < 32'h8000_0000)) begin
             IF_ExceptType_new.TLBRefillinIF         = 1'b1;
             IF_ExceptType_new.TLBInvalidinIF        = 1'b0;  
+            I_IsTLBException                        = 1'b1;
         end          
         else if(s0_found == 1'b1 && s0_v == 1'b0 && (Virt_Iaddr > 32'hbfff_ffff || Virt_Iaddr < 32'h8000_0000)) begin
             IF_ExceptType_new.TLBRefillinIF         = 1'b0;
-            IF_ExceptType_new.TLBInvalidinIF        = 1'b1; 
+            IF_ExceptType_new.TLBInvalidinIF        = 1'b1;
+            I_IsTLBException                        = 1'b1;
         end
         else begin
             IF_ExceptType_new.TLBRefillinIF         = 1'b0;
             IF_ExceptType_new.TLBInvalidinIF        = 1'b0; 
+            I_IsTLBException                        = 1'b0;
         end
     end
 
@@ -183,6 +191,7 @@ module TLBMMU (
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
+            D_IsTLBException                         = 1'b1;
         end
         else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
@@ -190,13 +199,15 @@ module TLBMMU (
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
+            D_IsTLBException                         = 1'b1;
         end
-        if(s1_found == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+        else if(s1_found == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b1;
             MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
+            D_IsTLBException                         = 1'b1;
         end
         else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
@@ -204,6 +215,7 @@ module TLBMMU (
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b1;
             MEM_ExceptType_new.TLBModified           = 1'b0;
+            D_IsTLBException                         = 1'b1;
         end
         else if(s1_found == 1'b1 && s1_v == 1'b1 && s1_d == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
@@ -211,6 +223,7 @@ module TLBMMU (
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b1;
+            D_IsTLBException                         = 1'b1;
         end
         else begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
@@ -218,6 +231,41 @@ module TLBMMU (
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.WrTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.TLBModified           = 1'b0;
+            D_IsTLBException                         = 1'b0;
+        end
+    end
+
+    always_comb begin
+        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+            I_IsCached                               = 1'b0;
+        end
+        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+            I_IsCached                               = 1'b1;
+        end
+        else begin
+            if(s0_c == 3'b011) begin
+                I_IsCached                           = 1'b1;
+            end
+            else begin
+                I_IsCached                           = 1'b0;
+            end
+        end
+    end
+
+    always_comb begin
+        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
+            D_IsCached                               = 1'b0;
+        end
+        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+            D_IsCached                               = 1'b1;
+        end
+        else begin
+            if(s1_c == 3'b011) begin
+                D_IsCached                           = 1'b1;
+            end
+            else begin
+                D_IsCached                           = 1'b0;
+            end
         end
     end
 endmodule

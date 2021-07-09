@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-04 09:07:56
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-09 11:41:39
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache.sv
  */
@@ -13,6 +13,8 @@ module DCache(
     input logic clk,
     input logic resetn,
     input logic [31:0] Phsy_Daddr,
+    input logic MEM_Wr,
+    input logic D_IsCached,
     output logic [31:0] Virt_Daddr,
     CPU_Bus_Interface  CPUBus,//slave
     AXI_Bus_Interface  AXIBus, //master
@@ -74,7 +76,7 @@ module DCache(
   typedef struct  packed{
     logic [3:0][31:0] bank;
     logic [`TAGBITNUM-1:0] tag;
-    logic [`INDEXBITNUM-1:0] index;//保留要写入脏块的index号
+    logic [`INDEXBITNUM-1:0] index;//保留要写入脏块的index�?
     logic way0_hit;
     logic way1_hit;
     logic [3:0]wstrb;
@@ -83,22 +85,22 @@ module DCache(
 
 
   StoreBufferType store_buffer;
-  RequestType req;//从cpu和request_buffer中选择出来的请求
-  logic isAgain;  //是否是未命中 需要再次查找
+  RequestType req;//从cpu和request_buffer中�?�择出来的请�?
+  logic isAgain;  //是否是未命中 �?要再次查�?
   logic isAgain_new;//isAgain是reg isAgain_new是wire
 
   StateType state;
   StateType nextState;
-  logic[255:0][0:0]  Dirty0;//第0路的dirty域
-  logic[255:0][0:0]  Dirty1;//第1路的dirty域
+  logic[255:0][0:0]  Dirty0;//�?0路的dirty�?
+  logic[255:0][0:0]  Dirty1;//�?1路的dirty�?
 
-  logic Count0;//第0路的计数器
-  logic Count1;//第1路的计数器
+  logic Count0;//�?0路的计数�?
+  logic Count1;//�?1路的计数�?
 
-  TagVType tagV0,tagV1;//对于tagv的赋值 datain 连入的是axi接口模块进来的值 en 是当有req.valid成立 we当axi接口模块来的valid成立
+  TagVType tagV0,tagV1;//对于tagv的赋�? datain 连入的是axi接口模块进来的�?? en 是当有req.valid成立 we当axi接口模块来的valid成立
 
-  DataType [`WordsPerCacheLine-1:0] data0;//第0路的data banks
-  DataType [`WordsPerCacheLine-1:0] data1;//第1路的data banks
+  DataType [`WordsPerCacheLine-1:0] data0;//�?0路的data banks
+  DataType [`WordsPerCacheLine-1:0] data1;//�?1路的data banks
 
   RequestType req_buffer;
   RequestType req_buffer_new;
@@ -113,15 +115,14 @@ module DCache(
   logic [3:0]way0_web;
   logic [3:0]way1_web; //store的写使能
 
-  logic isStore;//这个信号表征 在这个周期 是否将store buffer的数据写入对应的bank和tag
-  logic isUncache;
-  logic [31:0]unCache_rdata;//用来存放来自axi模块的数据
+  logic isStore;//这个信号表征 在这个周�? 是否将store buffer的数据写入对应的bank和tag
+  logic [31:0]unCache_rdata;//用来存放来自axi模块的数�?
   logic unCache_rdata_en;
   logic [31:0]wdata;
   logic [31:0]dirty_addr;
   // logic way0_data;因为没写注释 我也不知道这是啥
   // logic way1_data;
-//----------------------------对req的选择 如果isAgain高电平 那就引入 req_buffer的内容 不然就是
+//----------------------------对req的�?�择 如果isAgain高电�? 那就引入 req_buffer的内�? 不然就是
 always_comb begin 
   if (CPUBus.flush == `FlushEnable) begin
     req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType,CPUBus.loadType };
@@ -136,9 +137,9 @@ end
 
 
 
-//------------------------对tagv input的赋值
+//------------------------对tagv input的赋�?
 assign tagV0.en      = req.valid | isStore;
-assign tagV0.we      = (isStore)?way0_web:way0_we;//当在refill状态 并且 ret_valid有效时 并且换的还是这一路
+assign tagV0.we      = (isStore)?way0_web:way0_we;//当在refill状�?? 并且 ret_valid有效�? 并且换的还是这一�?
 assign tagV0.addr    = (isStore)?store_buffer.index : req.index;
 assign tagV0.tagin   = (isStore)?store_buffer.tag : Phsy_Daddr[31:12];
 assign tagV0.validin = 1'b1;
@@ -150,7 +151,7 @@ assign tagV1.addr    = (isStore)?store_buffer.index :req.index;
 assign tagV1.tagin   = (isStore)?store_buffer.tag :Phsy_Daddr[31:12];
 assign tagV1.validin = 1'b1;
 
-// 对tagV0/1_en的赋值 // 当在refill状态 并且 ret_valid有效时 并且换的还是这一路
+// 对tagV0/1_en的赋�? // 当在refill状�?? 并且 ret_valid有效�? 并且换的还是这一�?
 always_comb begin
   if(nextState == IDLE && state == REFILL) begin
     if (Count0 == 1'b1) begin
@@ -171,7 +172,7 @@ end
 
 
 always_comb begin
-   if (state == STORE) begin// 不用考虑此时的flush信号 因为在外部看来 store应该是在上一个时钟就完成的
+   if (state == STORE) begin// 不用考虑此时的flush信号 因为在外部看�? store应该是在上一个时钟就完成�?
     if (store_buffer.way0_hit == 1'b1) begin
       way0_web = store_buffer.wstrb;
       way1_web = 4'b0000;
@@ -187,9 +188,9 @@ always_comb begin
   end
 end
 
-//对 伪lru的计数器的赋值
+//�? 伪lru的计数器的赋�?
 always_ff @( posedge clk ) begin 
-  if (state == LOOKUP && cache_hit == `HIT && isUncache == 1'b0) begin
+  if (state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1) begin
     if (way0_hit == `HIT) begin
       Count0 <= '0;
       Count1 <= '1;
@@ -208,7 +209,7 @@ always_ff @(posedge clk) begin
   Dirty0 <= '0;
   Dirty1 <= '0;
   end
-  else if ( state == LOOKUP && req_buffer.op == 1'b1 && cache_hit == `HIT && isUncache == 1'b0) begin//store指令的第二拍 store命中 写dirty
+  else if ( state == LOOKUP && req_buffer.op == 1'b1 && cache_hit == `HIT && D_IsCached == 1'b1) begin//store指令的第二拍 store命中 写dirty
     if (way0_hit == `HIT) begin
       Dirty0[req_buffer.index]<=1'b1;
     end
@@ -230,7 +231,7 @@ always_ff @(posedge clk) begin
   end
 end
 
-//TODO: storebuffer的赋值
+//TODO: storebuffer的赋�?
 always_ff @(posedge clk ) begin
   store_buffer.index <= req_buffer.index;
   store_buffer.tag <= Phsy_Daddr[31:12];
@@ -351,13 +352,13 @@ always_ff @(posedge clk) begin
   endcase
   end
   else begin
-    store_buffer.bank <= '1; //TODO: 所以这到底是什么呢
+    store_buffer.bank <= '1; //TODO: �?以这到底是什么呢
   end
 end
 
 
 
-//------------------对data0 data1 的input的赋值
+//------------------对data0 data1 的input的赋�?
 generate;
   for (genvar i=0; i<`WordsPerCacheLine ;i=i+1) begin
     assign data0[i].addr = (isStore)?store_buffer.index :req.index;
@@ -380,7 +381,7 @@ logic [31:0] way0_word;
 logic [31:0] way1_word;
 
 always_comb begin//根据
-  unique case (req_buffer.offset[3:2])//根据req_buffer里面的信息 因为 req_buffer里面的信息是和从ram读出的数据是同一拍的
+  unique case (req_buffer.offset[3:2])//根据req_buffer里面的信�? 因为 req_buffer里面的信息是和从ram读出的数据是同一拍的
       2'b00:begin
         way0_word = data0[0].dout;
         way1_word = data1[0].dout;
@@ -404,8 +405,8 @@ always_comb begin//根据
   endcase
 end
 
-logic [31:0] way_word;//读出的数据
-logic [31:0] way_word_r;//所存下位接收的数据
+logic [31:0] way_word;//读出的数�?
+logic [31:0] way_word_r;//�?存下位接收的数据
 logic choose;
 always_ff @(posedge clk) begin
   if (CPUBus.data_ok == 1'b1 ) begin
@@ -429,28 +430,28 @@ always_ff @(posedge clk) begin
 end
 
 
-always_comb begin // 读出数的always块
+always_comb begin // 读出数的always�?
   if (state == IDLE) begin
     way_word = unCache_rdata;
   end
-  else if(cache_hit == `HIT && state == LOOKUP && isUncache == 1'b0)begin
+  else if(cache_hit == `HIT && state == LOOKUP && D_IsCached == 1'b1)begin
     if(way0_hit == `HIT) way_word = way0_word;
     else way_word = way1_word;
   end
-  else begin//cache miss的情况
+  else begin//cache miss的情�?
         way_word = '0;
   end
 end
 
 
 
-//对CPUBus 的output进行赋值
+//对CPUBus 的output进行赋�??
 assign CPUBus.rdata = (CPUBus.data_ok == 1'b1 && CPUBus.ready == 1'b1)?way_word:(choose)?way_word_r:'0;
 always_comb begin
     if (state ==IDLE && isAgain == 1'b0) begin
         CPUBus.addr_ok = `Ready;
     end
-    else if (state == LOOKUP && cache_hit == `HIT && isUncache == 1'b0 && req_buffer.op==1'b0) begin//当处于look up 命中 并且不是uncache的
+    else if (state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1 && req_buffer.op==1'b0) begin//当处于look up 命中 并且不是uncache�?
       CPUBus.addr_ok = `Ready;
     end
     else CPUBus.addr_ok = `Unready;
@@ -463,7 +464,7 @@ always_ff @(posedge clk) begin
 end
 
 always_comb begin
-  if ( state == LOOKUP && cache_hit == `HIT && isUncache == 1'b0) begin
+  if ( state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1) begin
     CPUBus.data_ok = `Valid;
   end
   else CPUBus.data_ok = data_ok_r;
@@ -497,9 +498,9 @@ always_comb begin
     data_ok = `Invalid;
   end
 end
-//对isAgain的赋值  
+//对isAgain的赋�?  
 always_comb begin
-  if(state == LOOKUP && cache_hit == `MISS && isUncache == 1'b0  )begin //在LOOKUP阶段 未命中
+  if(state == LOOKUP && cache_hit == `MISS && D_IsCached == 1'b1  )begin //在LOOKUP阶段 未命�?
     isAgain_new = 1'b1; 
   end
   else isAgain_new = 1'b0;
@@ -517,7 +518,7 @@ always_ff @(posedge clk) begin
   end
 end
 
-////对AXIBus 的output进行赋值
+////对AXIBus 的output进行赋�??
 assign AXIBus.rd_addr = {Phsy_Daddr[31:12],req_buffer.index,4'b0000};
 always_comb begin
   if (state == MISSCLEAN || state == WRITEBACK) begin
@@ -542,7 +543,7 @@ always_comb begin
   end
 end
 
-//对 uncache的部分测试
+//�? uncache的部分测�?
 always_comb begin
   if (state == REQ) begin
     unique case (req_buffer.op)
@@ -614,7 +615,10 @@ always_comb begin
   if (CPUBus.flush == `FlushEnable) begin
     req_buffer_en = 1'b1;
   end
-  else if (~(state ==IDLE && isAgain == 1'b0) && ~(state == LOOKUP && cache_hit == `HIT && isUncache == 1'b0 ) ) begin//如果未命中 保持req_buffer不变 或者需要再次LOOKUP时 保持req_buffer不变
+  else if (~(state ==IDLE && isAgain == 1'b0) && ~(state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1 ) ) begin//如果未命�? 保持req_buffer不变 或�?�需要再次LOOKUP�? 保持req_buffer不变
+    req_buffer_en = 1'b0;
+  end
+  else if(MEM_Wr == 1'b0) begin
     req_buffer_en = 1'b0;
   end
   else begin
@@ -632,31 +636,31 @@ end
     end
   end
 
-  MMU MMU_dut (
-        .virt_addr ({req_buffer.tag,req_buffer.index,req_buffer.offset} ),
-        .isUncache (isUncache )
-      );//虚实地址转换
+  // MMU MMU_dut (
+  //       .virt_addr ({req_buffer.tag,req_buffer.index,req_buffer.offset} ),
+  //       .isUncache (isUncache )
+  //     );//虚实地址转换
 
 
 
-  inst_ram_TagV TagV0(//第一路的tag 使用最后一位作为valid
+  inst_ram_TagV TagV0(//第一路的tag 使用�?后一位作为valid
                   //input
                   .clka(clk),
-                  .ena(tagV0.en),     //实际上在replace阶段也要读写 然后在判断命中的时候
+                  .ena(tagV0.en),     //实际上在replace阶段也要读写 然后在判断命中的时�??
                   .wea(tagV0.we),     // 在refill是写使能打开
-                  .addra(tagV0.addr), //地址号 就是cache set的编号
+                  .addra(tagV0.addr), //地址�? 就是cache set的编�?
                   .dina({tagV0.tagin,tagV0.validin} ),
                   //output
                   .douta({tagV0.tagout,tagV0.validout} )
 
                 );
 
-  inst_ram_TagV TagV1(//第二路的tag 使用最后一位作为valid
+  inst_ram_TagV TagV1(//第二路的tag 使用�?后一位作为valid
                   //input
                   .clka(clk),
-                  .ena(tagV1.en),     //实际上在replace阶段也要读写 然后在判断命中的时候
+                  .ena(tagV1.en),     //实际上在replace阶段也要读写 然后在判断命中的时�??
                   .wea(tagV1.we),     // 在refill是写使能打开
-                  .addra(tagV1.addr), //地址号 就是cache set的编号
+                  .addra(tagV1.addr), //地址�? 就是cache set的编�?
                   .dina({tagV1.tagin,tagV1.validin} ),
                   //output
                   .douta({tagV1.tagout,tagV1.validout} )
@@ -667,7 +671,7 @@ end
   generate
     for(genvar i=0;i < `WordsPerCacheLine; i = i+1)
     begin:gen_icache_ram
-      inst_ram_data Data0(//第0路的data block ram
+      inst_ram_data Data0(//�?0路的data block ram
                       //input
                       .clka(clk),
                       .addra(data0[i].addr),
@@ -680,7 +684,7 @@ end
                 
                     );
 
-      inst_ram_data Data1(//第1路的data block ram
+      inst_ram_data Data1(//�?1路的data block ram
                       //input
                       //input
                       .clka(clk),
@@ -704,26 +708,26 @@ end
 
 
 
-/*Icache状态机说明
+/*Icache状�?�机说明
 IDLE->IDLE 该周期无访存请求
-IDLE->LOOKUP 该周期有访存请求 下一周期可达到命中信息
-LOOKUP->LOOKUP 该周期收到访存请求 且上周期的请求命中
-LOOKUP->MISS 上周期的访存请求未命中 这周期的命中结果是未命中
-MISS->MISS 如果不能发出读请求
+IDLE->LOOKUP 该周期有访存请求 下一周期可达到命中信�?
+LOOKUP->LOOKUP 该周期收到访存请�? 且上周期的请求命�?
+LOOKUP->MISS 上周期的访存请求未命�? 这周期的命中结果是未命中
+MISS->MISS 如果不能发出读请�?
 MISS->REPLACE 发出了读请求
-REFILL->REFILL 等待AXI接口模块的数据
+REFILL->REFILL 等待AXI接口模块的数�?
 REFILL->IDLE  AXI接口模块数据有效
  如果外界的flush信号成立，那么以同周期的输入请求查询
 */
 
-  always_comb //计算下一状态
+  always_comb //计算下一状�??
   begin
     //如果复位
     if(resetn==`RstEnable || CPUBus.flush == `FlushEnable)
     begin
       nextState=IDLE;
     end
-    //如果不复位
+    //如果不复�?
     else
     begin
       unique case (state)
@@ -738,20 +742,20 @@ REFILL->IDLE  AXI接口模块数据有效
 
                LOOKUP:
                begin
-                 if (isUncache == 1'b1) begin
+                 if (D_IsCached == 1'b0) begin
                    nextState = REQ;
                  end
-                 else if(cache_hit == `MISS ) // cache_hit表示是否当前周期的查询命中
+                 else if(cache_hit == `MISS ) // cache_hit表示是否当前周期的查询命�?
                  begin
-                 if (Count0 == 1'b1) begin //如果需要替换的是第0路
-                   if (Dirty0[req_buffer.index]==1'b1) begin //如果是dirty的
+                 if (Count0 == 1'b1) begin //如果�?要替换的是第0�?
+                   if (Dirty0[req_buffer.index]==1'b1) begin //如果是dirty�?
                      nextState=MISSDIRTY;
                    end
                    else begin
                      nextState=MISSCLEAN;
                    end
                  end
-                 else begin//如果需要替换的是第1路
+                 else begin//如果�?要替换的是第1�?
                    if (Dirty1[req_buffer.index]==1'b1) begin
                      nextState=MISSDIRTY;
                    end
@@ -781,7 +785,7 @@ REFILL->IDLE  AXI接口模块数据有效
                  begin
                    nextState = MISSCLEAN;
                  end
-                 else                     //如果读请求被接受了
+                 else                     //如果读请求被接受�?
                  begin
                    nextState = REFILL;
                  end
@@ -875,38 +879,6 @@ REFILL->IDLE  AXI接口模块数据有效
              endcase
            end
          end
-
-
-
-         
-
-
-
-          // always_ff @( posedge clk )
-          // begin
-          //   writeState <= nextWriteState;
-          // end 
-
-           
-          // always_comb
-          // begin
-          //   //复位
-          //   if(resetn == `RstEnable || CPUBus.flush == `FlushEnable) //如果flush了就停止写行为
-          //   begin
-          //     nextWriteState = IDLE_STORE;
-          //   end
-          //   //不复位
-          //   else
-          //   begin
-          //     if (cache_hit == `HIT && req_buffer.op == 1'b1 && isUncache == 1'b0 && state == LOOKUP) begin //如果有命中了的写指令 那么在下一周期 跳转到WRITE_STORE 将数据写入
-          //         nextWriteState = WRITE_STORE;
-          //     end
-          //    else begin 
-          //           nextWriteState = IDLE_STORE;
-          //         end
-          //   end
-          // end
-
 
 
            always_comb begin

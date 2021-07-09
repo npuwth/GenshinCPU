@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-08 19:28:57
+ * @LastEditTime: 2021-07-09 15:30:43
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,9 +14,7 @@
 
 module Control(
     input  logic[31:0] ID_Instr,
-    input  ExceptinPipeType IF_ExceptType,
-    input  logic EXE_IsTLBR,
-    input  logic EXE_IsTLBW,
+    input  ExceptinPipeType ID_ExceptType,
 
     output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
     output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
@@ -26,7 +24,7 @@ module Control(
     //output logic ID_ReadMem,		 		// LoadType 指令在MEM级，产生数据冒险的指令在MEM级检测
     output logic [1:0] ID_DstSel,   		        // 寄存器写回信号选择（Dst）
     //output logic ID_DMWr,			 	// DataMemory 写信号
-    output ExceptinPipeType ID_ExceptType,	        // 异常类型
+    output ExceptinPipeType ID_ExceptType_new,	        // 异常类型
 
     output logic       ID_ALUSrcA,
     output logic       ID_ALUSrcB,
@@ -1412,7 +1410,7 @@ module Control(
 
 always_comb begin
   if(instrType == OP_BREAK) begin
-    ID_ExceptType = '{
+    ID_ExceptType_new = '{
                             Interrupt:1'b0,
                             Break:1'b1,
                             WrongAddressinIF:1'b0,
@@ -1422,8 +1420,8 @@ always_comb begin
                             Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
-                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            TLBRefillinIF:ID_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:ID_ExceptType.TLBInvalidinIF,
                             RdTLBRefillinMEM:1'b0,
                             RdTLBInvalidinMEM:1'b0,
                             WrTLBRefillinMEM:1'b0,
@@ -1434,7 +1432,7 @@ always_comb begin
         };//关于Break异常
   end
   else if(instrType == OP_SYSCALL) begin
-    ID_ExceptType = '{
+    ID_ExceptType_new = '{
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
@@ -1444,8 +1442,8 @@ always_comb begin
                             Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
-                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            TLBRefillinIF:ID_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:ID_ExceptType.TLBInvalidinIF,
                             RdTLBRefillinMEM:1'b0,
                             RdTLBInvalidinMEM:1'b0,
                             WrTLBRefillinMEM:1'b0,
@@ -1456,7 +1454,7 @@ always_comb begin
         };//关于SYSCALL
   end
   else if(instrType == OP_ERET) begin
-    ID_ExceptType = '{  
+    ID_ExceptType_new = '{  
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
@@ -1466,8 +1464,8 @@ always_comb begin
                             Eret:1'b1,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
-                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            TLBRefillinIF:ID_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:ID_ExceptType.TLBInvalidinIF,
                             RdTLBRefillinMEM:1'b0,
                             RdTLBInvalidinMEM:1'b0,
                             WrTLBRefillinMEM:1'b0,
@@ -1478,7 +1476,7 @@ always_comb begin
         };//关于ERET
   end
   else begin
-    ID_ExceptType = '{  
+    ID_ExceptType_new = '{  
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
@@ -1488,8 +1486,8 @@ always_comb begin
                             Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
-                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
-                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            TLBRefillinIF:ID_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:ID_ExceptType.TLBInvalidinIF,
                             RdTLBRefillinMEM:1'b0,
                             RdTLBInvalidinMEM:1'b0,
                             WrTLBRefillinMEM:1'b0,

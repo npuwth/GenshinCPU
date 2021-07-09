@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-08 18:15:20
+ * @LastEditTime: 2021-07-09 11:43:45
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,6 +20,7 @@ module TOP_MEM (
     input logic                  MEM_Wr,
     input logic                  WB_Wr,//表示是否拥堵
     input logic  [31:0]          Phsy_Daddr, 
+    input logic                  D_IsCached,
     input logic  [5:0]           Interrupt,//中断
     input ExceptinPipeType       MEM_ExceptType_new,
     input logic                  MEM_DisWr,
@@ -188,6 +189,8 @@ module TOP_MEM (
         .clk            (clk),
         .resetn         (resetn),
         .Phsy_Daddr     (Phsy_Daddr),
+        .D_IsCached     (D_IsCached),
+        .MEM_Wr         (MEM_Wr),
         .CPUBus         (cpu_dbus.slave),
         .AXIBus         (axi_dbus.master),
         .UBus           (axi_ubus.master),

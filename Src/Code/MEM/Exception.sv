@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-08 19:37:19
+ * @LastEditTime: 2021-07-08 21:42:07
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -51,7 +51,7 @@ always_comb begin
         MEM_RegsWrType_final   = `RegsWrTypeDisable;
     end 
     else begin
-        EX_Entry_Sel      = `IsNone;
+        EX_Entry_Sel           = `IsNone;
         ID_Flush               = `FlushDisable;
         EXE_Flush              = `FlushDisable;
         MEM_Flush              = `FlushDisable;
