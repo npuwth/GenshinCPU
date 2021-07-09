@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-09 15:52:48
+ * @LastEditTime: 2021-07-09 17:32:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -20,7 +20,7 @@ module AXIInteract #(
     AXI_Bus_Interface ibus,
     AXI_Bus_Interface dbus,
 
-    AXI_UNCACHE_Interface uibus,
+ // AXI_UNCACHE_Interface uibus,
     AXI_UNCACHE_Interface udbus,
 
 
@@ -232,7 +232,9 @@ module AXIInteract #(
         UNCACHE_IDLE,
         UNCACHE_RD,
         UNCACHE_WB,
-        UNCACHE_WAIT,
+        UNCACHE_WAIT_RD,
+        UNCACHE_WAIT_WB,
+        UNCACHE_WAIT_WBRESP,
         UNCACHE_FINISH
     } uncache_t;//通用的uncache机制 icache可能读 dcache会读会写
 
@@ -255,15 +257,22 @@ module AXIInteract #(
     logic [DCACHE_CNT_WIDTH-1:0] dburst_cnt,dburst_cnt_next;//dcache计数器
 
     logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器
-
+//icache读 使用数据
     logic [31:0] icache_rd_addr;
     logic [ICACHE_LINE_SIZE*2-1:0][31:0] icache_line_recv;//读的块大小为两倍的cache line size
-
+//dcache读 使用数据
     logic [31:0] dcache_rd_addr;
     logic [DCACHE_LINE_SIZE*2-1:0][31:0] dcache_line_recv;
-
+//dcache写 使用数据
     logic [31:0] dcache_wb_addr;
     logic [DCACHE_LINE_SIZE-1:0] dcache_line_wb;
+//uncache读写 使用数据
+    logic [31:0] uncache_addr_rd;
+    logic [31:0] uncache_addr_wb;
+    logic [31:0] uncache_line_rd;
+    logic [31:0] uncache_line_wb;
+    logic [3:0]    uncache_wstrb;
+    LoadType    uncache_loadType; 
 
     always_ff @( posedge clk ) begin : istate_block
         if (resetn == `RstEnable) begin
@@ -567,13 +576,113 @@ module AXIInteract #(
         end
     end
 
+/********************* ubus ******************/
+    assign ubus_arid     = 4'b0011;
+    assign ubus_arlen    = 4'b0000; // 传输事件只有一个
+    // assign ubus_arsize   = 3'b010; // 4字节
+    assign ubus_arsize   = (uncache_loadType.size == 2'b10) ? 3'b000: // lb
+                           (uncache_loadType.size == 2'b01) ? 3'b001: // lh
+                           3'b010;//lw          // 根据LB LH LW调整Uncache的arsize  
+    assign ubus_arburst  = 2'b01;
+    assign ubus_arlock   = '0;
+    assign ubus_arcache  = '0;
+    assign ubus_arprot   = '0;
 
 
+    assign ubus_awid     = 4'b0011;
+    assign ubus_awlen    = 4'b0000;        // 传输1次
+    assign ubus_awsize   = 3'b010;         // 传输32bit 
+    assign ubus_awburst  = 2'b01;          // increase模式
+    assign ubus_awlock   = '0;
+    assign ubus_awcache  = '0;
+    assign ubus_awprot   = '0;
 
 
+    assign ubus_wid     = 4'b0001;
+    assign ubus_wstrb   = uncache_wstrb;  // 使用所存下来的信号。以支持uncache的SB
+    assign ubus_bready  = 1'b1;
 
+    assign ubus_arvalid = (dstate_uncache==UNCACHE_RD)? 1'b1:1'b0;
+    assign ubus_araddr  = uncache_addr_rd;
+    assign ubus_rready  = (dstate_uncache==UNCACHE_WAIT_RD)? 1'b1:1'b0;
 
+    assign ubus_wlast   = (dstate_uncache==UNCACHE_WAIT_WB)? 1'b1:1'b0;
+    assign ubus_wdata   = uncache_line_wb;
+    assign ubus_awvalid = (dstate_uncache==UNCACHE_WB)?1'b1:1'b0;
+    assign ubus_awaddr  = uncache_addr_wb;
 
+    //空闲信号的输出
+    assign ibus. rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
+    assign ibus. wr_rdy  = 1'b0;
+    assign dbus. rd_rdy  = (dstate == IDLE ) ? 1'b1 : 1'b0;
+    assign dbus. wr_rdy  = (dstate_wb == WB_IDLE )  ? 1'b1 : 1'b0;
+    assign udbus.rd_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
+    assign udbus.wr_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
+
+    always_ff @( posedge clk ) begin : dstate_uncache_block
+        if (resetn == `RstEnable) begin
+            dstate_uncache <=UNCACHE_IDLE;
+        end else begin
+            dstate_uncache <= dstate_uncache_next;
+        end
+    end
+
+    always_comb begin : dstate_uncache_next_block
+        dstate_uncache_next =UNCACHE_IDLE;
+
+        unique case (dstate_uncache)
+            UNCACHE_IDLE:begin
+                if (udbus.rd_req | udbus.wr_req) begin
+                    if (udbus.rd_req) begin
+                        dstate_uncache_next =UNCACHE_RD;
+                    end else begin
+                        dstate_uncache_next =UNCACHE_WB;
+                    end
+                end else begin
+                    dstate_uncache_next =UNCACHE_IDLE;
+                end
+            end 
+            UNCACHE_RD:begin//发起读请求
+                if (ubus_arready ) begin
+                    dstate_uncache_next =UNCACHE_WAIT_RD;
+                end else begin
+                    dstate_uncache_next =UNCACHE_RD;
+                end
+            end
+            UNCACHE_WB:begin//发起写请求
+                if (ubus_awready ) begin
+                    dstate_uncache_next =UNCACHE_WAIT_WB;
+                end else begin
+                    dstate_uncache_next =UNCACHE_WB;
+                end                
+            end
+            UNCACHE_WAIT_RD:begin
+                if (ubus_rready) begin
+                    dstate_uncache_next = UNCACHE_FINISH;
+                end else begin
+                    dstate_uncache_next = UNCACHE_WAIT_RD;
+                end
+            end
+            UNCACHE_WAIT_WB:begin
+                if (ubus_wready) begin
+                    dstate_uncache_next = UNCACHE_WAIT_WBRESP;
+                end else begin
+                    dstate_uncache_next = UNCACHE_WAIT_WB;
+                end                
+            end
+            UNCACHE_WAIT_WBRESP:begin
+                if (ubus_bvalid) begin
+                    dstate_uncache_next = UNCACHE_FINISH;
+                end else begin
+                    dstate_uncache_next = UNCACHE_WAIT_WB;
+                end                    
+            end
+            UNCACHE_FINISH:begin
+                dstate_uncache_next =UNCACHE_IDLE;
+            end
+            
+        endcase
+    end
 
 
 
