@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-09 17:32:14
+ * @LastEditTime: 2021-07-09 20:58:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -610,6 +610,7 @@ module AXIInteract #(
     assign ubus_wdata   = uncache_line_wb;
     assign ubus_awvalid = (dstate_uncache==UNCACHE_WB)?1'b1:1'b0;
     assign ubus_awaddr  = uncache_addr_wb;
+    assign ubus_wvalid  = (dstate_uncache==UNCACHE_WAIT_WB)?1'b1:1'b0;
 
     //空闲信号的输出
     assign ibus. rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
@@ -684,11 +685,48 @@ module AXIInteract #(
         endcase
     end
 
+    //对于uncache_addr_rd
+    always_ff @( posedge clk ) begin : uncache_addr_rd_block
+        if (resetn == `RstEnable ) begin
+            uncache_addr_rd <= '0;
+        end else if(dstate_uncache != UNCACHE_IDLE)begin
+            uncache_addr_rd <= uncache_addr_rd;
+        end else begin
+            uncache_addr_rd <= udbus.rd_addr;
+        end
+    end
 
+    //对于uncache_line_wb
+    always_ff @( posedge clk ) begin : uncache_line_wb_block
+        if (resetn == `RstEnable) begin
+            uncache_line_wb <= '0;
+        end else if(dstate_uncache != UNCACHE_IDLE)begin
+            uncache_line_wb <= uncache_line_wb;
+        end else begin
+            uncache_line_wb <= udbus.wr_data;
+        end
+    end
 
-
-
-
+    //对于uncache_addr_wb
+    always_ff @( posedge clk ) begin : uncache_addr_wb_block
+        if (resetn == `RstEnable) begin
+            uncache_addr_wb <= '0;
+        end else if(dstate_uncache != UNCACHE_IDLE)begin
+            uncache_addr_wb <= uncache_addr_wb;
+        end else begin
+            uncache_addr_wb <= udbus.wr_addr;
+        end        
+    end
+    //对于uncache_wstrb
+    always_ff @( posedge clk ) begin : uncache_wstrb_block
+        if (resetn == `RstEnable) begin
+            uncache_wstrb <= '0;
+        end else if(dstate_uncache != UNCACHE_IDLE)begin
+            uncache_wstrb <= uncache_wstrb;
+        end else begin
+            uncache_wstrb <= udbus.wr_wstrb;
+        end           
+    end
 
 
 
