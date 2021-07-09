@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-09 15:37:14
+ * @LastEditTime: 2021-07-09 15:52:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -242,13 +242,13 @@ module AXIInteract #(
     localparam int  ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE*2);//icache的计数器的位宽
     localparam int  DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE*2);//dcache的计数器的位宽
 
-    cache_rd_t istate,istate_next;
-    cache_rd_t dstate,dstate_next;
+    cache_rd_t istate,istate_next;//icache 读状态机
+    cache_rd_t dstate,dstate_next;//dcache 读状态机
     
 //  cache_wb_t istate_wb,istate_wb_next;
     cache_wb_t dstate_wb,dstate_wb_next;
 
-    uncache_t istate_uncache,istate_uncache_next;
+//  uncache_t istate_uncache,istate_uncache_next; 暂时不实现 icache的uncache
     uncache_t dstate_uncache,dstate_uncache_next;
 
     logic [ICACHE_CNT_WIDTH-1:0] iburst_cnt,iburst_cnt_next;//读计数器
@@ -556,11 +556,11 @@ module AXIInteract #(
             dcache_wb_addr <= dbus.wr_addr;
         end
     end
-
+//对于dcache 写数据的控制
     always_ff @(posedge clk ) begin
         if (resetn == `RstEnable) begin
             dcache_line_wb <= '0;
-        end else if(dstate_wb == WB_WAIT) begin
+        end else if(dstate_wb == WB_WAIT || dstate_wb == WB_REQ) begin
             dcache_line_wb <= dcache_line_wb;
         end else begin
             dcache_line_wb <= dbus.wr_data;
