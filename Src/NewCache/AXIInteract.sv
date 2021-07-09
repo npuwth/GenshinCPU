@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-09 12:26:40
+ * @LastEditTime: 2021-07-09 15:37:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -237,10 +237,7 @@ module AXIInteract #(
     } uncache_t;//通用的uncache机制 icache可能读 dcache会读会写
 
 
-    typedef struct packed {
-        logic [31:0]                    addr;
-        logic [DCACHE_LINE_SIZE*8-1:0]  wdata;
-    } request_wb_t;
+
 
     localparam int  ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE*2);//icache的计数器的位宽
     localparam int  DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE*2);//dcache的计数器的位宽
@@ -260,7 +257,7 @@ module AXIInteract #(
     logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器
 
     logic [31:0] icache_rd_addr;
-    logic [ICACHE_LINE_SIZE*2-1:0][31:0] icache_line_recv;
+    logic [ICACHE_LINE_SIZE*2-1:0][31:0] icache_line_recv;//读的块大小为两倍的cache line size
 
     logic [31:0] dcache_rd_addr;
     logic [DCACHE_LINE_SIZE*2-1:0][31:0] dcache_line_recv;
@@ -438,11 +435,11 @@ module AXIInteract #(
             dburst_cnt_next = dburst_cnt;
         end
     end
-//对于d`cache读地址的控制
+//对于dcache读地址的控制
     always_ff @(posedge clk ) begin : dcache_rd_addr_block
         if (resetn == `RstEnable) begin
             dcache_rd_addr <='0;
-        end else if (istate == REQ) begin
+        end else if (dstate == REQ) begin
             dcache_rd_addr <= dcache_rd_addr;
         end else begin
             dcache_rd_addr <= dbus.rd_addr;
@@ -483,7 +480,8 @@ module AXIInteract #(
     assign dbus_arvalid   = (dstate == REQ) ? 1'b1 :1'b0;
     assign dbus_araddr    = dcache_rd_addr;
     assign dbus_rready    = (dstate == WAIT) ? 1'b1 : 1'b0;
-
+    assign dbus_wdata     = dcache_line_wb[wb_dburst_cnt];
+    assign dbus_wlast     = (wb_dburst_cnt == { (DCACHE_CNT_WIDTH/2) {1'b1} } ) ? 1'b1 : 1'b0;
     //dbus上的赋值
     assign dbus.ret_valid = (dstate == FINISH)? 1'b1:1'b0;
     assign dbus.ret_data  = dcache_line_recv;
@@ -541,10 +539,33 @@ module AXIInteract #(
         end
     end
 
+    always_comb begin : wb_dburst_cnt_next_block
+        if (dbus_wready) begin
+            wb_dburst_cnt_next = wb_dburst_cnt + 1;
+        end else begin
+            wb_dburst_cnt_next = wb_dburst_cnt;
+        end
+    end
+//对dcache写地址的控制
+    always_ff @( posedge clk ) begin : dcache_wb_addr_block
+        if (resetn == `RstEnable) begin
+            dcache_wb_addr <='0;
+        end else if(dstate_wb == WB_REQ) begin
+            dcache_wb_addr <= dcache_wb_addr;
+        end else begin
+            dcache_wb_addr <= dbus.wr_addr;
+        end
+    end
 
-
-
-
+    always_ff @(posedge clk ) begin
+        if (resetn == `RstEnable) begin
+            dcache_line_wb <= '0;
+        end else if(dstate_wb == WB_WAIT) begin
+            dcache_line_wb <= dcache_line_wb;
+        end else begin
+            dcache_line_wb <= dbus.wr_data;
+        end
+    end
 
 
 
