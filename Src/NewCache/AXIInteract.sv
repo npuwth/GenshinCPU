@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-09 12:13:20
+ * @LastEditTime: 2021-07-09 12:26:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -266,7 +266,7 @@ module AXIInteract #(
     logic [DCACHE_LINE_SIZE*2-1:0][31:0] dcache_line_recv;
 
     logic [31:0] dcache_wb_addr;
-    logic [DCACHE_LINE_SIZE-1:0]
+    logic [DCACHE_LINE_SIZE-1:0] dcache_line_wb;
 
     always_ff @( posedge clk ) begin : istate_block
         if (resetn == `RstEnable) begin
@@ -310,7 +310,7 @@ module AXIInteract #(
 
 // icache读计数器  如果不在req状态计数器将清零
     always_ff @(posedge clk ) begin : iburst_cnt_block
-        if (resetn == `RstEnable | ~(istate==REQ) ) begin
+        if (resetn == `RstEnable | istate==REQ ) begin
             iburst_cnt <= '0;
         end else begin
             iburst_cnt <= iburst_cnt_next;
@@ -424,7 +424,7 @@ module AXIInteract #(
 
 // icache读计数器  如果不在req状态计数器将清零
     always_ff @(posedge clk ) begin : dburst_cnt_block
-        if (resetn == `RstEnable | ~(dstate==REQ) ) begin
+        if (resetn == `RstEnable | dstate==REQ ) begin
             dburst_cnt <= '0;
         end else begin
             dburst_cnt <= dburst_cnt_next;
@@ -488,7 +488,7 @@ module AXIInteract #(
     assign dbus.ret_valid = (dstate == FINISH)? 1'b1:1'b0;
     assign dbus.ret_data  = dcache_line_recv;
 
-//dcache写状态机 因为write buffer的存在
+//dcache写状态机 因为write buffer的存在 所以没法和uncache共用一个通道
     always_ff @( posedge clk ) begin : dstate_wb_block
         if (resetn == `RstEnable) begin
             dstate_wb <=  WB_IDLE;
@@ -514,6 +514,7 @@ module AXIInteract #(
                 end else begin
                     dstate_wb_next = WB_REQ;
                 end
+            end
             WB_WAIT:begin
                 if (dbus_wready == 1'b1 && dbus_wlast == 1'b1 ) begin
                     dstate_wb_next = WB_FINISH;
@@ -529,10 +530,16 @@ module AXIInteract #(
                 end
             end
         endcase
-        
     end
 
-
+//dcache 写计数器 如果不在req状态 计数器将被清零
+    always_ff @( posedge clk ) begin : wb_dburst_cnt_block
+        if (resetn == `RstEnable | dstate_wb==WB_REQ) begin
+            wb_dburst_cnt <= '0;
+        end else begin
+            wb_dburst_cnt <= wb_dburst_cnt_next;
+        end
+    end
 
 
 
