@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-27 20:08:23
- * @LastEditTime: 2021-07-10 22:44:40
+ * @LastEditTime: 2021-07-10 23:17:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -9,12 +9,16 @@
  * @Description: 
  */
 
+`include "CommonDefines.svh"
+`include "CPU_Defines.svh"
+
 module tlb 
 #(
     parameter TLBNUM = 16
 )
 (
     input  logic                       clk,
+    input  logic                       rst,
     //search port0
     input  logic  [18:0]               s0_vpn2,
     input  logic                       s0_odd_page,
@@ -79,21 +83,41 @@ module tlb
     logic [TLBNUM-1:0]                 match1;
 
     //write port
-    always_ff @(posedge clk ) begin
-        if(we) begin
-            tlb_vpn2[w_index]          <= w_vpn2;
-            tlb_asid[w_index]          <= w_asid;
-            tlb_g[w_index]             <= w_g;
-            tlb_pfn0[w_index]          <= w_pfn0;
-            tlb_c0[w_index]            <= w_c0;
-            tlb_d0[w_index]            <= w_d0;
-            tlb_v0[w_index]            <= w_v0;
-            tlb_pfn1[w_index]          <= w_pfn1;
-            tlb_c1[w_index]            <= w_c1;
-            tlb_d1[w_index]            <= w_d1;
-            tlb_v1[w_index]            <= w_v1;
-        end
-    end
+    genvar i;
+    generate
+    	for(i = 0; i < TLBNUM; ++i)
+    	begin: gen_for_tlb
+    		always_ff @(posedge clk) begin
+    			if(rst == `RstEnable) begin
+    				tlb_vpn2[i] <= '0;
+                    tlb_asid[i] <= '0;
+                    tlb_g[i]    <= '0; 
+                    tlb_pfn0[i] <= '0;
+                    tlb_c0[i]   <= '0;
+                    tlb_d0[i]   <= '0;
+                    tlb_v0[i]   <= '0;
+                    tlb_pfn1[i] <= '0;
+                    tlb_c1[i]   <= '0;
+                    tlb_d1[i]   <= '0;
+                    tlb_v1[i]   <= '0;
+    			end else begin
+    				if( we && i == w_index) begin
+    					tlb_vpn2[i] <= w_vpn2;
+                        tlb_asid[i] <= w_asid;
+                        tlb_g[i]    <= w_g;
+                        tlb_pfn0[i] <= w_pfn0;
+                        tlb_c0[i]   <= w_c0;
+                        tlb_d0[i]   <= w_d0;
+                        tlb_v0[i]   <= w_v0;
+                        tlb_pfn1[i] <= w_pfn1;
+                        tlb_c1[i]   <= w_c1;
+                        tlb_d1[i]   <= w_d1;
+                        tlb_v1[i]   <= w_v1;
+                    end
+    			end
+    		end
+    	end
+    endgenerate
     //read port
     always_comb begin
         r_vpn2 =                   tlb_vpn2[r_index];
