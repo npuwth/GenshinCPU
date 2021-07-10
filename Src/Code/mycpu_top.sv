@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-10 16:14:58
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-10 23:30:51
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -321,6 +321,7 @@ module mycpu_top (
 
     TLBMMU U_TLBMMU ( 
         .clk (aclk ),
+        .rst (aresetn),
         .Virt_Iaddr (Virt_Iaddr ),
         .Virt_Daddr (Virt_Daddr ),
         .MEM_LoadType (MEM_LoadType),

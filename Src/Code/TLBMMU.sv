@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-09 12:19:18
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-10 23:30:03
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,6 +13,7 @@
 
 module TLBMMU (
     input logic                  clk,
+    input logic                  rst,
     input logic [31:0]           Virt_Iaddr,
     input logic [31:0]           Virt_Daddr,
     input LoadType               MEM_LoadType,
@@ -55,6 +56,7 @@ module TLBMMU (
 
     tlb U_TLB ( 
         .clk                     (clk ),
+        .rst                     (rst ),
         //search port 0
         .s0_vpn2                 (Virt_Iaddr[31:13] ),
         .s0_odd_page             (Virt_Iaddr[12] ),
