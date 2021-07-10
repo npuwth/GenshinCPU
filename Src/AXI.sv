@@ -46,45 +46,45 @@ module AXIInteract(
   );
 
 // Icache 
-    logic [ 3: 0] ibus_arid;
-    logic [31: 0] ibus_araddr;
-    logic [ 3: 0] ibus_arlen;
-    logic [ 2: 0] ibus_arsize;
-    logic [ 1: 0] ibus_arburst;
-    logic [ 1: 0] ibus_arlock;
-    logic [ 3: 0] ibus_arcache;
-    logic [ 2: 0] ibus_arprot;
-    logic         ibus_arvalid;
-    logic         ibus_arready;
-    logic [ 3: 0] ibus_rid;
-    logic [31: 0] ibus_rdata;
-    logic [ 1: 0] ibus_rresp;
-    logic         ibus_rlast;
-    logic         ibus_rvalid;
-    logic         ibus_rready;
-    logic [ 3: 0] ibus_awid;
-    logic [31: 0] ibus_awaddr;
-    logic [ 3: 0] ibus_awlen;
-    logic [ 2: 0] ibus_awsize;
-    logic [ 1: 0] ibus_awburst;
-    logic [ 1: 0] ibus_awlock;
-    logic [ 3: 0] ibus_awcache;
-    logic [ 2: 0] ibus_awprot;
-    logic         ibus_awvalid;
-    logic         ibus_awready;
-    logic [ 3: 0] ibus_wid;
-    logic [31: 0] ibus_wdata;
-    logic [ 3: 0] ibus_wstrb;
-    logic         ibus_wlast;
-    logic         ibus_wvalid;
-    logic         ibus_wready;
-    logic [ 3: 0] ibus_bid;
-    logic [ 1: 0] ibus_bresp;
-    logic         ibus_bvalid;
-    logic         ibus_bready;
+    logic [ 3: 0] ibus_arid;  //固定为0
+    logic [31: 0] ibus_araddr;//icache_rd_addr
+    logic [ 3: 0] ibus_arlen;//是参数ICACHE_LINE_SIZE-1
+    logic [ 2: 0] ibus_arsize;//固定为010 4字节
+    logic [ 1: 0] ibus_arburst;//固定的突发传输模式 incr
+    logic [ 1: 0] ibus_arlock;//固定为0
+    logic [ 3: 0] ibus_arcache;//固定为0
+    logic [ 2: 0] ibus_arprot;//固定为0
+    logic         ibus_arvalid;//istate状态在REQ时发起请求
+    logic         ibus_arready;//in端
+    logic [ 3: 0] ibus_rid;//in端
+    logic [31: 0] ibus_rdata;//写入的数据
+    logic [ 1: 0] ibus_rresp;//in端
+    logic         ibus_rlast;//读的最后一拍   
+    logic         ibus_rvalid;//读请求有效
+    logic         ibus_rready;//master端准备好接受数据
+    logic [ 3: 0] ibus_awid;//固定为0
+    logic [31: 0] ibus_awaddr;//没有用
+    logic [ 3: 0] ibus_awlen;//没有用
+    logic [ 2: 0] ibus_awsize;//没有用
+    logic [ 1: 0] ibus_awburst;//没有用
+    logic [ 1: 0] ibus_awlock;//没有用
+    logic [ 3: 0] ibus_awcache;//没有用
+    logic [ 2: 0] ibus_awprot;//没有用
+    logic         ibus_awvalid;//没有用
+    logic         ibus_awready;//没有用
+    logic [ 3: 0] ibus_wid;//没有用
+    logic [31: 0] ibus_wdata;//没有用
+    logic [ 3: 0] ibus_wstrb;//没有用
+    logic         ibus_wlast;//没有用
+    logic         ibus_wvalid;//没有用
+    logic         ibus_wready;//没有用
+    logic [ 3: 0] ibus_bid;//没有用
+    logic [ 1: 0] ibus_bresp;//没有用
+    logic         ibus_bvalid;//没有用
+    logic         ibus_bready;//没有用
 
 // Dcache 
-    logic [ 3: 0] dbus_arid;
+    logic [ 3: 0] dbus_arid;//固定为1
     logic [31: 0] dbus_araddr;
     logic [ 3: 0] dbus_arlen;
     logic [ 2: 0] dbus_arsize;
