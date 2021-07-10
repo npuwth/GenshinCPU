@@ -184,11 +184,12 @@ func_test_bitstream:
       - $CI_COMMIT_MESSAGE =~ /\[fbit\]/i
   script:
     - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /root/project_axi/project_axi.xpr
+    - sudo cp -r /root/project_axi/project_axi.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit/
     #所有的vivado运行都要加sudo
   artifacts:
     paths:
-      - /root/project_axi/project_axi.runs/impl_1/soc_axi_lite_top.bit
-      - /root/project_axi/project_axi.runs/*/runme.log
+      - ./testbit/impl_1/soc_axi_lite_top.bit
+      - ./testbit/*/runme.log
     when: always
 
 #pbit生成bit流测试
