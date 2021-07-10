@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-10 16:03:03
+ * @LastEditTime: 2021-07-10 16:11:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -10,8 +10,8 @@
 `include "CPU_Defines.svh"
 
 module AXIInteract #(
-    parameter ICACHE_LINE_SIZE=8,//icache块大小
-    parameter DCACHE_LINE_SIZE=8 //dcache块大小
+    parameter ICACHE_LINE_SIZE=4,//icache块大小
+    parameter DCACHE_LINE_SIZE=4 //dcache块大小
 ) (
     //external signals
     input logic clk,
