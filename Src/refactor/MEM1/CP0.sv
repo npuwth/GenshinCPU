@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-10 17:59:24
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-10 19:56:20
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -71,7 +71,7 @@ module cp0_reg (
     assign                  config0_default = {
 	                            1'b1,   // M, config1 not implemented
 	                            21'b0,
-	                            3'b1,   // MMU Type ( Standard TLB )
+	                            3'b001,   // MMU Type ( Standard TLB )
 	                            4'b0,
 	                            3'd2    // Keseg0段走uncache
                             };
@@ -383,8 +383,8 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Ebase                      <= 32'h8000_0000;
         end 
-       else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE) begin
-            CP0.Ebase                      <= MEM_Result[29:12];
+       else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE) begin //TODO:sel0,sel1
+            CP0.Ebase[29:12]               <= MEM_Result[29:12];
         end
     end
 
@@ -401,14 +401,14 @@ module cp0_reg (
 // CONFIG1   Read only 
     always_ff @(posedge clk) begin
         if(rst == `RstEnable) begin
-            CP0.Config1.M       = 1'b0;                 // 表示不存在config2寄存器
-            CP0.Config1.MMUSize = `TLB_ENTRIES_NUM - 1;  // 实际的TLB项 - 1
-            CP0.Config1.IS      = IC_SET_PER_WAY[2:0];       // Icache 一路内的行数
-            CP0.Config1.IL      = IC_LINE_SIZE[2:0];         // Icacheline大小   
-            CP0.Config1.IA      = IC_ASSOC[2:0];             // Icache 相连度   
-            CP0.Config1.DS      = DC_SET_PER_WAY[2:0];       // Dcache 一路内的行数    
-            CP0.Config1.DL      = DC_LINE_SIZE[2:0];         // Dcacheline大小   
-            CP0.Config1.DA      = DC_ASSOC[2:0];             // Dcache 相连度   
+            CP0.Config1.M                  <= 1'b0;                 // 表示不存在config2寄存器
+            CP0.Config1.MMUSize            <= `TLB_ENTRIES_NUM - 1;  // 实际的TLB项 - 1
+            CP0.Config1.IS                 <= IC_SET_PER_WAY[2:0];       // Icache 一路内的行数
+            CP0.Config1.IL                 <= IC_LINE_SIZE[2:0];         // Icacheline大小   
+            CP0.Config1.IA                 <= IC_ASSOC[2:0];             // Icache 相连度   
+            CP0.Config1.DS                 <= DC_SET_PER_WAY[2:0];       // Dcache 一路内的行数    
+            CP0.Config1.DL                 <= DC_LINE_SIZE[2:0];         // Dcacheline大小   
+            CP0.Config1.DA                 <= DC_ASSOC[2:0];             // Dcache 相连度   
         end 
     end
     //read port
@@ -429,7 +429,6 @@ module cp0_reg (
             `CP0_REG_CONFIG0:    CP0_RdData = CP0.Config0;
             `CP0_REG_CONFIG1:    CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , 
                                                CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
-
             default:             CP0_RdData = 'x;
         endcase
     end
