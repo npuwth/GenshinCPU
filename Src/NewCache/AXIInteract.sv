@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-10 09:36:15
+ * @LastEditTime: 2021-07-10 19:07:14
  * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -240,9 +240,9 @@ module AXIInteract #(
 
 
 
-
-    localparam int  ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE*2);//icache的计数器的位宽
-    localparam int  DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE*2);//dcache的计数器的位宽
+//TODO: 如果要实现预取 在这边改×2
+    localparam int  ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE);//icache的计数器的位宽 
+    localparam int  DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE);//dcache的计数器的位宽
 
     cache_rd_t istate,istate_next;//icache 读状态机
     cache_rd_t dstate,dstate_next;//dcache 读状态机
@@ -256,13 +256,14 @@ module AXIInteract #(
     logic [ICACHE_CNT_WIDTH-1:0] iburst_cnt,iburst_cnt_next;//读计数器
     logic [DCACHE_CNT_WIDTH-1:0] dburst_cnt,dburst_cnt_next;//dcache计数器
 
-    logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器    //TODO为啥是-2
+    logic [DCACHE_CNT_WIDTH-1:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器
+//TODO: 如果要实现预取 这边下面的line_recv*2
 //icache读 使用数据
     logic [31:0] icache_rd_addr;
-    logic [ICACHE_LINE_SIZE*2-1:0][31:0] icache_line_recv;//读的块大小为两倍的cache line size
+    logic [ICACHE_LINE_SIZE-1:0][31:0] icache_line_recv;//读的块大小为两倍的cache line size
 //dcache读 使用数据
     logic [31:0] dcache_rd_addr;
-    logic [DCACHE_LINE_SIZE*2-1:0][31:0] dcache_line_recv;
+    logic [DCACHE_LINE_SIZE-1:0][31:0] dcache_line_recv;
 //dcache写 使用数据
     logic [31:0] dcache_wb_addr;
     logic [DCACHE_LINE_SIZE-1:0] dcache_line_wb;
@@ -334,7 +335,7 @@ module AXIInteract #(
     always_ff @(posedge clk ) begin : icache_rd_addr_block
         if (resetn == `RstEnable) begin
             icache_rd_addr <='0;
-        end else if (istate == REQ) begin
+        end else if (~(istate == IDLE)) begin
             icache_rd_addr <= icache_rd_addr;
         end else begin
             icache_rd_addr <= ibus.rd_addr;
@@ -448,7 +449,7 @@ module AXIInteract #(
     always_ff @(posedge clk ) begin : dcache_rd_addr_block
         if (resetn == `RstEnable) begin
             dcache_rd_addr <='0;
-        end else if (dstate == REQ) begin
+        end else if (~(dstate == IDLE)) begin
             dcache_rd_addr <= dcache_rd_addr;
         end else begin
             dcache_rd_addr <= dbus.rd_addr;
@@ -559,7 +560,7 @@ module AXIInteract #(
     always_ff @( posedge clk ) begin : dcache_wb_addr_block
         if (resetn == `RstEnable) begin
             dcache_wb_addr <='0;
-        end else if(dstate_wb == WB_REQ) begin
+        end else if(~(dstate_wb == WB_IDLE)) begin
             dcache_wb_addr <= dcache_wb_addr;
         end else begin
             dcache_wb_addr <= dbus.wr_addr;
@@ -569,7 +570,7 @@ module AXIInteract #(
     always_ff @(posedge clk ) begin
         if (resetn == `RstEnable) begin
             dcache_line_wb <= '0;
-        end else if(dstate_wb == WB_WAIT || dstate_wb == WB_REQ) begin
+        end else if(~(dstate_wb == WB_IDLE)) begin
             dcache_line_wb <= dcache_line_wb;
         end else begin
             dcache_line_wb <= dbus.wr_data;
