@@ -186,6 +186,7 @@ func_test_bitstream:
     - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /root/project_axi/project_axi.xpr
     - sudo cp -r /root/project_axi/project_axi.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit/
     #所有的vivado运行都要加sudo
+    - sudo chmod -R 777 /home/gitlab-runner/
   artifacts:
     paths:
       - ./testbit/impl_1/soc_axi_lite_top.bit
