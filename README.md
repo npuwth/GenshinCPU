@@ -14,8 +14,19 @@
 
 +  3. 现在时钟中断未经过测试，可能存在bug
 
++  PMON: 协处理器异常，自陷异常，非对齐访存，ebase+offset，去除branchlikely，CACHE指令
 
++  ucore: 协处理器异常，自陷异常，非对齐访存，去除branchlikely，tlbwr
 
++  linux（context寄存器？清华16spring的markdown）重大有wired和context，MADD，MOV指令
+
++  Cause寄存器太弱了，Wired，Random？
+
++  TLBWR去除（ucore请看清华15年报告，linux请看16spring的markdown）
+
++  Branchlikely去除（请看）
+
++  LL/SC去除，watchlo/watchhi去除 （清华17pdf）
 ## Caution
 
 + 系统测试中，为了跑监控程序**必须将cache打开**，否则串口中断的接受存在一定的时序问题（初步估计是线程切换的时间大于两次串口中断的时间）
