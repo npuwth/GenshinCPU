@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-09 20:58:39
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-10 09:36:15
+ * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
  */
@@ -256,7 +256,7 @@ module AXIInteract #(
     logic [ICACHE_CNT_WIDTH-1:0] iburst_cnt,iburst_cnt_next;//读计数器
     logic [DCACHE_CNT_WIDTH-1:0] dburst_cnt,dburst_cnt_next;//dcache计数器
 
-    logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器
+    logic [DCACHE_CNT_WIDTH-2:0] wb_dburst_cnt,wb_dburst_cnt_next;//写计数器    //TODO为啥是-2
 //icache读 使用数据
     logic [31:0] icache_rd_addr;
     logic [ICACHE_LINE_SIZE*2-1:0][31:0] icache_line_recv;//读的块大小为两倍的cache line size
@@ -273,7 +273,7 @@ module AXIInteract #(
     logic [31:0] uncache_line_wb;
     logic [3:0]    uncache_wstrb;
     LoadType    uncache_loadType; 
-
+//Icache读状态机
     always_ff @( posedge clk ) begin : istate_block
         if (resetn == `RstEnable) begin
             istate <= IDLE;
