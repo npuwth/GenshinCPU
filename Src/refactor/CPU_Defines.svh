@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-10 17:46:07
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-11 09:44:41
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -217,7 +217,7 @@ typedef struct packed {
 	logic [31:0]    Prid;      // 15号 sel 0
 	logic [31:0]    Ebase;     // 15号 sel 1
 	logic [31:0]    Config0;   // 16号 sel 0  只读寄存器
-	CP0_Config1     Config1;   // 16号 sel 1  只读寄存器
+	CP1_Config1     Config1;   // 16号 sel 1  只读寄存器
 } cp0_regs;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
