@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 03:18:14
+ * @LastEditTime: 2021-07-12 03:21:01
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -222,6 +222,35 @@ typedef struct packed {
 	logic [31:0]    Config0;   // 16号 sel 0  只读寄存器
 	CP1_Config1     Config1;   // 16号 sel 1  只读寄存器
 } cp0_regs;
+
+typedef struct packed {  
+	logic [31:13]   VPN2;
+	logic [7:0]     ASID;
+	logic           G;
+	logic [25:6]    PFN0;
+	logic [5:3]     C0;
+	logic [2:2]     D0;
+	logic [1:1]     V0;
+	logic [25:6]    PFN1;
+	logic [5:3]     C1;
+	logic [2:2]     D1;
+	logic [1:1]     V1;
+	logic           IsTLBException;
+} TLB_Buffer;
+
+typedef struct packed {  //一个TLB项
+	logic [31:13]   VPN2;
+	logic [7:0]     ASID;
+	logic           G;
+	logic [25:6]    PFN0;
+	logic [5:3]     C0;
+	logic [2:2]     D0;
+	logic [1:1]     V0;
+	logic [25:6]    PFN1;
+	logic [5:3]     C1;
+	logic [2:2]     D1;
+	logic [1:1]     V1;
+} TLB_Entry;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
 //-------------------------------------------------------------------------------------------------//

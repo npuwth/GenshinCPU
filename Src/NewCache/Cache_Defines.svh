@@ -1,13 +1,11 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-10 23:55:42
+ * @LastEditTime: 2021-07-11 20:11:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
-
-`include "CPU_Defines.svh"
 `ifndef CACHE_DEFINES_SVH
 `define CACHE_DEFINES_SVH
 
@@ -25,45 +23,43 @@
 `define CACHEIDLE         0
 `define BRANCKFAILED      1
 
-        typedef struct packed {
-          logic                    valid;  //cache line的valid域 表示数据是否有效
-          logic [`TAGBITNUM-1  :0]   tag;  //cache line的tag域 在第一版中 tag应该是实地址
-          logic [`INDEXBITNUM-1:0] index;  //cache line的index域的大小 index以虚地址为好 这样才能及时读出数据
-          logic [`OFFSETNUM-1  :0] offset; //每个cache line 的偏执位
-          logic                    dirty;  //
 
-        } CacheLineType; //没用了呜呜
 
 typedef logic [31:0]        VirtualAddressType; //虚拟地址
 typedef logic [31:0]        PhysicalAddressType;//物理地址
 typedef logic [31:0]        UInt32Type;         //无符号的32位
 
+
+
+
+
 interface CPU_Bus_Interface();            // 只需要满足读的请求 icache的读 即使在命中的情况下 也需要两回合才能返回 就是在I回合其实发出读请求 在II回合的末尾才能给出是否命中
   logic 		    valid;     // CPU是否发生访存的请求
-  logic         ready;     // CPU是否可以接收访存结果
+  //logic         ready;     // CPU是否可以接收访存结果
   logic 		    op;        // 0 读 1 写
-  logic [7:0] 	index;     //
+
   logic [19:0]  tag;       // 
+  logic [7:0] 	index;     //
   logic [3:0] 	offset;    //  
   logic [3:0] 	wstrb;     //  Icache 用不到
-  StoreType     storeType;
+  //StoreType     storeType;
   LoadType      loadType;
   logic [31:0]  wdata;     //  Icache 用不到
-  logic     		addr_ok;   //  表示访存请求可以接受（空闲
-  logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
+  logic     		busy;   //  表示访存请求可以接受（空闲
+  // logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
   logic [31:0]  rdata;     //          
   logic         flush;
 
   modport master ( //cpu的接口
-            output  valid,op,index,tag,ready,storeType,
+            output  valid,op,index,tag,
             output  offset,wstrb,wdata,flush,loadType,
-            input addr_ok,data_ok,rdata
+            input   busy,rdata
           );
 
   modport slave ( //cache的接口
-            input  valid,op,index,tag,ready,storeType,
+            input  valid,op,index,tag,
             input  offset,wstrb,wdata,flush,loadType,
-            output addr_ok,data_ok,rdata
+            output busy,rdata
 
           );
 
@@ -72,8 +68,7 @@ endinterface
 interface AXI_Bus_Interface();
   //读请求通道
   logic 					rd_req;    // 未命中发请求
-  logic[2:0]      rd_type;   //    用不到
-  
+  // logic[2:0]      rd_type;   //    用不到
   logic[31:0]     rd_addr;   // 地址
   logic           rd_rdy;    // 空闲时给ready
   //读返回通道
@@ -135,34 +130,4 @@ interface AXI_UNCACHE_Interface();
   );
 endinterface
 
-
-  typedef enum logic [3:0] {
-            LOOKUP,
-            WRITEBACK,
-            MISSCLEAN,
-            MISSDIRTY,
-            IDLE,
-            REFILL,
-            REQ,
-            WAIT,
-            STORE
-          } StateType;
-
-  typedef struct packed {
-            logic en;
-            logic we;
-            logic[7:0] addr;
-            logic[19:0] tagin;
-            logic[19:0] tagout;
-            logic validin;
-            logic validout;
-          } TagVType;//用于连到tag valid IP核上的线的结构体
-
-  typedef struct packed {
-            logic en;
-            logic [3:0]we;
-            logic[7:0] addr;
-            logic[31:0] din;
-            logic[31:0] dout;
-          } DataType;//用于连到Data IP核上的线的结构体
 `endif 

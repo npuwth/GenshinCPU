@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-12 03:09:08
+ * @LastEditTime: 2021-07-12 03:20:17
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -44,7 +44,7 @@ module MEM2_Reg (
     output ExceptinPipeType 		        MEM2_ExceptType,
     output logic                        MEM2_IsABranch,
     output logic                        MEM2_IsAImmeJump,
-    output logic                        MEM2_IsInDelaySlot,
+    output logic                        MEM2_IsInDelaySlot
     // output logic         [31:0]         MEM2_Reuslt
 );
 
