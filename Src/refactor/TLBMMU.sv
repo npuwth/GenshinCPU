@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-10 23:45:47
+ * @LastEditTime: 2021-07-11 11:40:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,8 +14,8 @@
 module TLBMMU (
     input logic                  clk,
     input logic                  rst,
-    input logic [31:0]           Virt_Iaddr,
-    input logic [31:0]           Virt_Daddr,
+    input logic [31:13]          Virt_ITag,
+    input logic [31:13]          Virt_DTag,
     input LoadType               MEM_LoadType,
     input StoreType              MEM_StoreType,
     input ExceptinPipeType       IF_ExceptType,
@@ -58,8 +58,8 @@ module TLBMMU (
         .clk                     (clk ),
         .rst                     (rst ),
         //search port 0
-        .s0_vpn2                 (Virt_Iaddr[31:13] ),
-        .s0_odd_page             (Virt_Iaddr[12] ),
+        .s0_vpn2                 (Virt_ITag[31:13] ),
+        .s0_odd_page             (Virt_ITag[12] ),
         .s0_asid                 (CMBus.CP0_asid ),
         .s0_found                (s0_found ),
         .s0_index                (s0_index ),
@@ -69,7 +69,7 @@ module TLBMMU (
         .s0_v                    (s0_v ),
         //search port 1
         .s1_vpn2                 (s1_vpn2 ),
-        .s1_odd_page             (Virt_Daddr[12] ),
+        .s1_odd_page             (Virt_DTag[12] ),
         .s1_asid                 (CMBus.CP0_asid ),
         .s1_found                (s1_found ),
         .s1_index                (s1_index ),
@@ -107,31 +107,31 @@ module TLBMMU (
     );
 
     always_comb begin
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
-            Phsy_Iaddr        = Virt_Iaddr - 32'hA000_0000; 
+        if(Virt_ITag < 32'hC000_0000 && Virt_ITag > 32'h9FFF_FFFF) begin
+            Phsy_Iaddr        = Virt_ITag - 32'hA000_0000; 
         end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
-            Phsy_Iaddr        = Virt_Iaddr - 32'h8000_0000;
+        else if(Virt_ITag < 32'hA000_0000 && Virt_ITag > 32'h7FFF_FFFF) begin
+            Phsy_Iaddr        = Virt_ITag - 32'h8000_0000;
         end
         else begin
-            Phsy_Iaddr        = {s0_pfn,Virt_Iaddr[11:0]};
+            Phsy_Iaddr        = {s0_pfn,Virt_ITag[11:0]};
         end
     end
 
     always_comb begin
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
-            Phsy_Daddr        = Virt_Daddr - 32'hA000_0000;
+        if(Virt_DTag < 32'hC000_0000 && Virt_DTag > 32'h9FFF_FFFF) begin
+            Phsy_Daddr        = Virt_DTag - 32'hA000_0000;
         end
-        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
-            Phsy_Daddr        = Virt_Daddr - 32'h8000_0000;
+        else if(Virt_DTag < 32'hA000_0000 && Virt_DTag > 32'h7FFF_FFFF) begin
+            Phsy_Daddr        = Virt_DTag - 32'h8000_0000;
         end
         else begin
-            Phsy_Daddr        = {s1_pfn,Virt_Daddr[11:0]};
+            Phsy_Daddr        = {s1_pfn,Virt_DTag[11:0]};
         end
     end
 
     MUX2to1#(19) U_MUX_s1vpn (
-        .d0                   (Virt_Daddr[31:13]),
+        .d0                   (Virt_DTag[31:13]),
         .d1                   (CMBus.CP0_vpn2),
         .sel2_to_1            (MEM_IsTLBP),//
         .y                    (s1_vpn2)
@@ -155,12 +155,12 @@ module TLBMMU (
     assign IF_ExceptType_new.TLBModified            = IF_ExceptType.TLBModified;
 
     always_comb begin
-        if(s0_found == 1'b0 && (Virt_Iaddr > 32'hbfff_ffff || Virt_Iaddr < 32'h8000_0000)) begin
+        if(s0_found == 1'b0 && (Virt_ITag > 32'hbfff_ffff || Virt_ITag < 32'h8000_0000)) begin
             IF_ExceptType_new.TLBRefillinIF         = 1'b1;
             IF_ExceptType_new.TLBInvalidinIF        = 1'b0;  
             I_IsTLBException                        = 1'b1;
         end          
-        else if(s0_found == 1'b1 && s0_v == 1'b0 && (Virt_Iaddr > 32'hbfff_ffff || Virt_Iaddr < 32'h8000_0000)) begin
+        else if(s0_found == 1'b1 && s0_v == 1'b0 && (Virt_ITag > 32'hbfff_ffff || Virt_ITag < 32'h8000_0000)) begin
             IF_ExceptType_new.TLBRefillinIF         = 1'b0;
             IF_ExceptType_new.TLBInvalidinIF        = 1'b1;
             I_IsTLBException                        = 1'b1;
@@ -187,7 +187,7 @@ module TLBMMU (
     assign MEM_ExceptType_new.TLBInvalidinIF        = MEM_ExceptType.TLBInvalidinIF;
     
     always_comb begin
-        if(s1_found == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+        if(s1_found == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_DTag > 32'hbfff_ffff || Virt_DTag < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b1;
             MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
@@ -195,7 +195,7 @@ module TLBMMU (
             MEM_ExceptType_new.TLBModified           = 1'b0;
             D_IsTLBException                         = 1'b1;
         end
-        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_LoadType.ReadMem == 1'b1 && (Virt_DTag > 32'hbfff_ffff || Virt_DTag < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b1;
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
@@ -203,7 +203,7 @@ module TLBMMU (
             MEM_ExceptType_new.TLBModified           = 1'b0;
             D_IsTLBException                         = 1'b1;
         end
-        else if(s1_found == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+        else if(s1_found == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_DTag > 32'hbfff_ffff || Virt_DTag < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b1;
@@ -211,7 +211,7 @@ module TLBMMU (
             MEM_ExceptType_new.TLBModified           = 1'b0;
             D_IsTLBException                         = 1'b1;
         end
-        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+        else if(s1_found == 1'b1 && s1_v == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_DTag > 32'hbfff_ffff || Virt_DTag < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
@@ -219,7 +219,7 @@ module TLBMMU (
             MEM_ExceptType_new.TLBModified           = 1'b0;
             D_IsTLBException                         = 1'b1;
         end
-        else if(s1_found == 1'b1 && s1_v == 1'b1 && s1_d == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_Daddr > 32'hbfff_ffff || Virt_Daddr < 32'h8000_0000)) begin
+        else if(s1_found == 1'b1 && s1_v == 1'b1 && s1_d == 1'b0 && MEM_StoreType.DMWr == 1'b1 && (Virt_DTag > 32'hbfff_ffff || Virt_DTag < 32'h8000_0000)) begin
             MEM_ExceptType_new.RdTLBRefillinMEM      = 1'b0;
             MEM_ExceptType_new.RdTLBInvalidinMEM     = 1'b0;
             MEM_ExceptType_new.WrTLBRefillinMEM      = 1'b0;
@@ -238,10 +238,10 @@ module TLBMMU (
     end
 
     always_comb begin
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+        if(Virt_ITag < 32'hC000_0000 && Virt_ITag > 32'h9FFF_FFFF) begin
             I_IsCached                               = 1'b0;
         end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+        else if(Virt_ITag < 32'hA000_0000 && Virt_ITag > 32'h7FFF_FFFF) begin
             I_IsCached                               = 1'b1;
         end
         else begin
@@ -255,10 +255,10 @@ module TLBMMU (
     end
 
     always_comb begin
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
+        if(Virt_DTag < 32'hC000_0000 && Virt_DTag > 32'h9FFF_FFFF) begin
             D_IsCached                               = 1'b0;
         end
-        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+        else if(Virt_DTag < 32'hA000_0000 && Virt_DTag > 32'h7FFF_FFFF) begin
             D_IsCached                               = 1'b1;
         end
         else begin

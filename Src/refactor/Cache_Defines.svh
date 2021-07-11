@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-11 10:43:18
+ * @LastEditTime: 2021-07-11 11:36:05
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
@@ -54,15 +54,15 @@ interface CPU_Bus_Interface();            // 只需要满足读的请求 icache�
   logic         flush;
 
   modport master ( //cpu的接口
-            output  valid,op,index,tag,ready,storeType,
+            output  valid,op,index,tag,
             output  offset,wstrb,wdata,flush,loadType,
-            input addr_ok,data_ok,rdata
+            input   busy,rdata
           );
 
   modport slave ( //cache的接口
-            input  valid,op,index,tag,ready,storeType,
+            input  valid,op,index,tag,
             input  offset,wstrb,wdata,flush,loadType,
-            output addr_ok,data_ok,rdata
+            output busy,rdata
 
           );
 
