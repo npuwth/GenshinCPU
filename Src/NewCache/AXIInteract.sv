@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-10 17:19:58
+ * @LastEditTime: 2021-07-10 23:54:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -10,8 +10,8 @@
 `include "CPU_Defines.svh"
 
 module AXIInteract #(
-    parameter ICACHE_LINE_SIZE=8,//icache块大小
-    parameter DCACHE_LINE_SIZE=8 //dcache块大小
+    parameter ICACHE_LINE_SIZE=4,//icache块大小
+    parameter DCACHE_LINE_SIZE=4 //dcache块大小
 ) (
     //external signals
     input logic clk,
@@ -139,81 +139,81 @@ module AXIInteract #(
     logic         dbus_bready;
 
 // Uncache icache
-    // logic [ 3: 0] ubus_arid;
-    // logic [31: 0] ubus_araddr;
-    // logic [ 3: 0] ubus_arlen;
-    // logic [ 2: 0] ubus_arsize;
-    // logic [ 1: 0] ubus_arburst;
-    // logic [ 1: 0] ubus_arlock;
-    // logic [ 3: 0] ubus_arcache;
-    // logic [ 2: 0] ubus_arprot;
-    // logic         ubus_arvalid;
-    // logic         ubus_arready;
-    // logic [ 3: 0] ubus_rid;
-    // logic [31: 0] ubus_rdata;
-    // logic [ 1: 0] ubus_rresp;
-    // logic         ubus_rlast;
-    // logic         ubus_rvalid;
-    // logic         ubus_rready;
-    // logic [ 3: 0] ubus_awid;
-    // logic [31: 0] ubus_awaddr;
-    // logic [ 3: 0] ubus_awlen;
-    // logic [ 2: 0] ubus_awsize;
-    // logic [ 1: 0] ubus_awburst;
-    // logic [ 1: 0] ubus_awlock;
-    // logic [ 3: 0] ubus_awcache;
-    // logic [ 2: 0] ubus_awprot;
-    // logic         ubus_awvalid;
-    // logic         ubus_awready;
-    // logic [ 3: 0] ubus_wid;
-    // logic [31: 0] ubus_wdata;
-    // logic [ 3: 0] ubus_wstrb;
-    // logic         ubus_wlast;
-    // logic         ubus_wvalid;
-    // logic         ubus_wready;
-    // logic [ 3: 0] ubus_bid;
-    // logic [ 1: 0] ubus_bresp;
-    // logic         ubus_bvalid;
-    // logic         ubus_bready;
+    // logic [ 3: 0] uibus_arid;
+    // logic [31: 0] uibus_araddr;
+    // logic [ 3: 0] uibus_arlen;
+    // logic [ 2: 0] uibus_arsize;
+    // logic [ 1: 0] uibus_arburst;
+    // logic [ 1: 0] uibus_arlock;
+    // logic [ 3: 0] uibus_arcache;
+    // logic [ 2: 0] uibus_arprot;
+    // logic         uibus_arvalid;
+    // logic         uibus_arready;
+    // logic [ 3: 0] uibus_rid;
+    // logic [31: 0] uibus_rdata;
+    // logic [ 1: 0] uibus_rresp;
+    // logic         uibus_rlast;
+    // logic         uibus_rvalid;
+    // logic         uibus_rready;
+    // logic [ 3: 0] uibus_awid;
+    // logic [31: 0] uibus_awaddr;
+    // logic [ 3: 0] uibus_awlen;
+    // logic [ 2: 0] uibus_awsize;
+    // logic [ 1: 0] uibus_awburst;
+    // logic [ 1: 0] uibus_awlock;
+    // logic [ 3: 0] uibus_awcache;
+    // logic [ 2: 0] uibus_awprot;
+    // logic         uibus_awvalid;
+    // logic         uibus_awready;
+    // logic [ 3: 0] uibus_wid;
+    // logic [31: 0] uibus_wdata;
+    // logic [ 3: 0] uibus_wstrb;
+    // logic         uibus_wlast;
+    // logic         uibus_wvalid;
+    // logic         uibus_wready;
+    // logic [ 3: 0] uibus_bid;
+    // logic [ 1: 0] uibus_bresp;
+    // logic         uibus_bvalid;
+    // logic         uibus_bready;
 
 // Uncache 
-    logic [ 3: 0] ubus_arid;
-    logic [31: 0] ubus_araddr;
-    logic [ 3: 0] ubus_arlen;
-    logic [ 2: 0] ubus_arsize;
-    logic [ 1: 0] ubus_arburst;
-    logic [ 1: 0] ubus_arlock;
-    logic [ 3: 0] ubus_arcache;
-    logic [ 2: 0] ubus_arprot;
-    logic         ubus_arvalid;
-    logic         ubus_arready;
-    logic [ 3: 0] ubus_rid;
-    logic [31: 0] ubus_rdata;
-    logic [ 1: 0] ubus_rresp;
-    logic         ubus_rlast;
-    logic         ubus_rvalid;
-    logic         ubus_rready;
-    logic [ 3: 0] ubus_awid;
-    logic [31: 0] ubus_awaddr;
-    logic [ 3: 0] ubus_awlen;
-    logic [ 2: 0] ubus_awsize;
-    logic [ 1: 0] ubus_awburst;
-    logic [ 1: 0] ubus_awlock;
-    logic [ 3: 0] ubus_awcache;
-    logic [ 2: 0] ubus_awprot;
-    logic         ubus_awvalid;
-    logic         ubus_awready;
-    logic [ 3: 0] ubus_wid;
-    logic [31: 0] ubus_wdata;
-    logic [ 3: 0] ubus_wstrb;
-    logic         ubus_wlast;
-    logic         ubus_wvalid;
-    logic         ubus_wready;
-    logic [ 3: 0] ubus_bid;
-    logic [ 1: 0] ubus_bresp;
-    logic         ubus_bvalid;
-    logic         ubus_bready;
-    //cache 状态机
+    logic [ 3: 0] udbus_arid;
+    logic [31: 0] udbus_araddr;
+    logic [ 3: 0] udbus_arlen;
+    logic [ 2: 0] udbus_arsize;
+    logic [ 1: 0] udbus_arburst;
+    logic [ 1: 0] udbus_arlock;
+    logic [ 3: 0] udbus_arcache;
+    logic [ 2: 0] udbus_arprot;
+    logic         udbus_arvalid;
+    logic         udbus_arready;
+    logic [ 3: 0] udbus_rid;
+    logic [31: 0] udbus_rdata;
+    logic [ 1: 0] udbus_rresp;
+    logic         udbus_rlast;
+    logic         udbus_rvalid;
+    logic         udbus_rready;
+    logic [ 3: 0] udbus_awid;
+    logic [31: 0] udbus_awaddr;
+    logic [ 3: 0] udbus_awlen;
+    logic [ 2: 0] udbus_awsize;
+    logic [ 1: 0] udbus_awburst;
+    logic [ 1: 0] udbus_awlock;
+    logic [ 3: 0] udbus_awcache;
+    logic [ 2: 0] udbus_awprot;
+    logic         udbus_awvalid;
+    logic         udbus_awready;
+    logic [ 3: 0] udbus_wid;
+    logic [31: 0] udbus_wdata;
+    logic [ 3: 0] udbus_wstrb;
+    logic         udbus_wlast;
+    logic         udbus_wvalid;
+    logic         udbus_wready;
+    logic [ 3: 0] udbus_bid;
+    logic [ 1: 0] udbus_bresp;
+    logic         udbus_bvalid;
+    logic         udbus_bready;
+    //cache 状态机d
     typedef enum logic[3:0] { 
         IDLE,
         REQ,
@@ -225,6 +225,7 @@ module AXIInteract #(
         WB_IDLE,
         WB_REQ,
         WB_WAIT,
+        WB_WAIT_RESP,
         WB_FINISH
     }cache_wb_t;//通用的写回cache 实际上只用dcache使用
 
@@ -350,10 +351,10 @@ module AXIInteract #(
         end
     end
 
-    /********************* ibus ******************/
+//********************* ibus ******************/
     // master -> slave
     assign ibus_arid      = '0;
-    assign ibus_arlen     = ICACHE_LINE_SIZE*2;      // 传输4拍
+    assign ibus_arlen     = ICACHE_LINE_SIZE-1;      // 传输4拍
     assign ibus_arsize    = 3'b010;       // 每次传输4字节
     assign ibus_arburst   = 2'b01;
     assign ibus_arlock    = '0;
@@ -431,7 +432,7 @@ module AXIInteract #(
 
 // icache读计数器  如果不在req状态计数器将清零
     always_ff @(posedge clk ) begin : dburst_cnt_block
-        if (resetn == `RstEnable | dstate==REQ ) begin
+        if (resetn == `RstEnable || dstate==REQ ) begin
             dburst_cnt <= '0;
         end else begin
             dburst_cnt <= dburst_cnt_next;
@@ -464,8 +465,8 @@ module AXIInteract #(
         end
     end
 /********************* dbus ******************/
-    assign dbus_arid      = 4'b0001;
-    assign dbus_arlen     = DCACHE_LINE_SIZE*2;//一次读两个cache line
+    assign dbus_arid      = 4'b0001;//TODO: 在有写缓冲的情况下 需要考虑id
+    assign dbus_arlen     = DCACHE_LINE_SIZE-1;//一次读两个cache line
     assign dbus_arsize    = 3'b010;
     assign dbus_arburst   = 2'b01;
     assign dbus_arlock    = '0;
@@ -474,7 +475,7 @@ module AXIInteract #(
 
 
     assign dbus_awid      = 4'b0001;
-    assign dbus_awlen     = DCACHE_LINE_SIZE;        // 写的话还是一块一块写
+    assign dbus_awlen     = DCACHE_LINE_SIZE-1;        // 写的话还是一块一块写
     assign dbus_awsize    = 3'b010;         // 传输32bit 
     assign dbus_awburst   = 2'b01;          // increase模式
     assign dbus_awlock    = '0;
@@ -493,6 +494,8 @@ module AXIInteract #(
     assign dbus_wdata     = dcache_line_wb[wb_dburst_cnt];
     assign dbus_wlast     = (wb_dburst_cnt == { (DCACHE_CNT_WIDTH) {1'b1} } ) ? 1'b1 : 1'b0;
     assign dbus_awvalid   = (dstate_wb== WB_REQ)?1'b1:1'b0;
+    assign dbus_awaddr    = dcache_wb_addr;
+    assign dbus_wvalid    = (dstate_wb== WB_WAIT)?1'b1:1'b0;;
     //dbus上的赋值
     assign dbus.ret_valid = (dstate == FINISH)? 1'b1:1'b0;
     assign dbus.ret_data  = dcache_line_recv;
@@ -526,17 +529,20 @@ module AXIInteract #(
             end
             WB_WAIT:begin
                 if (dbus_wready == 1'b1 && dbus_wlast == 1'b1 ) begin
-                    dstate_wb_next = WB_FINISH;
+                    dstate_wb_next = WB_WAIT_RESP;
                 end else begin
                     dstate_wb_next = WB_WAIT;
                 end
             end
-            WB_FINISH:begin
+            WB_WAIT_RESP:begin
                 if (dbus_bvalid) begin
-                    dstate_wb_next = WB_IDLE;
-                end else begin
                     dstate_wb_next = WB_FINISH;
+                end else begin
+                    dstate_wb_next = WB_WAIT_RESP;
                 end
+            end
+            WB_FINISH:begin
+                dstate_wb_next = WB_IDLE;
             end
         endcase
     end
@@ -579,40 +585,46 @@ module AXIInteract #(
     end
 
 /********************* ubus ******************/
-    assign ubus_arid     = 4'b0011;
-    assign ubus_arlen    = 4'b0000; // 传输事件只有一个
+    assign udbus_arid     = 4'b0011;
+    assign udbus_arlen    = 4'b0000; // 传输事件只有一个
     // assign ubus_arsize   = 3'b010; // 4字节
-    assign ubus_arsize   = (uncache_loadType.size == 2'b10) ? 3'b000: // lb
-                           (uncache_loadType.size == 2'b01) ? 3'b001: // lh
+    assign udbus_arsize   = (udbus.loadType.size == 2'b10) ? 3'b000: // lb
+                           (udbus.loadType.size == 2'b01) ? 3'b001: // lh
                            3'b010;//lw          // 根据LB LH LW调整Uncache的arsize  
-    assign ubus_arburst  = 2'b01;
-    assign ubus_arlock   = '0;
-    assign ubus_arcache  = '0;
-    assign ubus_arprot   = '0;
+    assign udbus_arburst  = 2'b01;
+    assign udbus_arlock   = '0;
+    assign udbus_arcache  = '0;
+    assign udbus_arprot   = '0;
 
 
-    assign ubus_awid     = 4'b0011;
-    assign ubus_awlen    = 4'b0000;        // 传输1次
-    assign ubus_awsize   = 3'b010;         // 传输32bit 
-    assign ubus_awburst  = 2'b01;          // increase模式
-    assign ubus_awlock   = '0;
-    assign ubus_awcache  = '0;
-    assign ubus_awprot   = '0;
+    assign udbus_awid     = 4'b0011;
+    assign udbus_awlen    = 4'b0000;        // 传输1次
+    assign udbus_awsize   = 3'b010;         // 传输32bit 
+    assign udbus_awburst  = 2'b01;          // increase模式
+    assign udbus_awlock   = '0;
+    assign udbus_awcache  = '0;
+    assign udbus_awprot   = '0;
 
 
-    assign ubus_wid     = 4'b0001;
-    assign ubus_wstrb   = uncache_wstrb;  // 使用所存下来的信号。以支持uncache的SB
-    assign ubus_bready  = 1'b1;
+    assign udbus_wid      = 4'b0001;
+    assign udbus_wstrb    = uncache_wstrb;  // 使用所存下来的信号。以支持uncache的SB
+    assign udbus_bready   = 1'b1;
+ 
+    assign udbus_arvalid  = (dstate_uncache==UNCACHE_RD)? 1'b1:1'b0;
+    assign udbus_araddr   = uncache_addr_rd;
+    assign udbus_rready   = (dstate_uncache==UNCACHE_WAIT_RD)? 1'b1:1'b0;
 
-    assign ubus_arvalid = (dstate_uncache==UNCACHE_RD)? 1'b1:1'b0;
-    assign ubus_araddr  = uncache_addr_rd;
-    assign ubus_rready  = (dstate_uncache==UNCACHE_WAIT_RD)? 1'b1:1'b0;
+    assign udbus_wlast    = (dstate_uncache==UNCACHE_WAIT_WB)? 1'b1:1'b0;
+    assign udbus_wdata    = uncache_line_wb;
+    assign udbus_awvalid  = (dstate_uncache==UNCACHE_WB)?1'b1:1'b0;
+    assign udbus_awaddr   = uncache_addr_wb;
+    assign udbus_wvalid   = (dstate_uncache==UNCACHE_WAIT_WB)?1'b1:1'b0;
 
-    assign ubus_wlast   = (dstate_uncache==UNCACHE_WAIT_WB)? 1'b1:1'b0;
-    assign ubus_wdata   = uncache_line_wb;
-    assign ubus_awvalid = (dstate_uncache==UNCACHE_WB)?1'b1:1'b0;
-    assign ubus_awaddr  = uncache_addr_wb;
-    assign ubus_wvalid  = (dstate_uncache==UNCACHE_WAIT_WB)?1'b1:1'b0;
+    //udbus的赋值
+    assign udbus.wr_valid = (dstate_uncache==UNCACHE_FINISH)?1'b1:1'b0;
+    assign udbus.ret_valid= (dstate_uncache==UNCACHE_FINISH)?1'b1:1'b0;
+    assign udbus.ret_data = uncache_line_rd;
+
 
     //空闲信号的输出
     assign ibus. rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
@@ -646,38 +658,38 @@ module AXIInteract #(
                 end
             end 
             UNCACHE_RD:begin//发起读请求
-                if (ubus_arready ) begin
+                if (udbus_arready ) begin
                     dstate_uncache_next =UNCACHE_WAIT_RD;
                 end else begin
                     dstate_uncache_next =UNCACHE_RD;
                 end
             end
             UNCACHE_WB:begin//发起写请求
-                if (ubus_awready ) begin
+                if (udbus_awready ) begin
                     dstate_uncache_next =UNCACHE_WAIT_WB;
                 end else begin
                     dstate_uncache_next =UNCACHE_WB;
                 end                
             end
             UNCACHE_WAIT_RD:begin
-                if (ubus_rready) begin
+                if (udbus_rvalid) begin
                     dstate_uncache_next = UNCACHE_FINISH;
                 end else begin
                     dstate_uncache_next = UNCACHE_WAIT_RD;
                 end
             end
             UNCACHE_WAIT_WB:begin
-                if (ubus_wready) begin
+                if (udbus_wready) begin
                     dstate_uncache_next = UNCACHE_WAIT_WBRESP;
                 end else begin
                     dstate_uncache_next = UNCACHE_WAIT_WB;
                 end                
             end
             UNCACHE_WAIT_WBRESP:begin
-                if (ubus_bvalid) begin
+                if (udbus_bvalid) begin
                     dstate_uncache_next = UNCACHE_FINISH;
                 end else begin
-                    dstate_uncache_next = UNCACHE_WAIT_WB;
+                    dstate_uncache_next = UNCACHE_WAIT_WBRESP;
                 end                    
             end
             UNCACHE_FINISH:begin
@@ -729,52 +741,60 @@ module AXIInteract #(
             uncache_wstrb <= udbus.wr_wstrb;
         end           
     end
-
-
+    //对于uncache_line_rd
+    always_ff @( posedge clk ) begin : uncache_line_rd_block
+         if (resetn == `RstEnable) begin
+            uncache_line_rd <= '0;
+        end else if(dstate_uncache != UNCACHE_WAIT_RD)begin
+            uncache_line_rd <= uncache_line_rd;
+        end else begin
+            uncache_line_rd <= udbus_rdata;
+        end        
+    end
 
 
     axi_crossbar_cache biu (//TODO: ICACHE 的UNCACHE尚未实现
         .aclk             ( clk     ),
         .aresetn          ( resetn        ),
         
-        .s_axi_arid       ( {ibus_arid   ,dbus_arid    ,ubus_arid   } ),
-        .s_axi_araddr     ( {ibus_araddr ,dbus_araddr  ,ubus_araddr } ),
-        .s_axi_arlen      ( {ibus_arlen  ,dbus_arlen   ,ubus_arlen  } ),
-        .s_axi_arsize     ( {ibus_arsize ,dbus_arsize  ,ubus_arsize } ),
-        .s_axi_arburst    ( {ibus_arburst,dbus_arburst ,ubus_arburst} ),
-        .s_axi_arlock     ( {ibus_arlock ,dbus_arlock  ,ubus_arlock } ),
-        .s_axi_arcache    ( {ibus_arcache,dbus_arcache ,ubus_arcache} ),
-        .s_axi_arprot     ( {ibus_arprot ,dbus_arprot  ,ubus_arprot } ),
+        .s_axi_arid       ( {ibus_arid   ,dbus_arid    ,udbus_arid   } ),
+        .s_axi_araddr     ( {ibus_araddr ,dbus_araddr  ,udbus_araddr } ),
+        .s_axi_arlen      ( {ibus_arlen  ,dbus_arlen   ,udbus_arlen  } ),
+        .s_axi_arsize     ( {ibus_arsize ,dbus_arsize  ,udbus_arsize } ),
+        .s_axi_arburst    ( {ibus_arburst,dbus_arburst ,udbus_arburst} ),
+        .s_axi_arlock     ( {ibus_arlock ,dbus_arlock  ,udbus_arlock } ),
+        .s_axi_arcache    ( {ibus_arcache,dbus_arcache ,udbus_arcache} ),
+        .s_axi_arprot     ( {ibus_arprot ,dbus_arprot  ,udbus_arprot } ),
         .s_axi_arqos      ( 0                                         ),
-        .s_axi_arvalid    ( {ibus_arvalid,dbus_arvalid ,ubus_arvalid} ),
-        .s_axi_arready    ( {ibus_arready,dbus_arready ,ubus_arready} ),
-        .s_axi_rid        ( {ibus_rid    ,dbus_rid     ,ubus_rid    } ),
-        .s_axi_rdata      ( {ibus_rdata  ,dbus_rdata   ,ubus_rdata  } ),
-        .s_axi_rresp      ( {ibus_rresp  ,dbus_rresp   ,ubus_rresp  } ),
-        .s_axi_rlast      ( {ibus_rlast  ,dbus_rlast   ,ubus_rlast  } ),
-        .s_axi_rvalid     ( {ibus_rvalid ,dbus_rvalid  ,ubus_rvalid } ),
-        .s_axi_rready     ( {ibus_rready ,dbus_rready  ,ubus_rready } ),
-        .s_axi_awid       ( {ibus_awid   ,dbus_awid    ,ubus_awid   } ),
-        .s_axi_awaddr     ( {ibus_awaddr ,dbus_awaddr  ,ubus_awaddr } ),
-        .s_axi_awlen      ( {ibus_awlen  ,dbus_awlen   ,ubus_awlen  } ),
-        .s_axi_awsize     ( {ibus_awsize ,dbus_awsize  ,ubus_awsize } ),
-        .s_axi_awburst    ( {ibus_awburst,dbus_awburst ,ubus_awburst} ),
-        .s_axi_awlock     ( {ibus_awlock ,dbus_awlock  ,ubus_awlock } ),
-        .s_axi_awcache    ( {ibus_awcache,dbus_awcache ,ubus_awcache} ),
-        .s_axi_awprot     ( {ibus_awprot ,dbus_awprot  ,ubus_awprot } ),
+        .s_axi_arvalid    ( {ibus_arvalid,dbus_arvalid ,udbus_arvalid} ),
+        .s_axi_arready    ( {ibus_arready,dbus_arready ,udbus_arready} ),
+        .s_axi_rid        ( {ibus_rid    ,dbus_rid     ,udbus_rid    } ),
+        .s_axi_rdata      ( {ibus_rdata  ,dbus_rdata   ,udbus_rdata  } ),
+        .s_axi_rresp      ( {ibus_rresp  ,dbus_rresp   ,udbus_rresp  } ),
+        .s_axi_rlast      ( {ibus_rlast  ,dbus_rlast   ,udbus_rlast  } ),
+        .s_axi_rvalid     ( {ibus_rvalid ,dbus_rvalid  ,udbus_rvalid } ),
+        .s_axi_rready     ( {ibus_rready ,dbus_rready  ,udbus_rready } ),
+        .s_axi_awid       ( {ibus_awid   ,dbus_awid    ,udbus_awid   } ),
+        .s_axi_awaddr     ( {ibus_awaddr ,dbus_awaddr  ,udbus_awaddr } ),
+        .s_axi_awlen      ( {ibus_awlen  ,dbus_awlen   ,udbus_awlen  } ),
+        .s_axi_awsize     ( {ibus_awsize ,dbus_awsize  ,udbus_awsize } ),
+        .s_axi_awburst    ( {ibus_awburst,dbus_awburst ,udbus_awburst} ),
+        .s_axi_awlock     ( {ibus_awlock ,dbus_awlock  ,udbus_awlock } ),
+        .s_axi_awcache    ( {ibus_awcache,dbus_awcache ,udbus_awcache} ),
+        .s_axi_awprot     ( {ibus_awprot ,dbus_awprot  ,udbus_awprot } ),
         .s_axi_awqos      ( 0                                         ),
-        .s_axi_awvalid    ( {ibus_awvalid,dbus_awvalid ,ubus_awvalid} ),
-        .s_axi_awready    ( {ibus_awready,dbus_awready ,ubus_awready} ),
-        .s_axi_wid        ( {ibus_wid    ,dbus_wid     ,ubus_wid    } ),
-        .s_axi_wdata      ( {ibus_wdata  ,dbus_wdata   ,ubus_wdata  } ),
-        .s_axi_wstrb      ( {ibus_wstrb  ,dbus_wstrb   ,ubus_wstrb  } ),
-        .s_axi_wlast      ( {ibus_wlast  ,dbus_wlast   ,ubus_wlast  } ),
-        .s_axi_wvalid     ( {ibus_wvalid ,dbus_wvalid  ,ubus_wvalid } ),
-        .s_axi_wready     ( {ibus_wready ,dbus_wready  ,ubus_wready } ),
-        .s_axi_bid        ( {ibus_bid    ,dbus_bid     ,ubus_bid    } ),
-        .s_axi_bresp      ( {ibus_bresp  ,dbus_bresp   ,ubus_bresp  } ),
-        .s_axi_bvalid     ( {ibus_bvalid ,dbus_bvalid  ,ubus_bvalid } ),
-        .s_axi_bready     ( {ibus_bready ,dbus_bready  ,ubus_bready } ),
+        .s_axi_awvalid    ( {ibus_awvalid,dbus_awvalid ,udbus_awvalid} ),
+        .s_axi_awready    ( {ibus_awready,dbus_awready ,udbus_awready} ),
+        .s_axi_wid        ( {ibus_wid    ,dbus_wid     ,udbus_wid    } ),
+        .s_axi_wdata      ( {ibus_wdata  ,dbus_wdata   ,udbus_wdata  } ),
+        .s_axi_wstrb      ( {ibus_wstrb  ,dbus_wstrb   ,udbus_wstrb  } ),
+        .s_axi_wlast      ( {ibus_wlast  ,dbus_wlast   ,udbus_wlast  } ),
+        .s_axi_wvalid     ( {ibus_wvalid ,dbus_wvalid  ,udbus_wvalid } ),
+        .s_axi_wready     ( {ibus_wready ,dbus_wready  ,udbus_wready } ),
+        .s_axi_bid        ( {ibus_bid    ,dbus_bid     ,udbus_bid    } ),
+        .s_axi_bresp      ( {ibus_bresp  ,dbus_bresp   ,udbus_bresp  } ),
+        .s_axi_bvalid     ( {ibus_bvalid ,dbus_bvalid  ,udbus_bvalid } ),
+        .s_axi_bready     ( {ibus_bready ,dbus_bready  ,udbus_bready } ),
         
         .m_axi_arid       ( m_axi_arid          ),
         .m_axi_araddr     ( m_axi_araddr        ),
