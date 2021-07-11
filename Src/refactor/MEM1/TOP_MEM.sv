@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-09 11:43:45
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 19:14:47
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -53,6 +53,8 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
+    logic [3:0]                  MEM_DCache_Wen;   // TODO 接上cache
+    logic [31:0]                 MEM_DataToDcache; // TODO 接上cache
     //传给Exception
     logic [7:0]                  CP0_Status_IM7_0;
     logic                        CP0_Status_EXL;
@@ -91,13 +93,15 @@ module TOP_MEM (
         .EXE_RegsWrType          (EMBus.EXE_RegsWrType ),
         .EXE_WbSel               (EMBus.EXE_WbSel ),
         .EXE_ExceptType_final    (EMBus.EXE_ExceptType_final ),
+        .EXE_DCache_Wen          (EMBus.EXE_DCache_Wen),
+        .EXE_DataToDcache        (EMBus.EXE_DataToDcache),
         .EXE_IsTLBP              (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
     //------------------------out--------------------------------------------------//
-        .MEM_ALUOut              (MWBus.MEM_ALUOut ),
+        .MEM_ALUOut              (MWBus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
         .MEM_PC                  (MWBus.MEM_PC ),
         .MEM_Instr               (MWBus.MEM_Instr ),
@@ -109,6 +113,8 @@ module TOP_MEM (
         .MEM_RegsWrType          (MEM_RegsWrType ),
         .MEM_WbSel               (MWBus.MEM_WbSel ),
         .MEM_ExceptType          (MEM_ExceptType ),
+        .MEM_DCache_Wen          (MEM_DCache_Wen),
+        .MEM_DataToDcache        (MEM_DataToDcache),
         .MEM_IsTLBP              (MEM_IsTLBP),
         .MEM_IsTLBW              (MEM_IsTLBW),
         .MEM_IsTLBR              (MEM_IsTLBR),
@@ -172,19 +178,17 @@ module TOP_MEM (
         .y                       (MEM_Result)
     );
     //---------------------------------------------------------------------------//
-//--------------------------------------------cache-------------------------------//
-    //TODO 如果拥堵 需要将整个的访存请求都变为MEM级前的流水线寄存器的
-    assign cpu_dbus.wdata                                 = EMBus.EXE_OutB;
-    assign cpu_dbus.valid                                 = (WB_Wr== 1'b0)?1'b0:((EMBus.EXE_LoadType.ReadMem || EMBus.EXE_StoreType.DMWr )  ? 1 : 0);
-    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = EMBus.EXE_ALUOut;                 // inst_sram_addr_o 虚拟地址
-    assign cpu_dbus.op                                    = (EMBus.EXE_LoadType.ReadMem)? 1'b0
-                                                            :(EMBus.EXE_StoreType.DMWr) ? 1'b1
-                                                            :1'bx;
+//-------------------------------------------TO Cache-------------------------------//
+    assign cpu_dbus.wdata                                 =  MWBus.MEM_ALUOut;
+    assign cpu_dbus.valid                                 = (MWBus.MEM_LoadType.ReadMem || MWBus.MEM_StoreType.DMWr )  ? 1 : 0;
+    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  =  MWBus.MEM_ALUOut;                 // inst_sram_addr_o 虚拟地址
+    assign cpu_dbus.op                                    = (MWBus.MEM_LoadType.ReadMem)? 1'b0 :
+                                                            (MWBus.MEM_StoreType.DMWr) ? 1'b1  :
+                                                             1'bx;
     assign MWBus.MEM_DMOut                                = cpu_dbus.rdata;       //读取结果直接放入DMOut
-    assign cpu_dbus.ready                                 = WB_Wr;
-    assign cpu_dbus.storeType                             = EMBus.EXE_StoreType;
-    assign cpu_dbus.wstrb                                 = EMBus.DCache_Wen;
-    assign cpu_dbus.loadType                              = EMBus.EXE_LoadType;
+    assign cpu_dbus.storeType                             = MWBus.MEM_StoreType;
+    assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
+    assign cpu_dbus.loadType                              = MWBus.MEM_LoadType;
     DCache U_DCACHE(
         .clk            (clk),
         .resetn         (resetn),

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-09 15:27:19
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 18:28:22
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -40,7 +40,6 @@ module TOP_EXE (
     logic                     EXE_ALUSrcB;
     logic [1:0]               EXE_RegsReadSel;
     ExceptinPipeType          EXE_ExceptType;    //未经过alu的
-    ExceptinPipeType          EXE_ExceptType_new;//经过ALU后的excepttype
     logic [1:0]               EXE_ForwardA;
     logic [1:0]               EXE_ForwardB;
     logic [4:0]               EXE_Shamt;
@@ -54,6 +53,8 @@ module TOP_EXE (
     logic [4:0]               EXE_rt;
     logic [31:0]              HI_Bus;
     logic [31:0]              LO_Bus;
+    logic                     Overflow_valid;
+    logic                     Trap_valid;
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
@@ -117,7 +118,7 @@ module TOP_EXE (
     );
 
 
-    ForwardUnit U_ForwardUnit (
+    ForwardUnit U_ForwardUnit (             // TODO 修改旁路逻辑
         .WB_RegsWrType        (WB_RegsWrType),
         .MEM_RegsWrType       (EMBus.MEM_RegsWrType),
         .EXE_rs               (EXE_rs),
@@ -134,7 +135,7 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA_L1),
         .EXE_OutB             (EXE_BusB_L1),
         //-----------------output----------------------------//
-        .ID_Flush             (ID_Flush_BranchSolvement)
+        .ID_Flush             (ID_Flush_BranchSolvement)   // TODO 分支失败，需要刷流水线
     );
     
     MUX3to1 #(32) U_MUXA_L1 (
@@ -184,15 +185,20 @@ module TOP_EXE (
     );//EXE级Dst
 
     ALU U_ALU(
-        .EXE_ExceptType       (EXE_ExceptType),
         .EXE_ResultA          (EXE_BusA_L2),
         .EXE_ResultB          (EXE_BusB_L2),
         .EXE_ALUOp            (EXE_ALUOp),
         //---------------------------output-----------------//
-        .EXE_ALUOut           (EMBus.EXE_ALUOut),         
-        .EXE_ExceptType_new   (EXE_ExceptType_new)
+        .EXE_ALUOut           (EMBus.EXE_ALUOut),  
+        .Overflow_valid       (Overflow_valid )       
     );
 
+     Trap U_TRAP (
+        .EXE_TrapOp           (EXE_TrapOp  ),   // TODO trap控制信号信号的连线
+        .EXE_ResultA          (EXE_BusA_L2 ),   // 旁路之后的数据
+        .EXE_ResultB          (EXE_BusB_L2 ),   // 经过立即数选择之后的数据
+        .Trap_valid           (Trap_valid  )
+  );
     MULTDIV U_MULTDIV(
         .clk                  (clk),    
         .rst                  (resetn),            
@@ -211,15 +217,11 @@ module TOP_EXE (
     DCacheWen U_DCACHEWEN(
         .EXE_ALUOut           (EMBus.EXE_ALUOut),
         .EXE_StoreType        (EMBus.EXE_StoreType),
+        .EXE_OutB             (EMBus.EXE_OutB),
         .EXE_LoadType         (EMBus.EXE_LoadType),
-        .EXE_ExceptType       (EXE_ExceptType_new),
-        .MEM_IsTLBR           (EMBus.MEM_IsTLBR),
-        .MEM_IsTLBW           (EMBus.MEM_IsTLBW),
-        .MEM_Instr            (EMBus.MEM_Instr),
-        .MEM_Dst              (EMBus.MEM_Dst),
         //-----------------output-------------------------//
-        .EXE_ExceptType_new   (EMBus.EXE_ExceptType_final),
-        .cache_wen            (EMBus.DCache_Wen)                   //给出dcache的写使能信号，
+        .cache_wen            (EMBus.EXE_DCache_Wen),      //给出dcache的写使能信号，
+        .DataToDcache         (EMBus.EXE_DataToDcache)           //给出dcache的写数据信号，
     );
 
     HILO U_HILO (
@@ -235,5 +237,21 @@ module TOP_EXE (
         .HI                    (HI_Bus),
         .LO                    (LO_Bus)
     );
+
+    ExceptionInEXE U_ExceptionInEXE (
+        .Overflow_valid        (Overflow_valid             ),
+        .Trap_valid            (Trap_valid                 ),
+        .EXE_ExceptType        (EXE_ExceptType             ),
+        .EXE_LoadType          (EMBus.EXE_LoadType         ),
+        .MEM_IsTLBR            (EMBus.MEM_IsTLBR           ),
+        .MEM_IsTLBW            (EMBus.MEM_IsTLBW           ),
+        .MEM_Instr             (EMBus.MEM_Instr            ),
+        .MEM_Dst               (EMBus.MEM_Dst              ),
+        .EXE_ALUOut            (EMBus.EXE_ALUOut           ),
+        .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
+  );
     
 endmodule
+
+    
+

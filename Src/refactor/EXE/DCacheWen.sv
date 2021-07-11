@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-07-08 19:20:36
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 18:33:00
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
  * @IO PORT:
@@ -13,79 +13,114 @@
 `include "../CPU_Defines.svh"
 
 module DCacheWen(
-  input logic [31:0]       EXE_ALUOut,
-  input StoreType          EXE_StoreType,
-  input LoadType           EXE_LoadType,
-  input ExceptinPipeType   EXE_ExceptType,
-  input logic              MEM_IsTLBR,
-  input logic              MEM_IsTLBW,
-  input logic [31:0]       MEM_Instr,
-  input logic [4:0]        MEM_Dst,
-  output ExceptinPipeType  EXE_ExceptType_new,  
-  output logic [3:0]       cache_wen        //字节信号写使能
+  input  logic [31:0]       EXE_ALUOut,    // 地址信息
+  input  StoreType          EXE_StoreType, // store类型
+  input  logic [31:0]       EXE_OutB,      // 即将给cache的写入的数据
+  input  LoadType           EXE_LoadType,
+
+  output logic [3:0]        cache_wen,        //字节信号写使能
+  output logic [31:0]       DataToDcache
 );
 
 
-  always_comb begin
-      
+  always_comb begin  : Dcahce_Wen_Generate
     if(EXE_StoreType.DMWr) begin
-      unique case(EXE_StoreType.size)
-        `STORETYPE_SW: begin //SW
-          cache_wen = 4'b1111;
-        end
-        `STORETYPE_SH: begin //SH
-          if(EXE_ALUOut[1] == 1'b0)begin
-            cache_wen = 4'b0011;
+      if(EXE_StoreType.LeftOrRight == 2'b10 ) begin // 10表示swl 
+          case (EXE_ALUOut[1:0])
+            2'b00   : begin
+              cache_wen    = 4'b0001;
+              DataToDcache = {24'b0 , EXE_OutB[31:24]};
+            end
+            2'b01   : begin
+              cache_wen    = 4'b0011;
+              DataToDcache = {16'b0 , EXE_OutB[31:16]};
+            end
+            2'b10   : begin
+              cache_wen    = 4'b0111;
+              DataToDcache = {8'b0 , EXE_OutB[31:8]};
+            end
+            2'b11   : begin
+              cache_wen    = 4'b1111;
+              DataToDcache = EXE_OutB[31:0];
+            end
+            default :begin
+              cache_wen    = 4'b0000;
+              DataToDcache = 'x;
+            end
+          endcase
+      end
+      else if (EXE_StoreType.LeftOrRight == 2'b01 ) begin // 01表示swr
+        case (EXE_ALUOut[1:0])
+            2'b00   : begin
+              cache_wen    = 4'b1111;
+              DataToDcache = EXE_OutB [31:0];
+            end
+            2'b01   : begin
+              cache_wen    = 4'b1110;
+              DataToDcache = {EXE_OutB[23:0] , 8'b0 };
+            end
+            2'b10   : begin
+              cache_wen    = 4'b1100;
+              DataToDcache = {EXE_OutB[15:0] , 16'b0};
+            end
+            2'b11   : begin
+              cache_wen    = 4'b1000;
+              DataToDcache = {EXE_OutB[7:0]  , 24'b0};
+            end
+            default :begin
+              cache_wen    = 4'b0000;
+              DataToDcache = 'x;
+            end
+          endcase
+      end
+      else begin                                      // 其余都是sh sb sw等
+        unique case(EXE_StoreType.size)
+          `STORETYPE_SW: begin //SW
+            cache_wen        = 4'b1111;
+            DataToDcache     = EXE_OutB [31:0];
           end
-          else begin
-            cache_wen = 4'b1100;
+          `STORETYPE_SH: begin //SH
+            if(EXE_ALUOut[1] == 1'b0)begin
+              cache_wen      = 4'b0011;
+              DataToDcache   = {16'b0 , EXE_OutB [15:0]};
+            end
+            else begin
+              cache_wen      = 4'b1100;
+              DataToDcache   = {EXE_OutB [15:0] , 16'b0};
+            end
           end
-        end
-        `STORETYPE_SB: begin //SB
-          if(EXE_ALUOut[1:0] == 2'b00) begin
-            cache_wen = 4'b0001;
+          `STORETYPE_SB: begin //SB
+            if(EXE_ALUOut[1:0] == 2'b00) begin
+              cache_wen      = 4'b0001;
+              DataToDcache   = {24'b0 , EXE_OutB [7:0]};
+            end
+            else if(EXE_ALUOut[1:0] == 2'b01) begin
+              cache_wen      = 4'b0010;
+              DataToDcache   = {16'b0 , EXE_OutB [7:0] , 8'b0};
+            end
+            else if(EXE_ALUOut[1:0] == 2'b10) begin
+              cache_wen      = 4'b0100;
+              DataToDcache   = {8'b0 , EXE_OutB [7:0] , 16'b0};
+            end
+            else if(EXE_ALUOut[1:0] == 2'b11) begin
+              cache_wen      = 4'b1000;
+              DataToDcache   = {EXE_OutB [7:0] , 24'b0};
+            end
+            else begin   // 其实应该不会出现
+              cache_wen      = 4'b0000; 
+              DataToDcache   = 'x;
+            end
           end
-          else if(EXE_ALUOut[1:0] == 2'b01) begin
-            cache_wen = 4'b0010;
+          default: begin
+              cache_wen      = 4'b0000;
+              DataToDcache   = 'x;
           end
-          else if(EXE_ALUOut[1:0] == 2'b10) begin
-            cache_wen = 4'b0100;
-          end
-          else if(EXE_ALUOut[1:0] == 2'b11) begin
-            cache_wen = 4'b1000;
-          end
-          else begin   // 其实应该不会出现
-            cache_wen = 4'b0000; 
-          end
-        end
-        default: begin
-            cache_wen = 4'b0000;
-        end
-        
-      endcase
+        endcase
+      end
     end else begin
-      cache_wen = 4'b0000;
-    end
-      
+      cache_wen      = 4'b0000;
+      DataToDcache   = 'x;
+    end 
   end
-
-  assign EXE_ExceptType_new.Interrupt           = EXE_ExceptType.Interrupt;
-  assign EXE_ExceptType_new.WrongAddressinIF    = EXE_ExceptType.WrongAddressinIF;
-  assign EXE_ExceptType_new.ReservedInstruction = EXE_ExceptType.ReservedInstruction;
-  assign EXE_ExceptType_new.Syscall             = EXE_ExceptType.Syscall;
-  assign EXE_ExceptType_new.Break               = EXE_ExceptType.Break;
-  assign EXE_ExceptType_new.Eret                = EXE_ExceptType.Eret;
-  assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_StoreType.DMWr&&(((EXE_StoreType.size == `STORETYPE_SW)&&(EXE_ALUOut[1:0] != 2'b00))||((EXE_StoreType.size == `STORETYPE_SH)&&(EXE_ALUOut[0] != 1'b0)));
-  assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_LoadType.ReadMem&&(((EXE_LoadType.size == 2'b00)&&(EXE_ALUOut[1:0] != 2'b00))||((EXE_LoadType.size == 2'b01)&&(EXE_ALUOut[0] != 1'b0)));
-  assign EXE_ExceptType_new.Overflow            = EXE_ExceptType.Overflow;
-  assign EXE_ExceptType_new.TLBRefillinIF       = EXE_ExceptType.TLBRefillinIF;
-  assign EXE_ExceptType_new.TLBInvalidinIF      = EXE_ExceptType.TLBInvalidinIF;
-  assign EXE_ExceptType_new.RdTLBRefillinMEM    = EXE_ExceptType.RdTLBRefillinMEM;
-  assign EXE_ExceptType_new.RdTLBInvalidinMEM   = EXE_ExceptType.RdTLBInvalidinMEM;
-  assign EXE_ExceptType_new.WrTLBRefillinMEM    = EXE_ExceptType.WrTLBRefillinMEM; 
-  assign EXE_ExceptType_new.WrTLBInvalidinMEM   = EXE_ExceptType.WrTLBInvalidinMEM;   
-  assign EXE_ExceptType_new.TLBModified         = EXE_ExceptType.TLBModified;
-  assign EXE_ExceptType_new.Refetch             = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_Instr[31:21] == 11'b01000000100 && MEM_Dst == `CP0_REG_ENTRYHI));
-  assign EXE_ExceptType_new.Trap                = EXE_ExceptType.Trap;
 
 endmodule
