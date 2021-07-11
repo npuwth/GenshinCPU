@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-10 23:54:16
+ * @LastEditTime: 2021-07-11 12:15:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -10,8 +10,8 @@
 `include "CPU_Defines.svh"
 
 module AXIInteract #(
-    parameter ICACHE_LINE_SIZE=4,//icache块大小
-    parameter DCACHE_LINE_SIZE=4 //dcache块大小
+    parameter int unsigned ICACHE_LINE_SIZE=4,//icache块大小
+    parameter int unsigned DCACHE_LINE_SIZE=4 //dcache块大小
 ) (
     //external signals
     input logic clk,
@@ -242,8 +242,8 @@ module AXIInteract #(
 
 
 //TODO: 如果要实现预取 在这边改×2
-    localparam int  ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE);//icache的计数器的位宽 
-    localparam int  DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE);//dcache的计数器的位宽
+    localparam int unsigned ICACHE_CNT_WIDTH = $clog2(ICACHE_LINE_SIZE);//icache的计数器的位宽 
+    localparam int unsigned DCACHE_CNT_WIDTH = $clog2(DCACHE_LINE_SIZE);//dcache的计数器的位宽
 
     cache_rd_t istate,istate_next;//icache 读状态机
     cache_rd_t dstate,dstate_next;//dcache 读状态机
