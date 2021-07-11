@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 16:23:07
- * @LastEditTime: 2021-07-03 09:47:57
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-12 04:37:20
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,16 +15,16 @@
 module PC( 
     input logic           clk,
     input logic           rst,
-    input logic           PC_Wr,
-    input logic  [31:0]   IF_NPC,
-    output logic [31:0]   IF_PC
+    input logic           PREIF_Wr,
+    input logic  [31:0]   PREIF_NPC,
+    output logic [31:0]   PREIF_PC
 );
   
   always_ff @( posedge clk ) begin
     if( rst == `RstEnable )
-      IF_PC <= `PCRstAddr;
-    else if( PC_Wr )
-      IF_PC <= IF_NPC;
+      PREIF_PC <= `PCRstAddr;
+    else if( PREIF_Wr )
+      PREIF_PC <= PREIF_NPC;
   end
 
 endmodule

@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 03:21:01
+ * @LastEditTime: 2021-07-12 07:45:00
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -254,6 +254,8 @@ typedef struct packed {  //一个TLB项
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
 //-------------------------------------------------------------------------------------------------//
+
+
 interface IF_ID_Interface();
 
 	logic       [31:0]      IF_Instr;
@@ -265,17 +267,17 @@ interface IF_ID_Interface();
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
-	output                  IF_ExceptType,
-	input                   ID_Instr,
-	input                   ID_PC
+	output                  IF_ExceptType
+	// input                   ID_Instr,
+	// input                   ID_PC
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
-	output                  IF_ExceptType,
-	output                  ID_Instr,
-	output                  ID_PC
+	output                  IF_ExceptType
+	// output                  ID_Instr,
+	// output                  ID_PC
 	);
 	
 endinterface
