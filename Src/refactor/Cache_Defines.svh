@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-03 10:10:47
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-11 10:43:18
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -38,17 +38,18 @@ typedef logic [31:0]        UInt32Type;         //无符号的32位
 
 interface CPU_Bus_Interface();            // 只需要满足读的请求 icache的读 即使在命中的情况下 也需要两回合才能返回 就是在I回合其实发出读请求 在II回合的末尾才能给出是否命中
   logic 		    valid;     // CPU是否发生访存的请求
-  logic         ready;     // CPU是否可以接收访存结果
+  //logic         ready;     // CPU是否可以接收访存结果
   logic 		    op;        // 0 读 1 写
-  logic [7:0] 	index;     //
+
   logic [19:0]  tag;       // 
+  logic [7:0] 	index;     //
   logic [3:0] 	offset;    //  
   logic [3:0] 	wstrb;     //  Icache 用不到
-  StoreType     storeType;
+  //StoreType     storeType;
   LoadType      loadType;
   logic [31:0]  wdata;     //  Icache 用不到
-  logic     		addr_ok;   //  表示访存请求可以接受（空闲
-  logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
+  logic     		busy;   //  表示访存请求可以接受（空闲
+  // logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
   logic [31:0]  rdata;     //          
   logic         flush;
 
