@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-11 09:31:52
+ * @LastEditTime: 2021-07-11 10:11:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -167,9 +167,9 @@ module mycpu_top (
     AXIInteract AXIInteract_dut (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
-        .DcacheAXIBus           (axi_dbus.slave ),
-        .IcacheAXIBus           (axi_ibus.slave ),
-        .UncacheAXIBus          (axi_ubus.slave) ,
+        .dbus                   (axi_dbus.slave ),
+        .ibus                   (axi_ibus.slave ),
+        .udbus                  (axi_ubus.slave) ,
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),
@@ -321,7 +321,7 @@ module mycpu_top (
 
     TLBMMU U_TLBMMU ( 
         .clk (aclk ),
-        .rst (aresetn ),
+        .rst (aresetn),
         .Virt_Iaddr (Virt_Iaddr ),
         .Virt_Daddr (Virt_Daddr ),
         .MEM_LoadType (MEM_LoadType),
