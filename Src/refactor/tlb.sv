@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-27 20:08:23
- * @LastEditTime: 2021-07-11 20:08:49
+ * @LastEditTime: 2021-07-12 21:07:49
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -55,6 +55,7 @@ module tlb
     logic [TLBNUM-1:0]                 match1;
 
 //----------------------------------write port-------------------------------------------//
+`ifdef  EN_TLBRST //开启TLB复位
     genvar i;
     generate
     	for(i = 0; i < TLBNUM; ++i)
@@ -74,22 +75,40 @@ module tlb
                     tlb_v1[i]   <= '0;
     			end else begin
     				if( we && i == w_index) begin
-    					tlb_vpn2[i] <= W_TLBEntry.VPN2;
-                        tlb_asid[i] <= W_TLBEntry.ASID;
-                        tlb_g[i]    <= W_TLBEntry.G;
-                        tlb_pfn0[i] <= W_TLBEntry.PFN0;
-                        tlb_c0[i]   <= W_TLBEntry.C0;
-                        tlb_d0[i]   <= W_TLBEntry.D0;
-                        tlb_v0[i]   <= W_TLBEntry.V0;
-                        tlb_pfn1[i] <= W_TLBEntry.PFN1;
-                        tlb_c1[i]   <= W_TLBEntry.C1;
-                        tlb_d1[i]   <= W_TLBEntry.D1;
-                        tlb_v1[i]   <= W_TLBEntry.V1;
+    				tlb_vpn2[i] <= W_TLBEntry.VPN2;
+                    tlb_asid[i] <= W_TLBEntry.ASID;
+                    tlb_g[i]    <= W_TLBEntry.G;
+                    tlb_pfn0[i] <= W_TLBEntry.PFN0;
+                    tlb_c0[i]   <= W_TLBEntry.C0;
+                    tlb_d0[i]   <= W_TLBEntry.D0;
+                    tlb_v0[i]   <= W_TLBEntry.V0;
+                    tlb_pfn1[i] <= W_TLBEntry.PFN1;
+                    tlb_c1[i]   <= W_TLBEntry.C1;
+                    tlb_d1[i]   <= W_TLBEntry.D1;
+                    tlb_v1[i]   <= W_TLBEntry.V1;
                     end
     			end
     		end
     	end
     endgenerate
+`endif
+`ifndef EN_TLBRST //不开启TLB复位
+    always_ff @(posedge clk ) begin
+            if(we) begin
+                tlb_vpn2[w_index] <= W_TLBEntry.VPN2;
+                tlb_asid[w_index] <= W_TLBEntry.ASID;
+                tlb_g[w_index]    <= W_TLBEntry.G;
+                tlb_pfn0[w_index] <= W_TLBEntry.PFN0;
+                tlb_c0[w_index]   <= W_TLBEntry.C0;
+                tlb_d0[w_index]   <= W_TLBEntry.D0;
+                tlb_v0[w_index]   <= W_TLBEntry.V0;
+                tlb_pfn1[w_index] <= W_TLBEntry.PFN1;
+                tlb_c1[w_index]   <= W_TLBEntry.C1;
+                tlb_d1[w_index]   <= W_TLBEntry.D1;
+                tlb_v1[w_index]   <= W_TLBEntry.V1;
+            end
+        end
+`endif 
 //---------------------------------read port-------------------------------------------------------//
     always_comb begin
         R_TLBEntry.VPN2 = tlb_vpn2[r_index];
