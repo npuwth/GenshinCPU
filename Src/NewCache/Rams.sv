@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-12 12:19:51
+ * @LastEditTime: 2021-07-12 12:26:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -99,8 +99,8 @@ module simple_port_ram #(
 	parameter int unsigned MEMORY_SIZE = $bits(dtype) * SIZE,
 	parameter int unsigned ADDR_WIDTH  = $clog2(SIZE)-1
 ) (
-	input  logic  clka,
-	input  logic  rsta,
+	input  logic  clk,
+	input  logic  rst,
 	input  logic  wea,
 	input  logic  ena,
 	input  logic  enb,
@@ -149,10 +149,10 @@ module simple_port_ram #(
 
       .addra(addra),                   // ADDR_WIDTH_A-bit input: Address for port A write operations.
       .addrb(addrb),                   // ADDR_WIDTH_B-bit input: Address for port B read operations.
-      .clka(clka),                     // 1-bit input: Clock signal for port A. Also clocks port B when
+      .clka(clk),                     // 1-bit input: Clock signal for port A. Also clocks port B when
                                        // parameter CLOCKING_MODE is "common_clock".
 
-      .clkb(clkb),                     // 1-bit input: Clock signal for port B when parameter CLOCKING_MODE is
+      .clkb(clk),                     // 1-bit input: Clock signal for port B when parameter CLOCKING_MODE is
                                        // "independent_clock". Unused when parameter CLOCKING_MODE is
                                        // "common_clock".
 
@@ -174,7 +174,7 @@ module simple_port_ram #(
       .regceb(1'b0),                 // 1-bit input: Clock Enable for the last register stage on the output
                                        // data path.
 
-      .rstb(rstb),                     // 1-bit input: Reset signal for the final port B output register stage.
+      .rstb(rst),                     // 1-bit input: Reset signal for the final port B output register stage.
                                        // Synchronously resets output port doutb to the value specified by
                                        // parameter READ_RESET_VALUE_B.
 
