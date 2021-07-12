@@ -1,20 +1,20 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-08 19:32:14
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 18:34:44
+ * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\ALU.sv
  * 
  */
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
-module ALU(EXE_ResultA,EXE_ResultB,EXE_ALUOp,EXE_ALUOut,EXE_ExceptType,EXE_ExceptType_new);
-input ExceptinPipeType EXE_ExceptType;
-input logic[31:0] EXE_ResultA,EXE_ResultB;
-input logic[4:0] EXE_ALUOp;
-output logic [31:0] EXE_ALUOut;
-output ExceptinPipeType EXE_ExceptType_new;
+module ALU(EXE_ResultA,EXE_ResultB,EXE_ALUOp,EXE_ALUOut,Overflow_valid);
+input  logic  [31:0]       EXE_ResultA,EXE_ResultB;
+input  logic  [4:0]        EXE_ALUOp;
+output logic  [31:0]       EXE_ALUOut;
+output logic               Overflow_valid;
+
 logic [31:0] EXE_ALUOut_r;
 logic [31:0] EXE_Countbit_Out;
 logic EXE_Countbit_Opt;
@@ -64,31 +64,9 @@ always_comb begin
     
 end 
 
-
-// always_comb begin 
-//     EXE_ExceptType_new = EXE_ExceptType;
-//     EXE_ExceptType_new.Overflow = ((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
-// end
-    assign EXE_ExceptType_new.Interrupt = EXE_ExceptType.Interrupt;
-    assign EXE_ExceptType_new.WrongAddressinIF = EXE_ExceptType.WrongAddressinIF;
-    assign EXE_ExceptType_new.ReservedInstruction = EXE_ExceptType.ReservedInstruction;
-    assign EXE_ExceptType_new.Syscall = EXE_ExceptType.Syscall;
-    
-    assign EXE_ExceptType_new.Break = EXE_ExceptType.Break;
-    assign EXE_ExceptType_new.Eret = EXE_ExceptType.Eret;
-    assign EXE_ExceptType_new.WrWrongAddressinMEM = EXE_ExceptType.WrWrongAddressinMEM;
-    assign EXE_ExceptType_new.RdWrongAddressinMEM = EXE_ExceptType.RdWrongAddressinMEM;
-    assign EXE_ExceptType_new.Overflow = (EXE_ALUOp == `EXE_ALUOp_ADD )&&( ( (!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) )) ||
+    assign Overflow_valid = (EXE_ALUOp == `EXE_ALUOp_ADD )&&( ( (!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) )) ||
                                          (EXE_ALUOp == `EXE_ALUOp_SUB)&&( ( (!EXE_ResultA[31] && EXE_ResultB[31]) && (EXE_ALUOut_r[31]) )||( (EXE_ResultA[31] && !EXE_ResultB[31]) && (!EXE_ALUOut_r[31]) ));
-    assign EXE_ExceptType_new.TLBRefillinIF           = EXE_ExceptType.TLBRefillinIF;
-    assign EXE_ExceptType_new.TLBInvalidinIF          = EXE_ExceptType.TLBInvalidinIF;
-    assign EXE_ExceptType_new.RdTLBRefillinMEM        = EXE_ExceptType.RdTLBRefillinMEM;
-    assign EXE_ExceptType_new.RdTLBInvalidinMEM       = EXE_ExceptType.RdTLBInvalidinMEM;
-    assign EXE_ExceptType_new.WrTLBRefillinMEM        = EXE_ExceptType.WrTLBRefillinMEM;
-    assign EXE_ExceptType_new.WrTLBInvalidinMEM       = EXE_ExceptType.WrTLBInvalidinMEM;
-    assign EXE_ExceptType_new.TLBModified             = EXE_ExceptType.TLBModified;
-    assign EXE_ExceptType_new.Refetch                 = EXE_ExceptType.Refetch;
-    assign EXE_ExceptType_new.Trap                    = EXE_ExceptType.Trap;
+
     assign EXE_ALUOut = EXE_ALUOut_r;
     // TODO: 针对EXE_ALUOP字段，当其为'x的时候，是否需要将overflow的异常置为'0 ,现在是'x
 endmodule

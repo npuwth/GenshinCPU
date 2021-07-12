@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-07 23:25:28
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 18:14:52
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -36,7 +36,8 @@ module MEM_Reg (
   	input  logic 	[1:0]   	    EXE_WbSel,     
 
   	input  ExceptinPipeType 		EXE_ExceptType_final,	
-	
+	input  logic    [3:0]           EXE_DCache_Wen,
+	input  logic    [31:0]          EXE_DataToDcache,         //DCache的字节写使能
     input  logic                    EXE_IsTLBP,
     input  logic                    EXE_IsTLBW,
     input  logic                    EXE_IsTLBR, 
@@ -60,7 +61,8 @@ module MEM_Reg (
     output logic 	[1:0]  		    MEM_WbSel,
 
 	output ExceptinPipeType 		MEM_ExceptType,
-	
+	output logic       [3:0]        MEM_DCache_Wen,	
+    output logic       [31:0]       MEM_DataToDcache,
     output logic                    MEM_IsTLBP,
     output logic                    MEM_IsTLBW,
     output logic                    MEM_IsTLBR,
@@ -79,6 +81,8 @@ module MEM_Reg (
             MEM_RegsWrType          <= '0;
             MEM_OutB                <= 32'b0;
             MEM_ExceptType          <= '0;
+            MEM_DCache_Wen          <= '0;	
+            MEM_DataToDcache        <= '0;
             MEM_IsABranch           <= 1'b0;
             MEM_IsAImmeJump         <= 1'b0;
             MEM_Instr               <= 32'b0;
@@ -98,6 +102,8 @@ module MEM_Reg (
             MEM_RegsWrType          <= EXE_RegsWrType;
             MEM_OutB                <= EXE_OutB;
             MEM_ExceptType          <= EXE_ExceptType_final;
+            MEM_DCache_Wen          <= EXE_DCache_Wen;	
+            MEM_DataToDcache        <= EXE_DataToDcache;
             MEM_IsABranch           <= EXE_BranchType.isBranch;
             MEM_IsAImmeJump         <= EXE_IsAImmeJump;
             MEM_Instr               <= EXE_Instr;

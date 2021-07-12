@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-11 11:36:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 19:29:35
+ * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -52,16 +52,17 @@ interface CPU_Bus_Interface();            // 只需要满足读的请求 icache�
   // logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
   logic [31:0]  rdata;     //          
   logic         flush;
+  logic         stall;   // TODO:写控制逻辑
 
   modport master ( //cpu的接口
             output  valid,op,index,tag,
-            output  offset,wstrb,wdata,flush,loadType,
+            output  offset,wstrb,wdata,flush,loadType,stall,
             input   busy,rdata
           );
 
   modport slave ( //cache的接口
             input  valid,op,index,tag,
-            input  offset,wstrb,wdata,flush,loadType,
+            input  offset,wstrb,wdata,flush,loadType,stall,
             output busy,rdata
 
           );
