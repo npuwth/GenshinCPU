@@ -1,8 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-12 22:29:35
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-12 22:59:47
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -976,7 +975,7 @@ module Control(
         ID_LoadType   = '0;
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
-        ID_DstSel     = `DstSel_31;//31
+        ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
