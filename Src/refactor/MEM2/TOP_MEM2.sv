@@ -34,7 +34,6 @@ module TOP_MEM (
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
-    // .MEM_Reuslt             (MM2Bus.MEM_Result),
 //-----------------------------output-------------------------------------//
     .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
@@ -53,7 +52,6 @@ module TOP_MEM (
     // .MEM2_Reuslt            (MEM2_Result)
     );
     //output for forwarding 
-    // assign MEM2_Result           = M2WBus.MEM2_Result;  
     assign MEM2_Dst              = M2WBus.MEM2_Dst;
     assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;
     // output to MEM

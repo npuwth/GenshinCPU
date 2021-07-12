@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-11 22:38:26
+ * @LastEditTime: 2021-07-12 12:35:16
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -42,7 +42,8 @@ module TOP_MEM (
     output logic [31:0]          CP0_EPC,
     output ExceptinPipeType      MEM_ExceptType,
     output LoadType              MEM_LoadType,
-    output StoreType             MEM_StoreType
+    output StoreType             MEM_StoreType,
+    output logic [31:0]          Exception_Vector   
 );
 
 	RegsWrType                   MEM_RegsWrType; 
@@ -53,9 +54,10 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
-    logic [3:0]                  MEM_DCache_Wen;   // TODO 接上cache
-    logic [31:0]                 MEM_DataToDcache; // TODO 接上cache
+    logic [3:0]                  MEM_DCache_Wen;   
+    logic [31:0]                 MEM_DataToDcache; 
     //传给Exception
+    logic                        CP0_Status_BEV;
     logic [7:0]                  CP0_Status_IM7_0;
     logic                        CP0_Status_EXL;
     logic                        CP0_Status_IE;
@@ -64,17 +66,17 @@ module TOP_MEM (
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType = MM2Bus.MEM_RegsWrType_final;  // 用于旁路
-    assign EMBus.MEM_Dst = MM2Bus.MEM_Dst;      // 判断是否是entry high
-    assign EMBus.MEM_Result = MEM_Result;       // 传给EXE用于旁路
-    assign MM2Bus.MEM_Result= MEM_Result;       //
-    assign EMBus.MEM_IsTLBR = MEM_IsTLBR;
-    assign EMBus.MEM_IsTLBW = MEM_IsTLBW;
-    assign EMBus.MEM_Instr  = MM2Bus.MEM_Instr;  // 判断是否是entery high
-    assign MEM_PC        = MM2Bus.MEM_PC;
-    assign MEM_LoadType  = MM2Bus.MEM_LoadType;
+    assign EMBus.MEM_RegsWrType     = MM2Bus.MEM_RegsWrType_final;  // 用于旁路
+    assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 判断是否是entry high
+    assign EMBus.MEM_Result         = MEM_Result;                   // 传给EXE用于旁路
+    // assign MM2Bus.MEM_Result        = MEM_Result;       
+    assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;
+    assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;
+    assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;            // 判断是否是entery high
+    assign MEM_PC                   = MM2Bus.MEM_PC;
+    assign MEM_LoadType             = MM2Bus.MEM_LoadType;
 
-    assign MEM_Final_Wr = (MEM_DisWr)? '0: MEM_RegsWrType ;
+    assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType ;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -124,48 +126,49 @@ module TOP_MEM (
     );
 
     Exception U_Exception(
-        .clk                     (clk),
-        .rst                     (resetn),
         .MEM_RegsWrType          (MEM_RegsWrType),              
         .MEM_ExceptType          (MEM_ExceptType_new),            
-        .MEM_PC                  (MM2Bus.MEM_PC),                     
+        .MEM_PC                  (MM2Bus.MEM_PC),   
+        .CP0_Status_BEV          (CP0_Status_BEV),                  
         .CP0_Status_IM7_0        (CP0_Status_IM7_0 ),
         .CP0_Status_EXL          (CP0_Status_EXL ),
         .CP0_Status_IE           (CP0_Status_IE ),
         .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
-        .CP0_Cause_IP1_0         ( CP0_Cause_IP1_0),      
+        .CP0_Cause_IP1_0         (CP0_Cause_IP1_0),      
     //------------------------------out--------------------------------------------//
         .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),            
         .ID_Flush                (ID_Flush_Exception),                
         .EXE_Flush               (EXE_Flush_Exception),                       
         .MEM_Flush               (MEM_Flush_Exception),                           
-        .EX_Entry_Sel       (EX_Entry_Sel),            
-        .MEM_ExceptType_final    (MM2Bus.MEM_ExceptType_final)                    
+        .EX_Entry_Sel            (EX_Entry_Sel),            
+        .MEM_ExceptType_final    (MM2Bus.MEM_ExceptType_final),
+        .Exception_Vector        (Exception_Vector)        // TODO:异常入口地址                    
     );
 
     cp0_reg U_CP0 (
-        .clk (clk ),
-        .rst (resetn ),
-        .Interrupt (Interrupt ),
-        .CP0_RdAddr (MEM_rd ),
-        .CP0_RdData (CP0_Bus ),
-        .MEM_RegsWrType (MEM_Final_Wr ),
-        .MEM_Dst (MM2Bus.MEM_Dst ),
-        .MEM_Result (MEM_Result ),
-        .MEM_IsTLBP (MEM_IsTLBP ),
-        .MEM_IsTLBR (MEM_IsTLBR ),
-        .CMBus (CMBus.CP0 ),
-        .WB_ExceptType (MM2Bus.MEM2_ExceptType ),
-        .WB_PC (MM2Bus.MEM2_PC ),
-        .WB_IsInDelaySlot (MM2Bus.MEM2_IsInDelaySlot ),
-        .WB_ALUOut (MM2Bus.MEM2_ALUOut ),
+        .clk                    (clk ),
+        .rst                    (resetn ),
+        .Interrupt              (Interrupt ),
+        .CP0_RdAddr             (MEM_rd ),
+        .CP0_RdData             (CP0_Bus ),
+        .MEM_RegsWrType         (MEM_Final_Wr ),
+        .MEM_Dst                (MM2Bus.MEM_Dst ),
+        .MEM_Result             (MEM_Result ),
+        .MEM_IsTLBP             (MEM_IsTLBP ),
+        .MEM_IsTLBR             (MEM_IsTLBR ),
+        .CMBus                  (CMBus.CP0 ),
+        .MEM2_ExceptType        (MM2Bus.MEM2_ExceptType ),
+        .MEM2_PC                (MM2Bus.MEM2_PC ),
+        .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot ),
+        .MEM2_ALUOut            (MM2Bus.MEM2_ALUOut ),
         //---------------output----------------//
-        .CP0_Status_IM7_0 (CP0_Status_IM7_0 ),
-        .CP0_Status_EXL (CP0_Status_EXL ),
-        .CP0_Status_IE (CP0_Status_IE ),
-        .CP0_Cause_IP7_2 (CP0_Cause_IP7_2 ),
-        .CP0_Cause_IP1_0  ( CP0_Cause_IP1_0),
-        .CP0_EPC(CP0_EPC)
+        .CP0_Status_BEV         (CP0_Status_BEV),
+        .CP0_Status_IM7_0       (CP0_Status_IM7_0 ),
+        .CP0_Status_EXL         (CP0_Status_EXL ),
+        .CP0_Status_IE          (CP0_Status_IE ),
+        .CP0_Cause_IP7_2        (CP0_Cause_IP7_2 ),
+        .CP0_Cause_IP1_0        (CP0_Cause_IP1_0),
+        .CP0_EPC                (CP0_EPC)
   );
 
     
@@ -190,7 +193,7 @@ module TOP_MEM (
     assign cpu_dbus.storeType                             = MM2Bus.MEM_StoreType;
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MM2Bus.MEM_LoadType;
-    DCache U_DCACHE(
+    DCache U_DCACHE(  // TODO: cache的组织结构
         .clk            (clk),
         .resetn         (resetn),
         .Phsy_Daddr     (Phsy_Daddr),

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-12 07:44:49
+ * @LastEditTime: 2021-07-12 22:36:33
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -116,7 +116,8 @@ module TOP_ID (
         .ID_rsrtRead         (ID_rsrtRead),
         .ID_IsTLBP           (IEBus.ID_IsTLBP),
         .ID_IsTLBW           (IEBus.ID_IsTLBW),
-        .ID_IsTLBR           (IEBus.ID_IsTLBR)
+        .ID_IsTLBR           (IEBus.ID_IsTLBR),
+        .ID_TrapOp           (IEBus.ID_TrapOp)
     );
 
     DataHazard U_DataHazard ( 

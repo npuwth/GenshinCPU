@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-10 19:56:20
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-12 11:43:33
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -30,11 +30,12 @@ module cp0_reg (
     input logic             MEM_IsTLBR,                //写EntryHi，EntryLo0，EntryLo1
     CP0_MMU_Interface       CMBus, 
     //exception
-    input ExceptinPipeType  WB_ExceptType,
-    input logic  [31:0]     WB_PC,
-    input logic             WB_IsInDelaySlot,
-    input logic  [31:0]     WB_ALUOut,
+    input ExceptinPipeType  MEM2_ExceptType,
+    input logic  [31:0]     MEM2_PC,
+    input logic             MEM2_IsInDelaySlot,
+    input logic  [31:0]     MEM2_ALUOut,
     //connect to exception to dectect
+    output logic [22:22]    CP0_Status_BEV,
     output logic [7:0]      CP0_Status_IM7_0,
     output logic [1:1]      CP0_Status_EXL,
     output logic [0:0]      CP0_Status_IE,
@@ -61,6 +62,7 @@ module cp0_reg (
     logic  [6:0]            Interrupt_final;
     logic  [31:0]           config0_default;
     
+    assign                  CP0_Status_BEV   = CP0.Status.BEV;
     assign                  CP0_Status_IM7_0 = CP0.Status.IM7_0;
     assign                  CP0_Status_EXL   = CP0.Status.EXL;
     assign                  CP0_Status_IE    = CP0.Status.IE;
@@ -80,24 +82,26 @@ module cp0_reg (
     
 
     always_comb begin  //优先级可以查看MIPS文档第三册56页
-        if(WB_ExceptType.Interrupt == 1'b1)                ExcType = `EX_Interrupt;
-        else if(WB_ExceptType.WrongAddressinIF == 1'b1)    ExcType = `EX_WrongAddressinIF;
-        else if(WB_ExceptType.TLBRefillinIF ==1'b1)        ExcType = `EX_TLBRefillinIF;
-        else if(WB_ExceptType.TLBInvalidinIF == 1'b1)      ExcType = `EX_TLBInvalidinIF;
-        else if(WB_ExceptType.ReservedInstruction == 1'b1) ExcType = `EX_ReservedInstruction;
-        else if(WB_ExceptType.Syscall == 1'b1)             ExcType = `EX_Syscall;
-        else if(WB_ExceptType.Break == 1'b1)               ExcType = `EX_Break;
-        else if(WB_ExceptType.Eret == 1'b1)                ExcType = `EX_Eret;
-        else if(WB_ExceptType.Trap == 1'b1)                ExcType = `EX_Trap;
-        else if(WB_ExceptType.Overflow == 1'b1)            ExcType = `EX_Overflow;
-        else if(WB_ExceptType.WrWrongAddressinMEM == 1'b1) ExcType = `EX_WrWrongAddressinMEM;
-        else if(WB_ExceptType.RdWrongAddressinMEM == 1'b1) ExcType = `EX_RdWrongAddressinMEM;
-        else if(WB_ExceptType.RdTLBRefillinMEM == 1'b1)    ExcType = `EX_RdTLBRefillinMEM;
-        else if(WB_ExceptType.WrTLBRefillinMEM == 1'b1)    ExcType = `EX_WrTLBRefillinMEM;
-        else if(WB_ExceptType.RdTLBInvalidinMEM == 1'b1)   ExcType = `EX_RdTLBInvalidinMEM;  
-        else if(WB_ExceptType.WrTLBInvalidinMEM == 1'b1)   ExcType = `EX_WrTLBInvalidinMEM;
-        else if(WB_ExceptType.TLBModified == 1'b1)         ExcType = `EX_TLBModified;
-        else                                               ExcType = `EX_None;
+        if(MEM2_ExceptType.Interrupt == 1'b1)                   ExcType = `EX_Interrupt;
+        else if(MEM2_ExceptType.WrongAddressinIF == 1'b1)       ExcType = `EX_WrongAddressinIF;
+        else if(MEM2_ExceptType.TLBRefillinIF ==1'b1)           ExcType = `EX_TLBRefillinIF;
+        else if(MEM2_ExceptType.TLBInvalidinIF == 1'b1)         ExcType = `EX_TLBInvalidinIF;
+        else if(MM2_ExceptType.CoprocessorUnusable == 1'b1)  ExcType = `EX_CpU;
+            
+        else if(MEM2_ExceptType.ReservedInstruction == 1'b1)    ExcType = `EX_ReservedInstruction;
+        else if(MEM2_ExceptType.Syscall == 1'b1)                ExcType = `EX_Syscall;
+        else if(MEM2_ExceptType.Break == 1'b1)                  ExcType = `EX_Break;
+        else if(MEM2_ExceptType.Eret == 1'b1)                   ExcType = `EX_Eret;
+        else if(MEM2_ExceptType.Trap == 1'b1)                   ExcType = `EX_Trap;
+        else if(MEM2_ExceptType.Overflow == 1'b1)               ExcType = `EX_Overflow;
+        else if(MEM2_ExceptType.WrWrongAddressinMEM == 1'b1)    ExcType = `EX_WrWrongAddressinMEM;
+        else if(MEM2_ExceptType.RdWrongAddressinMEM == 1'b1)    ExcType = `EX_RdWrongAddressinMEM;
+        else if(MEM2_ExceptType.RdTLBRefillinMEM == 1'b1)       ExcType = `EX_RdTLBRefillinMEM;
+        else if(MEM2_ExceptType.WrTLBRefillinMEM == 1'b1)       ExcType = `EX_WrTLBRefillinMEM;
+        else if(MEM2_ExceptType.RdTLBInvalidinMEM == 1'b1)      ExcType = `EX_RdTLBInvalidinMEM;  
+        else if(MEM2_ExceptType.WrTLBInvalidinMEM == 1'b1)      ExcType = `EX_WrTLBInvalidinMEM;
+        else if(MEM2_ExceptType.TLBModified == 1'b1)            ExcType = `EX_TLBModified;
+        else                                                  ExcType = `EX_None;
     end
     
 //Index
@@ -171,16 +175,16 @@ module cp0_reg (
             CP0.BadVAddr                   <= 'x;
         end
         else if (ExcType == `EX_WrongAddressinIF) begin
-            CP0.BadVAddr                   <= WB_PC;
+            CP0.BadVAddr                   <= MEM2_PC;
         end
         else if (ExcType == `EX_WrWrongAddressinMEM || ExcType == `EX_RdWrongAddressinMEM) begin
-            CP0.BadVAddr                   <= WB_ALUOut;
+            CP0.BadVAddr                   <= MEM2_ALUOut;
         end
         else if (ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
-            CP0.BadVAddr                   <= WB_PC;
+            CP0.BadVAddr                   <= MEM2_PC;
         end
         else if (ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM || ExcType == `EX_TLBModified) begin
-            CP0.BadVAddr                   <= WB_ALUOut;
+            CP0.BadVAddr                   <= MEM2_ALUOut;
         end
     end
     
@@ -225,10 +229,10 @@ module cp0_reg (
             CP0.EntryHi.ASID               <= MEM_Result[7:0];
         end
         else if(ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
-            CP0.EntryHi.VPN2               <= WB_PC[31:13];
+            CP0.EntryHi.VPN2               <= MEM2_PC[31:13];
         end
         else if(ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM || ExcType == `EX_TLBModified) begin
-            CP0.EntryHi.VPN2               <= WB_ALUOut[31:13];
+            CP0.EntryHi.VPN2               <= MEM2_ALUOut[31:13];
         end
     end
 
@@ -254,10 +258,12 @@ module cp0_reg (
 //Status
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
+            CP0.Status.BEV                 <= 1'b1;
             CP0.Status.IM7_0               <= 'x ;
             CP0.Status.IE                  <= '0 ;
         end
         else if (MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_STATUS ) begin
+            CP0.Status.BEV                 <= MEM_Result[22:22];
             CP0.Status.IM7_0               <= MEM_Result[15:8];    
             CP0.Status.IE                  <= MEM_Result[0];
         end
@@ -286,7 +292,7 @@ module cp0_reg (
             CP0.Cause.BD                   <= '0;
         end
         else if(CP0_Status_EXL == 1'b0 && ExcType!= `EX_None ) begin
-            CP0.Cause.BD                   <= WB_IsInDelaySlot;
+            CP0.Cause.BD                   <= MEM2_IsInDelaySlot;
         end 
     end
     
@@ -359,11 +365,11 @@ module cp0_reg (
                 CP0.EPC                  <= CP0.EPC;
             end
             else begin
-                if(WB_IsInDelaySlot == 1'b1) begin
-                    CP0.EPC              <= WB_PC-4;
+                if(MEM2_IsInDelaySlot == 1'b1) begin
+                    CP0.EPC              <= MEM2_PC-4;
                 end
                 else begin
-                    CP0.EPC              <= WB_PC;
+                    CP0.EPC              <= MEM2_PC;
                 end
             end
         end
@@ -421,7 +427,7 @@ module cp0_reg (
             `CP0_REG_COUNT:      CP0_RdData = CP0.Count;
             `CP0_REG_ENTRYHI:    CP0_RdData = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};
             `CP0_REG_COMPARE:    CP0_RdData = CP0.Compare;
-            `CP0_REG_STATUS:     CP0_RdData = {9'b0 , 1'b1 , 6'b0 , CP0.Status.IM7_0 , 6'b0 , CP0.Status.EXL , CP0.Status.IE};
+            `CP0_REG_STATUS:     CP0_RdData = {9'b0 , CP0.Status.BEV , 6'b0 , CP0.Status.IM7_0 , 6'b0 , CP0.Status.EXL , CP0.Status.IE};
             `CP0_REG_CAUSE:      CP0_RdData = {CP0.Cause.BD , CP0.Cause.TI , 14'b0 , CP0.Cause.IP7_2 , CP0.Cause.IP1_0 , 1'b0 , CP0.Cause.ExcCode , 2'b0};
             `CP0_REG_EPC:        CP0_RdData = CP0.EPC;
             `CP0_REG_PRID:       CP0_RdData = CP0.Prid;

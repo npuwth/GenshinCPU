@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 07:45:00
+ * @LastEditTime: 2021-07-12 22:34:02
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -70,6 +70,7 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	OP_SLT, OP_SLTU,OP_SLTI,OP_SLTIU,
 	/* trap */
 	OP_TGE, OP_TGEU, OP_TLT, OP_TLTU, OP_TEQ, OP_TNE,
+	OP_TGEI, OP_TGEIU, OP_TLTI, OP_TLTIU, OP_TEQI, OP_TNEI,
 	/* count bits */
 	OP_CLZ, OP_CLO,
 	/* branch */
@@ -172,9 +173,10 @@ typedef struct packed {
 	// logic [7:0] im;
 	// logic kx, sx, ux, um;
 	// logic r0, erl, exl, ie;
-	logic  [7:0] IM7_0;
-	logic  [1:1] EXL;
-	logic  [0:0] IE;
+	logic  [22:22]  BEV;
+	logic  [7:0]    IM7_0;
+	logic  [1:1]    EXL;
+	logic  [0:0]    IE;
 } CP0_Status;
 
 typedef struct packed {
@@ -298,6 +300,7 @@ interface ID_EXE_Interface();
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  		// StoreType信号
+	logic       [2:0]	    ID_TrapOp;
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	ID_WbSel;        	// 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器使能
@@ -324,6 +327,7 @@ interface ID_EXE_Interface();
 	output	                ID_ALUOp,	 		// ALU操作符
   	output	                ID_LoadType,	 	// LoadType信号 
   	output	                ID_StoreType,  	    // StoreType信号
+	output   			    ID_TrapOp,          // 自陷异常
   	output	                ID_RegsWrType,		// 寄存器写信号打包
   	output	                ID_WbSel,        	// 选择写回数据
   	output	                ID_DstSel,   		// 选择目标寄存器使能
@@ -353,6 +357,7 @@ interface ID_EXE_Interface();
 	input	                ID_ALUOp,	 		// ALU操作符
   	input	                ID_LoadType,	 	// LoadType信号 
   	input	                ID_StoreType,  		// StoreType信号
+	input   			    ID_TrapOp,          // 自陷异常
   	input	                ID_RegsWrType,		// 寄存器写信号打包
   	input	                ID_WbSel,        	// 选择写回数据
   	input	                ID_DstSel,   		// 选择目标寄存器使能
@@ -529,7 +534,7 @@ interface MEM_MEM2_Interface();
 		input  					MEM_IsABranch,
 		input  					MEM_IsAImmeJump,
 		input  					MEM_IsInDelaySlot,
-		input					MEM_Result,
+		// input					MEM_Result,
 		
 		// output   				MEM2_ALUOut,		
 		// output   				MEM2_PC,	
@@ -562,15 +567,15 @@ interface MEM2_WB_Interface();
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType; //经过exception solvement的新写使能
-	ExceptinPipeType 		MEM2_ExceptType;
+	// ExceptinPipeType 		MEM2_ExceptType;
 	
 
 	// logic                   WB_IsABranch;
 	// logic                   WB_IsAImmeJump;
-	ExceptinPipeType        WB_ExceptType;
-	logic       [31:0]      WB_PC;
+	// ExceptinPipeType        WB_ExceptType;
+	// logic       [31:0]      WB_PC;
 	// logic                   WB_IsInDelaySlot;
-	logic       [31:0]      WB_ALUOut;
+	// logic       [31:0]      WB_ALUOut;
   
 	modport MEM2 (  //在MEM2 TOP使用
     	output					MEM2_ALUOut,		
@@ -578,11 +583,10 @@ interface MEM2_WB_Interface();
 		output                  MEM2_Instr,	
     	output					MEM2_WbSel,				
     	output					MEM2_Dst,
-    	output					MEM2_LoadType,
+    	// output					MEM2_LoadType,
 		output					MEM2_DMOut,
 		output                  MEM2_OutB,
-		output					MEM2_RegsWrType,//经过exception solvement的新写使能
-		output					MEM2_ExceptType
+		output					MEM2_RegsWrType //经过exception solvement的新写使能
 	);
 
 	modport WB ( 
@@ -591,13 +595,11 @@ interface MEM2_WB_Interface();
 		input                   MEM2_Instr,	
     	input					MEM2_WbSel,				
     	input					MEM2_Dst,
-    	input					MEM2_LoadType,
+    	// input					MEM2_LoadType,
 		input					MEM2_DMOut,
 		input                   MEM2_OutB,
-		input					MEM2_RegsWrType,//经过exception solvement的新写使能
-		input					MEM2_ExceptType,
-
-		output                  WB_ALUOut
+		input					MEM2_RegsWrType //经过exception solvement的新写使能
+	
 	);
 
 endinterface

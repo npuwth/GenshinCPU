@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-11 19:17:00
+ * @LastEditTime: 2021-07-12 22:23:58
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -207,32 +207,44 @@ module mycpu_top (
         .m_axi_bvalid           (bvalid ),
         .m_axi_bready           (bready)
     );
+    
+    TOP_PREIF U_TOP_PREIF ( 
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .PREIF_Wr                  (PREIF_Wr ),
+        .MEM_CP0Epc                (CP0_EPC ),
+        .EXE_BusA_L1               (EXE_BusA_L1 ),
+        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
+        .ID_IsAImmeJump            (ID_IsAImmeJump ),
+        .EX_Entry_Sel              (EX_Entry_Sel ),
+        .EXE_BranchType            (EXE_BranchType ),
 
-    TOP_IF U_TOP_IF ( 
-        .clk (aclk ),
-        .resetn (aresetn ),
-        .PC_Wr (PC_Wr ),
-        .MEM_CP0Epc (CP0_EPC ),
-        .EXE_BusA_L1 (EXE_BusA_L1 ),
-        .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
-        .ID_IsAImmeJump (ID_IsAImmeJump ),
-        .EX_Entry_Sel (EX_Entry_Sel ),
-        .EXE_BranchType (EXE_BranchType ),
-        .ID_Wr (ID_Wr ),
-        .ID_Flush_Exception (ID_Flush_Exception ),
-        .EXE_Flush_DataHazard (EXE_Flush_DataHazard ),
-        .EXE_PC (EXE_PC ),
-        .EXE_Imm32 (EXE_Imm32 ),
-        .Phsy_Iaddr(Phsy_Iaddr),
-        .I_IsCached(I_IsCached),
-        .MEM_PC (MEM_PC),
-        .IF_ExceptType_new(IF_ExceptType_new),
-        //--------------------output-----------------//
-        .IIBus  ( IIBus.IF),
-        .cpu_ibus (cpu_ibus),
-        .axi_ibus (axi_ibus),
-        .Virt_Iaddr(Virt_Iaddr),
-        .IF_ExceptType(IF_ExceptType)
+        .ID_PC                     (ID_PC ),
+        .ID_Instr                  (ID_Instr ),
+        .EXE_PC                    (EXE_PC ),
+        .EXE_Imm32                 (EXE_Imm32 ),
+        .Phsy_Iaddr                (Phsy_Iaddr ),
+        .I_IsCached                (I_IsCached ),
+        .MEM_PC                    (MEM_PC ),
+        .Exception_Vector          (Exception_Vector ),
+        .cpu_ibus                  (cpu_ibus ),
+        .axi_ibus                  (axi_ibus ),
+        //-------------------------------output-------------------//
+        .Virt_Iaddr                (Virt_Iaddr ),
+        .PREIF_PC                  (PREIF_PC ),
+        .PREIF_ExceptType          (PREIF_ExceptType) //TODO:传递给TLB
+    );
+
+    TOP_IF U_TOP_IF (
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .IF_Wr                     (IF_Wr ),
+        .IF_Flush                  (IF_Flush ),
+        .PREIF_PC                  (PREIF_PC ),
+        .PREIF_ExceptType          (PREIF_ExceptType ),
+        //-------------------------------output-------------------//
+        .IIBus                     (IIBus.IF ),
+        .cpu_ibus                  (cpu_ibus)
     );
 
     TOP_ID U_TOP_ID ( 
@@ -344,4 +356,3 @@ module mycpu_top (
 
 
 endmodule
-

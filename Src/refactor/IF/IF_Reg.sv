@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-12 16:23:07
- * @LastEditTime: 2021-07-12 07:37:28
+ * @LastEditTime: 2021-07-12 12:06:49
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,9 +17,9 @@ module IF_REG(
     input  logic             rst,
     input  logic             IF_Wr,
     input  logic             IF_Flush,
-
     input logic  [31:0]      PREIF_PC,
     input  ExceptinPipeType  PREIF_ExceptType,
+    
     output logic [31:0]      IF_PC,
     output ExceptinPipeType  IF_ExceptType
 );

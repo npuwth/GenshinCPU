@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-12 07:45:11
+ * @LastEditTime: 2021-07-12 12:07:54
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -36,14 +36,14 @@ module TOP_IF (
         .rst                    (resetn ),
         .IF_Wr                  (IF_Wr ),
         .IF_Flush               (IF_Flush ),
+
         .PREIF_PC               (PREIF_PC ),
         .PREIF_ExceptType       (PREIF_ExceptType ),
+//-----------------------------output-------------------------------------//
         .IF_PC                  (IIBus.IF_PC ),
         .IF_ExceptType          (IIBus.IF_ExceptType)
     );
 
-
-    //---------------------------------cache--------------------------------//
     assign IIBus.IF_Instr = cpu_ibus.rdata;
 
 endmodule
