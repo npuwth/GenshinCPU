@@ -1,8 +1,13 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
+<<<<<<< HEAD
  * @LastEditTime: 2021-07-12 10:39:12
  * @LastEditors: npuwth
+=======
+ * @LastEditTime: 2021-07-11 14:50:04
+ * @LastEditors: Johnson Yang
+>>>>>>> 490a4e828ec1a51864bf834cfb779f8dad58190c
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -271,7 +276,7 @@ module Control(
 				        		6'b100000: instrType = OP_SLL;  // wait
 				        		`endif
 				        		6'b011000: instrType = OP_ERET;
-				        		default: instrType = OP_INVALID;
+				        		default  : instrType = OP_INVALID;
 				        	endcase
 				        end
 				        default: instrType = OP_INVALID;

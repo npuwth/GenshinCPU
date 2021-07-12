@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-10 23:16:22
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 19:17:00
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -303,7 +303,7 @@ module mycpu_top (
         .MEM_LoadType (MEM_LoadType),
         .MEM_StoreType (MEM_StoreType)
     );
-
+    
     TOP_WB U_TOP_WB ( 
         .clk (aclk ),
         .resetn (aresetn ),

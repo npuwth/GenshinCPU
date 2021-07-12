@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-10 17:01:56
+ * @LastEditTime: 2021-07-11 15:37:44
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -73,6 +73,21 @@
 `define BRANCH_CODE_BLT     3'b101
 `define BRANCH_CODE_JR      3'b110 
 
+//**************************for the trap slove unit*****************************
+// 对于trap指令的立即数，都做有符号位的扩展
+`define BRANCH_CODE_TEQ     3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
+`define BRANCH_CODE_TEQI    3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
+`define BRANCH_CODE_TGE     3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
+`define BRANCH_CODE_TGEI    3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
+`define BRANCH_CODE_TGEIU   3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常
+`define BRANCH_CODE_TGEU    3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常
+`define BRANCH_CODE_TLT     3'b011 // 按照 有符号数 比较 ; 小于        即发生异常
+`define BRANCH_CODE_TLTI    3'b011 // 按照 有符号数 比较 ; 小于        即发生异常
+`define BRANCH_CODE_TLTIU   3'b100 // 按照 无符号数 比较 ; 小于        即发生异常
+`define BRANCH_CODE_TLTU    3'b100 // 按照 无符号数 比较 ; 小于        即发生异常
+`define BRANCH_CODE_TNE     3'b101 // 按照 有符号数 比较 ; 不等于      即发生异常
+`define BRANCH_CODE_TNEI    3'b101 // 按照 有符号数 比较 ; 不等于      即发生异常
+
 //****************************有关译码的宏定义***************************
 
 `define DonotReadMem        1'b0
@@ -131,6 +146,7 @@
 `define EX_WrTLBRefillinMEM     5'b01111
 `define EX_WrTLBInvalidinMEM    5'b10000
 `define EX_TLBModified          5'b10001
+`define EX_CpU                  5'b10010  // 浮点指令 协处理器异常
 // CP0寄存器的宏定义  （序号定义）
 `define CP0_REG_INDEX       5'd0
 `define CP0_REG_RANDOM      5'd1
@@ -143,10 +159,10 @@
 `define CP0_REG_STATUS      5'd12
 `define CP0_REG_CAUSE       5'd13
 `define CP0_REG_EPC         5'd14
-`define CP0_REG_PRID        5'd15
-`define CP0_REG_EBASE       5'd16
-`define CP0_REG_CONFIG0     5'd17
-`define CP0_REG_CONFIG1     5'd18
+`define CP0_REG_PRID        5'd15   // 15号 sel 0
+`define CP0_REG_EBASE       5'd15   // 15号 sel 1
+`define CP0_REG_CONFIG0     5'd16   // 16号 sel 0  只读寄存器
+`define CP0_REG_CONFIG1     5'd16   // 16号 sel 1  只读寄存器
 
 `define IsNone              3'b000
 `define IsRefetch           3'b001

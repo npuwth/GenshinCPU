@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-09 11:43:45
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-11 22:38:26
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -12,20 +12,20 @@
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
 `include "../Cache_Defines.svh"
-
+// TODO: CUPTOP中需要修改接口
 module TOP_MEM (
     input logic                  clk,
     input logic                  resetn,
     input logic                  MEM_Flush,
     input logic                  MEM_Wr,
-    input logic                  WB_Wr,//表示是否拥堵
     input logic  [31:0]          Phsy_Daddr, 
     input logic                  D_IsCached,
     input logic  [5:0]           Interrupt,//中断
     input ExceptinPipeType       MEM_ExceptType_new,
     input logic                  MEM_DisWr,
     EXE_MEM_Interface            EMBus,
-    MEM_WB_Interface             MWBus,
+    MEM_MEM2_Interface           MM2Bus,
+    // MEM_WB_Interface             MWBus,
     CP0_MMU_Interface            CMBus,
     CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
@@ -53,6 +53,8 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
+    logic [3:0]                  MEM_DCache_Wen;   // TODO 接上cache
+    logic [31:0]                 MEM_DataToDcache; // TODO 接上cache
     //传给Exception
     logic [7:0]                  CP0_Status_IM7_0;
     logic                        CP0_Status_EXL;
@@ -61,15 +63,16 @@ module TOP_MEM (
     logic [1:0]                  CP0_Cause_IP1_0;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
-    assign MWBus.MEM_IsInDelaySlot = MWBus.WB_IsABranch || MWBus.WB_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType = MWBus.MEM_RegsWrType_final;
-    assign EMBus.MEM_Dst = MWBus.MEM_Dst;
-    assign EMBus.MEM_Result = MEM_Result;//传给EXE用于旁路
+    assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
+    assign EMBus.MEM_RegsWrType = MM2Bus.MEM_RegsWrType_final;  // 用于旁路
+    assign EMBus.MEM_Dst = MM2Bus.MEM_Dst;      // 判断是否是entry high
+    assign EMBus.MEM_Result = MEM_Result;       // 传给EXE用于旁路
+    assign MM2Bus.MEM_Result= MEM_Result;       //
     assign EMBus.MEM_IsTLBR = MEM_IsTLBR;
     assign EMBus.MEM_IsTLBW = MEM_IsTLBW;
-    assign EMBus.MEM_Instr  = MWBus.MEM_Instr;
-    assign MEM_PC        = MWBus.MEM_PC;
-    assign MEM_LoadType  = MWBus.MEM_LoadType;
+    assign EMBus.MEM_Instr  = MM2Bus.MEM_Instr;  // 判断是否是entery high
+    assign MEM_PC        = MM2Bus.MEM_PC;
+    assign MEM_LoadType  = MM2Bus.MEM_LoadType;
 
     assign MEM_Final_Wr = (MEM_DisWr)? '0: MEM_RegsWrType ;
 
@@ -91,24 +94,28 @@ module TOP_MEM (
         .EXE_RegsWrType          (EMBus.EXE_RegsWrType ),
         .EXE_WbSel               (EMBus.EXE_WbSel ),
         .EXE_ExceptType_final    (EMBus.EXE_ExceptType_final ),
+        .EXE_DCache_Wen          (EMBus.EXE_DCache_Wen),
+        .EXE_DataToDcache        (EMBus.EXE_DataToDcache),
         .EXE_IsTLBP              (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
     //------------------------out--------------------------------------------------//
-        .MEM_ALUOut              (MWBus.MEM_ALUOut ),
+        .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
-        .MEM_PC                  (MWBus.MEM_PC ),
-        .MEM_Instr               (MWBus.MEM_Instr ),
-        .MEM_IsABranch           (MWBus.MEM_IsABranch ),
-        .MEM_IsAImmeJump         (MWBus.MEM_IsAImmeJump ),
-        .MEM_LoadType            (MWBus.MEM_LoadType ),
+        .MEM_PC                  (MM2Bus.MEM_PC ),
+        .MEM_Instr               (MM2Bus.MEM_Instr ),
+        .MEM_IsABranch           (MM2Bus.MEM_IsABranch ),
+        .MEM_IsAImmeJump         (MM2Bus.MEM_IsAImmeJump ),
+        .MEM_LoadType            (MM2Bus.MEM_LoadType ),
         .MEM_StoreType           (MEM_StoreType),
-        .MEM_Dst                 (MWBus.MEM_Dst ),
+        .MEM_Dst                 (MM2Bus.MEM_Dst ),
         .MEM_RegsWrType          (MEM_RegsWrType ),
-        .MEM_WbSel               (MWBus.MEM_WbSel ),
+        .MEM_WbSel               (MM2Bus.MEM_WbSel ),
         .MEM_ExceptType          (MEM_ExceptType ),
+        .MEM_DCache_Wen          (MEM_DCache_Wen),
+        .MEM_DataToDcache        (MEM_DataToDcache),
         .MEM_IsTLBP              (MEM_IsTLBP),
         .MEM_IsTLBW              (MEM_IsTLBW),
         .MEM_IsTLBR              (MEM_IsTLBR),
@@ -121,19 +128,19 @@ module TOP_MEM (
         .rst                     (resetn),
         .MEM_RegsWrType          (MEM_RegsWrType),              
         .MEM_ExceptType          (MEM_ExceptType_new),            
-        .MEM_PC                  (MWBus.MEM_PC),                     
+        .MEM_PC                  (MM2Bus.MEM_PC),                     
         .CP0_Status_IM7_0        (CP0_Status_IM7_0 ),
         .CP0_Status_EXL          (CP0_Status_EXL ),
         .CP0_Status_IE           (CP0_Status_IE ),
         .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
         .CP0_Cause_IP1_0         ( CP0_Cause_IP1_0),      
     //------------------------------out--------------------------------------------//
-        .MEM_RegsWrType_final    (MWBus.MEM_RegsWrType_final),            
+        .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),            
         .ID_Flush                (ID_Flush_Exception),                
         .EXE_Flush               (EXE_Flush_Exception),                       
         .MEM_Flush               (MEM_Flush_Exception),                           
         .EX_Entry_Sel       (EX_Entry_Sel),            
-        .MEM_ExceptType_final    (MWBus.MEM_ExceptType_final)                    
+        .MEM_ExceptType_final    (MM2Bus.MEM_ExceptType_final)                    
     );
 
     cp0_reg U_CP0 (
@@ -143,15 +150,15 @@ module TOP_MEM (
         .CP0_RdAddr (MEM_rd ),
         .CP0_RdData (CP0_Bus ),
         .MEM_RegsWrType (MEM_Final_Wr ),
-        .MEM_Dst (MWBus.MEM_Dst ),
+        .MEM_Dst (MM2Bus.MEM_Dst ),
         .MEM_Result (MEM_Result ),
         .MEM_IsTLBP (MEM_IsTLBP ),
         .MEM_IsTLBR (MEM_IsTLBR ),
         .CMBus (CMBus.CP0 ),
-        .WB_ExceptType (MWBus.WB_ExceptType ),
-        .WB_PC (MWBus.WB_PC ),
-        .WB_IsInDelaySlot (MWBus.WB_IsInDelaySlot ),
-        .WB_ALUOut (MWBus.WB_ALUOut ),
+        .WB_ExceptType (MM2Bus.MEM2_ExceptType ),
+        .WB_PC (MM2Bus.MEM2_PC ),
+        .WB_IsInDelaySlot (MM2Bus.MEM2_IsInDelaySlot ),
+        .WB_ALUOut (MM2Bus.MEM2_ALUOut ),
         //---------------output----------------//
         .CP0_Status_IM7_0 (CP0_Status_IM7_0 ),
         .CP0_Status_EXL (CP0_Status_EXL ),
@@ -163,28 +170,26 @@ module TOP_MEM (
 
     
     //------------------------------用于旁路的多选器-------------------------------//
-    assign MEM_Forward_data_sel= (MWBus.MEM_WbSel == `WBSel_OutB)?1'b1:1'b0;
+    assign MEM_Forward_data_sel= (MM2Bus.MEM_WbSel == `WBSel_OutB)?1'b1:1'b0;
 
     MUX2to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
-        .d0                      (MWBus.MEM_ALUOut),
-        .d1                      (MWBus.MEM_OutB),
+        .d0                      (MM2Bus.MEM_ALUOut),
+        .d1                      (MM2Bus.MEM_OutB),
         .sel2_to_1               (MEM_Forward_data_sel),
         .y                       (MEM_Result)
     );
     //---------------------------------------------------------------------------//
-//--------------------------------------------cache-------------------------------//
-    //TODO 如果拥堵 需要将整个的访存请求都变为MEM级前的流水线寄存器的
-    assign cpu_dbus.wdata                                 = EMBus.EXE_OutB;
-    assign cpu_dbus.valid                                 = (WB_Wr== 1'b0)?1'b0:((EMBus.EXE_LoadType.ReadMem || EMBus.EXE_StoreType.DMWr )  ? 1 : 0);
-    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  = EMBus.EXE_ALUOut;                 // inst_sram_addr_o 虚拟地址
-    assign cpu_dbus.op                                    = (EMBus.EXE_LoadType.ReadMem)? 1'b0
-                                                            :(EMBus.EXE_StoreType.DMWr) ? 1'b1
-                                                            :1'bx;
-    assign MWBus.MEM_DMOut                                = cpu_dbus.rdata;       //读取结果直接放入DMOut
-    assign cpu_dbus.ready                                 = WB_Wr;
-    assign cpu_dbus.storeType                             = EMBus.EXE_StoreType;
-    assign cpu_dbus.wstrb                                 = EMBus.DCache_Wen;
-    assign cpu_dbus.loadType                              = EMBus.EXE_LoadType;
+//-------------------------------------------TO Cache-------------------------------//
+    assign cpu_dbus.wdata                                 =  MM2Bus.MEM_ALUOut;
+    assign cpu_dbus.valid                                 = (MM2Bus.MEM_LoadType.ReadMem || MM2Bus.MEM_StoreType.DMWr )  ? 1 : 0;
+    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  =  MM2Bus.MEM_ALUOut;                 // inst_sram_addr_o 虚拟地址
+    assign cpu_dbus.op                                    = (MM2Bus.MEM_LoadType.ReadMem)? 1'b0 :
+                                                            (MM2Bus.MEM_StoreType.DMWr) ? 1'b1  :
+                                                             1'bx;
+    // assign MM2Bus.MEM_DMOut                               = cpu_dbus.rdata;       //读取结果直接放入DMOut
+    assign cpu_dbus.storeType                             = MM2Bus.MEM_StoreType;
+    assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
+    assign cpu_dbus.loadType                              = MM2Bus.MEM_LoadType;
     DCache U_DCACHE(
         .clk            (clk),
         .resetn         (resetn),
@@ -203,7 +208,7 @@ module TOP_MEM (
         .d2             (RFHILO_Bus),
         .d3             (CP0_Bus),
         .sel4_to_1      (MEM_RegsReadSel),
-        .y              (MWBus.MEM_OutB)
+        .y              (MM2Bus.MEM_OutB)
     );
 
 endmodule
