@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 14:57:03
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 19:33:46
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,10 +26,11 @@ module TOP_ID (
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
-    output logic             DH_PreIFWr,
-    output logic             DH_IFWr,
-    output logic             DH_IDWr,
-    output logic             EXE_Flush_DataHazard
+    // output logic             DH_PreIFWr,
+    // output logic             DH_IFWr,
+    // output logic             DH_IDWr,
+    // output logic             EXE_Flush_DataHazard
+    output logic            DH_Stall
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
@@ -99,7 +100,7 @@ module TOP_ID (
     );
 
 //-----------------------------------------------------------------//
-    Control U_Control (
+    Decode U_Decode (
         .ID_Instr            (IEBus.ID_Instr),
         .ID_ExceptType       (ID_ExceptType),
 //--------------------------out-------------------------------------//
@@ -133,10 +134,7 @@ module TOP_ID (
         .MEM_ReadMEM         (MEM_ReadMEM ),
         .EXE_Instr           (IEBus.EXE_Instr),
         //-----------------------output-----------------------//
-        .PreIF_Wr           (DH_PreIFWr ),
-        .IF_Wr              (DH_IFWr ),
-        .ID_Wr              (DH_IDWr ),
-        .EXE_Flush          (EXE_Flush_DataHazard)
+        .DH_Stall            (DH_Stall)
     );
 
 endmodule  

@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-13 10:29:39
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 17:14:34
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,7 +13,7 @@
 `include "../CommonDefines.svh"
 `define COMPILE_FULL_M
 `define ENABLE_FPU      1
-module Control(
+module Decode(
     input  logic[31:0] ID_Instr,
     input  ExceptinPipeType ID_ExceptType,
 

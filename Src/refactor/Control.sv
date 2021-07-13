@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-13 15:59:48
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 19:33:35
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,28 +13,19 @@
 `include "CPU_Defines.svh"
 `include "CommonDefines.svh"
 module WrFlushControl(
-    // 异常有关的信号
-    input logic       IF_Flush_Exception ,  //异常产生在IF级的flush 
-    input logic       ID_Flush_Exception ,  //异常产生在ID级的flush 
-    input logic       EXE_Flush_Exception,  //异常产生在EXE级的flush
-    input logic       MEM_Flush_Exception, //异常产生在MEM级的flush
-    // 数据冒险对应的写使能的关闭
-    input logic       DH_PreIFWr,          // Load & R型的数据冒险   1代表没有出现该异常，流水线可以流动
-    input logic       DH_IFWr,             // Load & R型的数据冒险 
-    input logic       DH_IDWr,             // Load & R型的数据冒险 
-    input logic       EXE_Flush_DataHazard, // 数据冒险产生的flush  
-    // 乘除法 
+    input logic       Flush_Exception,          //异常产生的flush 
+    input logic       DH_PreIFWr,               // Load & R型的数据冒险   1代表没有出现该异常，流水线可以流动
+    input logic       DH_IFWr,                  // Load & R型的数据冒险 
+    input logic       DH_IDWr,                  // Load & R型的数据冒险 
+    input logic       EXE_Flush_DataHazard,     // 数据冒险产生的flush  
     input logic       DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
-    input logic [2:0] EX_Entry_Sel,             // 用于生成HILO的flush信号
-    input logic       BranchFailed,             // 分支预测失败时，产生的flush
-    input logic       ID_IsAImmeJump,           // ID级 的 J JAL指令
+    input logic       BranchFailed,             // 分支预测失败时，需要flush两拍
+    input logic       ID_IsAImmeJump,           // ID级的J, JAL指令,需要flush两拍
     input logic       Icache_busy,              // Icache信号 表示Icache是否要暂停流水线 
     input logic       Dcache_busy,              // Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
     input logic       I_IsTLBStall,             // TLB
     input logic       D_IsTLBStall,  
-    input logic       I_IsTLBException,
-    input logic       D_IsTLBException,
-
+//------------------------------------output----------------------------------------------------//
     output logic      PreIFWr,
     output logic      IF_Wr,
     output logic      ID_Wr,
@@ -49,26 +40,17 @@ module WrFlushControl(
     output logic      MEM_Flush,
     output logic      MEM2_Flush,
     output logic      WB_Flush,
+
+    output logic      EXE_DisWr,
     output logic      MEM_DisWr,      //传到MEM级关闭CP0的写使能
     output logic      WB_DisWr,       // 用于停滞流水线
-    
-    output logic      HiLo_Not_Flush, // 只有在出现异常的时候，需要关闭HILO的flush信号
+
     output logic      IcacheFlush,    //给Icache的Flush
     output logic      DcacheFlush     //给Dcache的Flush
-    
-
 );
 
-    logic Exception;
-    // logic BranchFailed;
-    // logic DIVMULTBusy;
-
-    assign Exception = ID_Flush_Exception;            // 出现异常
-    // assign BranchFailed = ID_Flush_BranchSolvement_o;   // 为1代表分支预测失败，会产生flush
-    // assign DIVMULTBusy = EXE_MULTDIVStall;                // 乘除法器状态机的busy信号（stall为1，时busy信号为1）
-    // Icache Flush
     always_comb begin
-        if (Exception == `FlushEnable || I_IsTLBException == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable ) begin
             IcacheFlush = 1'b1;
         end
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
@@ -82,7 +64,7 @@ module WrFlushControl(
     end
     // Dcache Flush
     always_comb begin
-        if (Exception == `FlushEnable || D_IsTLBException == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable ) begin
             DcacheFlush = 1'b1;
         end
         else begin
@@ -91,16 +73,13 @@ module WrFlushControl(
     end
     // PreIFWr
     always_comb begin
-        if (Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             PreIFWr   = 1'b1;
         end 
-        else if (Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY) begin
+        else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY || I_IsTLBStall == 1'b1) begin
             PreIFWr   = 1'b0;
         end
-        else if (EXE_Flush_DataHazard == 1'b1) begin // Icache 的状态影响不到数据冒险的情况
-            PreIFWr = 1'b0;
-        end
-        else if (BranchFailed == `BRANCKFAILED  ) begin // 在D$空闲的情况下，考虑分支跳转失败，J JAL指令 JALR指令需要给出PC写使能
+        else if (BranchFailed == `BRANCKFAILED ) begin // 在D$空闲的情况下，考虑分支跳转失败，J JAL指令 JALR指令需要给出PC写使能
             PreIFWr   = 1'b1;
         end
         else begin
@@ -112,16 +91,36 @@ module WrFlushControl(
             end
         end
     end
+    //IF_Wr
+    always_comb begin
+        if (Flush_Exception == `FlushEnable) begin
+            IF_Wr   = 1'bx;
+        end
+        else if (Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY || I_IsTLBStall == 1'b1) begin
+            IF_Wr   = 1'b0;
+        end
+        else if (BranchFailed == `BRANCKFAILED ) begin // 分支跳转失败, JALR指令需要给出 IF/ID Flush（因此IF/ID写使能不重要）
+            IF_Wr   = 1'b1;
+        end
+        else if (Icache_busy == `CACHEBUSY && ID_IsAImmeJump == 1'b1) begin  // J JAL指令(在ID级跳转的指令) 需要给出IF/IDWR
+            IF_Wr   = 1'b0;
+        end
+        else begin
+             if (DH_IFWr == 1'b0 || DIVMULTBusy == 1'b1) begin  // 数据冒险 & 乘除法
+                IF_Wr = 1'b0;
+            end
+            else begin
+                IF_Wr = 1'b1;
+            end
+        end
+    end
     // ID_Wr
     always_comb begin
-        if (Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             ID_Wr   = 1'bx;
         end
-        else if (Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY) begin
+        else if (Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY || I_IsTLBStall == 1'b1) begin
             ID_Wr   = 1'b0;
-        end 
-        else if (EXE_Flush_DataHazard == 1'b1) begin // Icache 的状态影响不到数据冒险的情况
-            ID_Wr = 1'b0;
         end
         else if (BranchFailed == `BRANCKFAILED ) begin // 分支跳转失败, JALR指令需要给出 IF/ID Flush（因此IF/ID写使能不重要）
             ID_Wr   = 1'b1;
@@ -138,18 +137,14 @@ module WrFlushControl(
             end
         end
     end
-
     // EXE_Wr
     always_comb begin
-        if (Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             EXE_Wr   = 1'bx;
         end 
-        else if ( Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY) begin  //Dcache busy停滞流水线 ， Icache busy 一个flush+继续流动后续流水线
+        else if (Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY) begin  //Dcache busy停滞流水线 ， Icache busy 一个flush+继续流动后续流水线
             EXE_Wr   = 1'b0;
         end
-        // else if (BranchFailed == `BRANCKFAILED) begin
-        //     EXE_Wr   = 1'b1;       // 延迟槽继续流动
-        // end
         else begin
              if (DIVMULTBusy == 1'b1) begin  // 数据冒险 & 乘除法
                 EXE_Wr = 1'b0;
@@ -159,10 +154,9 @@ module WrFlushControl(
             end
         end
     end
-
     // MEM_Wr
     always_comb begin 
-        if (Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             MEM_Wr   = 1'bx;
         end 
         else if ( Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin  //Dcache busy停滞流水线 ， Icache busy 一个flush+继续流动后续流水线
@@ -172,10 +166,21 @@ module WrFlushControl(
             MEM_Wr   = 1'b1;
         end
     end
-
+    //MEM2
+    always_comb begin 
+        if (Flush_Exception == `FlushEnable) begin
+            MEM2_Wr   = 1'bx;
+        end 
+        else if ( Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin  //Dcache busy停滞流水线 ， Icache busy 一个flush+继续流动后续流水线
+            MEM2_Wr   = 1'b0;
+        end
+        else begin
+            MEM2_Wr   = 1'b1;
+        end
+    end
     // WB_Wr
     always_comb begin
-        if (Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             WB_Wr   = 1'b1;  // 异常时MEM_WB写使能始终打开
         end 
         else if ( Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin   //Dcache busy停滞流水线 ， Icache busy 一个flush+继续流动后续流水线
@@ -187,7 +192,7 @@ module WrFlushControl(
     end
     // ID_Flush
     always_comb begin
-        if (ID_Flush_Exception == `FlushEnable ) begin
+        if (Flush_Exception == `FlushEnable ) begin
             ID_Flush = 1'b1;
         end 
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY)begin
@@ -207,7 +212,7 @@ module WrFlushControl(
     // EXE_Flush
     // 对于存在数据冒险的情况，必须等到I & D$不busy的时候，再去考虑Data Hazard 
     always_comb begin
-        if (EXE_Flush_Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             EXE_Flush = 1'b1;
         end 
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
@@ -223,7 +228,7 @@ module WrFlushControl(
 
     // MEM_Flush
     always_comb begin
-        if (MEM_Flush_Exception == `FlushEnable) begin
+        if (Flush_Exception == `FlushEnable) begin
             MEM_Flush = 1'b1;
         end
         else begin
@@ -231,21 +236,12 @@ module WrFlushControl(
         end
     end
 
-    // assign ID_Flush     =  ID_Flush_Exception  | BranchFailed; 
-    // assign EXE_Flush    =  EXE_Flush_Exception | EXE_Flush_DataHazard;  
-    // assign MEM_Flush   =  MEM_Flush_Exception;
-    always_comb begin
-        // if (MEM_Flush_Exception == `FlushEnable) begin
-        //     WB_Flush = 1'b1;
-        // end
-        // else begin
-        WB_Flush = 1'b0;
-        // end
-    end
+    assign WB_Flush = 1'b0;
 
+//-------------------------DisWr信号生成---------------------------------------------------------//
     // Dcache 停滞流水线时 wb级数据不能写入RF
     always_comb begin
-        if (MEM_Flush_Exception == `FlushEnable)begin  // 异常和D$busy同时出现，不需要关闭RF的写使能
+        if (Flush_Exception == `FlushEnable)begin  // 异常和D$busy同时出现，不需要关闭RF的写使能
             WB_DisWr =  1'b0;
         end
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
@@ -256,7 +252,7 @@ module WrFlushControl(
     end
 
     always_comb begin
-        if (MEM_Flush_Exception == `FlushEnable)begin  // 异常和D$busy同时出现，不需要关闭RF的写使能
+        if (Flush_Exception == `FlushEnable)begin  // 异常和D$busy同时出现，不需要关闭RF的写使能
             MEM_DisWr =  1'b0;
         end
         else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
@@ -269,13 +265,15 @@ module WrFlushControl(
     // HILO的flush  如果出现异常 产生flush信号，需要打断状态机
     // 乘除法中的状态机会被打断
     always_comb begin
-        HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
+        if (Flush_Exception == `FlushEnable)begin
+            EXE_DisWr = 1'b0;
+        end
+        else if (Dcache_busy == `CACHEBUSY || Icache_busy == `CACHEBUSY) begin
+            EXE_DisWr = 1'b1;
+        end
+        else begin
+            EXE_DisWr = 1'b1;
+        end
     end
-
-
-        // PreIFWr = (ID_Flush_Exception)? 1: DH_PreIFWr & DIVMULTBusy;    //在load & R型的时候 以及乘除法的时候产生
-        // ID_Wr = DH_IDWr & DIVMULTBusy;    //在load & R型的时候 以及乘除法的时候产生
-        // EXE_Wr = ~EXE_MULTDIVStall;
-        // MEM_Wr = 1;
-        // WB_Wr = 1;
+    
 endmodule

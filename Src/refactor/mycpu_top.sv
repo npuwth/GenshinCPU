@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 16:20:06
+ * @LastEditTime: 2021-07-13 19:25:17
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -64,9 +64,10 @@ module mycpu_top (
     logic                      ID_Flush_Exception;        //来自exception
     logic                      EXE_Flush_Exception;       //来自exception
     logic                      MEM_Flush_Exception;       //来自exception
-    logic                      DH_PCWr;                   //来自DataHazard
-    logic                      DH_IDWr;                   //来自DataHazard
-    logic                      EXE_Flush_DataHazard;      //来自DataHazard
+    // logic                      DH_PCWr;                   //来自DataHazard
+    // logic                      DH_IDWr;                   //来自DataHazard
+    // logic                      EXE_Flush_DataHazard;      //来自DataHazard
+    logic                      DH_Stall;                  //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;
@@ -279,10 +280,11 @@ module mycpu_top (
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
-        .DH_PreIFWr                (DH_PreIFWr),
-        .DH_IFWr                   (DH_IFWr),
-        .DH_IDWr                   (DH_IDWr),
-        .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
+        // .DH_PreIFWr                (DH_PreIFWr),
+        // .DH_IFWr                   (DH_IFWr),
+        // .DH_IDWr                   (DH_IDWr),
+        // .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
+        .DH_Stall                  (DH_Stall)
     );
 
     TOP_EXE U_TOP_EXE ( 
@@ -383,7 +385,7 @@ module mycpu_top (
       .MEM_ExceptType              (MEM_ExceptType ),
       .MEM_IsTLBP                  (MEM_IsTLBP ),
       .MEM_IsTLBW                  (MEM_IsTLBW ),
-      .TLBBuffer_Flush             (TLBBuffer_Flush ),
+      .TLBBuffer_Flush             (MEM_IsTLBW ), //当MEM级是TLBW时清空TLB Buffer
       .CMBus                       (CMBus.MMU ),
       //------------------------------output----------------//
       .Phsy_Iaddr                  (Phsy_Iaddr ),

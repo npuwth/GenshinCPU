@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-06-16 16:07:56
- * @LastEditTime: 2021-07-13 11:14:05
+ * @LastEditTime: 2021-07-13 19:19:55
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,45 +22,23 @@ module DataHazard (
     input logic        MEM_ReadMEM,  // 在MEM级的load指令
     input logic [31:0] EXE_Instr,
     //--------------------output-----------------------//
-    output logic       PreIF_Wr,
-    output logic       IF_Wr,
-    output logic       ID_Wr,
-    output logic       EXE_Flush
+    output logic       DH_Stall      //数据冒险的阻塞
 );
     always_comb begin
         if ( EXE_ReadMEM == 1'b1 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
              (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin
-            PreIF_Wr  = 1'b0;
-            IF_Wr     = 1'b0;
-            ID_Wr     = 1'b0;  // 产生阻塞
-            EXE_Flush = 1'b1;
+            DH_Stall = 1'b1;
         end
         else if (MEM_ReadMEM == 1'b1 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) || 
              (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin
-            PreIF_Wr  = 1'b0;
-            IF_Wr     = 1'b0;
-            ID_Wr     = 1'b0;  // 产生阻塞
-            EXE_Flush = 1'b1;
+            DH_Stall = 1'b1;
         end
-        // else if ( (EXE_Instr[31:21] == 11'b010000_00100) && ID_IsTLBP == 1'b1) begin //为了应对MTC0后面跟TLBP的情况
-        //     ID_Wr=1'b0;  // 产生阻塞
-        //     PreIF_Wr=1'b0;
-        //     EXE_Flush=1'b1;
-        //     EXE_Wr = 1'b1;
-        //     MEM_Flush= 1'b0;
-        // end
         else if ( EXE_Instr[31:21] == 11'b010000_00000 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
              (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin //MFC0后面存在数据依赖的情况
-            PreIF_Wr  = 1'b0;
-            IF_Wr     = 1'b0;
-            ID_Wr     = 1'b0;  // 产生阻塞
-            EXE_Flush = 1'b1;
+            DH_Stall = 1'b1;
         end 
         else begin
-            PreIF_Wr  = 1'b1;
-            IF_Wr     = 1'b1;
-            ID_Wr     = 1'b1;  // 1的时候可以写
-            EXE_Flush = 1'b0;
+            DH_Stall = 1'b0;
         end    
 
     end
