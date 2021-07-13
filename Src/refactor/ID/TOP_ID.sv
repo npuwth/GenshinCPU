@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-12 22:36:33
+ * @LastEditTime: 2021-07-13 11:19:05
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,6 +20,8 @@ module TOP_ID (
     input logic [31:0]       WB_Result,  //写寄存器堆来自WB
     input logic [4:0]        WB_Dst,
     input RegsWrType         WB_RegsWrType,
+    input logic [4:0]        MEM_rt,
+    input logic              MEM_ReadMEM, // MEM级的load信号        
     IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
@@ -41,7 +43,7 @@ module TOP_ID (
     // assign IIBus.ID_PC    = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
 
-    ID_Reg U_ID_Reg ( 
+    ID_Reg U_ID_REG ( 
         .clk                 (clk ),
         .rst                 (resetn ),
         .ID_Flush            (ID_Flush ),
@@ -126,11 +128,16 @@ module TOP_ID (
         .ID_rsrtRead         (ID_rsrtRead),//这个信号在Control里的生成有问题
         .EXE_rt              (IEBus.EXE_rt),
         .EXE_ReadMEM         (IEBus.EXE_LoadType.ReadMem),
+        .MEM_rt              (MEM_rt ),
+        .MEM_ReadMEM         (MEM_ReadMEM ),
         .EXE_Instr           (IEBus.EXE_Instr),
         //-----------------------output-----------------------//
-        .PC_Wr               (DH_PCWr),
-        .ID_Wr               (DH_IDWr),
-        .EXE_Flush           (EXE_Flush_DataHazard)
+        // .PC_Wr               (DH_PCWr),
+        .PreIF_Wr           (PreIF_Wr ),
+        .IF_Wr              (IF_Wr ),
+        .ID_Wr              (DH_IDWr),
+        .EXE_Flush          (EXE_Flush_DataHazard)
     );
 
 endmodule  
+

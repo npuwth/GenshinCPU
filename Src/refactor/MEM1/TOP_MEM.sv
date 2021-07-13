@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-12 12:35:16
+ * @LastEditTime: 2021-07-13 11:54:45
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,6 +30,7 @@ module TOP_MEM (
     CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
+    output logic                 IF_Flush_Exception,
     output logic                 ID_Flush_Exception,
     output logic                 EXE_Flush_Exception,
     output logic                 MEM_Flush_Exception,
@@ -37,12 +38,13 @@ module TOP_MEM (
     output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
     output logic                 MEM_IsTLBW,
-    output logic                 MEM_IsTLBR,
+    // output logic                 MEM_IsTLBR,
     output logic [31:0]          MEM_PC,
     output logic [31:0]          CP0_EPC,
     output ExceptinPipeType      MEM_ExceptType,
     output LoadType              MEM_LoadType,
     output StoreType             MEM_StoreType,
+    output logic [4:0]           MEM_rt,
     output logic [31:0]          Exception_Vector   
 );
 
@@ -51,11 +53,13 @@ module TOP_MEM (
     logic [31:0]                 RFHILO_Bus;
     logic [1:0]                  MEM_RegsReadSel;
     logic [4:0]                  MEM_rd;
+    // logic [4:0]                  MEM_rt;
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
     logic [3:0]                  MEM_DCache_Wen;   
-    logic [31:0]                 MEM_DataToDcache; 
+    logic [31:0]                 MEM_DataToDcache;
+    logic                        MEM_IsTLBR;
     //传给Exception
     logic                        CP0_Status_BEV;
     logic [7:0]                  CP0_Status_IM7_0;
@@ -75,7 +79,7 @@ module TOP_MEM (
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;            // 判断是否是entery high
     assign MEM_PC                   = MM2Bus.MEM_PC;
     assign MEM_LoadType             = MM2Bus.MEM_LoadType;
-
+    // assign MEM_srt                   = ;
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType ;
 
     MEM_Reg U_MEM_Reg ( 
@@ -103,6 +107,7 @@ module TOP_MEM (
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
+        .EXE_rt                  (EMBus.EXE_rt),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
@@ -122,7 +127,8 @@ module TOP_MEM (
         .MEM_IsTLBW              (MEM_IsTLBW),
         .MEM_IsTLBR              (MEM_IsTLBR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
-        .MEM_rd                  (MEM_rd)
+        .MEM_rd                  (MEM_rd),
+        .MEM_rt                  (MEM_rt)
     );
 
     Exception U_Exception(
@@ -137,6 +143,7 @@ module TOP_MEM (
         .CP0_Cause_IP1_0         (CP0_Cause_IP1_0),      
     //------------------------------out--------------------------------------------//
         .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),            
+        .IF_Flush                (IF_Flush_Exception),                
         .ID_Flush                (ID_Flush_Exception),                
         .EXE_Flush               (EXE_Flush_Exception),                       
         .MEM_Flush               (MEM_Flush_Exception),                           

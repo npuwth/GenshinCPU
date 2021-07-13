@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-12 11:18:46
+ * @LastEditTime: 2021-07-13 11:33:48
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,6 +24,7 @@
     input logic [1:0]          CP0_Cause_IP1_0,
 
     output RegsWrType          MEM_RegsWrType_final,  //要向下一级传递的RegsWrType
+    output logic               IF_Flush,              //Flush信号
     output logic               ID_Flush,              //Flush信号
     output logic               EXE_Flush,
     output logic               MEM_Flush,
@@ -47,6 +48,7 @@ always_comb begin
         else begin
             EX_Entry_Sel  = `IsException;
         end
+        IF_Flush               = `FlushEnable;
         ID_Flush               = `FlushEnable;
         EXE_Flush              = `FlushEnable;
         MEM_Flush              = `FlushEnable;
@@ -54,6 +56,7 @@ always_comb begin
     end 
     else begin
         EX_Entry_Sel           = `IsNone;
+        IF_Flush               = `FlushDisable;
         ID_Flush               = `FlushDisable;
         EXE_Flush              = `FlushDisable;
         MEM_Flush              = `FlushDisable;

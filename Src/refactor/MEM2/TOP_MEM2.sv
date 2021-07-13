@@ -3,7 +3,7 @@
 `include "../CPU_Defines.svh"
 `include "../Cache_Defines.svh"
 
-module TOP_MEM (
+module TOP_MEM2 (
     input logic                  clk,
     input logic                  resetn,
     input logic                  MEM2_Flush,
@@ -12,7 +12,7 @@ module TOP_MEM (
     MEM2_WB_Interface            M2WBus,
     CPU_Bus_Interface            cpu_dbus,
     //--------------------output--------------------//
-    output logic [31:0]          MEM2_Result,
+    output logic [31:0]          MEM2_Result,  // 用于旁路数据
     output logic [4:0]           MEM2_Dst,
     output RegsWrType            MEM2_RegsWrType
 );

@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 22:59:05
+ * @LastEditTime: 2021-07-13 11:45:41
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -398,6 +398,7 @@ interface EXE_MEM_Interface();
 	logic                   EXE_IsTLBR;
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
+	logic       [4:0]       EXE_rt;
 
 	RegsWrType              MEM_RegsWrType;
 	logic       [4:0]       MEM_Dst;
@@ -429,6 +430,7 @@ interface EXE_MEM_Interface();
 	output                  EXE_IsTLBR,
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
+	output   			  	EXE_rt,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
 	input                   MEM_Result,          //
@@ -459,6 +461,7 @@ interface EXE_MEM_Interface();
 	input                   EXE_IsTLBR,
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
+	input   			  	EXE_rt,
 	output                  MEM_RegsWrType,
 	output                  MEM_Dst,
 	output                  MEM_Result,

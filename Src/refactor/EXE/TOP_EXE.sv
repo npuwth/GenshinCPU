@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-12 22:52:58
+ * @LastEditTime: 2021-07-13 11:31:00
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,7 +23,7 @@ module TOP_EXE (
     input RegsWrType          MEM2_RegsWrType,
     input logic [4:0]         MEM2_Dst,
     input logic [31:0]        MEM2_Result,
-    input logic               EXE_TrapOp,
+    // input logic               EXE_TrapOp,
     input logic               HiLo_Not_Flush,
     
     ID_EXE_Interface          IEBus,
@@ -60,7 +60,7 @@ module TOP_EXE (
     logic [31:0]              LO_Bus;
     logic                     Overflow_valid;
     logic                     Trap_valid;
-    // logic [2:0]               EXE_TrapOp;
+    logic [2:0]               EXE_TrapOp;  
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
