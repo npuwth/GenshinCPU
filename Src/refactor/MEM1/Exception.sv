@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-13 16:35:52
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 21:18:18
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -25,13 +25,11 @@
     input logic [31:0]         CP0_Ebase,
 
     output logic [4:0]         MEM_ExcType,
-    output logic               IF_Flush,              //Flush信号
-    output logic               ID_Flush,              //Flush信号
-    output logic               EXE_Flush,
-    output logic               MEM_Flush,
-    output logic [2:0]         EX_Entry_Sel,     //用于生成NPC
+
+    output logic [2:0]         EX_Entry_Sel,           //用于生成NPC
     output RegsWrType          MEM_RegsWrType_final,   //最终的异常类型
-    output logic [31:0]        Exception_Vector     // 异常处理的入口地址
+    output logic [31:0]        Exception_Vector,       // 异常处理的入口地址
+    output logic               Flush_Exception
  );
     logic  [31:0]              base;
     logic  [31:0]              offset;
@@ -63,18 +61,12 @@
     always_comb begin
         case(MEM_ExcType)
             `EX_None,`EX_Refetch:begin
-                IF_Flush               = `FlushDisable;
-                ID_Flush               = `FlushDisable;
-                EXE_Flush              = `FlushDisable;
-                MEM_Flush              = `FlushDisable;
-                MEM_RegsWrType_final   = MEM_RegsWrType;    
+                MEM_RegsWrType_final   = MEM_RegsWrType;  
+                Flush_Exception        = `FlushDisable;
             end
             default:begin
-                IF_Flush               = `FlushEnable;
-                ID_Flush               = `FlushEnable;
-                EXE_Flush              = `FlushEnable;
-                MEM_Flush              = `FlushEnable;
                 MEM_RegsWrType_final   = `RegsWrTypeDisable;   
+                Flush_Exception        = `FlushEnable;
             end
         endcase
     end
