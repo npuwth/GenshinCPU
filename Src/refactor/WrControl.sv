@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-13 15:59:48
+ * @LastEditTime: 2021-07-13 19:29:33
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,15 +14,17 @@
 `include "CommonDefines.svh"
 module WrFlushControl(
     // 异常有关的信号
-    input logic       IF_Flush_Exception ,  //异常产生在IF级的flush 
-    input logic       ID_Flush_Exception ,  //异常产生在ID级的flush 
-    input logic       EXE_Flush_Exception,  //异常产生在EXE级的flush
-    input logic       MEM_Flush_Exception, //异常产生在MEM级的flush
+    // input logic       IF_Flush_Exception ,  //异常产生在IF级的flush 
+    // input logic       ID_Flush_Exception ,  //异常产生在ID级的flush 
+    // input logic       EXE_Flush_Exception,  //异常产生在EXE级的flush
+    // input logic       MEM_Flush_Exception, //异常产生在MEM级的flush
+    input logic       Flush_Exception,
     // 数据冒险对应的写使能的关闭
-    input logic       DH_PreIFWr,          // Load & R型的数据冒险   1代表没有出现该异常，流水线可以流动
-    input logic       DH_IFWr,             // Load & R型的数据冒险 
-    input logic       DH_IDWr,             // Load & R型的数据冒险 
-    input logic       EXE_Flush_DataHazard, // 数据冒险产生的flush  
+    // input logic       DH_PreIFWr,          // Load & R型的数据冒险   1代表没有出现该异常，流水线可以流动
+    // input logic       DH_IFWr,             // Load & R型的数据冒险 
+    // input logic       DH_IDWr,             // Load & R型的数据冒险 
+    // input logic       EXE_Flush_DataHazard, // 数据冒险产生的flush  
+    input logic       DH_Stall,                // 数据冒险产生的flush  
     // 乘除法 
     input logic       DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
     input logic [2:0] EX_Entry_Sel,             // 用于生成HILO的flush信号
