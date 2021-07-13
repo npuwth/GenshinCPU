@@ -11,6 +11,7 @@ module ExceptionInEXE(
     input  logic [31:0]       MEM_Instr,
     input  logic [4:0]        MEM_Dst,
     input  logic [31:0]       EXE_ALUOut,    // 地址信息
+    input  StoreType          EXE_StoreType,
 
     output ExceptinPipeType   EXE_ExceptType_final
 );

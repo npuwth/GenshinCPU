@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-12 22:28:32
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 15:37:28
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -147,6 +147,7 @@
 `define EX_WrTLBInvalidinMEM    5'b10000
 `define EX_TLBModified          5'b10001
 `define EX_CpU                  5'b10010  // 浮点指令 协处理器异常
+`define EX_Refetch              5'b10011
 // CP0寄存器的宏定义  （序号定义）
 `define CP0_REG_INDEX       5'd0
 `define CP0_REG_RANDOM      5'd1
@@ -168,7 +169,6 @@
 `define IsRefetch           3'b001
 `define IsEret              3'b010
 `define IsException         3'b011
-`define IsRefill            3'b100
 //***************************  与结构体有关的宏定义  ***************************
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //18个例外
 

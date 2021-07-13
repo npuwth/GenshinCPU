@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 11:31:00
+ * @LastEditTime: 2021-07-13 16:25:19
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,7 +23,6 @@ module TOP_EXE (
     input RegsWrType          MEM2_RegsWrType,
     input logic [4:0]         MEM2_Dst,
     input logic [31:0]        MEM2_Result,
-    // input logic               EXE_TrapOp,
     input logic               HiLo_Not_Flush,
     
     ID_EXE_Interface          IEBus,
@@ -55,7 +54,7 @@ module TOP_EXE (
     logic                     EXE_Finish;        //来自乘除法
     logic [31:0]              EXE_MULTDIVtoHI;
     logic [31:0]              EXE_MULTDIVtoLO;
-    logic [4:0]               EXE_rt;
+    // logic [4:0]               EXE_rt;
     logic [31:0]              HI_Bus;
     logic [31:0]              LO_Bus;
     logic                     Overflow_valid;
@@ -64,7 +63,7 @@ module TOP_EXE (
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
-    assign IEBus.EXE_rt       = EXE_rt;
+    assign IEBus.EXE_rt       = EMBus.EXE_rt;
     assign IEBus.EXE_LoadType = EMBus.EXE_LoadType; 
     assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
 
@@ -104,7 +103,7 @@ module TOP_EXE (
         .EXE_PC               (EMBus.EXE_PC ),
         .EXE_Instr            (EMBus.EXE_Instr ),
         .EXE_rs               (EXE_rs ),
-        .EXE_rt               (EXE_rt ),
+        .EXE_rt               (EMBus.EXE_rt ),
         .EXE_rd               (EMBus.EXE_rd ),
         .EXE_ALUOp            (EXE_ALUOp ),
         .EXE_LoadType         (EMBus.EXE_LoadType ),
@@ -131,7 +130,7 @@ module TOP_EXE (
         .MEM_RegsWrType       (EMBus.MEM_RegsWrType),
         .MEM2_RegsWrType      (MEM2_RegsWrType),
         .EXE_rs               (EXE_rs),
-        .EXE_rt               (EXE_rt),
+        .EXE_rt               (EMBus.EXE_rt),
         .MEM_Dst              (EMBus.MEM_Dst),
         .MEM2_Dst             (MEM2_Dst),
         .WB_Dst               (WB_Dst),
@@ -145,15 +144,15 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA_L1),
         .EXE_OutB             (EXE_BusB_L1),
         //-----------------output----------------------------//
-        .ID_Flush             (ID_Flush_BranchSolvement)   // TODO 分支失败，需要刷流水线
+        .ID_Flush             (ID_Flush_BranchSolvement)   
     );
     
-    MUX3to1 #(32) U_MUXA_L1 (
+    MUX4to1 #(32) U_MUXA_L1 (
         .d0                   (EXE_BusA),
         .d1                   (EMBus.MEM_Result),
         .d2                   (WB_Result),
         .d3                   (MEM2_Result),       
-        .sel3_to_1            (EXE_ForwardA),     
+        .sel4_to_1            (EXE_ForwardA),     
         .y                    (EXE_BusA_L1)
     );//EXE级旁路
     
@@ -190,7 +189,7 @@ module TOP_EXE (
 
     MUX3to1#(5) U_EXEDstSrc(
         .d0                   (EMBus.EXE_rd),
-        .d1                   (EXE_rt),
+        .d1                   (EMBus.EXE_rt),
         .d2                   (5'd31),
         .sel3_to_1            (EXE_DstSel),
         .y                    (EMBus.EXE_Dst)
@@ -206,8 +205,8 @@ module TOP_EXE (
     );
 
      Trap U_TRAP (
-        .EXE_TrapOp           (EXE_TrapOp  ),   // TODO trap控制信号信号的连线
-        .EXE_ResultA          (EXE_BusA_L2 ),   // 旁路之后的数据
+        .EXE_TrapOp           (EXE_TrapOp  ),   // trap控制信号信号的连线
+        .EXE_ResultA          (EXE_BusA_L1 ),   // 旁路之后的数据
         .EXE_ResultB          (EXE_BusB_L2 ),   // 经过立即数选择之后的数据
         .Trap_valid           (Trap_valid  )
   );
@@ -230,7 +229,6 @@ module TOP_EXE (
         .EXE_ALUOut           (EMBus.EXE_ALUOut),
         .EXE_StoreType        (EMBus.EXE_StoreType),
         .EXE_OutB             (EMBus.EXE_OutB),
-        .EXE_LoadType         (EMBus.EXE_LoadType),
         //-----------------output-------------------------//
         .cache_wen            (EMBus.EXE_DCache_Wen),      //给出dcache的写使能信号，
         .DataToDcache         (EMBus.EXE_DataToDcache)           //给出dcache的写数据信号，
@@ -249,7 +247,7 @@ module TOP_EXE (
         .HI                    (HI_Bus),
         .LO                    (LO_Bus)
     );
-
+    // 例外检测 溢出 trap & TLB & refetch & 数据访问地址错误 
     ExceptionInEXE U_ExceptionInEXE (
         .Overflow_valid        (Overflow_valid             ),
         .Trap_valid            (Trap_valid                 ),
@@ -260,6 +258,8 @@ module TOP_EXE (
         .MEM_Instr             (EMBus.MEM_Instr            ),
         .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut           ),
+        .EXE_StoreType         (EMBus.EXE_StoreType        ),
+
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
   );
     

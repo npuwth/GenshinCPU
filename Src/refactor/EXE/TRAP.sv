@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-11 19:32:14
- * @LastEditTime: 2021-07-11 17:32:10
+ * @LastEditTime: 2021-07-13 15:00:04
  * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\TRAP.sv
@@ -17,27 +17,27 @@ module Trap(
 );
     always_comb begin : TrapDetectUnit
         case (EXE_TrapOp)
-            `BRANCH_CODE_TEQ   : begin   // TEQ & TEQI
+            `TRAP_OP_TEQ   : begin   // TEQ & TEQI
                 if ($signed(EXE_ResultA) == $signed(EXE_ResultB))     Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
             end
-            `BRANCH_CODE_TGE   : begin   // TGE & TGEI
+            `TRAP_OP_TGE   : begin   // TGE & TGEI
                 if ($signed(EXE_ResultA) >= $signed(EXE_ResultB))     Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
             end
-            `BRANCH_CODE_TGEIU : begin // TGEI & TGEIU 
+            `TRAP_OP_TGEIU : begin // TGEI & TGEIU 
                 if ($unsigned(EXE_ResultA) >= $unsigned(EXE_ResultB)) Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
             end
-            `BRANCH_CODE_TLT   : begin   // TLT & TLTI
+            `TRAP_OP_TLT   : begin   // TLT & TLTI
                 if ($signed(EXE_ResultA) < $signed(EXE_ResultB))      Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
             end
-            `BRANCH_CODE_TLTIU : begin // TLTIU & TLTU
+            `TRAP_OP_TLTIU : begin // TLTIU & TLTU
                 if ($unsigned(EXE_ResultA) < $unsigned(EXE_ResultB))  Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
             end
-            `BRANCH_CODE_TNE   : begin
+            `TRAP_OP_TNE   : begin
                 if ($signed(EXE_ResultA) != $signed(EXE_ResultB))     Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
             end

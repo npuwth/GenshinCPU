@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-13 13:08:24
+ * @LastEditTime: 2021-07-13 16:47:40
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -180,7 +180,6 @@ typedef struct packed {
 
 typedef struct packed {
 	// logic bd, zero30;
-	// logic [1:0] ce;
 	// logic [3:0] zero27_24;
 	// logic iv, wp;
 	// logic [5:0] zero21_16;
@@ -190,6 +189,7 @@ typedef struct packed {
 	// logic [1:0] zero1_0;
 	logic [31:31] BD;
 	logic [30:30] TI;
+	logic [29:28] CE;
 	logic [15:10] IP7_2;
 	logic [9:8]   IP1_0;
 	logic [6:2]   ExcCode;
@@ -262,23 +262,17 @@ interface IF_ID_Interface();
 	logic       [31:0]      IF_Instr;
 	logic       [31:0]      IF_PC;
 	ExceptinPipeType        IF_ExceptType;
-	logic       [31:0]      ID_Instr;
-	logic       [31:0]      ID_PC;
 
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
 	output                  IF_ExceptType
-	// input                   ID_Instr,
-	// input                   ID_PC
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
 	output                  IF_ExceptType
-	// output                  ID_Instr,
-	// output                  ID_PC
 	);
 	
 endinterface
@@ -378,19 +372,17 @@ endinterface
 interface EXE_MEM_Interface();
 	
 	logic 		[31:0]  	EXE_ALUOut;   		// RF 中读取到的数据A
-  	logic       [31:0]      EXE_Hi;
-	logic       [31:0]      EXE_Lo;
 	logic 		[31:0]  	EXE_OutB;	 		// RF 中读取到的数据B
-  	logic 		[4:0]    	EXE_Dst;  		    // 符号扩展之后�?32位立即数
   	logic 		[31:0] 	    EXE_PC; 		    // PC
 	logic 		[31:0]   	EXE_Instr;
+	BranchType              EXE_BranchType;
 	logic 					EXE_IsAImmeJump;
   	LoadType        		EXE_LoadType;	 	// LoadType信号 
   	StoreType       		EXE_StoreType;  	// StoreType信号
+  	logic 		[4:0]    	EXE_Dst;  		    // 符号扩展之后�?32位立即数
   	RegsWrType      		EXE_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	EXE_WbSel;        	// 选择写回数据
   	ExceptinPipeType 		EXE_ExceptType_final;// 异常类型
-	BranchType              EXE_BranchType;
 	logic       [3:0]       EXE_DCache_Wen;
 	logic       [31:0]      EXE_DataToDcache;
 	logic                   EXE_IsTLBP;
@@ -410,8 +402,6 @@ interface EXE_MEM_Interface();
 	// logic       [31:0]      MEM_DataToDcache;
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
-  	output                  EXE_Hi,
-	output                  EXE_Lo,
 	output      	        EXE_OutB,	 		// RF 中读取到的数据B
   	output      	        EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	output      	        EXE_PC, 		    // PC
@@ -441,8 +431,6 @@ interface EXE_MEM_Interface();
 
 	modport MEM (
 	input      	            EXE_ALUOut,   		// RF 中读取到的数据A
-  	input                   EXE_Hi,
-	input                   EXE_Lo,
 	input      	            EXE_OutB,	 		// RF 中读取到的数据B
   	input      	            EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	input      	            EXE_PC, 		    // PC
@@ -479,56 +467,56 @@ interface MEM_MEM2_Interface();
     logic 		[1:0]  		MEM_WbSel;				
     logic 		[4:0]  		MEM_Dst;
 	logic       [31:0]      MEM_OutB;
-	RegsWrType              MEM_RegsWrType_final;//经过exception solvement的新写使能
-	ExceptinPipeType 		MEM_ExceptType_final;
+	RegsWrType              MEM_RegsWrType;//经过exception solvement的新写使能
+	logic       [4:0]  		MEM_ExcType;
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
 	logic                   MEM_IsInDelaySlot;
 	logic		[31:0] 		MEM2_ALUOut;		
     logic 		[31:0] 		MEM2_PC;	
-	ExceptinPipeType 		MEM2_ExceptType;
+	logic       [4:0]  		MEM2_ExcType;
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAImmeJump;
 	logic                   MEM2_IsInDelaySlot;
 
 	modport MEM(  // top MEM使用
-		output  					MEM_ALUOut,		
-		output  					MEM_PC,	
-		output  					MEM_Instr,		
-		output  					MEM_WbSel,			
-		output  					MEM_Dst,
-		output  					MEM_OutB,
-		output  					MEM_RegsWrType_final,
-		output  					MEM_ExceptType_final,
-		output  					MEM_IsABranch,
-		output  					MEM_IsAImmeJump,
-		output  					MEM_IsInDelaySlot,
-		input                       MEM2_ALUOut,									
-		input                       MEM2_PC,
-		input                       MEM2_ExceptType,
-		input                       MEM2_IsABranch,
-		input                       MEM2_IsAImmeJump,	
-		input                       MEM2_IsInDelaySlot
+		output  			MEM_ALUOut,		
+		output  			MEM_PC,	
+		output  			MEM_Instr,		
+		output  			MEM_WbSel,			
+		output  			MEM_Dst,
+		output  			MEM_OutB,
+		output  			MEM_RegsWrType,
+		output  			MEM_ExcType,
+		output  			MEM_IsABranch,
+		output  			MEM_IsAImmeJump,
+		output  			MEM_IsInDelaySlot,
+		input               MEM2_ALUOut,									
+		input               MEM2_PC,
+		input               MEM2_ExcType,
+		input               MEM2_IsABranch,
+		input               MEM2_IsAImmeJump,	
+		input               MEM2_IsInDelaySlot
 	);
 
 	modport MEM2 (  // top MEM2使用
-		input  					MEM_ALUOut,		
-		input  					MEM_PC,	
-		input  					MEM_Instr,		
-		input  					MEM_WbSel,			
-		input  					MEM_Dst,
-		input  					MEM_OutB,
-		input  					MEM_RegsWrType_final,
-		input  					MEM_ExceptType_final,
-		input  					MEM_IsABranch,
-		input  					MEM_IsAImmeJump,
-		input  					MEM_IsInDelaySlot,
-		output       	 		MEM2_ALUOut,
-		output                  MEM2_PC,
-		output   				MEM2_ExceptType,
-		output   				MEM2_IsABranch,
-		output   				MEM2_IsAImmeJump,
-		output   				MEM2_IsInDelaySlot
+		input  				MEM_ALUOut,		
+		input  				MEM_PC,	
+		input  				MEM_Instr,		
+		input  				MEM_WbSel,			
+		input  				MEM_Dst,
+		input  				MEM_OutB,
+		input  				MEM_RegsWrType,
+		input  				MEM_ExcType,
+		input  				MEM_IsABranch,
+		input  				MEM_IsAImmeJump,
+		input  				MEM_IsInDelaySlot,
+		output       	 	MEM2_ALUOut,
+		output              MEM2_PC,
+		output   			MEM2_ExcType,
+		output   			MEM2_IsABranch,
+		output   			MEM2_IsAImmeJump,
+		output   			MEM2_IsInDelaySlot
 	);
 	
 endinterface
@@ -544,27 +532,29 @@ interface MEM2_WB_Interface();
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType;
+	logic       [31:0]      MEM_DMOut;
   
 	modport MEM2 (  // top MEM2使用
-    	output					MEM2_ALUOut,		
-    	output					MEM2_PC,		
-		output                  MEM2_Instr,	
-    	output					MEM2_WbSel,				
-    	output					MEM2_Dst,
-		output					MEM2_DMOut,
-		output                  MEM2_OutB,
-		output					MEM2_RegsWrType 
+    	output				MEM2_ALUOut,		
+    	output				MEM2_PC,		
+		output              MEM2_Instr,	
+    	output				MEM2_WbSel,				
+    	output				MEM2_Dst,
+		output				MEM2_DMOut,
+		output              MEM2_OutB,
+		output				MEM2_RegsWrType,
+		output 		        MEM_DMOut
 	);
 
 	modport WB ( 
-		input					MEM2_ALUOut,		
-    	input					MEM2_PC,		
-		input                   MEM2_Instr,	
-    	input					MEM2_WbSel,				
-    	input					MEM2_Dst,
-		input					MEM2_DMOut,
-		input                   MEM2_OutB,
-		input					MEM2_RegsWrType 
+		input				MEM2_ALUOut,		
+    	input				MEM2_PC,		
+		input               MEM2_Instr,	
+    	input				MEM2_WbSel,				
+    	input				MEM2_Dst,
+		input				MEM2_DMOut,
+		input               MEM2_OutB,
+		input				MEM2_RegsWrType 
 	);
 
 endinterface
@@ -582,7 +572,7 @@ endinterface
 // 	logic                   WB_IsTLBR;
 
 // 	modport WB ( 
-//     output                  WB_CP0Wr_MTC0,
+//  output                  WB_CP0Wr_MTC0,
 // 	output                  WB_CP0Wr_TLBR,
 // 	output                  WB_Dst,
 // 	output                  WB_Result,

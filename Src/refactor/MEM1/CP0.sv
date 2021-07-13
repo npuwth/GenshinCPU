@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-12 11:43:33
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 16:47:28
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -18,6 +18,7 @@ module cp0_reg (
     input logic             clk,
     input logic             rst,
     input logic  [5:0]      Interrupt,                 //6个外部硬件中断输入 
+    input logic  [2:0]      CP0_Sel,
     // read port        
     input logic  [4:0]      CP0_RdAddr,                //要读取的CP0寄存器的地址
     output logic [31:0]     CP0_RdData,                //读出的CP0某个寄存器的值 
@@ -30,7 +31,7 @@ module cp0_reg (
     input logic             MEM_IsTLBR,                //写EntryHi，EntryLo0，EntryLo1
     CP0_MMU_Interface       CMBus, 
     //exception
-    input ExceptinPipeType  MEM2_ExceptType,
+    input logic  [4:0]      MEM2_ExcType,
     input logic  [31:0]     MEM2_PC,
     input logic             MEM2_IsInDelaySlot,
     input logic  [31:0]     MEM2_ALUOut,
@@ -41,7 +42,8 @@ module cp0_reg (
     output logic [0:0]      CP0_Status_IE,
     output logic [15:10]    CP0_Cause_IP7_2,
     output logic [9:8]      CP0_Cause_IP1_0,
-    output logic [31:0]     CP0_EPC 
+    output logic [31:0]     CP0_EPC,
+    output logic [31:0]     CP0_Ebase
     );
 
     // 4096/4/8 = 128 ; 128 对应了3'd01
@@ -58,7 +60,6 @@ module cp0_reg (
 
     logic                   Count2;
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
-    logic  [4:0]            ExcType;
     logic  [6:0]            Interrupt_final;
     logic  [31:0]           config0_default;
     
@@ -69,6 +70,7 @@ module cp0_reg (
     assign                  CP0_Cause_IP7_2  = CP0.Cause.IP7_2;
     assign                  CP0_Cause_IP1_0  = CP0.Cause.IP1_0;
     assign                  CP0_EPC          = CP0.EPC;
+    assign                  CP0_Ebase        = CP0.Ebase;
     assign                  Interrupt_final  = Interrupt | {CP0_TimerInterrupt , 5'b0};  // 时钟中断号为IP7，在此标记
     assign                  config0_default = {
 	                            1'b1,   // M, config1 not implemented
@@ -78,31 +80,6 @@ module cp0_reg (
 	                            3'd2    // Keseg0段走uncache
                             };
     cp0_regs CP0;
-    
-    
-
-    always_comb begin  //优先级可以查看MIPS文档第三册56页
-        if(MEM2_ExceptType.Interrupt == 1'b1)                   ExcType = `EX_Interrupt;
-        else if(MEM2_ExceptType.WrongAddressinIF == 1'b1)       ExcType = `EX_WrongAddressinIF;
-        else if(MEM2_ExceptType.TLBRefillinIF ==1'b1)           ExcType = `EX_TLBRefillinIF;
-        else if(MEM2_ExceptType.TLBInvalidinIF == 1'b1)         ExcType = `EX_TLBInvalidinIF;
-        else if(MM2_ExceptType.CoprocessorUnusable == 1'b1)  ExcType = `EX_CpU;
-            
-        else if(MEM2_ExceptType.ReservedInstruction == 1'b1)    ExcType = `EX_ReservedInstruction;
-        else if(MEM2_ExceptType.Syscall == 1'b1)                ExcType = `EX_Syscall;
-        else if(MEM2_ExceptType.Break == 1'b1)                  ExcType = `EX_Break;
-        else if(MEM2_ExceptType.Eret == 1'b1)                   ExcType = `EX_Eret;
-        else if(MEM2_ExceptType.Trap == 1'b1)                   ExcType = `EX_Trap;
-        else if(MEM2_ExceptType.Overflow == 1'b1)               ExcType = `EX_Overflow;
-        else if(MEM2_ExceptType.WrWrongAddressinMEM == 1'b1)    ExcType = `EX_WrWrongAddressinMEM;
-        else if(MEM2_ExceptType.RdWrongAddressinMEM == 1'b1)    ExcType = `EX_RdWrongAddressinMEM;
-        else if(MEM2_ExceptType.RdTLBRefillinMEM == 1'b1)       ExcType = `EX_RdTLBRefillinMEM;
-        else if(MEM2_ExceptType.WrTLBRefillinMEM == 1'b1)       ExcType = `EX_WrTLBRefillinMEM;
-        else if(MEM2_ExceptType.RdTLBInvalidinMEM == 1'b1)      ExcType = `EX_RdTLBInvalidinMEM;  
-        else if(MEM2_ExceptType.WrTLBInvalidinMEM == 1'b1)      ExcType = `EX_WrTLBInvalidinMEM;
-        else if(MEM2_ExceptType.TLBModified == 1'b1)            ExcType = `EX_TLBModified;
-        else                                                  ExcType = `EX_None;
-    end
     
 //Index
     always_ff @(posedge clk ) begin
@@ -174,16 +151,16 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.BadVAddr                   <= 'x;
         end
-        else if (ExcType == `EX_WrongAddressinIF) begin
+        else if (MEM2_ExcType == `EX_WrongAddressinIF) begin
             CP0.BadVAddr                   <= MEM2_PC;
         end
-        else if (ExcType == `EX_WrWrongAddressinMEM || ExcType == `EX_RdWrongAddressinMEM) begin
+        else if (MEM2_ExcType == `EX_WrWrongAddressinMEM || MEM2_ExcType == `EX_RdWrongAddressinMEM) begin
             CP0.BadVAddr                   <= MEM2_ALUOut;
         end
-        else if (ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
+        else if (MEM2_ExcType == `EX_TLBRefillinIF || MEM2_ExcType == `EX_TLBInvalidinIF) begin
             CP0.BadVAddr                   <= MEM2_PC;
         end
-        else if (ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM || ExcType == `EX_TLBModified) begin
+        else if (MEM2_ExcType == `EX_RdTLBRefillinMEM || MEM2_ExcType == `EX_RdTLBInvalidinMEM || MEM2_ExcType == `EX_WrTLBRefillinMEM || MEM2_ExcType == `EX_WrTLBInvalidinMEM || MEM2_ExcType == `EX_TLBModified) begin
             CP0.BadVAddr                   <= MEM2_ALUOut;
         end
     end
@@ -228,10 +205,10 @@ module cp0_reg (
             CP0.EntryHi.VPN2               <= MEM_Result[31:13];
             CP0.EntryHi.ASID               <= MEM_Result[7:0];
         end
-        else if(ExcType == `EX_TLBRefillinIF || ExcType == `EX_TLBInvalidinIF) begin
+        else if(MEM2_ExcType == `EX_TLBRefillinIF || MEM2_ExcType == `EX_TLBInvalidinIF) begin
             CP0.EntryHi.VPN2               <= MEM2_PC[31:13];
         end
-        else if(ExcType == `EX_RdTLBRefillinMEM || ExcType == `EX_RdTLBInvalidinMEM || ExcType == `EX_WrTLBRefillinMEM || ExcType == `EX_WrTLBInvalidinMEM || ExcType == `EX_TLBModified) begin
+        else if(MEM2_ExcType == `EX_RdTLBRefillinMEM || MEM2_ExcType == `EX_RdTLBInvalidinMEM || MEM2_ExcType == `EX_WrTLBRefillinMEM || MEM2_ExcType == `EX_WrTLBInvalidinMEM || MEM2_ExcType == `EX_TLBModified) begin
             CP0.EntryHi.VPN2               <= MEM2_ALUOut[31:13];
         end
     end
@@ -273,8 +250,8 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Status.EXL                 <= '0;
         end
-        else if(ExcType != `EX_None) begin
-            if(ExcType == `EX_Eret) begin
+        else if(MEM2_ExcType != `EX_None && MEM2_ExcType != `EX_Refetch) begin
+            if(MEM2_ExcType == `EX_Eret) begin
                 CP0.Status.EXL             <= '0;
             end
             else begin
@@ -291,7 +268,7 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Cause.BD                   <= '0;
         end
-        else if(CP0_Status_EXL == 1'b0 && ExcType!= `EX_None ) begin
+        else if(CP0_Status_EXL == 1'b0 && MEM2_ExcType != `EX_None && MEM2_ExcType != `EX_Refetch) begin
             CP0.Cause.BD                   <= MEM2_IsInDelaySlot;
         end 
     end
@@ -306,6 +283,16 @@ module cp0_reg (
         end
         else if (CP0_TimerInterrupt == 1'b1)begin
             CP0.Cause.TI                  <= 1'b1;
+        end
+    end
+
+    //Cause.CE
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.Cause.CE                  <= '0;
+        end
+        else if(MEM2_ExcType == `EX_CpU) begin
+            CP0.Cause.CE                  <= 2'b01;
         end
     end
 
@@ -333,7 +320,7 @@ module cp0_reg (
             CP0.Cause.ExcCode             <= '0;
         end
         else begin
-            case(ExcType) 
+            case(MEM2_ExcType) 
                 `EX_Interrupt:            CP0.Cause.ExcCode<=5'h00;        
                 `EX_WrongAddressinIF:     CP0.Cause.ExcCode<=5'h04;        
                 `EX_ReservedInstruction:  CP0.Cause.ExcCode<=5'h0a;        
@@ -360,8 +347,8 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.EPC                      <= 'x;
         end 
-        else if(ExcType != `EX_None && CP0_Status_EXL == 1'b0 ) begin
-            if(ExcType == `EX_Eret) begin
+        else if(MEM2_ExcType != `EX_None && MEM2_ExcType != `EX_Refetch && CP0_Status_EXL == 1'b0 ) begin
+            if(MEM2_ExcType == `EX_Eret) begin
                 CP0.EPC                  <= CP0.EPC;
             end
             else begin
@@ -377,7 +364,7 @@ module cp0_reg (
             CP0.EPC                      <= MEM_Result;
         end
     end
-// PRID
+// PRID     Read Only
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
             CP0.Prid                      <= 32'h00004220;
@@ -389,20 +376,19 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Ebase                      <= 32'h8000_0000;
         end 
-       else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE) begin //TODO:sel0,sel1
+        else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE && CP0_Sel == 3'b1) begin //TODO:sel0,sel1
             CP0.Ebase[29:12]               <= MEM_Result[29:12];
         end
     end
 
-// CONFIG0   READ only
+// CONFIG0   
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
-            CP0.Config0                    <=  config0_default;
+            CP0.Config0                    <= config0_default;
         end
-        else if (MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_CONFIG0) begin
-            CP0.Config0[2:0]               <=  MEM_Result[2:0];
+        else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_CONFIG0 && CP0_Sel == 3'b0) begin
+            CP0.Config0[2:0]               <= MEM_Result[2:0];
         end 
-
     end
 // CONFIG1   Read only 
     always_ff @(posedge clk) begin
@@ -428,13 +414,17 @@ module cp0_reg (
             `CP0_REG_ENTRYHI:    CP0_RdData = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};
             `CP0_REG_COMPARE:    CP0_RdData = CP0.Compare;
             `CP0_REG_STATUS:     CP0_RdData = {9'b0 , CP0.Status.BEV , 6'b0 , CP0.Status.IM7_0 , 6'b0 , CP0.Status.EXL , CP0.Status.IE};
-            `CP0_REG_CAUSE:      CP0_RdData = {CP0.Cause.BD , CP0.Cause.TI , 14'b0 , CP0.Cause.IP7_2 , CP0.Cause.IP1_0 , 1'b0 , CP0.Cause.ExcCode , 2'b0};
+            `CP0_REG_CAUSE:      CP0_RdData = {CP0.Cause.BD , CP0.Cause.TI , CP0.Cause.CE , 12'b0 , CP0.Cause.IP7_2 , CP0.Cause.IP1_0 , 1'b0 , CP0.Cause.ExcCode , 2'b0};
             `CP0_REG_EPC:        CP0_RdData = CP0.EPC;
-            `CP0_REG_PRID:       CP0_RdData = CP0.Prid;
-            `CP0_REG_EBASE:      CP0_RdData = CP0.Ebase;
-            `CP0_REG_CONFIG0:    CP0_RdData = CP0.Config0;
-            `CP0_REG_CONFIG1:    CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , 
+            `CP0_REG_PRID:  begin  
+                if(CP0_Sel == 1'b0) CP0_RdData = CP0.Prid;  
+                else                CP0_RdData = CP0.Ebase;
+            end
+            `CP0_REG_CONFIG0: begin
+                if(CP0_Sel == 1'b0) CP0_RdData = CP0.Config0;
+                else                CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , 
                                                CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
+            end
             default:             CP0_RdData = 'x;
         endcase
     end

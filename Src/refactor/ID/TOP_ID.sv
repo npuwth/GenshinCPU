@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 11:19:05
+ * @LastEditTime: 2021-07-13 14:57:03
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,8 +26,9 @@ module TOP_ID (
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
+    output logic             DH_PreIFWr,
+    output logic             DH_IFWr,
     output logic             DH_IDWr,
-    output logic             DH_PCWr,
     output logic             EXE_Flush_DataHazard
 );
     logic [15:0]             ID_Imm16;
@@ -132,10 +133,9 @@ module TOP_ID (
         .MEM_ReadMEM         (MEM_ReadMEM ),
         .EXE_Instr           (IEBus.EXE_Instr),
         //-----------------------output-----------------------//
-        // .PC_Wr               (DH_PCWr),
-        .PreIF_Wr           (PreIF_Wr ),
-        .IF_Wr              (IF_Wr ),
-        .ID_Wr              (DH_IDWr),
+        .PreIF_Wr           (DH_PreIFWr ),
+        .IF_Wr              (DH_IFWr ),
+        .ID_Wr              (DH_IDWr ),
         .EXE_Flush          (EXE_Flush_DataHazard)
     );
 

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-13 11:32:29
+ * @LastEditTime: 2021-07-13 15:17:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,7 +26,7 @@ module MEM2_Reg (
     input logic 		[4:0]  		          MEM_Dst,
     input logic     [31:0]              MEM_OutB,
 	  input RegsWrType                    MEM_RegsWrType_final,//经过exception solvement的新写使能
-	  input ExceptinPipeType 		          MEM_ExceptType_final,
+	  input logic     [4:0]		            MEM_ExcType,
 	  input logic                         MEM_IsABranch,
 	  input logic                         MEM_IsAImmeJump,
 	  input logic                         MEM_IsInDelaySlot,
@@ -36,9 +36,9 @@ module MEM2_Reg (
     output logic    [31:0]              MEM2_Instr,			
     output logic 		[1:0]  		          MEM2_WbSel,				
     output logic 		[4:0]  		          MEM2_Dst,
-    output logic        [31:0]          MEM2_OutB,
+    output logic    [31:0]              MEM2_OutB,
     output RegsWrType                   MEM2_RegsWrType,
-    output ExceptinPipeType 		        MEM2_ExceptType,
+    output logic    [4:0]		            MEM2_ExcType,
     output logic                        MEM2_IsABranch,
     output logic                        MEM2_IsAImmeJump,
     output logic                        MEM2_IsInDelaySlot
@@ -53,7 +53,7 @@ module MEM2_Reg (
       MEM2_Dst                            <= 5'b0;
       MEM2_OutB                           <= 32'b0;
       MEM2_RegsWrType                     <= '0;
-      MEM2_ExceptType                     <= '0;
+      MEM2_ExcType                        <= '0;
       MEM2_IsABranch                      <= 1'b0;
       MEM2_IsAImmeJump                    <= 1'b0;
       MEM2_IsInDelaySlot                  <= 1'b0;
@@ -66,7 +66,7 @@ module MEM2_Reg (
       MEM2_Dst                            <= MEM_Dst;
       MEM2_OutB                           <= MEM_OutB;
       MEM2_RegsWrType                     <= MEM_RegsWrType_final;
-      MEM2_ExceptType                     <= MEM_ExceptType_final;
+      MEM2_ExcType                        <= MEM_ExcType;
       MEM2_IsABranch                      <= MEM_IsABranch;
       MEM2_IsAImmeJump                    <= MEM_IsAImmeJump;
       MEM2_IsInDelaySlot                  <= MEM_IsInDelaySlot;

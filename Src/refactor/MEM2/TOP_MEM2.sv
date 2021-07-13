@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-13 12:15:40
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:37:38
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -37,8 +37,8 @@ module TOP_MEM2 (
     .MEM_WbSel              (MM2Bus.MEM_WbSel ),
     .MEM_Dst                (MM2Bus.MEM_Dst ),
     .MEM_OutB               (MM2Bus.MEM_OutB ),
-    .MEM_RegsWrType_final   (MM2Bus.MEM_RegsWrType_final ),
-    .MEM_ExceptType_final   (MM2Bus.MEM_ExceptType_final ),
+    .MEM_RegsWrType_final   (MM2Bus.MEM_RegsWrType ),
+    .MEM_ExcType            (MM2Bus.MEM_ExcType ),
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
@@ -50,7 +50,7 @@ module TOP_MEM2 (
     .MEM2_Dst               (M2WBus.MEM2_Dst ),
     .MEM2_OutB              (M2WBus.MEM2_OutB ),
     .MEM2_RegsWrType        (M2WBus.MEM2_RegsWrType ),
-    .MEM2_ExceptType        (MM2Bus.MEM2_ExceptType ),
+    .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot)

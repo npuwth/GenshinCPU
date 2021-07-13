@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 14:07:10
+ * @LastEditTime: 2021-07-13 16:20:06
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -60,7 +60,6 @@ module mycpu_top (
     logic [31:0]               WB_PC;                     //来自WB级,用于Debug
     logic [31:0]               WB_Result;                 //来自WB级,用于Debug
     logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
-    RegsWrType                 WB_Final_Wr;               //来自
     logic                      IF_Flush_Exception;        //来自exception
     logic                      ID_Flush_Exception;        //来自exception
     logic                      EXE_Flush_Exception;       //来自exception
@@ -69,7 +68,8 @@ module mycpu_top (
     logic                      DH_IDWr;                   //来自DataHazard
     logic                      EXE_Flush_DataHazard;      //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
-    logic [2:0]                EX_Entry_Sel;         //来自MEM级，表示有异常或异常返回
+    logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
+    logic [31:0]               Exception_Vector;
     logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
     logic                      ID_IsAImmeJump;            //来自ID级，表示是j，jal跳转
     logic [31:0]               CP0_EPC;                   //来自MEM级的EPC
@@ -84,15 +84,27 @@ module mycpu_top (
     logic                      MEM_Flush;                 //来自WRFlushControl
     logic                      WB_Flush;                  //来自WRFlushControl
     //--------------------------------------------------------------------------------------//
-    logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级 
+    logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
     logic                      WB_DisWr;                  //来自WRFlushControl,传至WB级，用于生成WB_Final_Wr
     logic                      HiLo_Not_Flush;            //来自WRFlushControl,传至HILO寄存器
 
     logic [31:0]               EXE_BusA_L1;               //来自EXE，用于MT指令写HiLo，也用于生成jr的npc
-    
-    RegsWrType                 WB_RegsWrType;             //WB级的写使能
 
+    RegsWrType                 MEM2_RegsWrType;           //MEM2级的写使能
+    logic [4:0]                MEM2_Dst;                  //MEM2级目标寄存器（用于旁路）
+    logic [31:0]               MEM2_Result;               //MEM2级旁路的结果（用于旁路）
+
+    RegsWrType                 WB_RegsWrType;             //WB级的写使能
+    RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
+
+    logic [4:0]                MEM_rt;                    //用于ID级检测load类型指令的数据冒险
     BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
+    
+    logic [31:0]               PREIF_PC;                  //传给IF级
+    ExceptinPipeType           PREIF_ExceptType;          //PreIF级的异常信号
+
+    logic [31:0]               ID_PC;                     //来自ID级， 传至IF，用于生成NPC
+    logic [31:0]               ID_Instr;                  //来自ID级， 传至IF，用于生成NPC
     logic [31:0]               EXE_PC;                    //来自EXE级，传至IF，用于生成NPC
     logic [31:0]               EXE_Imm32;                 //来自EXE级，传至IF，用于生成NPC  
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
@@ -111,8 +123,12 @@ module mycpu_top (
     ExceptinPipeType           IF_ExceptType_new;         //用于TLB例外的判断   
     ExceptinPipeType           MEM_ExceptType;            //用于TLB例外的判断    
     ExceptinPipeType           MEM_ExceptType_new;        //用于TLB例外的判断    
-    LoadType                   MEM_LoadType;              //用于TLB例外的判断 
+    LoadType                   MEM_LoadType;              //用于TLB例外的判断 & load指令的数据冒险
     StoreType                  MEM_StoreType;             //用于TLB例外的判断 
+    logic                      I_IsTLBBufferValid;        //表示是否向Cache发请求
+    logic                      D_IsTLBBufferValid;        //表示是否向Cache发请求
+    logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
+    logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -127,42 +143,43 @@ module mycpu_top (
     IF_ID_Interface             IIBus();
     ID_EXE_Interface            IEBus();
     EXE_MEM_Interface           EMBus();
-    MEM_WB_Interface            MWBus();
+    MEM_MEM2_Interface          MM2Bus();
+    MEM2_WB_Interface           M2WBus();
     CP0_MMU_Interface           CMBus();
     //--------------------------------------------------------------------------------------------------------------//
-    WrFlushControl U_WRFlushControl (
-        .ID_Flush_Exception     (ID_Flush_Exception),
-        .EXE_Flush_Exception    (EXE_Flush_Exception),
-        .MEM_Flush_Exception    (MEM_Flush_Exception),
-        .DH_PCWr                (DH_PCWr),
-        .DH_IDWr                (DH_IDWr),
-        .EXE_Flush_DataHazard   (EXE_Flush_DataHazard), // 以上三个是数据冒险的3个控制信号
-        .DIVMULTBusy            (EXE_MULTDIVStall),
-        .EX_Entry_Sel           (EX_Entry_Sel),
-        .BranchFailed           (ID_Flush_BranchSolvement),
-        .ID_IsAImmeJump         (ID_IsAImmeJump),
-        .Icache_data_ok         (cpu_ibus.data_ok),
-        .Icache_busy            (~cpu_ibus.addr_ok),  // addr_ok = 1表示cache空闲
-        .Dcache_data_ok         (cpu_dbus.data_ok),
-        .Dcache_busy            (~cpu_dbus.addr_ok),  // addr_ok = 1表示cache空闲
-        .I_IsTLBException       (I_IsTLBException),
-        .D_IsTLBException       (D_IsTLBException),
-        //-------------------------------- output-----------------------------//
-        .PC_Wr                  (PC_Wr),
-        .ID_Wr                  (ID_Wr),
-        .EXE_Wr                 (EXE_Wr),
-        .MEM_Wr                 (MEM_Wr),
-        .WB_Wr                  (WB_Wr),
-        .ID_Flush               (ID_Flush),
-        .EXE_Flush              (EXE_Flush),
-        .MEM_Flush              (MEM_Flush),
-        .MEM_DisWr              (MEM_DisWr),
-        .WB_Flush               (WB_Flush),
-        .WB_DisWr               (WB_DisWr),
-        .HiLo_Not_Flush         (HiLo_Not_Flush),
-        .IcacheFlush            (cpu_ibus.flush),
-        .DcacheFlush            (cpu_dbus.flush)
-    );
+    // WrFlushControl U_WRFlushControl (
+    //     .ID_Flush_Exception     (ID_Flush_Exception),
+    //     .EXE_Flush_Exception    (EXE_Flush_Exception),
+    //     .MEM_Flush_Exception    (MEM_Flush_Exception),
+    //     .DH_PCWr                (DH_PCWr),
+    //     .DH_IDWr                (DH_IDWr),
+    //     .EXE_Flush_DataHazard   (EXE_Flush_DataHazard), // 以上三个是数据冒险的3个控制信号
+    //     .DIVMULTBusy            (EXE_MULTDIVStall),
+    //     .EX_Entry_Sel           (EX_Entry_Sel),
+    //     .BranchFailed           (ID_Flush_BranchSolvement),
+    //     .ID_IsAImmeJump         (ID_IsAImmeJump),
+    //     .Icache_data_ok         (cpu_ibus.data_ok),
+    //     .Icache_busy            (~cpu_ibus.addr_ok),  // addr_ok = 1表示cache空闲
+    //     .Dcache_data_ok         (cpu_dbus.data_ok),
+    //     .Dcache_busy            (~cpu_dbus.addr_ok),  // addr_ok = 1表示cache空闲
+    //     .I_IsTLBException       (I_IsTLBException),
+    //     .D_IsTLBException       (D_IsTLBException),
+    //     //-------------------------------- output-----------------------------//
+    //     .PC_Wr                  (PC_Wr),
+    //     .ID_Wr                  (ID_Wr),
+    //     .EXE_Wr                 (EXE_Wr),
+    //     .MEM_Wr                 (MEM_Wr),
+    //     .WB_Wr                  (WB_Wr),
+    //     .ID_Flush               (ID_Flush),
+    //     .EXE_Flush              (EXE_Flush),
+    //     .MEM_Flush              (MEM_Flush),
+    //     .MEM_DisWr              (MEM_DisWr),
+    //     .WB_Flush               (WB_Flush),
+    //     .WB_DisWr               (WB_DisWr),
+    //     .HiLo_Not_Flush         (HiLo_Not_Flush),
+    //     .IcacheFlush            (cpu_ibus.flush),
+    //     .DcacheFlush            (cpu_dbus.flush)
+    // );
 
     //------------------------AXI-----------------------//
     AXIInteract AXIInteract_dut (
@@ -219,7 +236,6 @@ module mycpu_top (
         .ID_IsAImmeJump            (ID_IsAImmeJump ),
         .EX_Entry_Sel              (EX_Entry_Sel ),
         .EXE_BranchType            (EXE_BranchType ),
-
         .ID_PC                     (ID_PC ),
         .ID_Instr                  (ID_Instr ),
         .EXE_PC                    (EXE_PC ),
@@ -228,6 +244,7 @@ module mycpu_top (
         .I_IsCached                (I_IsCached ),
         .MEM_PC                    (MEM_PC ),
         .Exception_Vector          (Exception_Vector ),
+        .I_IsTLBBufferValid        (I_IsTLBBufferValid ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         //-------------------------------output-------------------//
@@ -256,13 +273,14 @@ module mycpu_top (
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_RegsWrType             (WB_RegsWrType ),
-        .MEM_rt                    (MEM_rt),   //TODO:连线
-        .MEM_ReadMEM               (MEM_LoadType.MEM_ReadMEM), // load信号用于数据冒险 TODO:连线
+        .MEM_rt                    (MEM_rt),   
+        .MEM_ReadMEM               (MEM_LoadType.ReadMem), // load信号用于数据冒险 TODO:连线
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
-        .DH_PCWr                   (DH_PCWr),
+        .DH_PreIFWr                (DH_PreIFWr),
+        .DH_IFWr                   (DH_IFWr),
         .DH_IDWr                   (DH_IDWr),
         .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
     );
@@ -272,7 +290,8 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .EXE_Flush                 (EXE_Flush ),
         .EXE_Wr                    (EXE_Wr ),
-        .WB_RegsWrType             (WB_RegsWrType ), //???
+        //-------------------------input----------------------------//
+        .WB_RegsWrType             (WB_RegsWrType ), //用于旁路
         .WB_Dst                    (WB_Dst ),
         .WB_Result                 (WB_Result ),
         .MEM2_RegsWrType           (MEM2_RegsWrType ),  
@@ -295,14 +314,15 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .MEM_Flush                 (MEM_Flush ),
         .MEM_Wr                    (MEM_Wr ),
-        // .WB_Wr (WB_Wr)
+
         .Phsy_Daddr                (Phsy_Daddr),
         .D_IsCached                (D_IsCached),
         .Interrupt                 (ext_int),
         .MEM_ExceptType_new        (MEM_ExceptType_new),
         .MEM_DisWr                 (MEM_DisWr),
+        .D_IsTLBBufferValid        (D_IsTLBBufferValid ),
         .EMBus                     (EMBus.MEM ),
-        .MWBus                     (MWBus.MEM ),
+        .MM2Bus                    (MM2Bus.MEM ),
         .CMBus                     (CMBus ),
         .cpu_dbus                  (cpu_dbus),
         .axi_dbus                  (axi_dbus),
@@ -343,7 +363,7 @@ module mycpu_top (
         .WB_Flush                  (WB_Flush ),
         .WB_Wr                     (WB_Wr ),
         .WB_DisWr                  (WB_DisWr ),
-        .MWBus                     (MWBus.WB ),
+        .M2WBus                    (M2WBus.WB ),
         //--------------------------output-------------------------//
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
@@ -352,28 +372,32 @@ module mycpu_top (
         .WB_PC                     (WB_PC )
     );
 
-    TLBMMU U_TLBMMU ( 
-        .clk (aclk ),
-        .rst (aresetn ),
-        .Virt_Iaddr (Virt_Iaddr ),
-        .Virt_Daddr (Virt_Daddr ),
-        .MEM_LoadType (MEM_LoadType),
-        .MEM_StoreType (MEM_StoreType),
-        .IF_ExceptType(IF_ExceptType),
-        .MEM_ExceptType(MEM_ExceptType),
-        .MEM_IsTLBP (MEM_IsTLBP ),
-        .MEM_IsTLBW (MEM_IsTLBW),
-        .CMBus (CMBus.MMU ),
-        //--------------------------output-----------------//
-        .Phsy_Iaddr (Phsy_Iaddr ),
-        .Phsy_Daddr  ( Phsy_Daddr),
-        .I_IsCached  (I_IsCached),
-        .D_IsCached  (D_IsCached),
-        .I_IsTLBException (I_IsTLBException),
-        .D_IsTLBException (D_IsTLBException),
-        .IF_ExceptType_new(IF_ExceptType_new),
-        .MEM_ExceptType_new(MEM_ExceptType_new)
+    TLBMMU U_TLBMMU (
+      .clk                         (aclk ),
+      .rst                         (aresetn ),
+      .Virt_Iaddr                  (Virt_Iaddr ),
+      .Virt_Daddr                  (Virt_Daddr ),
+      .MEM_LoadType                (MEM_LoadType ),
+      .MEM_StoreType               (MEM_StoreType ),
+      .IF_ExceptType               (IF_ExceptType ),
+      .MEM_ExceptType              (MEM_ExceptType ),
+      .MEM_IsTLBP                  (MEM_IsTLBP ),
+      .MEM_IsTLBW                  (MEM_IsTLBW ),
+      .TLBBuffer_Flush             (TLBBuffer_Flush ),
+      .CMBus                       (CMBus.MMU ),
+      //------------------------------output----------------//
+      .Phsy_Iaddr                  (Phsy_Iaddr ),
+      .Phsy_Daddr                  (Phsy_Daddr ),
+      .I_IsCached                  (I_IsCached ),
+      .D_IsCached                  (D_IsCached ),
+      .I_IsTLBBufferValid          (I_IsTLBBufferValid ),
+      .D_IsTLBBufferValid          (D_IsTLBBufferValid ),
+      .I_IsTLBStall                (I_IsTLBStall ),
+      .D_IsTLBStall                (D_IsTLBStall ),
+      .IF_ExceptType_new           (IF_ExceptType_new ),
+      .MEM_ExceptType_new          ( MEM_ExceptType_new)
     );
+
 
 
 endmodule
