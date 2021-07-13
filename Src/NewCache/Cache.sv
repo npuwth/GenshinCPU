@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-13 20:41:42
+ * @LastEditTime: 2021-07-13 21:42:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -152,6 +152,8 @@ we_t tagv_we;// 重填的时候写使能
 we_t wb_we;//store的写使能
 
 line_t [ASSOC_NUM-1:0] data_rdata;
+logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+logic [31:0] data_rdata_final;
 line_t data_wdata;
 we_t  data_we;//数据表的写使能
 
@@ -224,9 +226,17 @@ endgenerate
 
 generate;//判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
-        assign hit[i] = pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag);
+        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag)) ? 1'b1:1'b0;
     end
 endgenerate
+
+generate;//根据offset片选？
+    for (genvar i=0; i<ASSOC_NUM; i++) begin
+        assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
+    end
+endgenerate
+
+assign data_rdata_final = data_rdata_sel[$clog2[hit]];
 assign cache_hit = |hit;
 
 assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
@@ -246,12 +256,10 @@ assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
 
 
-// always_comb begin : store_wdata_block
-//     unique casez(hit)
-        
-
-
-// end
+always_comb begin : store_wdata_block//TODO:救命写不出来
+      store_wdata                                      = data_rdata[$clog2(hit)]; //TODO：这个可综合吗？
+      store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
+end
 
 always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
