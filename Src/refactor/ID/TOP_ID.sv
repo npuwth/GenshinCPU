@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 14:57:03
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 17:15:49
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -99,7 +99,7 @@ module TOP_ID (
     );
 
 //-----------------------------------------------------------------//
-    Control U_Control (
+    Decode U_Decode (
         .ID_Instr            (IEBus.ID_Instr),
         .ID_ExceptType       (ID_ExceptType),
 //--------------------------out-------------------------------------//

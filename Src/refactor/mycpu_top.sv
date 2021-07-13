@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 16:20:06
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 17:14:00
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -383,7 +383,7 @@ module mycpu_top (
       .MEM_ExceptType              (MEM_ExceptType ),
       .MEM_IsTLBP                  (MEM_IsTLBP ),
       .MEM_IsTLBW                  (MEM_IsTLBW ),
-      .TLBBuffer_Flush             (TLBBuffer_Flush ),
+      .TLBBuffer_Flush             (MEM_IsTLBW ), //当MEM级是TLBW时清空TLB Buffer
       .CMBus                       (CMBus.MMU ),
       //------------------------------output----------------//
       .Phsy_Iaddr                  (Phsy_Iaddr ),
