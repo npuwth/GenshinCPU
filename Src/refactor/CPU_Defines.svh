@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 22:59:05
+ * @LastEditTime: 2021-07-13 12:01:29
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -475,23 +475,14 @@ interface MEM_MEM2_Interface();
 	logic       [31:0]      MEM_Instr;		
     logic 		[1:0]  		MEM_WbSel;				
     logic 		[4:0]  		MEM_Dst;
-	LoadType     			MEM_LoadType;
 	logic       [31:0]      MEM_OutB;
 	RegsWrType              MEM_RegsWrType_final;//经过exception solvement的新写使能
 	ExceptinPipeType 		MEM_ExceptType_final;
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
 	logic                   MEM_IsInDelaySlot;
-	logic   	[31:0]		MEM_Result;
-
 	logic		[31:0] 		MEM2_ALUOut;		
     logic 		[31:0] 		MEM2_PC;	
-	// logic       [31:0]      MEM2_Instr;		
-    // logic 		[1:0]  		MEM2_WbSel;				
-    // logic 		[4:0]  		MEM2_Dst;
-	// LoadType     			MEM2_LoadType;
-	// logic       [31:0]      MEM2_OutB;
-	// RegsWrType              MEM2_RegsWrType;
 	ExceptinPipeType 		MEM2_ExceptType;
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAImmeJump;
@@ -503,55 +494,40 @@ interface MEM_MEM2_Interface();
 		output  					MEM_Instr,		
 		output  					MEM_WbSel,			
 		output  					MEM_Dst,
-		output  					MEM_LoadType,
 		output  					MEM_OutB,
 		output  					MEM_RegsWrType_final,
 		output  					MEM_ExceptType_final,
 		output  					MEM_IsABranch,
 		output  					MEM_IsAImmeJump,
 		output  					MEM_IsInDelaySlot,
-
+		input                       MEM2_ALUOut,									
+		input                       MEM2_PC,
+		input                       MEM2_ExceptType,
 		input                       MEM2_IsABranch,
 		input                       MEM2_IsAImmeJump,	
-		input                       MEM2_ExceptType,
-		input                       MEM2_PC,
-		input                       MEM2_IsInDelaySlot,
-		input                       MEM2_ALUOut 											
+		input                       MEM2_IsInDelaySlot
 	);
 
-	modport MEM2 (  // 在top MEM2使用
-		
+	modport MEM2 (  // top MEM2使用
 		input  					MEM_ALUOut,		
 		input  					MEM_PC,	
 		input  					MEM_Instr,		
 		input  					MEM_WbSel,			
 		input  					MEM_Dst,
-		input  					MEM_LoadType,
 		input  					MEM_OutB,
 		input  					MEM_RegsWrType_final,
 		input  					MEM_ExceptType_final,
 		input  					MEM_IsABranch,
 		input  					MEM_IsAImmeJump,
 		input  					MEM_IsInDelaySlot,
-		// input					MEM_Result,
-		
-		// output   				MEM2_ALUOut,		
-		// output   				MEM2_PC,	
-		// output   				MEM2_Instr,		
-		// output   				MEM2_WbSel,			
-		// output   				MEM2_Dst,
-		// output   				MEM2_LoadType,
-		// output   				MEM2_OutB,
-		// output   				MEM2_RegsWrType,
+		output       	 		MEM2_ALUOut,
+		output                  MEM2_PC,
+		output   				MEM2_ExceptType,
 		output   				MEM2_IsABranch,
 		output   				MEM2_IsAImmeJump,
-		output   				MEM2_ExceptType,
-		output                  MEM2_PC,
-		output   				MEM2_IsInDelaySlot,
-		output       	 		MEM2_ALUOut
-		
-	
+		output   				MEM2_IsInDelaySlot
 	);
+	
 endinterface
 
 
@@ -562,30 +538,19 @@ interface MEM2_WB_Interface();
 	logic       [31:0]      MEM2_Instr;		
     logic 		[1:0]  		MEM2_WbSel;				
     logic 		[4:0]  		MEM2_Dst;
-	LoadType     			MEM2_LoadType;
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
-	RegsWrType              MEM2_RegsWrType; //经过exception solvement的新写使能
-	// ExceptinPipeType 		MEM2_ExceptType;
-	
-
-	// logic                   WB_IsABranch;
-	// logic                   WB_IsAImmeJump;
-	// ExceptinPipeType        WB_ExceptType;
-	// logic       [31:0]      WB_PC;
-	// logic                   WB_IsInDelaySlot;
-	// logic       [31:0]      WB_ALUOut;
+	RegsWrType              MEM2_RegsWrType;
   
-	modport MEM2 (  //在MEM2 TOP使用
+	modport MEM2 (  // top MEM2使用
     	output					MEM2_ALUOut,		
     	output					MEM2_PC,		
 		output                  MEM2_Instr,	
     	output					MEM2_WbSel,				
     	output					MEM2_Dst,
-    	// output					MEM2_LoadType,
 		output					MEM2_DMOut,
 		output                  MEM2_OutB,
-		output					MEM2_RegsWrType //经过exception solvement的新写使能
+		output					MEM2_RegsWrType 
 	);
 
 	modport WB ( 
@@ -594,11 +559,9 @@ interface MEM2_WB_Interface();
 		input                   MEM2_Instr,	
     	input					MEM2_WbSel,				
     	input					MEM2_Dst,
-    	// input					MEM2_LoadType,
 		input					MEM2_DMOut,
 		input                   MEM2_OutB,
-		input					MEM2_RegsWrType //经过exception solvement的新写使能
-	
+		input					MEM2_RegsWrType 
 	);
 
 endinterface

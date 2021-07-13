@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-12 12:03:53
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 11:25:21
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -28,8 +28,6 @@ module TOP_WB (
 );
     logic [31:0]                 WB_DMOut;
     logic [31:0]                 WB_ALUOut;
-    LoadType                     WB_LoadType;
-    // logic [31:0]                 WB_DMResult;
     logic [31:0]                 WB_Instr;
     logic [31:0]                 WB_OutB;
     logic [1:0]                  WB_WbSel;
