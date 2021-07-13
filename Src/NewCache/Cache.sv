@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-13 17:36:57
+ * @LastEditTime: 2021-07-13 20:41:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -26,8 +26,8 @@ module Cache #(
 
     //with TLBMMU
     //output VirtualAddressType virt_addr,
-    input  PhysicalAddressType phsy_addr,
-    input  logic isCache,
+    // input  PhysicalAddressType phsy_addr,现在移到cpu_bus中
+    // input  logic isCache,
 
 
     AXI_UNCACHE_Interface axi_ubus,
@@ -37,13 +37,14 @@ module Cache #(
     
     
 );
+//parameters
 localparam int unsigned BYTES_PER_WORD = 4;
 localparam int unsigned INDEX_WIDTH    = $clog2(SET_NUM) ;
 localparam int unsigned OFFSET_WIDTH   = $clog2(LINE_WORD_NUM*BYTES_PER_WORD);//
 localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;
 
 
-
+//--definitions
 typedef struct packed {
     logic valid;
     logic dirty;
@@ -103,10 +104,10 @@ typedef enum logic [3:0] {
 } state_t;
 
 
-    typedef enum logic [2:0] { 
+typedef enum logic [2:0] { 
         WB_IDLE,
         WB_STORE
-    } wb_state_t;
+} wb_state_t;
 
 
 typedef struct packed {
@@ -128,14 +129,14 @@ typedef struct packed {//store指令在读数的时候根据写使能替换
     line_t  wdata;
 } store_t;
 
-
+//
 `ifdef Dcache
 
 `endif
 
-
+//declartion
 store_t store_buffer; //如果有写冲突 直接阻塞
-
+line_t store_wdata;
 state_t state,state_next;
 
 wb_state_t wb_state,wb_state_next;
@@ -155,6 +156,7 @@ line_t data_wdata;
 we_t  data_we;//数据表的写使能
 
 request_t req_buffer;
+logic req_buffer_en;
 
 logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
 logic [ASSOC_NUM-1:0] hit;
@@ -167,6 +169,7 @@ logic busy_cache;// uncache 直到数据返回
 logic busy_uncache;
 logic busy_collision;
 
+//generate
 generate;
     for (genvar i = 0;i<ASSOC_NUM ;i++ ) begin
         simple_port_lutram  #(
@@ -229,6 +232,7 @@ assign cache_hit = |hit;
 assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 
+
 assign busy_cache     = (cache_hit & req_buffer.isCache) ? 1'b0:1'b1;
 assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0 :1'b1;
 assign busy_collision = (store_buffer.index == read_addr)? 1'b1:1'b0;
@@ -236,19 +240,62 @@ assign busy           = busy_cache | busy_uncache | busy_collision;
 
 assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:1'b0;
 
+assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
-assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,req_buffer.tag};
+assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
 
+
+// always_comb begin : store_wdata_block
+//     unique casez(hit)
+        
+
+
+// end
+
+always_comb begin : tagv_we_blockName
+    if (state == REFILL) begin
+        tagv_we = '0;
+        tagv_we[lru[req_buffer.index]] =1'b1;
+    end else begin
+        tagv_we = store_buffer.hit;
+    end
+end
+always_comb begin : data_we_blockName
+    if (state == REFILL) begin
+        data_we = '0;
+        data_we[lru[req_buffer.index]] =1'b1;
+    end else begin
+        data_we = store_buffer.hit;
+    end    
+end
 always_ff @( posedge clk ) begin : store_buffer_blockName
-    if ((resetn == `RstEnable) || cpu_bus.stall) begin
+    if ((resetn == `RstEnable) ||(cpu_bus.stall | busy) ) begin
         store_buffer <= '0;
-    end else if(req_buffer.op & req_buffer.valid) begin//既是写 又是有效的
+    end else if(req_buffer.op & req_buffer.valid & cache_hit) begin//既是写 又是有效的
         store_buffer.hit <= hit;
         store_buffer.index <= req_buffer.index;
-        store_buffer.index <= data_wdata;
+        store_buffer.index <= store_wdata;
     end else begin
         store_buffer <= '0;
+    end
+end
+
+always_ff @(posedge clk) begin : req_buffer_blockName
+    if (resetn == `RstEnable || cpu_bus.flush) begin
+        req_buffer <='0;
+    end else if(req_buffer_en) begin
+        req_buffer.valid    <=  cpu_bus.valid;
+        req_buffer.op       <=  cpu_bus.op;
+        req_buffer.tag      <=  cpu_bus.tag;
+        req_buffer.index    <=  cpu_bus.index;
+        req_buffer.offset   <=  cpu_bus.offset;
+        req_buffer.wstrb    <=  cpu_bus.wstrb;
+        req_buffer.wdata    <=  cpu_bus.wdata;
+        req_buffer.loadType <=  cpu_bus.loadType;
+        req_buffer.isCache  <=  cpu_bus.isCache;
+    end else begin
+        req_buffer <= req_buffer;
     end
 end
 
