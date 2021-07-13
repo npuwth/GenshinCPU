@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 13:06:35
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 15:18:36
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -25,7 +25,6 @@ module TOP_MEM (
     input logic                  MEM_DisWr,
     EXE_MEM_Interface            EMBus,
     MEM_MEM2_Interface           MM2Bus,
-    // MEM_WB_Interface             MWBus,
     CP0_MMU_Interface            CMBus,
     CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
@@ -136,7 +135,8 @@ module TOP_MEM (
         .CP0_Status_EXL          (CP0_Status_EXL ),
         .CP0_Status_IE           (CP0_Status_IE ),
         .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
-        .CP0_Cause_IP1_0         (CP0_Cause_IP1_0),      
+        .CP0_Cause_IP1_0         (CP0_Cause_IP1_0), 
+        .CP0_Ebase               (CP0_Ebase),     
     //------------------------------out--------------------------------------------//
         .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),            
         .IF_Flush                (IF_Flush_Exception),                
@@ -144,7 +144,7 @@ module TOP_MEM (
         .EXE_Flush               (EXE_Flush_Exception),                       
         .MEM_Flush               (MEM_Flush_Exception),                           
         .EX_Entry_Sel            (EX_Entry_Sel),            
-        .MEM_ExceptType_final    (MM2Bus.MEM_ExceptType_final),
+        .MEM_ExcType             (MM2Bus.MEM_ExcType),
         .Exception_Vector        (Exception_Vector)        // TODO:异常入口地址                    
     );
 
@@ -160,7 +160,7 @@ module TOP_MEM (
         .MEM_IsTLBP             (MEM_IsTLBP ),
         .MEM_IsTLBR             (MEM_IsTLBR ),
         .CMBus                  (CMBus.CP0 ),
-        .MEM2_ExceptType        (MM2Bus.MEM2_ExceptType ),
+        .MEM2_ExceptType        (MM2Bus.MEM2_ExcType ),
         .MEM2_PC                (MM2Bus.MEM2_PC ),
         .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot ),
         .MEM2_ALUOut            (MM2Bus.MEM2_ALUOut ),
@@ -179,7 +179,7 @@ module TOP_MEM (
     MUX2to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                      (MM2Bus.MEM_PC + 8),
         .d1                      (MM2Bus.MEM_ALUOut),
-        .d2                      (MM2Bus.MEM_OutB  ),
+        .d2                      (RFHILO_Bus       ),
         .d3                      ('x               ),
         .sel2_to_1               (MM2Bus.MEM_WbSel ),
         .y                       (MEM_Result       )

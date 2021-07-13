@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-07-12 12:39:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 15:36:47
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -18,8 +18,7 @@ module PCSEL #(
     parameter PCSel_Except   = 3'b011,
     parameter PCSel_Branch   = 3'b100,
     parameter PCSel_JR       = 3'b101,
-    parameter PCSel_MEMPC    = 3'b110,
-    parameter PCSel_Refill   = 3'b111  
+    parameter PCSel_MEMPC    = 3'b110
 ) (
     input logic          isBranch,
     input logic          isImmeJump,
@@ -45,15 +44,12 @@ module PCSEL #(
         else if (EX_Entry_Sel == `IsEret) begin
             PCSel = PCSel_EPC;
         end
-        else if (EX_Entry_Sel == `IsException || EX_Entry_Sel == `IsRefill)begin
+        else if (EX_Entry_Sel == `IsException)begin
             PCSel = PCSel_Except;
         end
         else if (EX_Entry_Sel == `IsRefetch) begin
             PCSel = PCSel_MEMPC;
         end
-        // else if (EX_Entry_Sel == `IsRefill) begin
-        //     PCSel = PCSel_Refill;
-        // end
         else begin
             PCSel = 3'bxxx;
         end

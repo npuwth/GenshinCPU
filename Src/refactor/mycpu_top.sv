@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 14:07:10
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 15:46:26
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -113,6 +113,10 @@ module mycpu_top (
     ExceptinPipeType           MEM_ExceptType_new;        //用于TLB例外的判断    
     LoadType                   MEM_LoadType;              //用于TLB例外的判断 
     StoreType                  MEM_StoreType;             //用于TLB例外的判断 
+    logic                      I_IsTLBBufferValid;        //表示是否向Cache发请求
+    logic                      D_IsTLBBufferValid;        //表示是否向Cache发请求
+    logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
+    logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -219,7 +223,6 @@ module mycpu_top (
         .ID_IsAImmeJump            (ID_IsAImmeJump ),
         .EX_Entry_Sel              (EX_Entry_Sel ),
         .EXE_BranchType            (EXE_BranchType ),
-
         .ID_PC                     (ID_PC ),
         .ID_Instr                  (ID_Instr ),
         .EXE_PC                    (EXE_PC ),
@@ -228,6 +231,7 @@ module mycpu_top (
         .I_IsCached                (I_IsCached ),
         .MEM_PC                    (MEM_PC ),
         .Exception_Vector          (Exception_Vector ),
+        .I_IsTLBBufferValid        (I_IsTLBBufferValid ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         //-------------------------------output-------------------//
@@ -272,7 +276,8 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .EXE_Flush                 (EXE_Flush ),
         .EXE_Wr                    (EXE_Wr ),
-        .WB_RegsWrType             (WB_RegsWrType ), //???
+        //-------------------------input----------------------------//
+        .WB_RegsWrType             (WB_RegsWrType ), //用于旁路
         .WB_Dst                    (WB_Dst ),
         .WB_Result                 (WB_Result ),
         .MEM2_RegsWrType           (MEM2_RegsWrType ),  
@@ -295,12 +300,13 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .MEM_Flush                 (MEM_Flush ),
         .MEM_Wr                    (MEM_Wr ),
-        // .WB_Wr (WB_Wr)
+
         .Phsy_Daddr                (Phsy_Daddr),
         .D_IsCached                (D_IsCached),
         .Interrupt                 (ext_int),
         .MEM_ExceptType_new        (MEM_ExceptType_new),
         .MEM_DisWr                 (MEM_DisWr),
+        .D_IsTLBBufferValid        (D_IsTLBBufferValid ),
         .EMBus                     (EMBus.MEM ),
         .MWBus                     (MWBus.MEM ),
         .CMBus                     (CMBus ),
@@ -352,28 +358,32 @@ module mycpu_top (
         .WB_PC                     (WB_PC )
     );
 
-    TLBMMU U_TLBMMU ( 
-        .clk (aclk ),
-        .rst (aresetn ),
-        .Virt_Iaddr (Virt_Iaddr ),
-        .Virt_Daddr (Virt_Daddr ),
-        .MEM_LoadType (MEM_LoadType),
-        .MEM_StoreType (MEM_StoreType),
-        .IF_ExceptType(IF_ExceptType),
-        .MEM_ExceptType(MEM_ExceptType),
-        .MEM_IsTLBP (MEM_IsTLBP ),
-        .MEM_IsTLBW (MEM_IsTLBW),
-        .CMBus (CMBus.MMU ),
-        //--------------------------output-----------------//
-        .Phsy_Iaddr (Phsy_Iaddr ),
-        .Phsy_Daddr  ( Phsy_Daddr),
-        .I_IsCached  (I_IsCached),
-        .D_IsCached  (D_IsCached),
-        .I_IsTLBException (I_IsTLBException),
-        .D_IsTLBException (D_IsTLBException),
-        .IF_ExceptType_new(IF_ExceptType_new),
-        .MEM_ExceptType_new(MEM_ExceptType_new)
+    TLBMMU U_TLBMMU (
+      .clk (aclk ),
+      .rst (aresetn ),
+      .Virt_Iaddr (Virt_Iaddr ),
+      .Virt_Daddr (Virt_Daddr ),
+      .MEM_LoadType (MEM_LoadType ),
+      .MEM_StoreType (MEM_StoreType ),
+      .IF_ExceptType (IF_ExceptType ),
+      .MEM_ExceptType (MEM_ExceptType ),
+      .MEM_IsTLBP (MEM_IsTLBP ),
+      .MEM_IsTLBW (MEM_IsTLBW ),
+      .TLBBuffer_Flush (TLBBuffer_Flush ),
+      .CMBus (CMBus.MMU ),
+      //------------------------------output----------------//
+      .Phsy_Iaddr (Phsy_Iaddr ),
+      .Phsy_Daddr (Phsy_Daddr ),
+      .I_IsCached (I_IsCached ),
+      .D_IsCached (D_IsCached ),
+      .I_IsTLBBufferValid (I_IsTLBBufferValid ),
+      .D_IsTLBBufferValid (D_IsTLBBufferValid ),
+      .I_IsTLBStall (I_IsTLBStall ),
+      .D_IsTLBStall (D_IsTLBStall ),
+      .IF_ExceptType_new (IF_ExceptType_new ),
+      .MEM_ExceptType_new  ( MEM_ExceptType_new)
     );
+
 
 
 endmodule

@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-13 11:33:48
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 15:33:28
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -22,76 +22,100 @@
     input logic                CP0_Status_IE,
     input logic [7:2]          CP0_Cause_IP7_2,
     input logic [1:0]          CP0_Cause_IP1_0,
+    input logic [31:0]         CP0_Ebase,
 
-    output RegsWrType          MEM_RegsWrType_final,  //要向下一级传递的RegsWrType
+    output logic [4:0]         MEM_ExcType,
     output logic               IF_Flush,              //Flush信号
     output logic               ID_Flush,              //Flush信号
     output logic               EXE_Flush,
     output logic               MEM_Flush,
     output logic [2:0]         EX_Entry_Sel,     //用于生成NPC
-    output ExceptinPipeType    MEM_ExceptType_final,   //最终的异常类型
+    output RegsWrType          MEM_RegsWrType_final,   //最终的异常类型
     output logic [31:0]        Exception_Vector     // 异常处理的入口地址
  );
     logic  [31:0]    base;
     logic  [31:0]    offset;
-always_comb begin
-    if (MEM_ExceptType_final != `ExceptionTypeZero )begin
-        if (MEM_ExceptType.Refetch == 1'b1) begin
-            EX_Entry_Sel  = `IsRefetch;
-        end
-        else if(MEM_ExceptType.TLBRefillinIF == 1'b1 || MEM_ExceptType.RdTLBRefillinMEM == 1'b1 || MEM_ExceptType.WrTLBRefillinMEM == 1'b1) begin
-            EX_Entry_Sel  = `IsRefill;
-        end
-        else if (MEM_ExceptType.Eret == 1'b1) begin
-            EX_Entry_Sel  = `IsEret;
-        end
-        else begin
-            EX_Entry_Sel  = `IsException;
-        end
-        IF_Flush               = `FlushEnable;
-        ID_Flush               = `FlushEnable;
-        EXE_Flush              = `FlushEnable;
-        MEM_Flush              = `FlushEnable;
-        MEM_RegsWrType_final   = `RegsWrTypeDisable;
-    end 
-    else begin
-        EX_Entry_Sel           = `IsNone;
-        IF_Flush               = `FlushDisable;
-        ID_Flush               = `FlushDisable;
-        EXE_Flush              = `FlushDisable;
-        MEM_Flush              = `FlushDisable;
-        MEM_RegsWrType_final   = MEM_RegsWrType;                
+
+    always_comb begin  //优先级可以查看MIPS文档第三册56页
+        if     (MEM_ExceptType_final.Interrupt           == 1'b1)    MEM_ExcType = `EX_Interrupt;
+        else if(MEM_ExceptType_final.Refetch             == 1'b1)    MEM_ExcType = `EX_Refetch;           //Refetch的优先级在这比较合适
+        else if(MEM_ExceptType_final.WrongAddressinIF    == 1'b1)    MEM_ExcType = `EX_WrongAddressinIF;
+        else if(MEM_ExceptType_final.TLBRefillinIF       == 1'b1)    MEM_ExcType = `EX_TLBRefillinIF;
+        else if(MEM_ExceptType_final.TLBInvalidinIF      == 1'b1)    MEM_ExcType = `EX_TLBInvalidinIF;
+        else if(MEM_ExceptType_final.CoprocessorUnusable == 1'b1)    MEM_ExcType = `EX_CpU;
+        else if(MEM_ExceptType_final.ReservedInstruction == 1'b1)    MEM_ExcType = `EX_ReservedInstruction;
+        else if(MEM_ExceptType_final.Syscall             == 1'b1)    MEM_ExcType = `EX_Syscall;
+        else if(MEM_ExceptType_final.Break               == 1'b1)    MEM_ExcType = `EX_Break;
+        else if(MEM_ExceptType_final.Eret                == 1'b1)    MEM_ExcType = `EX_Eret;
+        else if(MEM_ExceptType_final.Trap                == 1'b1)    MEM_ExcType = `EX_Trap;
+        else if(MEM_ExceptType_final.Overflow            == 1'b1)    MEM_ExcType = `EX_Overflow;
+        else if(MEM_ExceptType_final.WrWrongAddressinMEM == 1'b1)    MEM_ExcType = `EX_WrWrongAddressinMEM;
+        else if(MEM_ExceptType_final.RdWrongAddressinMEM == 1'b1)    MEM_ExcType = `EX_RdWrongAddressinMEM;
+        else if(MEM_ExceptType_final.RdTLBRefillinMEM    == 1'b1)    MEM_ExcType = `EX_RdTLBRefillinMEM;
+        else if(MEM_ExceptType_final.WrTLBRefillinMEM    == 1'b1)    MEM_ExcType = `EX_WrTLBRefillinMEM;
+        else if(MEM_ExceptType_final.RdTLBInvalidinMEM   == 1'b1)    MEM_ExcType = `EX_RdTLBInvalidinMEM;  
+        else if(MEM_ExceptType_final.WrTLBInvalidinMEM   == 1'b1)    MEM_ExcType = `EX_WrTLBInvalidinMEM;
+        else if(MEM_ExceptType_final.TLBModified         == 1'b1)    MEM_ExcType = `EX_TLBModified;
+        else                                                         MEM_ExcType = `EX_None;              
     end
-end
+
+    always_comb begin
+        case(MEM_ExcType)
+            `EX_None,`EX_Refetch:begin
+                IF_Flush               = `FlushDisable;
+                ID_Flush               = `FlushDisable;
+                EXE_Flush              = `FlushDisable;
+                MEM_Flush              = `FlushDisable;
+                MEM_RegsWrType_final   = MEM_RegsWrType;    
+            end
+            default:begin
+                IF_Flush               = `FlushEnable;
+                ID_Flush               = `FlushEnable;
+                EXE_Flush              = `FlushEnable;
+                MEM_Flush              = `FlushEnable;
+                MEM_RegsWrType_final   = `RegsWrTypeDisable;   
+            end
+        endcase
+    end
+
+    always_comb begin
+        case(MEM_ExcType)
+            `EX_Refetch:  EX_Entry_Sel = `IsRefetch;
+            `EX_Eret:     EX_Entry_Sel = `IsEret;
+            `EX_None:     EX_Entry_Sel = `IsNone;
+            default:      EX_Entry_Sel = `IsException;
+        endcase
+    end
+    
+    // 产生异常处理的新入口 -- offest
+    always_comb begin
+        case(MEM_ExcType)
+            `EX_TLBRefillinIF,`EX_RdTLBRefillinMEM,`EX_WrTLBRefillinMEM:begin
+                if (CP0_Status_EXL == 1'b1) begin
+                    offset = 32'h180;
+                end 
+                else if (CP0_Status_EXL == 1'b0) begin
+                    offset = 32'h0;
+                end 
+            end
+            default:begin
+                offset = 32'h180;
+            end
+        endcase
+    end
+
 // 产生异常处理的新入口 -- base
 always_comb begin : PC_Exception_Ebase_Generate
     if (CP0_Status_BEV == 1'b1) begin
         base = 32'hbfc00200;
     end 
-    else if (CP0_Status_BEV == 1'b0) begin
-        base = CP0.Ebase;
-    end
     else begin
-        base = 'x; // 这种情况应该不会出现 
+        base = CP0_Ebase;
     end
 end
+assign Exception_Vector  = base + offset; //生成异常入口向量
 
-// 产生异常处理的新入口 -- offest
-always_comb begin : PC_Exception_Offset_Generate
-    if ( MEM_ExceptType_final.TLBRefillinIF == 1'b1 || MEM_ExceptType_final.RdTLBRefillinMEM == 1'b1|| MEM_ExceptType_final.WrTLBRefillinMEM == 1'b1 ) begin
-        if (CP0_Status_EXL == 1'b1) begin
-            offset = 32'h180;
-        end 
-        else if (CP0_Status_EXL == 1'b0) begin
-            offset = 32'h0;
-        end 
-    end
-    else begin
-        offset = 32'h180;
-    end
-end
-assign Exception_Vector  = base + offset; 
-
+//-----------------------------------------------生成MEM级的最终异常----------------------------------------------------------//
 assign MEM_ExceptType_final.Interrupt           = ( (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
                                                      (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1)) ?1'b1:1'b0;
 assign MEM_ExceptType_final.WrongAddressinIF    = (MEM_PC[1:0] != 2'b00 )?1'b1:1'b0;

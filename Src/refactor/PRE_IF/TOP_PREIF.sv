@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-12 13:05:17
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 15:36:14
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -24,9 +24,6 @@ module TOP_PREIF (
     input logic                 ID_IsAImmeJump,
     input logic [2:0]           EX_Entry_Sel,
     input BranchType            EXE_BranchType,
-    // input logic                 ID_Wr,
-    // input logic                 ID_Flush_Exception,
-    // input logic                 EXE_Flush_DataHazard,
     input logic [31:0]          ID_PC,
     input logic [31:0]          ID_Instr,
     input logic [31:0]          EXE_PC,
@@ -35,10 +32,9 @@ module TOP_PREIF (
     input logic                 I_IsCached,
     input logic [31:0]          MEM_PC,
     input logic [31:0]          Exception_Vector,
-    // IF_ID_Interface     IIBus,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
-    // output logic [31:0] PREIF_NPC,
+//---------------------------output----------------------------------//
     output logic [31:0]         Virt_Iaddr,          //  输出给TLB
     output logic [31:0]         PREIF_PC,            //  输出到下一级
     output ExceptinPipeType     PREIF_ExceptType     //  输出给TLB 
@@ -75,7 +71,6 @@ module TOP_PREIF (
         .d4             (BranchAddr),
         .d5             (EXE_BusA_L1),         // JR
         .d6             (MEM_PC),
-        // .d7             (Exception_Vector), // 
         .sel8_to_1      (PCSel),
         //---------------output----------------//
         .y              (PREIF_NPC)
