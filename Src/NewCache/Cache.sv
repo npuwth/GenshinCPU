@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-13 14:54:54
+ * @LastEditTime: 2021-07-13 17:36:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -94,6 +94,7 @@ typedef enum logic [3:0] {
 
         REQ,
         WAIT,
+        UNCACHEDONE,
 
         LOOKUP,
         MISSCLEAN,
@@ -135,12 +136,13 @@ typedef struct packed {//store指令在读数的时候根据写使能替换
 
 store_t store_buffer; //如果有写冲突 直接阻塞
 
-
 state_t state,state_next;
 
 wb_state_t wb_state,wb_state_next;
  
+logic [31:0] uncache_rdata;
 
+index_t read_addr,write_addr;//read_addr 既是 查询的地址 又是重填的地址  write_addr是store的地址
 
 tagv_t [ASSOC_NUM-1:0] tagv_rdata;
 tagv_t tagv_wdata;
@@ -161,6 +163,10 @@ logic cache_hit;
 tagv_t pipe_tagv_rdata;
 logic pipe_wr;
 
+logic busy_cache;// uncache 直到数据返回
+logic busy_uncache;
+logic busy_collision;
+
 generate;
     for (genvar i = 0;i<ASSOC_NUM ;i++ ) begin
         simple_port_lutram  #(
@@ -173,7 +179,7 @@ generate;
             //端口信号
             .ena(1'b1),
             .wea(tagv_we[i]),
-            .addra(cpu_bus.index),
+            .addra(read_addr),
             .dina(tagv_wdata),
             .douta(tagv_rdata[i])
         );
@@ -184,15 +190,15 @@ generate;
             .clk(clk),
             .rst(~resetn),
 
-            //重填的写端口
+            //写端口
             .ena(1'b1),
             .wea(data_we[i]),
-            .addra(cpu_bus.index),
+            .addra(write_addr),
             .dina(data_wdata),
 
             //读端口
             .enb(cpu_bus.valid & (~busy)),
-            .addrb(cpu_bus.index),
+            .addrb(read_addr),
             .doutb(data_rdata[i])
         );
     end
@@ -206,7 +212,7 @@ generate;//PLRU
             .clk(clk),
             .resetn(resetn),
             .access(hit),
-            .update(cpu_bus.valid),
+            .update(req_buffer.valid),
 
             .lru(lru[i])
         );
@@ -220,6 +226,39 @@ generate;//判断命中
 endgenerate
 assign cache_hit = |hit;
 
+assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
+assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
+
+assign busy_cache     = (cache_hit & req_buffer.isCache) ? 1'b0:1'b1;
+assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0 :1'b1;
+assign busy_collision = (store_buffer.index == read_addr)? 1'b1:1'b0;
+assign busy           = busy_cache | busy_uncache | busy_collision;
+
+assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:1'b0;
+
+
+assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
+assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,req_buffer.tag};
+
+always_ff @( posedge clk ) begin : store_buffer_blockName
+    if ((resetn == `RstEnable) || cpu_bus.stall) begin
+        store_buffer <= '0;
+    end else if(req_buffer.op & req_buffer.valid) begin//既是写 又是有效的
+        store_buffer.hit <= hit;
+        store_buffer.index <= req_buffer.index;
+        store_buffer.index <= data_wdata;
+    end else begin
+        store_buffer <= '0;
+    end
+end
+
+always_ff @( posedge clk ) begin : uncache_rdata_blockName//更新uncache读出来的值
+    if (axi_ubus.ret_valid) begin
+        uncache_rdata <= axi_ubus.ret_data;
+    end else begin
+        uncache_rdata <= uncache_rdata;
+    end
+end
 
 always_ff @( posedge clk ) begin : pipe_tagv_rdata_blockName
     if (pipe_wr) begin
@@ -309,25 +348,30 @@ always_comb begin : state_next_blockname
         WAIT:begin
             if (req_buffer.op == 1'b0) begin//uncache读
                 if (axi_ubus.ret_valid) begin
-                    state_next = LOOKUP;
+                    state_next = UNCACHEDONE;
                 end else begin
                     state_next = WAIT;
                 end
             end else begin//uncache写
                 if (axi_ubus.wr_valid) begin
-                    state_next = LOOKUP;
+                    state_next = UNCACHEDONE;
                 end else begin
                     state_next = WAIT;
                 end
             end
         end
+        UNCACHEDONE:begin
+            if (cpu_bus.stall) begin
+                state_next = UNCACHEDONE;
+            end else begin
+                state_next = LOOKUP;
+            end
+             
+        end
         default: begin
             state =LOOKUP;
         end
     endcase
-
-
-
 end
 
 
