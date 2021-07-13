@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 16:36:42
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 21:20:05
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -30,10 +30,8 @@ module TOP_MEM (
     CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
-    output logic                 IF_Flush_Exception,
-    output logic                 ID_Flush_Exception,
-    output logic                 EXE_Flush_Exception,
-    output logic                 MEM_Flush_Exception,
+
+    output logic                 Flush_Exception,
     output logic [2:0]           EX_Entry_Sel,
     output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
@@ -140,14 +138,11 @@ module TOP_MEM (
         .CP0_Cause_IP1_0         (CP0_Cause_IP1_0), 
         .CP0_Ebase               (CP0_Ebase),     
     //------------------------------out--------------------------------------------//
-        .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),            
-        .IF_Flush                (IF_Flush_Exception),                
-        .ID_Flush                (ID_Flush_Exception),                
-        .EXE_Flush               (EXE_Flush_Exception),                       
-        .MEM_Flush               (MEM_Flush_Exception),                           
+        .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),             
+        .Flush_Exception         (Flush_Exception),                         
         .EX_Entry_Sel            (EX_Entry_Sel),            
         .MEM_ExcType             (MM2Bus.MEM_ExcType),
-        .Exception_Vector        (Exception_Vector)        // TODO:异常入口地址                    
+        .Exception_Vector        (Exception_Vector)                          
     );
 
     cp0_reg U_CP0 (
