@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-11 15:37:44
+ * @LastEditTime: 2021-07-12 22:28:32
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -75,18 +75,18 @@
 
 //**************************for the trap slove unit*****************************
 // 对于trap指令的立即数，都做有符号位的扩展
-`define BRANCH_CODE_TEQ     3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
-`define BRANCH_CODE_TEQI    3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
-`define BRANCH_CODE_TGE     3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
-`define BRANCH_CODE_TGEI    3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
-`define BRANCH_CODE_TGEIU   3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常
-`define BRANCH_CODE_TGEU    3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常
-`define BRANCH_CODE_TLT     3'b011 // 按照 有符号数 比较 ; 小于        即发生异常
-`define BRANCH_CODE_TLTI    3'b011 // 按照 有符号数 比较 ; 小于        即发生异常
-`define BRANCH_CODE_TLTIU   3'b100 // 按照 无符号数 比较 ; 小于        即发生异常
-`define BRANCH_CODE_TLTU    3'b100 // 按照 无符号数 比较 ; 小于        即发生异常
-`define BRANCH_CODE_TNE     3'b101 // 按照 有符号数 比较 ; 不等于      即发生异常
-`define BRANCH_CODE_TNEI    3'b101 // 按照 有符号数 比较 ; 不等于      即发生异常
+`define TRAP_OP_TEQ     3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
+`define TRAP_OP_TEQI    3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
+`define TRAP_OP_TGE     3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
+`define TRAP_OP_TGEI    3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
+`define TRAP_OP_TGEIU   3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常
+`define TRAP_OP_TGEU    3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常
+`define TRAP_OP_TLT     3'b011 // 按照 有符号数 比较 ; 小于        即发生异常
+`define TRAP_OP_TLTI    3'b011 // 按照 有符号数 比较 ; 小于        即发生异常
+`define TRAP_OP_TLTIU   3'b100 // 按照 无符号数 比较 ; 小于        即发生异常
+`define TRAP_OP_TLTU    3'b100 // 按照 无符号数 比较 ; 小于        即发生异常
+`define TRAP_OP_TNE     3'b101 // 按照 有符号数 比较 ; 不等于      即发生异常
+`define TRAP_OP_TNEI    3'b101 // 按照 有符号数 比较 ; 不等于      即发生异常
 
 //****************************有关译码的宏定义***************************
 
@@ -268,7 +268,7 @@
 `define EXE_SC              6'b111000            //sc指令码
 
 //异常相关指令
-//不包含立即数的自陷指                令(指令码为SPECIAL类，根据功能码区分)
+//不包含立即数的自陷指令(指令码为SPECIAL类，根据功能码区分)
 `define EXE_TEQ             6'b110100
 `define EXE_TGE             6'b110000
 `define EXE_TGEU            6'b110001

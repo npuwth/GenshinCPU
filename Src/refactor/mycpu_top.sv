@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-11 19:17:00
+ * @LastEditTime: 2021-07-13 14:07:10
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -61,6 +61,7 @@ module mycpu_top (
     logic [31:0]               WB_Result;                 //来自WB级,用于Debug
     logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
     RegsWrType                 WB_Final_Wr;               //来自
+    logic                      IF_Flush_Exception;        //来自exception
     logic                      ID_Flush_Exception;        //来自exception
     logic                      EXE_Flush_Exception;       //来自exception
     logic                      MEM_Flush_Exception;       //来自exception
@@ -207,116 +208,148 @@ module mycpu_top (
         .m_axi_bvalid           (bvalid ),
         .m_axi_bready           (bready)
     );
+    
+    TOP_PREIF U_TOP_PREIF ( 
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .PREIF_Wr                  (PREIF_Wr ),
+        .MEM_CP0Epc                (CP0_EPC ),
+        .EXE_BusA_L1               (EXE_BusA_L1 ),
+        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
+        .ID_IsAImmeJump            (ID_IsAImmeJump ),
+        .EX_Entry_Sel              (EX_Entry_Sel ),
+        .EXE_BranchType            (EXE_BranchType ),
 
-    TOP_IF U_TOP_IF ( 
-        .clk (aclk ),
-        .resetn (aresetn ),
-        .PC_Wr (PC_Wr ),
-        .MEM_CP0Epc (CP0_EPC ),
-        .EXE_BusA_L1 (EXE_BusA_L1 ),
-        .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
-        .ID_IsAImmeJump (ID_IsAImmeJump ),
-        .EX_Entry_Sel (EX_Entry_Sel ),
-        .EXE_BranchType (EXE_BranchType ),
-        .ID_Wr (ID_Wr ),
-        .ID_Flush_Exception (ID_Flush_Exception ),
-        .EXE_Flush_DataHazard (EXE_Flush_DataHazard ),
-        .EXE_PC (EXE_PC ),
-        .EXE_Imm32 (EXE_Imm32 ),
-        .Phsy_Iaddr(Phsy_Iaddr),
-        .I_IsCached(I_IsCached),
-        .MEM_PC (MEM_PC),
-        .IF_ExceptType_new(IF_ExceptType_new),
-        //--------------------output-----------------//
-        .IIBus  ( IIBus.IF),
-        .cpu_ibus (cpu_ibus),
-        .axi_ibus (axi_ibus),
-        .Virt_Iaddr(Virt_Iaddr),
-        .IF_ExceptType(IF_ExceptType)
+        .ID_PC                     (ID_PC ),
+        .ID_Instr                  (ID_Instr ),
+        .EXE_PC                    (EXE_PC ),
+        .EXE_Imm32                 (EXE_Imm32 ),
+        .Phsy_Iaddr                (Phsy_Iaddr ),
+        .I_IsCached                (I_IsCached ),
+        .MEM_PC                    (MEM_PC ),
+        .Exception_Vector          (Exception_Vector ),
+        .cpu_ibus                  (cpu_ibus ),
+        .axi_ibus                  (axi_ibus ),
+        //-------------------------------output-------------------//
+        .Virt_Iaddr                (Virt_Iaddr ),
+        .PREIF_PC                  (PREIF_PC ),
+        .PREIF_ExceptType          (PREIF_ExceptType) //TODO:传递给TLB
+    );
+
+    TOP_IF U_TOP_IF (
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .IF_Wr                     (IF_Wr ),
+        .IF_Flush                  (IF_Flush ),
+        .PREIF_PC                  (PREIF_PC ),
+        .PREIF_ExceptType          (PREIF_ExceptType ),
+        //-------------------------------output-------------------//
+        .IIBus                     (IIBus.IF ),
+        .cpu_ibus                  (cpu_ibus)
     );
 
     TOP_ID U_TOP_ID ( 
-        .clk (aclk ),
-        .resetn (aresetn ),
-        .ID_Flush (ID_Flush ),
-        .ID_Wr (ID_Wr ),
-        .WB_Result (WB_Result ),
-        .WB_Dst (WB_Dst ),
-        .WB_RegsWrType (WB_RegsWrType ),
-        .IIBus (IIBus.ID ),
-        .IEBus (IEBus.ID ),
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .ID_Flush                  (ID_Flush ),
+        .ID_Wr                     (ID_Wr ),
+        .WB_Result                 (WB_Result ),
+        .WB_Dst                    (WB_Dst ),
+        .WB_RegsWrType             (WB_RegsWrType ),
+        .MEM_rt                    (MEM_rt),   //TODO:连线
+        .MEM_ReadMEM               (MEM_LoadType.MEM_ReadMEM), // load信号用于数据冒险 TODO:连线
+        .IIBus                     (IIBus.ID ),
+        .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
-        .ID_IsAImmeJump (ID_IsAImmeJump),
-        .DH_PCWr(DH_PCWr),
-        .DH_IDWr(DH_IDWr),
-        .EXE_Flush_DataHazard(EXE_Flush_DataHazard)
+        .ID_IsAImmeJump            (ID_IsAImmeJump),
+        .DH_PCWr                   (DH_PCWr),
+        .DH_IDWr                   (DH_IDWr),
+        .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
     );
 
     TOP_EXE U_TOP_EXE ( 
-        .clk (aclk ),
-        .resetn (aresetn ),
-        .EXE_Flush (EXE_Flush ),
-        .EXE_Wr (EXE_Wr ),
-        .WB_RegsWrType (WB_RegsWrType ), //???
-        .WB_Dst (WB_Dst ),
-        .WB_Result (WB_Result ),
-        .HiLo_Not_Flush (HiLo_Not_Flush ),
-        .IEBus (IEBus.EXE ),
-        .EMBus (EMBus.EXE ),
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .EXE_Flush                 (EXE_Flush ),
+        .EXE_Wr                    (EXE_Wr ),
+        .WB_RegsWrType             (WB_RegsWrType ), //???
+        .WB_Dst                    (WB_Dst ),
+        .WB_Result                 (WB_Result ),
+        .MEM2_RegsWrType           (MEM2_RegsWrType ),  
+        .MEM2_Dst                  (MEM2_Dst ),               
+        .MEM2_Result               (MEM2_Result ),      
+        .HiLo_Not_Flush            (HiLo_Not_Flush ),
+        .IEBus                     (IEBus.EXE ),
+        .EMBus                     (EMBus.EXE ),
         //--------------------------output-------------------------//
-        .ID_Flush_BranchSolvement (ID_Flush_BranchSolvement ),
-        .EXE_MULTDIVStall  (EXE_MULTDIVStall),
-        .EXE_BusA_L1 (EXE_BusA_L1),
-        .EXE_BranchType (EXE_BranchType),
-        .EXE_PC (EXE_PC),
-        .EXE_Imm32 (EXE_Imm32)
+        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
+        .EXE_MULTDIVStall          (EXE_MULTDIVStall),
+        .EXE_BusA_L1               (EXE_BusA_L1),
+        .EXE_BranchType            (EXE_BranchType),
+        .EXE_PC                    (EXE_PC),
+        .EXE_Imm32                 (EXE_Imm32)
     );
 
     TOP_MEM U_TOP_MEM ( 
-        .clk (aclk ),
-        .resetn (aresetn ),
-        .MEM_Flush (MEM_Flush ),
-        .MEM_Wr (MEM_Wr ),
-        .WB_Wr (WB_Wr),
-        .Phsy_Daddr(Phsy_Daddr),
-        .D_IsCached(D_IsCached),
-        .Interrupt(ext_int),
-        .MEM_ExceptType_new(MEM_ExceptType_new),
-        .MEM_DisWr(MEM_DisWr),
-        .EMBus (EMBus.MEM ),
-        .MWBus (MWBus.MEM ),
-        .CMBus (CMBus ),
-        .cpu_dbus (cpu_dbus),
-        .axi_dbus (axi_dbus),
-        .axi_ubus (axi_ubus),
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .MEM_Flush                 (MEM_Flush ),
+        .MEM_Wr                    (MEM_Wr ),
+        // .WB_Wr (WB_Wr)
+        .Phsy_Daddr                (Phsy_Daddr),
+        .D_IsCached                (D_IsCached),
+        .Interrupt                 (ext_int),
+        .MEM_ExceptType_new        (MEM_ExceptType_new),
+        .MEM_DisWr                 (MEM_DisWr),
+        .EMBus                     (EMBus.MEM ),
+        .MWBus                     (MWBus.MEM ),
+        .CMBus                     (CMBus ),
+        .cpu_dbus                  (cpu_dbus),
+        .axi_dbus                  (axi_dbus),
+        .axi_ubus                  (axi_ubus),
         //--------------------------output-------------------------//
-        .ID_Flush_Exception (ID_Flush_Exception ),
-        .EXE_Flush_Exception (EXE_Flush_Exception ),
-        .MEM_Flush_Exception (MEM_Flush_Exception ),
-        .EX_Entry_Sel (EX_Entry_Sel ),
-        .Virt_Daddr(Virt_Daddr),
-        .MEM_IsTLBP(MEM_IsTLBP),
-        .MEM_IsTLBW(MEM_IsTLBW),
-        .MEM_PC(MEM_PC),
-        .CP0_EPC(CP0_EPC),
-        .MEM_ExceptType(MEM_ExceptType),
-        .MEM_LoadType (MEM_LoadType),
-        .MEM_StoreType (MEM_StoreType)
+        .IF_Flush_Exception        (IF_Flush_Exception ), // TODO 连线
+        .ID_Flush_Exception        (ID_Flush_Exception ),
+        .EXE_Flush_Exception       (EXE_Flush_Exception ),
+        .MEM_Flush_Exception       (MEM_Flush_Exception ),
+        .EX_Entry_Sel              (EX_Entry_Sel ),
+        .Virt_Daddr                (Virt_Daddr),
+        .MEM_IsTLBP                (MEM_IsTLBP),
+        .MEM_IsTLBW                (MEM_IsTLBW),
+        .MEM_PC                    (MEM_PC),
+        .CP0_EPC                   (CP0_EPC),
+        .MEM_ExceptType            (MEM_ExceptType),
+        .MEM_LoadType              (MEM_LoadType),
+        .MEM_rt                    (MEM_rt),
+        .MEM_StoreType             (MEM_StoreType)
     );
-    
+    TOP_MEM2 U_TOP_MEM2 (
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .MEM2_Flush                (MEM2_Flush ),
+        .MEM2_Wr                   (MEM2_Wr ),
+        .MM2Bus                    (MM2Bus.MEM2 ),
+        .M2WBus                    (M2WBus.MEM2 ),
+        .cpu_dbus                  (cpu_dbus ),
+        .MEM2_Result               (MEM2_Result ),
+        .MEM2_Dst                  (MEM2_Dst ),
+        .MEM2_RegsWrType           (MEM2_RegsWrType)
+    );
+
+
     TOP_WB U_TOP_WB ( 
-        .clk (aclk ),
-        .resetn (aresetn ),
-        .WB_Flush (WB_Flush ),
-        .WB_Wr (WB_Wr ),
-        .WB_DisWr (WB_DisWr ),
-        .MWBus (MWBus.WB ),
+        .clk                       (aclk ),
+        .resetn                    (aresetn ),
+        .WB_Flush                  (WB_Flush ),
+        .WB_Wr                     (WB_Wr ),
+        .WB_DisWr                  (WB_DisWr ),
+        .MWBus                     (MWBus.WB ),
         //--------------------------output-------------------------//
-        .WB_Result (WB_Result ),
-        .WB_Dst (WB_Dst ),
-        .WB_Final_Wr (WB_Final_Wr ),
-        .WB_RegsWrType (WB_RegsWrType),
-        .WB_PC(WB_PC )
+        .WB_Result                 (WB_Result ),
+        .WB_Dst                    (WB_Dst ),
+        .WB_Final_Wr               (WB_Final_Wr ),
+        .WB_RegsWrType             (WB_RegsWrType),
+        .WB_PC                     (WB_PC )
     );
 
     TLBMMU U_TLBMMU ( 

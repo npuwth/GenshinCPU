@@ -1,8 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 03:21:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 13:08:24
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -70,6 +69,7 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	OP_SLT, OP_SLTU,OP_SLTI,OP_SLTIU,
 	/* trap */
 	OP_TGE, OP_TGEU, OP_TLT, OP_TLTU, OP_TEQ, OP_TNE,
+	OP_TGEI, OP_TGEIU, OP_TLTI, OP_TLTIU, OP_TEQI, OP_TNEI,
 	/* count bits */
 	OP_CLZ, OP_CLO,
 	/* branch */
@@ -172,9 +172,10 @@ typedef struct packed {
 	// logic [7:0] im;
 	// logic kx, sx, ux, um;
 	// logic r0, erl, exl, ie;
-	logic  [7:0] IM7_0;
-	logic  [1:1] EXL;
-	logic  [0:0] IE;
+	logic  [22:22]  BEV;
+	logic  [7:0]    IM7_0;
+	logic  [1:1]    EXL;
+	logic  [0:0]    IE;
 } CP0_Status;
 
 typedef struct packed {
@@ -235,7 +236,7 @@ typedef struct packed {
 	logic [5:3]     C1;
 	logic [2:2]     D1;
 	logic [1:1]     V1;
-	logic           IsTLBException;
+	logic           IsInTLB;
 } TLB_Buffer;
 
 typedef struct packed {  //一个TLB项
@@ -254,6 +255,8 @@ typedef struct packed {  //一个TLB项
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
 //-------------------------------------------------------------------------------------------------//
+
+
 interface IF_ID_Interface();
 
 	logic       [31:0]      IF_Instr;
@@ -265,17 +268,17 @@ interface IF_ID_Interface();
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
-	output                  IF_ExceptType,
-	input                   ID_Instr,
-	input                   ID_PC
+	output                  IF_ExceptType
+	// input                   ID_Instr,
+	// input                   ID_PC
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
-	output                  IF_ExceptType,
-	output                  ID_Instr,
-	output                  ID_PC
+	output                  IF_ExceptType
+	// output                  ID_Instr,
+	// output                  ID_PC
 	);
 	
 endinterface
@@ -296,6 +299,7 @@ interface ID_EXE_Interface();
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  		// StoreType信号
+	logic       [2:0]	    ID_TrapOp;
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	ID_WbSel;        	// 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器使能
@@ -322,6 +326,7 @@ interface ID_EXE_Interface();
 	output	                ID_ALUOp,	 		// ALU操作符
   	output	                ID_LoadType,	 	// LoadType信号 
   	output	                ID_StoreType,  	    // StoreType信号
+	output   			    ID_TrapOp,          // 自陷异常
   	output	                ID_RegsWrType,		// 寄存器写信号打包
   	output	                ID_WbSel,        	// 选择写回数据
   	output	                ID_DstSel,   		// 选择目标寄存器使能
@@ -351,6 +356,7 @@ interface ID_EXE_Interface();
 	input	                ID_ALUOp,	 		// ALU操作符
   	input	                ID_LoadType,	 	// LoadType信号 
   	input	                ID_StoreType,  		// StoreType信号
+	input   			    ID_TrapOp,          // 自陷异常
   	input	                ID_RegsWrType,		// 寄存器写信号打包
   	input	                ID_WbSel,        	// 选择写回数据
   	input	                ID_DstSel,   		// 选择目标寄存器使能
@@ -392,6 +398,7 @@ interface EXE_MEM_Interface();
 	logic                   EXE_IsTLBR;
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
+	logic       [4:0]       EXE_rt;
 
 	RegsWrType              MEM_RegsWrType;
 	logic       [4:0]       MEM_Dst;
@@ -423,6 +430,7 @@ interface EXE_MEM_Interface();
 	output                  EXE_IsTLBR,
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
+	output   			  	EXE_rt,
 	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
 	input                   MEM_Dst,
 	input                   MEM_Result,          //
@@ -453,6 +461,7 @@ interface EXE_MEM_Interface();
 	input                   EXE_IsTLBR,
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
+	input   			  	EXE_rt,
 	output                  MEM_RegsWrType,
 	output                  MEM_Dst,
 	output                  MEM_Result,
@@ -469,23 +478,14 @@ interface MEM_MEM2_Interface();
 	logic       [31:0]      MEM_Instr;		
     logic 		[1:0]  		MEM_WbSel;				
     logic 		[4:0]  		MEM_Dst;
-	LoadType     			MEM_LoadType;
 	logic       [31:0]      MEM_OutB;
 	RegsWrType              MEM_RegsWrType_final;//经过exception solvement的新写使能
 	ExceptinPipeType 		MEM_ExceptType_final;
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
 	logic                   MEM_IsInDelaySlot;
-	logic   	[31:0]		MEM_Result;
-
 	logic		[31:0] 		MEM2_ALUOut;		
     logic 		[31:0] 		MEM2_PC;	
-	// logic       [31:0]      MEM2_Instr;		
-    // logic 		[1:0]  		MEM2_WbSel;				
-    // logic 		[4:0]  		MEM2_Dst;
-	// LoadType     			MEM2_LoadType;
-	// logic       [31:0]      MEM2_OutB;
-	// RegsWrType              MEM2_RegsWrType;
 	ExceptinPipeType 		MEM2_ExceptType;
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAImmeJump;
@@ -497,55 +497,40 @@ interface MEM_MEM2_Interface();
 		output  					MEM_Instr,		
 		output  					MEM_WbSel,			
 		output  					MEM_Dst,
-		output  					MEM_LoadType,
 		output  					MEM_OutB,
 		output  					MEM_RegsWrType_final,
 		output  					MEM_ExceptType_final,
 		output  					MEM_IsABranch,
 		output  					MEM_IsAImmeJump,
 		output  					MEM_IsInDelaySlot,
-
+		input                       MEM2_ALUOut,									
+		input                       MEM2_PC,
+		input                       MEM2_ExceptType,
 		input                       MEM2_IsABranch,
 		input                       MEM2_IsAImmeJump,	
-		input                       MEM2_ExceptType,
-		input                       MEM2_PC,
-		input                       MEM2_IsInDelaySlot,
-		input                       MEM2_ALUOut 											
+		input                       MEM2_IsInDelaySlot
 	);
 
-	modport MEM2 (  // 在top MEM2使用
-		
+	modport MEM2 (  // top MEM2使用
 		input  					MEM_ALUOut,		
 		input  					MEM_PC,	
 		input  					MEM_Instr,		
 		input  					MEM_WbSel,			
 		input  					MEM_Dst,
-		input  					MEM_LoadType,
 		input  					MEM_OutB,
 		input  					MEM_RegsWrType_final,
 		input  					MEM_ExceptType_final,
 		input  					MEM_IsABranch,
 		input  					MEM_IsAImmeJump,
 		input  					MEM_IsInDelaySlot,
-		input					MEM_Result,
-		
-		// output   				MEM2_ALUOut,		
-		// output   				MEM2_PC,	
-		// output   				MEM2_Instr,		
-		// output   				MEM2_WbSel,			
-		// output   				MEM2_Dst,
-		// output   				MEM2_LoadType,
-		// output   				MEM2_OutB,
-		// output   				MEM2_RegsWrType,
+		output       	 		MEM2_ALUOut,
+		output                  MEM2_PC,
+		output   				MEM2_ExceptType,
 		output   				MEM2_IsABranch,
 		output   				MEM2_IsAImmeJump,
-		output   				MEM2_ExceptType,
-		output                  MEM2_PC,
-		output   				MEM2_IsInDelaySlot,
-		output       	 		MEM2_ALUOut
-		
-	
+		output   				MEM2_IsInDelaySlot
 	);
+	
 endinterface
 
 
@@ -556,31 +541,19 @@ interface MEM2_WB_Interface();
 	logic       [31:0]      MEM2_Instr;		
     logic 		[1:0]  		MEM2_WbSel;				
     logic 		[4:0]  		MEM2_Dst;
-	LoadType     			MEM2_LoadType;
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
-	RegsWrType              MEM2_RegsWrType; //经过exception solvement的新写使能
-	ExceptinPipeType 		MEM2_ExceptType;
-	
-
-	// logic                   WB_IsABranch;
-	// logic                   WB_IsAImmeJump;
-	ExceptinPipeType        WB_ExceptType;
-	logic       [31:0]      WB_PC;
-	// logic                   WB_IsInDelaySlot;
-	logic       [31:0]      WB_ALUOut;
+	RegsWrType              MEM2_RegsWrType;
   
-	modport MEM2 (  //在MEM2 TOP使用
+	modport MEM2 (  // top MEM2使用
     	output					MEM2_ALUOut,		
     	output					MEM2_PC,		
 		output                  MEM2_Instr,	
     	output					MEM2_WbSel,				
     	output					MEM2_Dst,
-    	output					MEM2_LoadType,
 		output					MEM2_DMOut,
 		output                  MEM2_OutB,
-		output					MEM2_RegsWrType,//经过exception solvement的新写使能
-		output					MEM2_ExceptType
+		output					MEM2_RegsWrType 
 	);
 
 	modport WB ( 
@@ -589,13 +562,9 @@ interface MEM2_WB_Interface();
 		input                   MEM2_Instr,	
     	input					MEM2_WbSel,				
     	input					MEM2_Dst,
-    	input					MEM2_LoadType,
 		input					MEM2_DMOut,
 		input                   MEM2_OutB,
-		input					MEM2_RegsWrType,//经过exception solvement的新写使能
-		input					MEM2_ExceptType,
-
-		output                  WB_ALUOut
+		input					MEM2_RegsWrType 
 	);
 
 endinterface

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-11 18:28:22
+ * @LastEditTime: 2021-07-13 11:31:00
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,12 @@ module TOP_EXE (
     input RegsWrType          WB_RegsWrType,
     input logic [4:0]         WB_Dst,
     input logic [31:0]        WB_Result,
+    input RegsWrType          MEM2_RegsWrType,
+    input logic [4:0]         MEM2_Dst,
+    input logic [31:0]        MEM2_Result,
+    // input logic               EXE_TrapOp,
     input logic               HiLo_Not_Flush,
+    
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
     output logic              ID_Flush_BranchSolvement,
@@ -55,6 +60,7 @@ module TOP_EXE (
     logic [31:0]              LO_Bus;
     logic                     Overflow_valid;
     logic                     Trap_valid;
+    logic [2:0]               EXE_TrapOp;  
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
@@ -90,6 +96,7 @@ module TOP_EXE (
         .ID_IsTLBP            (IEBus.ID_IsTLBP),
         .ID_IsTLBW            (IEBus.ID_IsTLBW),
         .ID_IsTLBR            (IEBus.ID_IsTLBR),
+        .ID_TrapOp            (IEBus.ID_TrapOp),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -114,16 +121,19 @@ module TOP_EXE (
         .EXE_Shamt            (EXE_Shamt ),
         .EXE_IsTLBP           (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
-        .EXE_IsTLBR           (EMBus.EXE_IsTLBR)
+        .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
+        .EXE_TrapOp           (EXE_TrapOp)
     );
 
 
-    ForwardUnit U_ForwardUnit (             // TODO 修改旁路逻辑
+    ForwardUnit U_ForwardUnit (             
         .WB_RegsWrType        (WB_RegsWrType),
         .MEM_RegsWrType       (EMBus.MEM_RegsWrType),
+        .MEM2_RegsWrType      (MEM2_RegsWrType),
         .EXE_rs               (EXE_rs),
         .EXE_rt               (EXE_rt),
         .MEM_Dst              (EMBus.MEM_Dst),
+        .MEM2_Dst             (MEM2_Dst),
         .WB_Dst               (WB_Dst),
         //-----------------output-----------------------------//
         .EXE_ForwardA         (EXE_ForwardA),
@@ -142,7 +152,8 @@ module TOP_EXE (
         .d0                   (EXE_BusA),
         .d1                   (EMBus.MEM_Result),
         .d2                   (WB_Result),
-        .sel3_to_1            (EXE_ForwardA),
+        .d3                   (MEM2_Result),       
+        .sel3_to_1            (EXE_ForwardA),     
         .y                    (EXE_BusA_L1)
     );//EXE级旁路
     
@@ -150,7 +161,8 @@ module TOP_EXE (
         .d0                   (EXE_BusB),
         .d1                   (EMBus.MEM_Result),
         .d2                   (WB_Result),
-        .sel4_to_1            (EXE_ForwardB),
+        .d3                   (MEM2_Result),       
+        .sel4_to_1            (EXE_ForwardB),      
         .y                    (EXE_BusB_L1)
     );//EXE级旁路
 

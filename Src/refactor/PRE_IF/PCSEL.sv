@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-07-08 17:24:23
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-12 12:39:01
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -45,15 +45,15 @@ module PCSEL #(
         else if (EX_Entry_Sel == `IsEret) begin
             PCSel = PCSel_EPC;
         end
-        else if (EX_Entry_Sel == `IsException)begin
+        else if (EX_Entry_Sel == `IsException || EX_Entry_Sel == `IsRefill)begin
             PCSel = PCSel_Except;
         end
         else if (EX_Entry_Sel == `IsRefetch) begin
             PCSel = PCSel_MEMPC;
         end
-        else if (EX_Entry_Sel == `IsRefill) begin
-            PCSel = PCSel_Refill;
-        end
+        // else if (EX_Entry_Sel == `IsRefill) begin
+        //     PCSel = PCSel_Refill;
+        // end
         else begin
             PCSel = 3'bxxx;
         end

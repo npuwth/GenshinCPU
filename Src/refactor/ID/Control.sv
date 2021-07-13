@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-11 14:50:04
+ * @LastEditTime: 2021-07-13 10:29:39
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -10,8 +10,9 @@
  */
 
 `include "../CPU_Defines.svh"
+`include "../CommonDefines.svh"
 `define COMPILE_FULL_M
-
+`define ENABLE_FPU      1
 module Control(
     input  logic[31:0] ID_Instr,
     input  ExceptinPipeType ID_ExceptType,
@@ -38,7 +39,8 @@ module Control(
     output logic [1:0] ID_rsrtRead,
     output logic       ID_IsTLBP,
     output logic       ID_IsTLBW,
-    output logic       ID_IsTLBR
+    output logic       ID_IsTLBR,
+    output logic [2:0] ID_TrapOp
     );
 
     assign ID_IsTLBP = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
@@ -53,7 +55,7 @@ module Control(
     logic [4:0]shamt;
     InstrType instrType;
     logic IsReserved;
-
+    logic CpU1_instr_valid;
 
     assign opcode = ID_Instr[31:26];
     assign funct = ID_Instr[5:0];
@@ -160,22 +162,33 @@ module Control(
                 end
 
 
-                `EXE_JR:instrType = OP_JR;
+                `EXE_JR   :instrType = OP_JR;
 
-                `EXE_JALR:instrType = OP_JALR;
+                `EXE_JALR :instrType = OP_JALR;
 
+                `EXE_MFHI :instrType = OP_MFHI;
 
-                `EXE_MFHI:instrType = OP_MFHI;
+                `EXE_MFLO :instrType = OP_MFLO;
 
-                `EXE_MFLO:instrType = OP_MFLO;
+                `EXE_MTHI :instrType = OP_MTHI;
 
-                `EXE_MTHI:instrType = OP_MTHI;
-
-                `EXE_MTLO:instrType = OP_MTLO;
+                `EXE_MTLO :instrType = OP_MTLO;
 
                 `EXE_BREAK:instrType = OP_BREAK;
 
                 `EXE_SYSCALL:instrType = OP_SYSCALL;
+
+                `EXE_TEQ  : instrType =  OP_TEQ;
+
+                `EXE_TGE  : instrType =  OP_TGE;
+
+                `EXE_TGEU : instrType =  OP_TGEU;
+
+                `EXE_TLT  : instrType =  OP_TLT;
+
+                `EXE_TLTU : instrType =  OP_TLTU;
+
+                `EXE_TNE  : instrType =  OP_TNE;
 
                 default: begin
                   instrType = OP_INVALID;
@@ -185,10 +198,21 @@ module Control(
 
             6'b000_001:begin// some branch
               unique case(rt)
+              `EXE_TEQI : instrType = OP_TEQI;
 
-              `EXE_BLTZ:instrType = OP_BLTZ;
+              `EXE_TGEI : instrType = OP_TGEI;
 
-              `EXE_BGEZ:instrType = OP_BGEZ;
+              `EXE_TGEIU: instrType = OP_TGEIU;
+
+              `EXE_TLTI : instrType = OP_TLTI;
+
+              `EXE_TLTIU: instrType = OP_TLTIU;
+
+              `EXE_TNEI : instrType = OP_TNEI;
+
+              `EXE_BLTZ : instrType = OP_BLTZ;
+
+              `EXE_BGEZ : instrType = OP_BGEZ;
 
               `EXE_BLTZAL:instrType = OP_BLTZAL;
 
@@ -294,7 +318,36 @@ module Control(
             end
         endcase
     end
-    
+
+
+    always_comb begin : CpU_valid
+      // CpU1_instr_valid = 1时需要报出CpU例外
+      case (opcode)
+        6'b000000 : begin
+          if (funct == 6'b000001) CpU1_instr_valid = 1'b1;  
+          else CpU1_instr_valid = 1'b0;  
+        end
+        6'b110101 : begin  // LDC1A
+            CpU1_instr_valid = 1'b1;  
+        end
+        6'b111101 : begin  // SDC1A
+            CpU1_instr_valid = 1'b1;
+        end
+        6'b110001: begin  // LWC1
+            CpU1_instr_valid = 1'b1;
+        end  
+        6'b111001 : begin // SWC1
+            CpU1_instr_valid = 1'b1;
+        end
+        6'b010001: begin
+            CpU1_instr_valid = 1'b1;
+        end
+        default:begin
+            CpU1_instr_valid = 1'b0;
+        end
+        
+      endcase
+    end
 
   always_comb begin
     unique case (instrType)
@@ -923,7 +976,7 @@ module Control(
         ID_LoadType   = '0;
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_PCAdd1;//关于最后写回RF
-        ID_DstSel     = `DstSel_31;//31
+        ID_DstSel     = `DstSel_rd;//rd
         ID_RegsWrType = `RegsWrTypeRFEn;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1036,9 +1089,10 @@ module Control(
       OP_LB:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 1;//sign
-        ID_LoadType.size = 2'b10;//byte
-        ID_LoadType.ReadMem = 1;//loadmem
+        ID_LoadType.sign        = 1;//sign
+        ID_LoadType.size        = 2'b10;//byte
+        ID_LoadType.ReadMem     = 1;//loadmem
+        ID_LoadType.LeftOrRight = '0;
         //ID_LoadType end
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_DMResult;
@@ -1056,9 +1110,10 @@ module Control(
       OP_LBU:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 0;//unsign
-        ID_LoadType.size = 2'b10;//byte
-        ID_LoadType.ReadMem = 1;//loadmem
+        ID_LoadType.sign        = 0;//unsign
+        ID_LoadType.size        = 2'b10;//byte
+        ID_LoadType.ReadMem     = 1;//loadmem
+        ID_LoadType.LeftOrRight = '0;
         //ID_LoadType end
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_DMResult;
@@ -1076,9 +1131,10 @@ module Control(
       OP_LH:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 1;//sign
-        ID_LoadType.size = 2'b01;//half
-        ID_LoadType.ReadMem = 1;//loadmem
+        ID_LoadType.sign        = 1;//sign
+        ID_LoadType.size        = 2'b01;//half
+        ID_LoadType.ReadMem     = 1;//loadmem
+        ID_LoadType.LeftOrRight = '0;
         //ID_LoadType end
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_DMResult;
@@ -1096,9 +1152,10 @@ module Control(
       OP_LHU:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 0;//unsign
-        ID_LoadType.size = 2'b01;//half
-        ID_LoadType.ReadMem = 1;//loadmem
+        ID_LoadType.sign        = 0;//unsign
+        ID_LoadType.size        = 2'b01;//half
+        ID_LoadType.ReadMem     = 1;//loadmem
+        ID_LoadType.LeftOrRight = '0;
         //ID_LoadType end
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_DMResult;
@@ -1116,9 +1173,50 @@ module Control(
       OP_LW:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         //ID_LoadType 
-        ID_LoadType.sign = 1;//sign
-        ID_LoadType.size = 2'b00;//word
-        ID_LoadType.ReadMem = 1;//loadmem
+        ID_LoadType.sign        = 1;//sign
+        ID_LoadType.size        = 2'b00;//word
+        ID_LoadType.ReadMem     = 1;//loadmem
+        ID_LoadType.LeftOrRight = '0;
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;    
+      end
+      OP_LWL:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign        = 1;    //sign
+        ID_LoadType.size        = 2'b00;//word
+        ID_LoadType.ReadMem     = 1;    //loadmem
+        ID_LoadType.LeftOrRight = 2'b10;
+        //ID_LoadType end
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_DMResult;
+        ID_DstSel     = `DstSel_rt;//rt
+        ID_RegsWrType = `RegsWrTypeRFEn;//写寄存器
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel    = `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = `EXTOP_SIGN;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;  
+        IsReserved    = 1'b0;    
+      end
+      OP_LWR:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        //ID_LoadType 
+        ID_LoadType.sign        = 1;    //sign
+        ID_LoadType.size        = 2'b00;//word
+        ID_LoadType.ReadMem     = 1;    //loadmem
+        ID_LoadType.LeftOrRight = 2'b01;
         //ID_LoadType end
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_DMResult;
@@ -1139,6 +1237,7 @@ module Control(
         //ID_StoreType begin
         ID_StoreType.size  = `STORETYPE_SB;
         ID_StoreType.DMWr  = 1;
+        ID_StoreType.LeftOrRight = '0;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
         ID_DstSel     = `DstSel_rt;//rt
@@ -1159,6 +1258,7 @@ module Control(
         //ID_StoreType begin
         ID_StoreType.size  = `STORETYPE_SH;
         ID_StoreType.DMWr  = 1;
+        ID_StoreType.LeftOrRight = '0;
         //ID_StoreType end
         ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
         ID_DstSel     = `DstSel_rt;//rt
@@ -1178,19 +1278,57 @@ module Control(
         //ID_StoreType begin
         ID_StoreType.size  = `STORETYPE_SW;
         ID_StoreType.DMWr  = 1;
+        ID_StoreType.LeftOrRight = '0;
         //ID_StoreType end
-        ID_WbSel      = `WBSel_ALUOut;//选择输出的地址
-        ID_DstSel     = `DstSel_rt;//rt
-        ID_RegsReadSel    = `RegsReadSel_RF;//选寄存器
-        ID_RegsWrType = `RegsWrTypeDisable;//不写寄存器
-        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
-        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
-        ID_EXTOp      = `EXTOP_SIGN;
+        ID_WbSel       = `WBSel_ALUOut;//选择输出的地址
+        ID_DstSel      = `DstSel_rt;//rt
+        ID_RegsReadSel = `RegsReadSel_RF;//选寄存器
+        ID_RegsWrType  = `RegsWrTypeDisable;//不写寄存器
+        ID_ALUSrcA     = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB     = `ALUSrcB_Sel_Imm;
+        ID_EXTOp       = `EXTOP_SIGN;
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = '0;    
-        IsReserved    = 1'b0;      
+        ID_BranchType  = '0;    
+        IsReserved     = 1'b0;      
       end
-
+      OP_SWL:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_LoadType   = '0;
+        //ID_StoreType begin
+        ID_StoreType.size  = `STORETYPE_SW;
+        ID_StoreType.DMWr  = 1;
+        ID_StoreType.LeftOrRight = 2'b10;
+        //ID_StoreType end
+        ID_WbSel       = `WBSel_ALUOut;//选择输出的地址
+        ID_DstSel      = `DstSel_rt;//rt
+        ID_RegsReadSel = `RegsReadSel_RF;//选寄存器
+        ID_RegsWrType  = `RegsWrTypeDisable;//不写寄存器
+        ID_ALUSrcA     = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB     = `ALUSrcB_Sel_Imm;
+        ID_EXTOp       = `EXTOP_SIGN;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType  = '0;    
+        IsReserved     = 1'b0;      
+      end
+      OP_SWR:begin
+        ID_ALUOp      = `EXE_ALUOp_ADDU;
+        ID_LoadType   = '0;
+        //ID_StoreType begin
+        ID_StoreType.size  = `STORETYPE_SW;
+        ID_StoreType.DMWr  = 1;
+        ID_StoreType.LeftOrRight = 2'b01;
+        //ID_StoreType end
+        ID_WbSel       = `WBSel_ALUOut;//选择输出的地址
+        ID_DstSel      = `DstSel_rt;//rt
+        ID_RegsReadSel = `RegsReadSel_RF;//选寄存器
+        ID_RegsWrType  = `RegsWrTypeDisable;//不写寄存器
+        ID_ALUSrcA     = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB     = `ALUSrcB_Sel_Imm;
+        ID_EXTOp       = `EXTOP_SIGN;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType  = '0;    
+        IsReserved     = 1'b0;      
+      end
       //特权指令  
       OP_ERET:begin
         ID_ALUOp      = 'x;
@@ -1386,7 +1524,39 @@ module Control(
         ID_BranchType = '0;
         IsReserved    = 1'b0;
       end
+//**********************   trap类指令   ********************************//
+      OP_TEQ , OP_TGE , OP_TGEU , OP_TLT , OP_TLTU , OP_TNE: begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = 'x;
+        ID_DstSel     = 'x;  //rd
+        ID_RegsWrType = '0;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;//选择ID级别读出的数据
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;
+      end
 
+      OP_TEQI , OP_TGEI , OP_TGEIU , OP_TLTI , OP_TNEI : begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = 'x;
+        ID_DstSel     = 'x;//rt
+        ID_RegsWrType = '0;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
+        ID_RegsReadSel= `RegsReadSel_RF;      
+        ID_EXTOp      = `EXTOP_SIGN;   
+        ID_IsAImmeJump = `IsNotAImmeJump;    
+        ID_BranchType = '0; 
+        IsReserved    = 1'b0;        
+      end
+      
       default:begin
         ID_ALUOp      = 'X;    //ALU操作
         ID_LoadType   = 'X;    //访存相关 
@@ -1403,8 +1573,6 @@ module Control(
         IsReserved    = 1'b1;        
       end
 
-      
-
     endcase
   end 
 
@@ -1415,6 +1583,7 @@ always_comb begin
                             Break:1'b1,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
+                            CoprocessorUnusable:1'b0,
                             Overflow:1'b0,
                             Syscall:1'b0,
                             Eret:1'b0,
@@ -1437,6 +1606,7 @@ always_comb begin
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
+                            CoprocessorUnusable:1'b0,
                             Overflow:1'b0,
                             Syscall:1'b1,
                             Eret:1'b0,
@@ -1459,6 +1629,30 @@ always_comb begin
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:1'b0,
+                            CoprocessorUnusable:1'b0,
+                            Overflow:1'b0,
+                            Syscall:1'b0,
+                            Eret:1'b1,
+                            WrWrongAddressinMEM:1'b0,
+                            RdWrongAddressinMEM:1'b0,
+                            TLBRefillinIF:ID_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:ID_ExceptType.TLBInvalidinIF,
+                            RdTLBRefillinMEM:1'b0,
+                            RdTLBInvalidinMEM:1'b0,
+                            WrTLBRefillinMEM:1'b0,
+                            WrTLBInvalidinMEM:1'b0,
+                            TLBModified:1'b0,
+                            Refetch:1'b0,
+                            Trap:1'b0
+        };//关于ERET
+  end
+  else if (CpU1_instr_valid == 1'b1) begin  // 浮点指令
+    ID_ExceptType_new = '{  
+                            Interrupt:1'b0,
+                            Break:1'b0,
+                            WrongAddressinIF:1'b0,
+                            ReservedInstruction:1'b0,
+                            CoprocessorUnusable:1'b1,
                             Overflow:1'b0,
                             Syscall:1'b0,
                             Eret:1'b1,
@@ -1481,6 +1675,7 @@ always_comb begin
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
                             ReservedInstruction:IsReserved,
+                            CoprocessorUnusable:1'b0,
                             Overflow:1'b0,
                             Syscall:1'b0,
                             Eret:1'b0,
@@ -1499,5 +1694,16 @@ always_comb begin
     end
   end
 
+always_comb begin
+  case(instrType) 
+    OP_TEQ  , OP_TEQI  : ID_TrapOp = `TRAP_OP_TEQ;
+    OP_TGE  , OP_TGEI  : ID_TrapOp = `TRAP_OP_TGE;
+    OP_TGEU , OP_TGEIU : ID_TrapOp = `TRAP_OP_TGEU;
+    OP_TLT  , OP_TLTI  : ID_TrapOp = `TRAP_OP_TLT;
+    OP_TLTU , OP_TLTIU : ID_TrapOp = `TRAP_OP_TLTU;
+    OP_TNE  , OP_TNEI  : ID_TrapOp = `TRAP_OP_TNE;
+    default : ID_TrapOp = 'x;
+  endcase
+end
 
 endmodule
