@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-13 15:53:03
+ * @LastEditTime: 2021-07-13 16:42:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -284,6 +284,16 @@ module cp0_reg (
         end
     end
 
+    //Cause.CE
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.Cause.CE                  <= '0;
+        end
+        else if(MEM2_ExcType == `EX_CpU) begin
+            CP0.Cause.CE                  <= 2'b01;
+        end
+    end
+
     //Causez.IP7_2
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -352,7 +362,7 @@ module cp0_reg (
             CP0.EPC                      <= MEM_Result;
         end
     end
-// PRID
+// PRID     Read Only
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
             CP0.Prid                      <= 32'h00004220;
@@ -364,18 +374,18 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Ebase                      <= 32'h8000_0000;
         end 
-       else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE && CP0_Sel == 3'b1) begin //TODO:sel0,sel1
+        else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE && CP0_Sel == 3'b1) begin //TODO:sel0,sel1
             CP0.Ebase[29:12]               <= MEM_Result[29:12];
         end
     end
 
-// CONFIG0   READ only
+// CONFIG0   
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
-            CP0.Config0                    <=  config0_default;
+            CP0.Config0                    <= config0_default;
         end
-        else if (MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_CONFIG0 && CP0_Sel == 3'b0) begin
-            CP0.Config0[2:0]               <=  MEM_Result[2:0];
+        else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_CONFIG0 && CP0_Sel == 3'b0) begin
+            CP0.Config0[2:0]               <= MEM_Result[2:0];
         end 
     end
 // CONFIG1   Read only 
@@ -402,13 +412,17 @@ module cp0_reg (
             `CP0_REG_ENTRYHI:    CP0_RdData = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};
             `CP0_REG_COMPARE:    CP0_RdData = CP0.Compare;
             `CP0_REG_STATUS:     CP0_RdData = {9'b0 , CP0.Status.BEV , 6'b0 , CP0.Status.IM7_0 , 6'b0 , CP0.Status.EXL , CP0.Status.IE};
-            `CP0_REG_CAUSE:      CP0_RdData = {CP0.Cause.BD , CP0.Cause.TI , 14'b0 , CP0.Cause.IP7_2 , CP0.Cause.IP1_0 , 1'b0 , CP0.Cause.ExcCode , 2'b0};
+            `CP0_REG_CAUSE:      CP0_RdData = {CP0.Cause.BD , CP0.Cause.TI , CP0.Cause.CE , 12'b0 , CP0.Cause.IP7_2 , CP0.Cause.IP1_0 , 1'b0 , CP0.Cause.ExcCode , 2'b0};
             `CP0_REG_EPC:        CP0_RdData = CP0.EPC;
-            `CP0_REG_PRID:       CP0_RdData = CP0.Prid;
-            `CP0_REG_EBASE:      CP0_RdData = CP0.Ebase;
-            `CP0_REG_CONFIG0:    CP0_RdData = CP0.Config0;
-            `CP0_REG_CONFIG1:    CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , 
+            `CP0_REG_PRID:  begin  
+                if(CP0_Sel == 1'b0) CP0_RdData = CP0.Prid;  
+                else                CP0_RdData = CP0.Ebase;
+            end
+            `CP0_REG_CONFIG0: begin
+                if(CP0_Sel == 1'b0) CP0_RdData = CP0.Config0;
+                else                CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , 
                                                CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
+            end
             default:             CP0_RdData = 'x;
         endcase
     end

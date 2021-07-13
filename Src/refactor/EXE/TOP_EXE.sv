@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 15:04:41
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 16:14:45
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -23,7 +23,6 @@ module TOP_EXE (
     input RegsWrType          MEM2_RegsWrType,
     input logic [4:0]         MEM2_Dst,
     input logic [31:0]        MEM2_Result,
-    // input logic               EXE_TrapOp,
     input logic               HiLo_Not_Flush,
     
     ID_EXE_Interface          IEBus,
@@ -145,7 +144,7 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA_L1),
         .EXE_OutB             (EXE_BusB_L1),
         //-----------------output----------------------------//
-        .ID_Flush             (ID_Flush_BranchSolvement)   // TODO 分支失败，需要刷流水线
+        .ID_Flush             (ID_Flush_BranchSolvement)   
     );
     
     MUX4to1 #(32) U_MUXA_L1 (
@@ -207,7 +206,7 @@ module TOP_EXE (
 
      Trap U_TRAP (
         .EXE_TrapOp           (EXE_TrapOp  ),   // trap控制信号信号的连线
-        .EXE_ResultA          (EXE_BusA_L2 ),   // 旁路之后的数据
+        .EXE_ResultA          (EXE_BusA_L1 ),   // 旁路之后的数据
         .EXE_ResultB          (EXE_BusB_L2 ),   // 经过立即数选择之后的数据
         .Trap_valid           (Trap_valid  )
   );
@@ -230,7 +229,6 @@ module TOP_EXE (
         .EXE_ALUOut           (EMBus.EXE_ALUOut),
         .EXE_StoreType        (EMBus.EXE_StoreType),
         .EXE_OutB             (EMBus.EXE_OutB),
-        .EXE_LoadType         (EMBus.EXE_LoadType),
         //-----------------output-------------------------//
         .cache_wen            (EMBus.EXE_DCache_Wen),      //给出dcache的写使能信号，
         .DataToDcache         (EMBus.EXE_DataToDcache)           //给出dcache的写数据信号，

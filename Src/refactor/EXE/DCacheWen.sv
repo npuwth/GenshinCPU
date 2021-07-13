@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-07-11 18:33:00
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-13 16:14:35
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
  * @IO PORT:
@@ -16,7 +16,6 @@ module DCacheWen(
   input  logic [31:0]       EXE_ALUOut,    // 地址信息
   input  StoreType          EXE_StoreType, // store类型
   input  logic [31:0]       EXE_OutB,      // 即将给cache的写入的数据
-  input  LoadType           EXE_LoadType,
 
   output logic [3:0]        cache_wen,        //字节信号写使能
   output logic [31:0]       DataToDcache

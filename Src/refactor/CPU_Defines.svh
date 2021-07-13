@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-13 15:15:14
+ * @LastEditTime: 2021-07-13 16:38:11
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -180,7 +180,6 @@ typedef struct packed {
 
 typedef struct packed {
 	// logic bd, zero30;
-	// logic [1:0] ce;
 	// logic [3:0] zero27_24;
 	// logic iv, wp;
 	// logic [5:0] zero21_16;
@@ -190,6 +189,7 @@ typedef struct packed {
 	// logic [1:0] zero1_0;
 	logic [31:31] BD;
 	logic [30:30] TI;
+	logic [29:28] CE;
 	logic [15:10] IP7_2;
 	logic [9:8]   IP1_0;
 	logic [6:2]   ExcCode;
@@ -262,23 +262,17 @@ interface IF_ID_Interface();
 	logic       [31:0]      IF_Instr;
 	logic       [31:0]      IF_PC;
 	ExceptinPipeType        IF_ExceptType;
-	logic       [31:0]      ID_Instr;
-	logic       [31:0]      ID_PC;
 
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
 	output                  IF_ExceptType
-	// input                   ID_Instr,
-	// input                   ID_PC
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
 	output                  IF_ExceptType
-	// output                  ID_Instr,
-	// output                  ID_PC
 	);
 	
 endinterface
