@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-13 16:38:11
+ * @LastEditTime: 2021-07-13 16:47:40
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -467,7 +467,7 @@ interface MEM_MEM2_Interface();
     logic 		[1:0]  		MEM_WbSel;				
     logic 		[4:0]  		MEM_Dst;
 	logic       [31:0]      MEM_OutB;
-	RegsWrType              MEM_RegsWrType_final;//经过exception solvement的新写使能
+	RegsWrType              MEM_RegsWrType;//经过exception solvement的新写使能
 	logic       [4:0]  		MEM_ExcType;
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
@@ -486,7 +486,7 @@ interface MEM_MEM2_Interface();
 		output  			MEM_WbSel,			
 		output  			MEM_Dst,
 		output  			MEM_OutB,
-		output  			MEM_RegsWrType_final,
+		output  			MEM_RegsWrType,
 		output  			MEM_ExcType,
 		output  			MEM_IsABranch,
 		output  			MEM_IsAImmeJump,
@@ -506,7 +506,7 @@ interface MEM_MEM2_Interface();
 		input  				MEM_WbSel,			
 		input  				MEM_Dst,
 		input  				MEM_OutB,
-		input  				MEM_RegsWrType_final,
+		input  				MEM_RegsWrType,
 		input  				MEM_ExcType,
 		input  				MEM_IsABranch,
 		input  				MEM_IsAImmeJump,
@@ -532,6 +532,7 @@ interface MEM2_WB_Interface();
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType;
+	logic       [31:0]      MEM_DMOut;
   
 	modport MEM2 (  // top MEM2使用
     	output				MEM2_ALUOut,		
@@ -541,7 +542,8 @@ interface MEM2_WB_Interface();
     	output				MEM2_Dst,
 		output				MEM2_DMOut,
 		output              MEM2_OutB,
-		output				MEM2_RegsWrType 
+		output				MEM2_RegsWrType,
+		output 		        MEM_DMOut
 	);
 
 	modport WB ( 

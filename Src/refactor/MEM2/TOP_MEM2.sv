@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-13 15:16:23
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:37:38
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -37,7 +37,7 @@ module TOP_MEM2 (
     .MEM_WbSel              (MM2Bus.MEM_WbSel ),
     .MEM_Dst                (MM2Bus.MEM_Dst ),
     .MEM_OutB               (MM2Bus.MEM_OutB ),
-    .MEM_RegsWrType_final   (MM2Bus.MEM_RegsWrType_final ),
+    .MEM_RegsWrType_final   (MM2Bus.MEM_RegsWrType ),
     .MEM_ExcType            (MM2Bus.MEM_ExcType ),
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),

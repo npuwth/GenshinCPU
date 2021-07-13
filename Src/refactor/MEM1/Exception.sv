@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-13 15:33:28
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:35:52
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -33,8 +33,9 @@
     output RegsWrType          MEM_RegsWrType_final,   //最终的异常类型
     output logic [31:0]        Exception_Vector     // 异常处理的入口地址
  );
-    logic  [31:0]    base;
-    logic  [31:0]    offset;
+    logic  [31:0]              base;
+    logic  [31:0]              offset;
+    ExceptinPipeType           MEM_ExceptType_final;
 
     always_comb begin  //优先级可以查看MIPS文档第三册56页
         if     (MEM_ExceptType_final.Interrupt           == 1'b1)    MEM_ExcType = `EX_Interrupt;

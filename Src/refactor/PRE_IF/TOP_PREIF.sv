@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-13 15:36:14
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:21:17
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -32,6 +32,7 @@ module TOP_PREIF (
     input logic                 I_IsCached,
     input logic [31:0]          MEM_PC,
     input logic [31:0]          Exception_Vector,
+    input logic                 I_IsTLBBufferValid,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
 //---------------------------output----------------------------------//
@@ -92,7 +93,7 @@ module TOP_PREIF (
     assign cpu_ibus.op        = 1'b0;
     assign cpu_ibus.wstrb     = '0;
     assign cpu_ibus.wdata     = 'x;
-    assign cpu_ibus.storeType = '0;
+    // assign cpu_ibus.storeType = '0;
     assign Virt_Iaddr         = PREIF_PC;
     
     // ICache U_ICache(   // TODO: cache的接口没确定

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 16:14:45
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:25:19
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -247,7 +247,7 @@ module TOP_EXE (
         .HI                    (HI_Bus),
         .LO                    (LO_Bus)
     );
-
+    // 例外检测 溢出 trap & TLB & refetch & 数据访问地址错误 
     ExceptionInEXE U_ExceptionInEXE (
         .Overflow_valid        (Overflow_valid             ),
         .Trap_valid            (Trap_valid                 ),
@@ -258,6 +258,8 @@ module TOP_EXE (
         .MEM_Instr             (EMBus.MEM_Instr            ),
         .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut           ),
+        .EXE_StoreType         (EMBus.EXE_StoreType        ),
+
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
   );
     
