@@ -9,22 +9,22 @@
  `include "Cache_Defines.svh"
 `include "CPU_Defines.svh"
 module PLRU #(
-    parameter int unsigned SET_NUM = 4
+    parameter int unsigned ASSOC_NUM = 4
 ) (
     input clk,
     input resetn,
 
-    input [SET_NUM-1:0] access, //表示这次命中了哪一路 这是独热码 access的第i位 表示第i路命中
+    input [ASSOC_NUM-1:0] access, //表示这次命中了哪一路 这是独热码 access的第i位 表示第i路命中
     input update,               //表示命中了  不然就没法表示没有访存导致的不需要更新lru的情况
 
-    output [$clog2(SET_NUM)-1:0] lru //表示 这次如果替换 替换哪一路
+    output [$clog2(ASSOC_NUM)-1:0] lru //表示 这次如果替换 替换哪一路
 );
 
-logic [SET_NUM-2:0] state, state_d;
+logic [ASSOC_NUM-2:0] state, state_d;
 
 // Assign output
 generate
-if(SET_NUM == 2) begin
+if(ASSOC_NUM == 2) begin
     assign lru = state;
 end else begin
     assign lru = state[2] == 1'b0 ? state[2-:2] : {state[2], state[0]}; //state[2-:2] 即 state[2:1]
@@ -33,7 +33,7 @@ endgenerate
 
 // Update
 generate
-if(SET_NUM == 2) begin
+if(ASSOC_NUM == 2) begin
     always_comb begin
         state_d = state;
 

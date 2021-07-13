@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-12 12:26:10
+ * @LastEditTime: 2021-07-13 09:48:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -14,7 +14,7 @@ module simple_port_lutram #(
 	parameter type dtype               = logic [DATA_WIDTH-1:0],
 	parameter int unsigned LATENCY     = 0,
 	parameter int unsigned MEMORY_SIZE = $bits(dtype) * SIZE,
-	parameter int unsigned ADDR_WIDTH  = $clog2(SIZE)-1
+	parameter int unsigned ADDR_WIDTH  = $clog2(SIZE)
 ) (
 	input  logic  clka,
 	input  logic  rsta,
@@ -97,7 +97,7 @@ module simple_port_ram #(
 	parameter int unsigned SIZE        = 1024, //指有多少块
 	parameter type dtype               = logic [DATA_WIDTH-1:0],
 	parameter int unsigned MEMORY_SIZE = $bits(dtype) * SIZE,
-	parameter int unsigned ADDR_WIDTH  = $clog2(SIZE)-1
+	parameter int unsigned ADDR_WIDTH  = $clog2(SIZE)
 ) (
 	input  logic  clk,
 	input  logic  rst,
@@ -190,11 +190,5 @@ module simple_port_ram #(
 
 endmodule
 
-module Rams #(
-    parameter 
-) (
-    ports
-);
-    
-endmodule
+
 
