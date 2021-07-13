@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-13 15:53:03
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:18:12
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -42,7 +42,8 @@ module cp0_reg (
     output logic [0:0]      CP0_Status_IE,
     output logic [15:10]    CP0_Cause_IP7_2,
     output logic [9:8]      CP0_Cause_IP1_0,
-    output logic [31:0]     CP0_EPC 
+    output logic [31:0]     CP0_EPC,
+    output logic [31:0]     CP0_Ebase
     );
 
     // 4096/4/8 = 128 ; 128 对应了3'd01
@@ -69,6 +70,7 @@ module cp0_reg (
     assign                  CP0_Cause_IP7_2  = CP0.Cause.IP7_2;
     assign                  CP0_Cause_IP1_0  = CP0.Cause.IP1_0;
     assign                  CP0_EPC          = CP0.EPC;
+    assign                  CP0_Ebase        = CP0.Ebase;
     assign                  Interrupt_final  = Interrupt | {CP0_TimerInterrupt , 5'b0};  // 时钟中断号为IP7，在此标记
     assign                  config0_default = {
 	                            1'b1,   // M, config1 not implemented

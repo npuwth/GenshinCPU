@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-12 22:31:43
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:43:46
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -254,55 +254,55 @@ module TLBMMU (
         end
     end
 
-//---------------------------------判断是否发起请求------------------//
-    always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
-            I_IsTLBBufferValid = 1'b1; 
-        end
-        else if(I_TLBBuffer.IsInTLB == 1'b0) begin //TLB Buffer无效，则不发起请求
-            I_IsTLBBufferValid = 1'b0;
-        end
-        else if(I_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == I_TLBBuffer.ASID) || I_TLBBuffer.G)) begin //说明TLB Buffer对上了
-            if(Virt_Iaddr[12] == 1'b0) begin
-                if(I_TLBBuffer.V0 == 1'b0) I_IsTLBBufferValid = 1'b0; //判断是否有效
-                else                       I_IsTLBBufferValid = 1'b1;
-            end
-            else begin
-                if(I_TLBBuffer.V1 == 1'b0) I_IsTLBBufferValid = 1'b0;
-                else                       I_IsTLBBufferValid = 1'b1;
-            end
-        end
-        else begin     //说明TLB Buffer没有hit或进程号无效
-            I_IsTLBBufferValid= 1'b0;
-        end
-    end
+// //---------------------------------判断是否发起请求------------------//
+//     always_comb begin //TLBI
+//         if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
+//             I_IsTLBBufferValid = 1'b1; 
+//         end
+//         else if(I_TLBBuffer.IsInTLB == 1'b0) begin //TLB Buffer无效，则不发起请求
+//             I_IsTLBBufferValid = 1'b0;
+//         end
+//         else if(I_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == I_TLBBuffer.ASID) || I_TLBBuffer.G)) begin //说明TLB Buffer对上了
+//             if(Virt_Iaddr[12] == 1'b0) begin
+//                 if(I_TLBBuffer.V0 == 1'b0) I_IsTLBBufferValid = 1'b0; //判断是否有效
+//                 else                       I_IsTLBBufferValid = 1'b1;
+//             end
+//             else begin
+//                 if(I_TLBBuffer.V1 == 1'b0) I_IsTLBBufferValid = 1'b0;
+//                 else                       I_IsTLBBufferValid = 1'b1;
+//             end
+//         end
+//         else begin     //说明TLB Buffer没有hit或进程号无效
+//             I_IsTLBBufferValid= 1'b0;
+//         end
+//     end
 
-    always_comb begin //TLBD
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
-            D_IsTLBBufferValid = 1'b1; 
-        end
-        else if(D_TLBBuffer.IsInTLB == 1'b0) begin //TLB Buffer无效，则不发起请求
-            D_IsTLBBufferValid = 1'b0;
-        end
-        else if(MEM_LoadType.ReadMem == 1'b0 && MEM_StoreType.DMWr == 1'b0) begin //都没有访存请求，置为无效
-            D_IsTLBBufferValid = 1'b0;
-        end
-        else if(D_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == D_TLBBuffer.ASID) || D_TLBBuffer.G)) begin //说明TLB Buffer对上了
-            if(Virt_Daddr[12] == 1'b0) begin
-                if(D_TLBBuffer.V0 == 1'b0) D_IsTLBBufferValid = 1'b0; //判断是否有效
-                else if(D_TLBBuffer.V0 == 1'b1 && D_TLBBuffer.D0 == 1'b0 && MEM_StoreType.DMWr == 1'b1) D_IsTLBBufferValid = 1'b0; //判断是否有修改例外
-                else                       D_IsTLBBufferValid = 1'b1;
-            end
-            else begin
-                if(D_TLBBuffer.V1 == 1'b0) D_IsTLBBufferValid = 1'b0;
-                else if(D_TLBBuffer.V1 == 1'b1 && D_TLBBuffer.D1 == 1'b0 && MEM_StoreType.DMWr == 1'b1) D_IsTLBBufferValid = 1'b0;
-                else                       D_IsTLBBufferValid = 1'b1;
-            end
-        end
-        else begin     //说明TLB Buffer没有hit或进程号无效
-            D_IsTLBBufferValid= 1'b0;
-        end
-    end
+//     always_comb begin //TLBD
+//         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
+//             D_IsTLBBufferValid = 1'b1; 
+//         end
+//         else if(D_TLBBuffer.IsInTLB == 1'b0) begin //TLB Buffer无效，则不发起请求
+//             D_IsTLBBufferValid = 1'b0;
+//         end
+//         else if(MEM_LoadType.ReadMem == 1'b0 && MEM_StoreType.DMWr == 1'b0) begin //都没有访存请求，置为无效
+//             D_IsTLBBufferValid = 1'b0;
+//         end
+//         else if(D_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == D_TLBBuffer.ASID) || D_TLBBuffer.G)) begin //说明TLB Buffer对上了
+//             if(Virt_Daddr[12] == 1'b0) begin
+//                 if(D_TLBBuffer.V0 == 1'b0) D_IsTLBBufferValid = 1'b0; //判断是否有效
+//                 else if(D_TLBBuffer.V0 == 1'b1 && D_TLBBuffer.D0 == 1'b0 && MEM_StoreType.DMWr == 1'b1) D_IsTLBBufferValid = 1'b0; //判断是否有修改例外
+//                 else                       D_IsTLBBufferValid = 1'b1;
+//             end
+//             else begin
+//                 if(D_TLBBuffer.V1 == 1'b0) D_IsTLBBufferValid = 1'b0;
+//                 else if(D_TLBBuffer.V1 == 1'b1 && D_TLBBuffer.D1 == 1'b0 && MEM_StoreType.DMWr == 1'b1) D_IsTLBBufferValid = 1'b0;
+//                 else                       D_IsTLBBufferValid = 1'b1;
+//             end
+//         end
+//         else begin     //说明TLB Buffer没有hit或进程号无效
+//             D_IsTLBBufferValid= 1'b0;
+//         end
+//     end
 //---------------------------------------------------------------------------------------//
 //------------------------------------对TLB Buffer进行赋值---------------------------------//
     //--------------------对一整个TLB项进行换入换出----------------------//
@@ -494,7 +494,7 @@ module TLBMMU (
         else if(D_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == D_TLBBuffer.ASID) || D_TLBBuffer.G)) begin //说明TLB Buffer对上了
             if(Virt_Daddr[12] == 1'b0) begin
                 if(D_TLBBuffer.V0 == 1'b0) begin //无效异常
-                    if(MEM_LoadType.ReadMEM == 1'b1) begin
+                    if(MEM_LoadType.ReadMem == 1'b1) begin
                     D_IsTLBBufferValid = 1'b0; 
                     MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
                     MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b1;
@@ -530,7 +530,7 @@ module TLBMMU (
             end
             else begin
                 if(D_TLBBuffer.V1 == 1'b0) begin //无效异常
-                    if(MEM_LoadType.ReadMEM == 1'b1) begin
+                    if(MEM_LoadType.ReadMem == 1'b1) begin
                     D_IsTLBBufferValid = 1'b0; 
                     MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
                     MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b1;

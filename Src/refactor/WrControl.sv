@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-13 15:43:55
+ * @LastEditTime: 2021-07-13 15:59:48
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,10 +28,10 @@ module WrFlushControl(
     input logic [2:0] EX_Entry_Sel,             // 用于生成HILO的flush信号
     input logic       BranchFailed,             // 分支预测失败时，产生的flush
     input logic       ID_IsAImmeJump,           // ID级 的 J JAL指令
-    // input logic       Icache_data_ok,           // Icache信号 用于判断IF/ID写使能信号是否可以打开
     input logic       Icache_busy,              // Icache信号 表示Icache是否要暂停流水线 
-    // input logic       Dcache_data_ok,           // Dcache信号 用于判断IF/ID写使能信号是否可以打开
     input logic       Dcache_busy,              // Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
+    input logic       I_IsTLBStall,             // TLB
+    input logic       D_IsTLBStall,  
     input logic       I_IsTLBException,
     input logic       D_IsTLBException,
 

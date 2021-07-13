@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 15:53:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 16:36:42
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -23,6 +23,7 @@ module TOP_MEM (
     input logic  [5:0]           Interrupt,//中断
     input ExceptinPipeType       MEM_ExceptType_new,
     input logic                  MEM_DisWr,
+    input logic                  D_IsTLBBufferValid,
     EXE_MEM_Interface            EMBus,
     MEM_MEM2_Interface           MM2Bus,
     CP0_MMU_Interface            CMBus,
@@ -64,10 +65,11 @@ module TOP_MEM (
     logic                        CP0_Status_IE;
     logic [7:2]                  CP0_Cause_IP7_2;
     logic [1:0]                  CP0_Cause_IP1_0;
+    logic [31:0]                 CP0_Ebase;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType     = MM2Bus.MEM_RegsWrType_final;  // 传给EXE用于旁路
+    assign EMBus.MEM_RegsWrType     = MM2Bus.MEM_RegsWrType;  // 传给EXE用于旁路
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high
     assign EMBus.MEM_Result         = MEM_Result;                   // 传给EXE用于旁路    
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
@@ -75,7 +77,7 @@ module TOP_MEM (
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
 
-    assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
+    assign MEM_Final_Wr             = (MEM_DisWr)? '0: MM2Bus.MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -161,7 +163,7 @@ module TOP_MEM (
         .MEM_IsTLBP             (MEM_IsTLBP ),
         .MEM_IsTLBR             (MEM_IsTLBR ),
         .CMBus                  (CMBus.CP0 ),
-        .MEM2_ExceptType        (MM2Bus.MEM2_ExcType ),
+        .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
         .MEM2_PC                (MM2Bus.MEM2_PC ),
         .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot ),
         .MEM2_ALUOut            (MM2Bus.MEM2_ALUOut ),
@@ -188,26 +190,26 @@ module TOP_MEM (
     //---------------------------------------------------------------------------//
 //-------------------------------------------TO Cache-------------------------------//
     assign cpu_dbus.wdata                                 =  MM2Bus.MEM_ALUOut;
-    assign cpu_dbus.valid                                 = (MM2Bus.MEM_LoadType.ReadMem || MM2Bus.MEM_StoreType.DMWr )  ? 1 : 0;
+    assign cpu_dbus.valid                                 = (MEM_LoadType.ReadMem || MEM_StoreType.DMWr )  ? 1 : 0;
     assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  =  MM2Bus.MEM_ALUOut;                 // inst_sram_addr_o 虚拟地址
-    assign cpu_dbus.op                                    = (MM2Bus.MEM_LoadType.ReadMem)? 1'b0 :
-                                                            (MM2Bus.MEM_StoreType.DMWr) ? 1'b1  :
+    assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
+                                                            (MEM_StoreType.DMWr) ? 1'b1  :
                                                              1'bx;
     // assign MM2Bus.MEM_DMOut                               = cpu_dbus.rdata;       //读取结果直接放入DMOut
-    assign cpu_dbus.storeType                             = MM2Bus.MEM_StoreType;
+    // assign cpu_dbus.storeType                             = MM2Bus.MEM_StoreType;
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
-    assign cpu_dbus.loadType                              = MM2Bus.MEM_LoadType;
-    DCache U_DCACHE(  // TODO: cache的组织结构
-        .clk            (clk),
-        .resetn         (resetn),
-        .Phsy_Daddr     (Phsy_Daddr),
-        .D_IsCached     (D_IsCached),
-        .MEM_Wr         (MEM_Wr),
-        .CPUBus         (cpu_dbus.slave),
-        .AXIBus         (axi_dbus.master),
-        .UBus           (axi_ubus.master),
-        .Virt_Daddr     (Virt_Daddr)
-    );
+    assign cpu_dbus.loadType                              = MEM_LoadType;
+    // DCache U_DCACHE(  // TODO: cache的组织结构
+    //     .clk            (clk),
+    //     .resetn         (resetn),
+    //     .Phsy_Daddr     (Phsy_Daddr),
+    //     .D_IsCached     (D_IsCached),
+    //     .MEM_Wr         (MEM_Wr),
+    //     .CPUBus         (cpu_dbus.slave),
+    //     .AXIBus         (axi_dbus.master),
+    //     .UBus           (axi_ubus.master),
+    //     .Virt_Daddr     (Virt_Daddr)
+    // );
 
     MUX4to1 #(32) U_MUX_OutB2 ( 
         .d0             (RFHILO_Bus),
