@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-09 12:15:31
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-13 15:43:55
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,38 +13,48 @@
 `include "CPU_Defines.svh"
 `include "CommonDefines.svh"
 module WrFlushControl(
-    input logic       ID_Flush_Exception ,  //异常产生在IF/ID级的flush 
-    input logic       EXE_Flush_Exception,  //异常产生在ID/EXE级的flush
-    input logic       MEM_Flush_Exception, //异常产生在EXE/MEM级的flush
-    input logic       DH_PCWr,             // Load & R型的数据冒险 & （前load 后 store的冒险 —— 以删除）  1代表没有出现该异常，流水线可以流动
-    input logic       DH_IDWr,             // Load & R型的数据冒险 & （前load 后 store的冒险 —— 以删除）
+    // 异常有关的信号
+    input logic       IF_Flush_Exception ,  //异常产生在IF级的flush 
+    input logic       ID_Flush_Exception ,  //异常产生在ID级的flush 
+    input logic       EXE_Flush_Exception,  //异常产生在EXE级的flush
+    input logic       MEM_Flush_Exception, //异常产生在MEM级的flush
+    // 数据冒险对应的写使能的关闭
+    input logic       DH_PreIFWr,          // Load & R型的数据冒险   1代表没有出现该异常，流水线可以流动
+    input logic       DH_IFWr,             // Load & R型的数据冒险 
+    input logic       DH_IDWr,             // Load & R型的数据冒险 
     input logic       EXE_Flush_DataHazard, // 数据冒险产生的flush  
+    // 乘除法 
     input logic       DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
-    input logic [2:0] EX_Entry_Sel,      // 用于生成HILO的flush信号
+    input logic [2:0] EX_Entry_Sel,             // 用于生成HILO的flush信号
     input logic       BranchFailed,             // 分支预测失败时，产生的flush
     input logic       ID_IsAImmeJump,           // ID级 的 J JAL指令
-    input logic       Icache_data_ok,           // Icache信号 用于判断IF/ID写使能信号是否可以打开
-    input logic       Icache_busy,              // Icache信号 表示Icache是否要暂停流水线
-    input logic       Dcache_data_ok,           // Icache信号 用于判断IF/ID写使能信号是否可以打开
-    input logic       Dcache_busy,              // Icache信号 表示Icache是否要暂停流水线
+    // input logic       Icache_data_ok,           // Icache信号 用于判断IF/ID写使能信号是否可以打开
+    input logic       Icache_busy,              // Icache信号 表示Icache是否要暂停流水线 
+    // input logic       Dcache_data_ok,           // Dcache信号 用于判断IF/ID写使能信号是否可以打开
+    input logic       Dcache_busy,              // Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
     input logic       I_IsTLBException,
     input logic       D_IsTLBException,
 
-    output logic      PC_Wr,
+    output logic      PreIFWr,
+    output logic      IF_Wr,
     output logic      ID_Wr,
     output logic      EXE_Wr,
     output logic      MEM_Wr,
+    output logic      MEM2_Wr,
     output logic      WB_Wr,
      
+    output logic      IF_Flush,
     output logic      ID_Flush,
     output logic      EXE_Flush,
     output logic      MEM_Flush,
-    output logic      MEM_DisWr,
+    output logic      MEM2_Flush,
     output logic      WB_Flush,
-    output logic      WB_DisWr,
-    output logic      HiLo_Not_Flush,
-    output logic      IcacheFlush, //给Icache的Flush
-    output logic      DcacheFlush //给Icache的Flush
+    output logic      MEM_DisWr,      //传到MEM级关闭CP0的写使能
+    output logic      WB_DisWr,       // 用于停滞流水线
+    
+    output logic      HiLo_Not_Flush, // 只有在出现异常的时候，需要关闭HILO的flush信号
+    output logic      IcacheFlush,    //给Icache的Flush
+    output logic      DcacheFlush     //给Dcache的Flush
     
 
 );
@@ -79,26 +89,26 @@ module WrFlushControl(
             DcacheFlush = 1'b0;
         end
     end
-    // PC_Wr
+    // PreIFWr
     always_comb begin
         if (Exception == `FlushEnable) begin
-            PC_Wr   = 1'b1;
+            PreIFWr   = 1'b1;
         end 
         else if (Dcache_busy == `CACHEBUSY|| Icache_busy == `CACHEBUSY) begin
-            PC_Wr   = 1'b0;
+            PreIFWr   = 1'b0;
         end
         else if (EXE_Flush_DataHazard == 1'b1) begin // Icache 的状态影响不到数据冒险的情况
-            PC_Wr = 1'b0;
+            PreIFWr = 1'b0;
         end
         else if (BranchFailed == `BRANCKFAILED  ) begin // 在D$空闲的情况下，考虑分支跳转失败，J JAL指令 JALR指令需要给出PC写使能
-            PC_Wr   = 1'b1;
+            PreIFWr   = 1'b1;
         end
         else begin
-            if (DH_PCWr == 1'b0 || DIVMULTBusy == 1'b1) begin  // 数据冒险 & 乘除法
-                PC_Wr = 1'b0;
+            if (DH_PreIFWr == 1'b0 || DIVMULTBusy == 1'b1) begin  // 数据冒险 & 乘除法
+                PreIFWr = 1'b0;
             end
             else begin
-                PC_Wr = 1'b1;
+                PreIFWr = 1'b1;
             end
         end
     end
@@ -256,13 +266,14 @@ module WrFlushControl(
         end
     end
 
-    // HILO的flush
+    // HILO的flush  如果出现异常 产生flush信号，需要打断状态机
+    // 乘除法中的状态机会被打断
     always_comb begin
         HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
     end
 
 
-        // PC_Wr = (ID_Flush_Exception)? 1: DH_PCWr & DIVMULTBusy;    //在load & R型的时候 以及乘除法的时候产生
+        // PreIFWr = (ID_Flush_Exception)? 1: DH_PreIFWr & DIVMULTBusy;    //在load & R型的时候 以及乘除法的时候产生
         // ID_Wr = DH_IDWr & DIVMULTBusy;    //在load & R型的时候 以及乘除法的时候产生
         // EXE_Wr = ~EXE_MULTDIVStall;
         // MEM_Wr = 1;

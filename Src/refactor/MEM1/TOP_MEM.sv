@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 15:18:36
+ * @LastEditTime: 2021-07-13 15:53:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -152,6 +152,7 @@ module TOP_MEM (
         .clk                    (clk ),
         .rst                    (resetn ),
         .Interrupt              (Interrupt ),
+        .CP0_Sel                (MM2Bus.MEM_Instr[2:0]),
         .CP0_RdAddr             (MEM_rd ),
         .CP0_RdData             (CP0_Bus ),
         .MEM_RegsWrType         (MEM_Final_Wr ),
@@ -176,12 +177,12 @@ module TOP_MEM (
 
     
     //------------------------------用于旁路的多选器-------------------------------//
-    MUX2to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
+    MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                      (MM2Bus.MEM_PC + 8),
         .d1                      (MM2Bus.MEM_ALUOut),
         .d2                      (RFHILO_Bus       ),
         .d3                      ('x               ),
-        .sel2_to_1               (MM2Bus.MEM_WbSel ),
+        .sel4_to_1               (MM2Bus.MEM_WbSel ),
         .y                       (MEM_Result       )
     );
     //---------------------------------------------------------------------------//

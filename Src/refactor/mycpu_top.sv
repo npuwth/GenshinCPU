@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 15:46:26
+ * @LastEditTime: 2021-07-13 15:49:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -70,6 +70,7 @@ module mycpu_top (
     logic                      EXE_Flush_DataHazard;      //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [2:0]                EX_Entry_Sel;         //来自MEM级，表示有异常或异常返回
+    logic [31:0]               Exception_Vector;
     logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
     logic                      ID_IsAImmeJump;            //来自ID级，表示是j，jal跳转
     logic [31:0]               CP0_EPC;                   //来自MEM级的EPC
@@ -84,14 +85,14 @@ module mycpu_top (
     logic                      MEM_Flush;                 //来自WRFlushControl
     logic                      WB_Flush;                  //来自WRFlushControl
     //--------------------------------------------------------------------------------------//
-    logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级 
+    logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
     logic                      WB_DisWr;                  //来自WRFlushControl,传至WB级，用于生成WB_Final_Wr
     logic                      HiLo_Not_Flush;            //来自WRFlushControl,传至HILO寄存器
 
     logic [31:0]               EXE_BusA_L1;               //来自EXE，用于MT指令写HiLo，也用于生成jr的npc
     
     RegsWrType                 WB_RegsWrType;             //WB级的写使能
-
+    logic [4:0]                MEM_rt;                    //用于ID级检测load类型指令的数据冒险
     BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
     logic [31:0]               EXE_PC;                    //来自EXE级，传至IF，用于生成NPC
     logic [31:0]               EXE_Imm32;                 //来自EXE级，传至IF，用于生成NPC  
@@ -111,7 +112,7 @@ module mycpu_top (
     ExceptinPipeType           IF_ExceptType_new;         //用于TLB例外的判断   
     ExceptinPipeType           MEM_ExceptType;            //用于TLB例外的判断    
     ExceptinPipeType           MEM_ExceptType_new;        //用于TLB例外的判断    
-    LoadType                   MEM_LoadType;              //用于TLB例外的判断 
+    LoadType                   MEM_LoadType;              //用于TLB例外的判断 & load指令的数据冒险
     StoreType                  MEM_StoreType;             //用于TLB例外的判断 
     logic                      I_IsTLBBufferValid;        //表示是否向Cache发请求
     logic                      D_IsTLBBufferValid;        //表示是否向Cache发请求
@@ -131,7 +132,8 @@ module mycpu_top (
     IF_ID_Interface             IIBus();
     ID_EXE_Interface            IEBus();
     EXE_MEM_Interface           EMBus();
-    MEM_WB_Interface            MWBus();
+    MEM_MEM2_Interface          MM2Bus();
+    MEM2_WB_Interface           M2WBus();
     CP0_MMU_Interface           CMBus();
     //--------------------------------------------------------------------------------------------------------------//
     WrFlushControl U_WRFlushControl (
@@ -260,13 +262,14 @@ module mycpu_top (
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_RegsWrType             (WB_RegsWrType ),
-        .MEM_rt                    (MEM_rt),   //TODO:连线
+        .MEM_rt                    (MEM_rt),   
         .MEM_ReadMEM               (MEM_LoadType.MEM_ReadMEM), // load信号用于数据冒险 TODO:连线
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
-        .DH_PCWr                   (DH_PCWr),
+        .DH_PreIFWr                (DH_PreIFWr),
+        .DH_IFWr                   (DH_IFWr),
         .DH_IDWr                   (DH_IDWr),
         .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
     );
@@ -308,7 +311,7 @@ module mycpu_top (
         .MEM_DisWr                 (MEM_DisWr),
         .D_IsTLBBufferValid        (D_IsTLBBufferValid ),
         .EMBus                     (EMBus.MEM ),
-        .MWBus                     (MWBus.MEM ),
+        .MM2Bus                    (MM2Bus.MEM ),
         .CMBus                     (CMBus ),
         .cpu_dbus                  (cpu_dbus),
         .axi_dbus                  (axi_dbus),
@@ -349,7 +352,7 @@ module mycpu_top (
         .WB_Flush                  (WB_Flush ),
         .WB_Wr                     (WB_Wr ),
         .WB_DisWr                  (WB_DisWr ),
-        .MWBus                     (MWBus.WB ),
+        .M2WBus                    (M2WBus.WB ),
         //--------------------------output-------------------------//
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),

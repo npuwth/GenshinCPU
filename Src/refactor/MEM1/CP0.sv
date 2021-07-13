@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-13 15:10:35
+ * @LastEditTime: 2021-07-13 15:53:03
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,6 +18,7 @@ module cp0_reg (
     input logic             clk,
     input logic             rst,
     input logic  [5:0]      Interrupt,                 //6个外部硬件中断输入 
+    input logic  [2:0]      CP0_Sel,
     // read port        
     input logic  [4:0]      CP0_RdAddr,                //要读取的CP0寄存器的地址
     output logic [31:0]     CP0_RdData,                //读出的CP0某个寄存器的值 
@@ -363,7 +364,7 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Ebase                      <= 32'h8000_0000;
         end 
-       else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE) begin //TODO:sel0,sel1
+       else if(MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_EBASE && CP0_Sel == 3'b1) begin //TODO:sel0,sel1
             CP0.Ebase[29:12]               <= MEM_Result[29:12];
         end
     end
@@ -373,10 +374,9 @@ module cp0_reg (
         if(rst == `RstEnable) begin
             CP0.Config0                    <=  config0_default;
         end
-        else if (MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_CONFIG0) begin
+        else if (MEM_RegsWrType.CP0Wr == 1'b1 && MEM_Dst == `CP0_REG_CONFIG0 && CP0_Sel == 3'b0) begin
             CP0.Config0[2:0]               <=  MEM_Result[2:0];
         end 
-
     end
 // CONFIG1   Read only 
     always_ff @(posedge clk) begin
