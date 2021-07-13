@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-13 22:25:15
+ * @LastEditTime: 2021-07-13 22:33:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -165,7 +165,8 @@ we_t wb_we;//store的写使能
 
 line_t [ASSOC_NUM-1:0] data_rdata;
 logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
-logic [31:0] data_rdata_final;
+logic [31:0] data_rdata_final;//
+logic [31:0] data_rdata_final2;//经过ext2的数据
 line_t data_wdata;
 we_t  data_we;//数据表的写使能
 
@@ -186,7 +187,7 @@ logic busy_collision;
 
 //连cpu_bus接口
 assign cpu_bus.busy   = busy;
-assign cpu_bus.rdata  = data_rdata_final;
+assign cpu_bus.rdata  = data_rdata_final2;
 
 //连axi_bus接口
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
@@ -290,6 +291,50 @@ assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
+
+
+always_comb begin : data_rdata_final2_blockname
+    unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
+          `LOADTYPE_LW: begin
+            data_rdata_final2 = data_rdata_final;  //LW
+          end 
+          `LOADTYPE_LH: begin
+            if(req_buffer.offset[1] == 1'b0) //LH
+              data_rdata_final2 = {{16{data_rdata_final[15]}},data_rdata_final[15:0]};
+            else
+              data_rdata_final2 = {{16{data_rdata_final[31]}},data_rdata_final[31:16]}; 
+          end
+          `LOADTYPE_LHU: begin
+            if(req_buffer.offset[1] == 1'b0) //LHU
+              data_rdata_final2 = {16'b0,data_rdata_final[15:0]};
+            else
+              data_rdata_final2 = {16'b0,data_rdata_final[31:16]};
+          end
+          `LOADTYPE_LB: begin
+            if(req_buffer.offset[1:0] == 2'b00) //LB
+              data_rdata_final2 = {{24{data_rdata_final[7]}},data_rdata_final[7:0]};
+            else if(req_buffer.offset[1:0] == 2'b01)
+              data_rdata_final2 = {{24{data_rdata_final[15]}},data_rdata_final[15:8]};
+            else if(req_buffer.offset[1:0] == 2'b10)
+              data_rdata_final2 = {{24{data_rdata_final[23]}},data_rdata_final[23:16]};
+            else
+              data_rdata_final2 = {{24{data_rdata_final[31]}},data_rdata_final[31:24]};
+          end
+          `LOADTYPE_LBU: begin
+            if(req_buffer.offset[1:0] == 2'b00) //LBU
+              data_rdata_final2 = {24'b0,data_rdata_final[7:0]};
+            else if(req_buffer.offset[1:0] == 2'b01)
+              data_rdata_final2 = {24'b0,data_rdata_final[15:8]};
+            else if(req_buffer.offset[1:0] == 2'b10)
+              data_rdata_final2 = {24'b0,data_rdata_final[23:16]};
+            else
+              data_rdata_final2 = {24'b0,data_rdata_final[31:24]};
+          end
+          default: begin
+            data_rdata_final2 = 32'bx;
+          end
+        endcase
+end
 
 
 always_comb begin : store_wdata_block//TODO:救命写不出来
