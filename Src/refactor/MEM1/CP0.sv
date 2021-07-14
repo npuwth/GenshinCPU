@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-13 16:47:28
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-14 16:56:11
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -321,23 +321,24 @@ module cp0_reg (
         end
         else begin
             case(MEM2_ExcType) 
-                `EX_Interrupt:            CP0.Cause.ExcCode<=5'h00;        
-                `EX_WrongAddressinIF:     CP0.Cause.ExcCode<=5'h04;        
-                `EX_ReservedInstruction:  CP0.Cause.ExcCode<=5'h0a;        
-                `EX_Syscall:              CP0.Cause.ExcCode<=5'h08;        
-                `EX_Break:                CP0.Cause.ExcCode<=5'h09;        
-                `EX_Trap:                 CP0.Cause.ExcCode<=5'h0d;        
-                `EX_Overflow:             CP0.Cause.ExcCode<=5'h0c;        
-                `EX_WrWrongAddressinMEM:  CP0.Cause.ExcCode<=5'h05;        
-                `EX_RdWrongAddressinMEM:  CP0.Cause.ExcCode<=5'h04;
-                `EX_TLBRefillinIF:        CP0.Cause.ExcCode<=5'h02;//TLBL        
-                `EX_TLBInvalidinIF:       CP0.Cause.ExcCode<=5'h02;//TLBL       
-                `EX_RdTLBRefillinMEM:     CP0.Cause.ExcCode<=5'h02;//TLBL       
-                `EX_RdTLBInvalidinMEM:    CP0.Cause.ExcCode<=5'h02;//TLBL
-                `EX_WrTLBRefillinMEM:     CP0.Cause.ExcCode<=5'h03;//TLBS
-                `EX_WrTLBInvalidinMEM:    CP0.Cause.ExcCode<=5'h03;//TLBS
-                `EX_TLBModified:          CP0.Cause.ExcCode<=5'h01;//Mod
-                default:                  CP0.Cause.ExcCode<=CP0.Cause.ExcCode;
+                `EX_Interrupt:            CP0.Cause.ExcCode <= 5'h00;        
+                `EX_TLBModified:          CP0.Cause.ExcCode <= 5'h01;//Mod
+                `EX_TLBRefillinIF:        CP0.Cause.ExcCode <= 5'h02;//TLBL        
+                `EX_TLBInvalidinIF:       CP0.Cause.ExcCode <= 5'h02;//TLBL       
+                `EX_RdTLBRefillinMEM:     CP0.Cause.ExcCode <= 5'h02;//TLBL       
+                `EX_RdTLBInvalidinMEM:    CP0.Cause.ExcCode <= 5'h02;//TLBL
+                `EX_WrTLBRefillinMEM:     CP0.Cause.ExcCode <= 5'h03;//TLBS
+                `EX_WrTLBInvalidinMEM:    CP0.Cause.ExcCode <= 5'h03;//TLBS
+                `EX_WrongAddressinIF:     CP0.Cause.ExcCode <= 5'h04;        
+                `EX_RdWrongAddressinMEM:  CP0.Cause.ExcCode <= 5'h04;
+                `EX_WrWrongAddressinMEM:  CP0.Cause.ExcCode <= 5'h05;        
+                `EX_Syscall:              CP0.Cause.ExcCode <= 5'h08;        
+                `EX_Break:                CP0.Cause.ExcCode <= 5'h09;        
+                `EX_ReservedInstruction:  CP0.Cause.ExcCode <= 5'h0a;
+                `EX_CpU:                  CP0.Cause.ExcCode <= 5'h0b;
+                `EX_Overflow:             CP0.Cause.ExcCode <= 5'h0c;        
+                `EX_Trap:                 CP0.Cause.ExcCode <= 5'h0d;        
+                default:                  CP0.Cause.ExcCode <= CP0.Cause.ExcCode;
             endcase
         end
     end

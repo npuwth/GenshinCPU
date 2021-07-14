@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-13 16:43:46
+ * @LastEditTime: 2021-07-14 16:57:24
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -394,19 +394,20 @@ module TLBMMU (
     assign IF_ExceptType_new.Interrupt                      = IF_ExceptType.Interrupt;
     assign IF_ExceptType_new.WrongAddressinIF               = IF_ExceptType.WrongAddressinIF;
     assign IF_ExceptType_new.ReservedInstruction            = IF_ExceptType.ReservedInstruction;
+    assign IF_ExceptType_new.CoprocessorUnusable            = IF_ExceptType.CoprocessorUnusable;
+    assign IF_ExceptType_new.Overflow                       = IF_ExceptType.Overflow;
     assign IF_ExceptType_new.Syscall                        = IF_ExceptType.Syscall;
     assign IF_ExceptType_new.Break                          = IF_ExceptType.Break;
     assign IF_ExceptType_new.Eret                           = IF_ExceptType.Eret;
     assign IF_ExceptType_new.WrWrongAddressinMEM            = IF_ExceptType.WrWrongAddressinMEM;
     assign IF_ExceptType_new.RdWrongAddressinMEM            = IF_ExceptType.RdWrongAddressinMEM;
-    assign IF_ExceptType_new.Overflow                       = IF_ExceptType.Overflow;
-    assign IF_ExceptType_new.Refetch                        = IF_ExceptType.Refetch;
-    assign IF_ExceptType_new.Trap                           = IF_ExceptType.Trap;
     assign IF_ExceptType_new.RdTLBRefillinMEM               = IF_ExceptType.RdTLBRefillinMEM;
     assign IF_ExceptType_new.RdTLBInvalidinMEM              = IF_ExceptType.RdTLBInvalidinMEM;
     assign IF_ExceptType_new.WrTLBRefillinMEM               = IF_ExceptType.WrTLBRefillinMEM;
     assign IF_ExceptType_new.WrTLBInvalidinMEM              = IF_ExceptType.WrTLBInvalidinMEM;
     assign IF_ExceptType_new.TLBModified                    = IF_ExceptType.TLBModified;
+    assign IF_ExceptType_new.Refetch                        = IF_ExceptType.Refetch;
+    assign IF_ExceptType_new.Trap                           = IF_ExceptType.Trap;
 
     always_comb begin //TLBI
         if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效，没有异常
@@ -455,16 +456,17 @@ module TLBMMU (
     assign MEM_ExceptType_new.Interrupt                     = MEM_ExceptType.Interrupt;
     assign MEM_ExceptType_new.WrongAddressinIF              = MEM_ExceptType.WrongAddressinIF;
     assign MEM_ExceptType_new.ReservedInstruction           = MEM_ExceptType.ReservedInstruction;
+    assign MEM_ExceptType_new.CoprocessorUnusable           = MEM_ExceptType.CoprocessorUnusable;
+    assign MEM_ExceptType_new.Overflow                      = MEM_ExceptType.Overflow;
     assign MEM_ExceptType_new.Syscall                       = MEM_ExceptType.Syscall;
     assign MEM_ExceptType_new.Break                         = MEM_ExceptType.Break;
     assign MEM_ExceptType_new.Eret                          = MEM_ExceptType.Eret;
     assign MEM_ExceptType_new.WrWrongAddressinMEM           = MEM_ExceptType.WrWrongAddressinMEM;
     assign MEM_ExceptType_new.RdWrongAddressinMEM           = MEM_ExceptType.RdWrongAddressinMEM;
-    assign MEM_ExceptType_new.Overflow                      = MEM_ExceptType.Overflow;
-    assign MEM_ExceptType_new.Refetch                       = MEM_ExceptType.Refetch;
-    assign MEM_ExceptType_new.Trap                          = MEM_ExceptType.Trap;
     assign MEM_ExceptType_new.TLBRefillinIF                 = MEM_ExceptType.TLBRefillinIF;
     assign MEM_ExceptType_new.TLBInvalidinIF                = MEM_ExceptType.TLBInvalidinIF;
+    assign MEM_ExceptType_new.Trap                          = MEM_ExceptType.Trap;
+    assign MEM_ExceptType_new.Refetch                       = MEM_ExceptType.Refetch;
     
     always_comb begin //TLBD
         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
