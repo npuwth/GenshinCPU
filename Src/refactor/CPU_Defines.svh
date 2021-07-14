@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-13 16:47:40
+ * @LastEditTime: 2021-07-14 21:13:48
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -143,6 +143,10 @@ typedef struct packed {
 } CP0_Index;
 
 typedef struct packed {
+	logic    [3:0]       Random;
+} CP0_Random;
+
+typedef struct packed {
 	logic    [25:6]	     PFN0;
 	logic    [5:3]       C0;
 	logic    [2:2]       D0;
@@ -157,6 +161,15 @@ typedef struct packed {
 	logic    [1:1]       V1;
 	logic    [0:0]       G1;
 } CP0_EntryLo1;
+
+typedef struct packed {
+	logic    [31:23]     PTEBase;
+	logic    [22:4]      BadVPN2;
+} CP0_Context;
+
+typedef struct packed {
+	logic    [3:0]       Wired;
+} CP0_Wired;
 
 typedef struct packed {
 	logic    [31:13]	 VPN2;
@@ -209,8 +222,12 @@ typedef struct packed {
 
 typedef struct packed {
 	CP0_Index       Index;     // 0号
+	CP0_Random		Random;    // 1号
 	CP0_EntryLo0    EntryLo0;  // 2号
 	CP0_EntryLo1    EntryLo1;  // 3号
+	CP0_Context     Context;   // 4号
+	logic [31:0]	PageMask;  // 5号
+	CP0_Wired   	Wired;     // 6号
 	logic [31:0]    BadVAddr;  // 8号
 	logic [31:0]    Count;     // 9号
 	CP0_EntryHi     EntryHi;   // 10号
@@ -290,6 +307,7 @@ interface ID_EXE_Interface();
 	logic                   ID_IsTLBP;
 	logic                   ID_IsTLBW;
 	logic                   ID_IsTLBR;
+	logic                   ID_TLBWIorR;
 	logic 		[`ALUOpLen] ID_ALUOp;	 		// ALU操作符
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  		// StoreType信号
@@ -332,6 +350,7 @@ interface ID_EXE_Interface();
 	output                  ID_IsTLBP,
 	output                  ID_IsTLBW,
 	output                  ID_IsTLBR,
+	output                  ID_TLBWIorR,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_Instr
@@ -362,6 +381,7 @@ interface ID_EXE_Interface();
 	input                   ID_IsTLBP,
 	input                   ID_IsTLBW,
 	input                   ID_IsTLBR,
+	input                   ID_TLBWIorR,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_Instr
@@ -388,6 +408,7 @@ interface EXE_MEM_Interface();
 	logic                   EXE_IsTLBP;
 	logic                   EXE_IsTLBW;
 	logic                   EXE_IsTLBR;
+	logic                   EXE_TLBWIorR;
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
 	logic       [4:0]       EXE_rt;
@@ -418,6 +439,7 @@ interface EXE_MEM_Interface();
 	output                  EXE_IsTLBP,
 	output                  EXE_IsTLBW,
 	output                  EXE_IsTLBR,
+	output                  EXE_TLBWIorR,
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
 	output   			  	EXE_rt,
@@ -447,6 +469,7 @@ interface EXE_MEM_Interface();
 	input                   EXE_IsTLBP,
 	input                   EXE_IsTLBW,
 	input                   EXE_IsTLBR,
+	input                   EXE_TLBWIorR,
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
 	input   			  	EXE_rt,
@@ -559,43 +582,6 @@ interface MEM2_WB_Interface();
 
 endinterface
 
-// interface WB_CP0_Interface ();
-    
-// 	logic                   WB_CP0Wr_MTC0;
-// 	logic                   WB_CP0Wr_TLBR;
-// 	logic [4:0]             WB_Dst;
-// 	logic [31:0]            WB_Result;
-// 	ExceptinPipeType        WB_ExceptType;
-// 	logic [31:0]            WB_PC;
-// 	logic                   WB_IsInDelaySlot;
-// 	logic [31:0]            WB_ALUOut;
-// 	logic                   WB_IsTLBR;
-
-// 	modport WB ( 
-//  output                  WB_CP0Wr_MTC0,
-// 	output                  WB_CP0Wr_TLBR,
-// 	output                  WB_Dst,
-// 	output                  WB_Result,
-// 	output                  WB_ExceptType,
-// 	output                  WB_PC,
-// 	output                  WB_IsInDelaySlot,
-// 	output                  WB_ALUOut,
-// 	output                  WB_IsTLBR
-// 	);
-
-// 	modport CP0 ( 
-//     input                   WB_CP0Wr_MTC0,
-// 	input                   WB_CP0Wr_TLBR,
-// 	input                   WB_Dst,
-// 	input                   WB_Result,
-// 	input                   WB_ExceptType,
-// 	input                   WB_PC,
-// 	input                   WB_IsInDelaySlot,
-// 	input                   WB_ALUOut,
-// 	input                   WB_IsTLBR
-// 	);
-
-// endinterface
 
 interface CP0_MMU_Interface ();
      
@@ -612,6 +598,7 @@ interface CP0_MMU_Interface ();
 	logic                   CP0_v1;     //用于查TLB和写TLB
 	logic                   CP0_g1;     //用于查TLB和写TLB
 	logic [3:0]             CP0_index;  //16项的TLB，log16,所以位宽是4
+	logic [3:0]             CP0_random; //同上
     logic [18:0]            MMU_vpn2;   //用于TLBR，写CP0    
 	logic [7:0]             MMU_asid;   //用于TLBR，写CP0  
 	logic [19:0]            MMU_pfn0;   //用于TLBR，写CP0  
@@ -641,6 +628,7 @@ interface CP0_MMU_Interface ();
 	output                  CP0_v1,
 	output                  CP0_g1,
 	output                  CP0_index,
+	output                  CP0_random,
 	input                   MMU_vpn2,
 	input                   MMU_asid,
 	input                   MMU_pfn0,
@@ -671,6 +659,7 @@ interface CP0_MMU_Interface ();
 	input                   CP0_v1,
 	input                   CP0_g1,
 	input                   CP0_index,
+	input                   CP0_random,
 	output                  MMU_vpn2,
 	output                  MMU_asid,
 	output                  MMU_pfn0,

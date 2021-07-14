@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 21:20:05
+ * @LastEditTime: 2021-07-14 21:04:35
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -36,7 +36,7 @@ module TOP_MEM (
     output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
     output logic                 MEM_IsTLBW,
-    // output logic                 MEM_IsTLBR,
+    output logic                 MEM_TLBWIorR,
     output logic [31:0]          MEM_PC,
     output logic [31:0]          CP0_EPC,
     output ExceptinPipeType      MEM_ExceptType,
@@ -100,6 +100,7 @@ module TOP_MEM (
         .EXE_IsTLBP              (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
+        .EXE_TLBWIorR            (EMBus.EXE_TLBWIorR),
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
         .EXE_rt                  (EMBus.EXE_rt),
@@ -121,6 +122,7 @@ module TOP_MEM (
         .MEM_IsTLBP              (MEM_IsTLBP),
         .MEM_IsTLBW              (MEM_IsTLBW),
         .MEM_IsTLBR              (MEM_IsTLBR),
+        .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
         .MEM_rt                  (MEM_rt)

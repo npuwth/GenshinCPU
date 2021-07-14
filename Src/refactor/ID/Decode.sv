@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-13 17:14:34
+ * @LastEditTime: 2021-07-14 21:23:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -40,12 +40,14 @@ module Decode(
     output logic       ID_IsTLBP,
     output logic       ID_IsTLBW,
     output logic       ID_IsTLBR,
+    output logic       ID_TLBWIorR,
     output logic [2:0] ID_TrapOp
     );
 
     assign ID_IsTLBP = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
-    assign ID_IsTLBW = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010);
+    assign ID_IsTLBW = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010 || ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
     assign ID_IsTLBR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000001);
+    assign ID_TLBWIorR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
 
     logic [5:0]opcode;
     logic [5:0]funct;
@@ -1494,6 +1496,22 @@ module Decode(
       end
       
       OP_TLBWI:begin//search
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;
+      end
+
+      OP_TLBWR:begin//search
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_LoadType   = '0;
         ID_StoreType  = '0;

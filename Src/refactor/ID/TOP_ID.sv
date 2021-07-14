@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 19:33:46
+ * @LastEditTime: 2021-07-14 21:19:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -121,6 +121,7 @@ module TOP_ID (
         .ID_IsTLBP           (IEBus.ID_IsTLBP),
         .ID_IsTLBW           (IEBus.ID_IsTLBW),
         .ID_IsTLBR           (IEBus.ID_IsTLBR),
+        .ID_TLBWIorR         (IEBus.ID_TLBWIorR),
         .ID_TrapOp           (IEBus.ID_TrapOp)
     );
 

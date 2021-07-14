@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 21:31:53
+ * @LastEditTime: 2021-07-14 21:05:35
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -120,6 +120,7 @@ module mycpu_top (
     logic                      I_IsTLBException;          //指示TLB例外
     logic                      D_IsTLBException;          //指示TLB例外
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
+    logic                      MEM_TLBWIorR;              //表示是TLBWI还是TLBWR
     logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
     ExceptinPipeType           IF_ExceptType;             //用于TLB例外的判断        
     ExceptinPipeType           IF_ExceptType_new;         //用于TLB例外的判断   
@@ -343,6 +344,7 @@ module mycpu_top (
         .Virt_Daddr                (Virt_Daddr),
         .MEM_IsTLBP                (MEM_IsTLBP),
         .MEM_IsTLBW                (MEM_IsTLBW),
+        .MEM_TLBWIorR              (MEM_TLBWIorR),
         .MEM_PC                    (MEM_PC),
         .CP0_EPC                   (CP0_EPC),
         .MEM_ExceptType            (MEM_ExceptType),
@@ -390,6 +392,7 @@ module mycpu_top (
       .MEM_ExceptType              (MEM_ExceptType ),
       .MEM_IsTLBP                  (MEM_IsTLBP ),
       .MEM_IsTLBW                  (MEM_IsTLBW ),
+      .MEM_TLBWIorR                (MEM_TLBWIorR),
       .TLBBuffer_Flush             (MEM_IsTLBW ), //当MEM级是TLBW时清空TLB Buffer
       .CMBus                       (CMBus.MMU ),
       //------------------------------output----------------//

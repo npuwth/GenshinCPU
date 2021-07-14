@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-14 16:57:24
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-14 21:01:24
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,6 +26,7 @@ module TLBMMU (
     input ExceptinPipeType       MEM_ExceptType,
     input logic                  MEM_IsTLBP,                        //表示是否是TLBP指令
     input logic                  MEM_IsTLBW,                        //表示是否是TLBW指令
+    input logic                  MEM_TLBWIorR,                      //TLBWI是0，TLBWR是1
     input logic                  TLBBuffer_Flush,                   //TLBW等修改TLB的指令时对TLB Buffer进行清空
     CP0_MMU_Interface            CMBus,
     output logic [31:0]          Phsy_Iaddr,
@@ -45,6 +46,7 @@ module TLBMMU (
     logic [18:0]                 s1_vpn2;                           //访存和指令TLBP复用
     logic                        s1_found;
     logic [3:0]                  s1_index;
+    logic [3:0]                  w_index;
 
     TLB_Buffer                   I_TLBBuffer;                       //取指的TLB Buffer
     TLB_Buffer                   D_TLBBuffer;                       //访存的TLB Buffer
@@ -150,7 +152,7 @@ module TLBMMU (
         .D_TLBEntry              (D_TLBEntry ),       //output
         //write port
         .we                      (MEM_IsTLBW ),       //写使能
-        .w_index                 (CMBus.CP0_index ),  //写索引
+        .w_index                 (w_index ),          //写索引
         .W_TLBEntry              (W_TLBEntry ),       //写数据
         //read port
         .r_index                 (CMBus.CP0_index ),  //读索引
@@ -388,6 +390,13 @@ module TLBMMU (
         .d1                   (CMBus.CP0_vpn2),
         .sel2_to_1            (MEM_IsTLBP),//
         .y                    (s1_vpn2)
+    );
+//--------------------------------TLBWI与TLBWR的选择-----------------------------------------------//
+    MUX2to1#(4) U_MUX_windex ( 
+        .d0                   (CMBus.CP0_index),
+        .d1                   (CMBus.CP0_random),
+        .sel2_to_1            (MEM_TLBWIorR),
+        .y                    (w_index)
     );
 
 //------------------------------对异常和Valid信号进行赋值----------------------------------------------//

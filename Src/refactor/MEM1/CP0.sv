@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-14 16:56:11
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-14 20:52:15
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -60,7 +60,7 @@ module cp0_reg (
 
     logic                   Count2;
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
-    logic  [6:0]            Interrupt_final;
+    logic  [5:0]            Interrupt_final;
     logic  [31:0]           config0_default;
     
     assign                  CP0_Status_BEV   = CP0.Status.BEV;
@@ -95,7 +95,15 @@ module cp0_reg (
             CP0.Index.Index                <= MEM_Result[3:0];
         end
     end
-
+//Random
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.Random.Random              <= 4'b1111;
+        end
+        else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_WIRED) begin
+            CP0.Random.Random              <= 4'b1111;
+        end
+    end
 //EntryLo0
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -120,7 +128,6 @@ module cp0_reg (
             CP0.EntryLo0.G0                <= MEM_Result[0];
         end
     end
-
 //EntryLo1
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -145,7 +152,37 @@ module cp0_reg (
             CP0.EntryLo1.G1                <= MEM_Result[0];
         end
     end
-
+//Context
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.Context.PTEBase            <= 'x;
+            CP0.Context.BadVPN2            <= 'x;
+        end
+        else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_CONTEXT) begin
+            CP0.Context.PTEBase            <= MEM_Result[31:23];
+        end
+        else if(MEM2_ExcType == `EX_TLBRefillinIF || MEM2_ExcType == `EX_TLBInvalidinIF) begin
+            CP0.Context.BadVPN2            <= MEM2_PC[31:13];
+        end
+        else if(MEM2_ExcType == `EX_RdTLBRefillinMEM || MEM2_ExcType == `EX_RdTLBInvalidinMEM || MEM2_ExcType == `EX_WrTLBRefillinMEM || MEM2_ExcType == `EX_WrTLBInvalidinMEM || MEM2_ExcType == `EX_TLBModified) begin
+            CP0.Context.BadVPN2            <= MEM2_ALUOut[31:13];
+        end
+    end
+//PageMask
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.PageMask                   <= '0;
+        end
+    end
+//Wired
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            CP0.Wired.Wired                <= '0;
+        end
+        else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_WIRED) begin
+            CP0.Wired.Wired                <= MEM_Result[3:0];
+        end
+    end
 //BadVAddr
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -163,8 +200,7 @@ module cp0_reg (
         else if (MEM2_ExcType == `EX_RdTLBRefillinMEM || MEM2_ExcType == `EX_RdTLBInvalidinMEM || MEM2_ExcType == `EX_WrTLBRefillinMEM || MEM2_ExcType == `EX_WrTLBInvalidinMEM || MEM2_ExcType == `EX_TLBModified) begin
             CP0.BadVAddr                   <= MEM2_ALUOut;
         end
-    end
-    
+    end  
 //CP0_REG_COUNT
         //Count2
     always_ff @(posedge clk ) begin
@@ -189,8 +225,6 @@ module cp0_reg (
             CP0.Count                   <= CP0.Count + 1;   //Count寄存器的值在每个时钟周期加1
         end 
     end
-    
-    
 //EntryHi
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -212,7 +246,6 @@ module cp0_reg (
             CP0.EntryHi.VPN2               <= MEM2_ALUOut[31:13];
         end
     end
-
 //Compare
     always_ff @(posedge clk) begin
         if(rst == `RstEnable) begin
@@ -231,7 +264,6 @@ module cp0_reg (
             CP0_TimerInterrupt             = 1'b0;
         end
     end
-
 //Status
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -342,7 +374,6 @@ module cp0_reg (
             endcase
         end
     end
-
 //EPC
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -371,7 +402,6 @@ module cp0_reg (
             CP0.Prid                      <= 32'h00004220;
         end 
     end
-
 // EBASE   
     always_ff @(posedge clk) begin
         if(rst == `RstEnable) begin
@@ -381,7 +411,6 @@ module cp0_reg (
             CP0.Ebase[29:12]               <= MEM_Result[29:12];
         end
     end
-
 // CONFIG0   
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
@@ -408,8 +437,12 @@ module cp0_reg (
     always_comb begin
         case(CP0_RdAddr)
             `CP0_REG_INDEX:      CP0_RdData = {CP0.Index.P , 27'b0 , CP0.Index.Index};
+            `CP0_REG_RANDOM:     CP0_RdData = {28'b0,CP0.Random.Random};
             `CP0_REG_ENTRYLO0:   CP0_RdData = {6'b0 , CP0.EntryLo0.PFN0 , CP0.EntryLo0.C0 , CP0.EntryLo0.D0 , CP0.EntryLo0.V0 , CP0.EntryLo0.G0};
             `CP0_REG_ENTRYLO1:   CP0_RdData = {6'b0 , CP0.EntryLo1.PFN1 , CP0.EntryLo1.C1 , CP0.EntryLo1.D1 , CP0.EntryLo1.V1 , CP0.EntryLo1.G1};
+            `CP0_REG_CONTEXT:    CP0_RdData = {CP0.Context.PTEBase,CP0.Context.BadVPN2,4'b0};
+            `CP0_REG_PAGEMASK:   CP0_RdData = CP0.PageMask;
+            `CP0_REG_WIRED:      CP0_RdData = {28'b0,CP0.Wired.Wired};
             `CP0_REG_BADVADDR:   CP0_RdData = CP0.BadVAddr;
             `CP0_REG_COUNT:      CP0_RdData = CP0.Count;
             `CP0_REG_ENTRYHI:    CP0_RdData = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};
@@ -432,6 +465,7 @@ module cp0_reg (
 
     //与TLB交互
     assign CMBus.CP0_index      = CP0.Index.Index;
+    assign CMBus.CP0_random     = CP0.Random.Random;
     assign CMBus.CP0_vpn2       = CP0.EntryHi.VPN2;
     assign CMBus.CP0_asid       = CP0.EntryHi.ASID;
     assign CMBus.CP0_pfn0       = CP0.EntryLo0.PFN0;
