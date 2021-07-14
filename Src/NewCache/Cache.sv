@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-13 20:41:42
+ * @LastEditTime: 2021-07-13 22:33:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -10,6 +10,17 @@
 `include "Cache_Defines.svh"
 `include "CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
+`define CLOG2(x) \
+((x <= 1) || (x > 512)) ? 0 : \
+(x <= 2) ? 1 : \
+(x <= 4) ? 2 : \
+(x <= 8) ? 3 : \
+(x <= 16) ? 4 : \
+(x <= 32) ? 5 : \
+(x <= 64) ? 6 : \
+(x <= 128) ? 7: \
+(x <= 256) ? 8: \
+(x <= 512) ? 9 : 0
 
 module Cache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width位
@@ -125,6 +136,7 @@ typedef struct packed {
 
 typedef struct packed {//store指令在读数的时候根据写使能替换
     logic [ASSOC_NUM-1:0] hit;
+    tag_t   tag;
     index_t index;
     line_t  wdata;
 } store_t;
@@ -152,6 +164,9 @@ we_t tagv_we;// 重填的时候写使能
 we_t wb_we;//store的写使能
 
 line_t [ASSOC_NUM-1:0] data_rdata;
+logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+logic [31:0] data_rdata_final;//
+logic [31:0] data_rdata_final2;//经过ext2的数据
 line_t data_wdata;
 we_t  data_we;//数据表的写使能
 
@@ -168,6 +183,27 @@ logic pipe_wr;
 logic busy_cache;// uncache 直到数据返回
 logic busy_uncache;
 logic busy_collision;
+
+
+//连cpu_bus接口
+assign cpu_bus.busy   = busy;
+assign cpu_bus.rdata  = data_rdata_final2;
+
+//连axi_bus接口
+assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
+assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
+assign axi_bus.wr_req  = (state == MISSDIRTY) ? 1'b1:1'b0;
+assign axi_bus.wr_addr = {tagv_rdata[lru[req_buffer.index]],req_buffer.index,{OFFSET_WIDTH{1'b0}}};
+assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
+
+//连axi_ubus接口
+assign axi_ubus.rd_req   = (state == REQ && req_buffer.op==0) ? 1'b1:1'b0;
+assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
+assign axi_ubus.wr_req   = (state == REQ && req_buffer.op==1) ? 1'b1:1'b0;
+assign axi_ubus.wr_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset}; //TODO:没有抹零
+assign axi_ubus.wr_data  = {req_buffer.wdata};
+assign axi_ubus.wr_wstrb = req_buffer.wstrb;
+assign axi_ubus.loadType = req_buffer.loadType;
 
 //generate
 generate;
@@ -224,9 +260,20 @@ endgenerate
 
 generate;//判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
-        assign hit[i] = pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag);
+        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag)) ? 1'b1:1'b0;
     end
 endgenerate
+
+generate;//根据offset片选？
+    for (genvar i=0; i<ASSOC_NUM; i++) begin
+        assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
+    end
+endgenerate
+//旁路
+                            //
+assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:
+                            (|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( (store_buffer.index == req_buffer.index) )?
+                             store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]]  : data_rdata_sel[`CLOG2(hit)];
 assign cache_hit = |hit;
 
 assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
@@ -246,12 +293,54 @@ assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
 
 
-// always_comb begin : store_wdata_block
-//     unique casez(hit)
-        
+always_comb begin : data_rdata_final2_blockname
+    unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
+          `LOADTYPE_LW: begin
+            data_rdata_final2 = data_rdata_final;  //LW
+          end 
+          `LOADTYPE_LH: begin
+            if(req_buffer.offset[1] == 1'b0) //LH
+              data_rdata_final2 = {{16{data_rdata_final[15]}},data_rdata_final[15:0]};
+            else
+              data_rdata_final2 = {{16{data_rdata_final[31]}},data_rdata_final[31:16]}; 
+          end
+          `LOADTYPE_LHU: begin
+            if(req_buffer.offset[1] == 1'b0) //LHU
+              data_rdata_final2 = {16'b0,data_rdata_final[15:0]};
+            else
+              data_rdata_final2 = {16'b0,data_rdata_final[31:16]};
+          end
+          `LOADTYPE_LB: begin
+            if(req_buffer.offset[1:0] == 2'b00) //LB
+              data_rdata_final2 = {{24{data_rdata_final[7]}},data_rdata_final[7:0]};
+            else if(req_buffer.offset[1:0] == 2'b01)
+              data_rdata_final2 = {{24{data_rdata_final[15]}},data_rdata_final[15:8]};
+            else if(req_buffer.offset[1:0] == 2'b10)
+              data_rdata_final2 = {{24{data_rdata_final[23]}},data_rdata_final[23:16]};
+            else
+              data_rdata_final2 = {{24{data_rdata_final[31]}},data_rdata_final[31:24]};
+          end
+          `LOADTYPE_LBU: begin
+            if(req_buffer.offset[1:0] == 2'b00) //LBU
+              data_rdata_final2 = {24'b0,data_rdata_final[7:0]};
+            else if(req_buffer.offset[1:0] == 2'b01)
+              data_rdata_final2 = {24'b0,data_rdata_final[15:8]};
+            else if(req_buffer.offset[1:0] == 2'b10)
+              data_rdata_final2 = {24'b0,data_rdata_final[23:16]};
+            else
+              data_rdata_final2 = {24'b0,data_rdata_final[31:24]};
+          end
+          default: begin
+            data_rdata_final2 = 32'bx;
+          end
+        endcase
+end
 
 
-// end
+always_comb begin : store_wdata_block//TODO:救命写不出来
+      store_wdata                                      = data_rdata[`CLOG2(hit)]; //TODO：这个可综合吗？
+      store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
+end
 
 always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
@@ -273,9 +362,10 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
     if ((resetn == `RstEnable) ||(cpu_bus.stall | busy) ) begin
         store_buffer <= '0;
     end else if(req_buffer.op & req_buffer.valid & cache_hit) begin//既是写 又是有效的
-        store_buffer.hit <= hit;
+        store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
-        store_buffer.index <= store_wdata;
+        store_buffer.wdata <= store_wdata;
+        store_buffer.tag   <= req_buffer.tag;
     end else begin
         store_buffer <= '0;
     end
