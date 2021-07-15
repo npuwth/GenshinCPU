@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-13 11:50:57
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-14 21:17:50
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -41,6 +41,7 @@ module MEM_Reg (
     input  logic                    EXE_IsTLBP,
     input  logic                    EXE_IsTLBW,
     input  logic                    EXE_IsTLBR, 
+    input  logic                    EXE_TLBWIorR,
     input  logic    [1:0]           EXE_RegsReadSel,
     input  logic    [4:0]           EXE_rd,
     input  logic    [4:0]           EXE_rt,
@@ -67,6 +68,7 @@ module MEM_Reg (
     output logic                    MEM_IsTLBP,
     output logic                    MEM_IsTLBW,
     output logic                    MEM_IsTLBR,
+    output logic                    MEM_TLBWIorR,
     output logic    [1:0]           MEM_RegsReadSel,
     output logic    [4:0]           MEM_rd,
     output logic    [4:0]           MEM_rt
@@ -91,6 +93,7 @@ module MEM_Reg (
             MEM_IsTLBP              <= 1'b0;
             MEM_IsTLBW              <= 1'b0;
             MEM_IsTLBR              <= 1'b0;
+            MEM_TLBWIorR            <= 1'b0;
             MEM_RegsReadSel         <= 1'b0;
             MEM_rd                  <= 1'b0;
             MEM_rt                  <= 1'b0;
@@ -113,6 +116,7 @@ module MEM_Reg (
             MEM_IsTLBP              <= EXE_IsTLBP;
             MEM_IsTLBW              <= EXE_IsTLBW;
             MEM_IsTLBR              <= EXE_IsTLBR;
+            MEM_TLBWIorR            <= EXE_TLBWIorR;
             MEM_RegsReadSel         <= EXE_RegsReadSel;
             MEM_rd                  <= EXE_rd;
             MEM_rt                  <= EXE_rt;

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-12 22:50:47
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-14 21:17:17
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -40,6 +40,7 @@ module EXE_Reg (
     input logic                          ID_IsTLBP,
     input logic                          ID_IsTLBW,
     input logic                          ID_IsTLBR,
+    input logic                          ID_TLBWIorR,
     input logic      [2:0]               ID_TrapOp, 
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
@@ -66,6 +67,7 @@ module EXE_Reg (
     output logic                         EXE_IsTLBP,
     output logic                         EXE_IsTLBW,
     output logic                         EXE_IsTLBR,
+    output logic                         EXE_TLBWIorR,
     output logic      [2:0]              EXE_TrapOp
 );
 
@@ -95,6 +97,7 @@ module EXE_Reg (
       EXE_IsTLBP                         <= 1'b0;
       EXE_IsTLBW                         <= 1'b0;
       EXE_IsTLBR                         <= 1'b0;
+      EXE_TLBWIorR                       <= 1'b0;
       EXE_TrapOp                         <= '0;
 
     end
@@ -123,6 +126,7 @@ module EXE_Reg (
       EXE_IsTLBP                         <= ID_IsTLBP;
       EXE_IsTLBW                         <= ID_IsTLBW;
       EXE_IsTLBR                         <= ID_IsTLBR;
+      EXE_TLBWIorR                       <= ID_TLBWIorR;
       EXE_TrapOp                         <= ID_TrapOp;
     end
   end

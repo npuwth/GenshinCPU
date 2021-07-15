@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-13 15:37:28
+ * @LastEditTime: 2021-07-14 20:06:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -153,6 +153,9 @@
 `define CP0_REG_RANDOM      5'd1
 `define CP0_REG_ENTRYLO0    5'd2
 `define CP0_REG_ENTRYLO1    5'd3
+`define CP0_REG_CONTEXT     5'd4
+`define CP0_REG_PAGEMASK    5'd5
+`define CP0_REG_WIRED       5'd6
 `define CP0_REG_BADVADDR    5'd8
 `define CP0_REG_COUNT       5'd9
 `define CP0_REG_ENTRYHI     5'd10

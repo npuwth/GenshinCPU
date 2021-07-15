@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-13 21:03:40
+ * @LastEditTime: 2021-07-14 21:15:52
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -98,6 +98,7 @@ module TOP_EXE (
         .ID_IsTLBP            (IEBus.ID_IsTLBP),
         .ID_IsTLBW            (IEBus.ID_IsTLBW),
         .ID_IsTLBR            (IEBus.ID_IsTLBR),
+        .ID_TLBWIorR          (IEBus.ID_TLBWIorR),
         .ID_TrapOp            (IEBus.ID_TrapOp),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
@@ -124,6 +125,7 @@ module TOP_EXE (
         .EXE_IsTLBP           (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
+        .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
         .EXE_TrapOp           (EXE_TrapOp)
     );
 
