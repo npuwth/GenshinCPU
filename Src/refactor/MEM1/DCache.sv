@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 12:01:43
+ * @LastEditTime: 2021-07-15 19:08:55
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -169,6 +169,7 @@ logic [31:0] data_rdata_final;//
 logic [31:0] data_rdata_final2;//经过ext2的数据
 line_t data_wdata;
 we_t  data_we;//数据表的写使能
+logic data_read_en;
 
 request_t req_buffer;
 logic req_buffer_en;
@@ -238,7 +239,7 @@ generate;
             .dina(data_wdata),
 
             //读端口
-            .enb(cpu_bus.valid & (~busy) & (~cpu_bus.stall)),
+            .enb(data_read_en),
             .addrb(read_addr),
             .doutb(data_rdata[i])
         );
@@ -289,11 +290,11 @@ assign busy           = busy_cache | busy_uncache | busy_collision;
 
 assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
-assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
+assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
-assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
-assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
-
+assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
+assign tagv_wdata     = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
+assign data_read_en   = (state == REFILLDONE) ? 1'b1 : (busy) ? 1'b0 : 1'b1;
 
 always_comb begin : data_rdata_final2_blockname
     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-15 16:01:17
+ * @LastEditTime: 2021-07-15 18:16:38
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -137,7 +137,7 @@ module simple_port_ram #(
       .USE_MEM_INIT(1),               // DECIMAL
       .WAKEUP_TIME("disable_sleep"),  // String
       .WRITE_DATA_WIDTH_A($bits(dtype)),        // DECIMAL
-      .WRITE_MODE_B("no_change")      // String
+      .WRITE_MODE_B("read_first")      // String
    )
    xpm_memory_sdpram_inst (
       .dbiterrb(),             // 1-bit output: Status signal to indicate double bit error occurrence

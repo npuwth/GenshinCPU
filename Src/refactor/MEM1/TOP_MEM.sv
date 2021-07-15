@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 13:49:28
+ * @LastEditTime: 2021-07-15 19:13:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -74,7 +74,7 @@ module TOP_MEM (
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
-
+    assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MM2Bus.MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
 
     MEM_Reg U_MEM_Reg ( 

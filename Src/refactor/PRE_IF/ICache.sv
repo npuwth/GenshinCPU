@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 14:58:19
+ * @LastEditTime: 2021-07-15 18:13:36
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -128,6 +128,7 @@ line_t [ASSOC_NUM-1:0] data_rdata;
 logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
 logic [31:0] data_rdata_final;//
 
+logic data_read_en;//读使能
 line_t data_wdata;
 we_t  data_we;//数据表的写使能
 
@@ -191,7 +192,7 @@ generate;
             .dina(data_wdata),
 
             //读端口
-            .enb(cpu_bus.valid & (~busy) & (~cpu_bus.stall)),
+            .enb(data_read_en),
             .addrb(read_addr),
             .doutb(data_rdata[i])
         );
@@ -224,6 +225,7 @@ generate;//根据offset片选？
         assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
     end
 endgenerate
+assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (busy)? 1'b0:1'b1;
 //旁路
                             //
 assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(hit)];

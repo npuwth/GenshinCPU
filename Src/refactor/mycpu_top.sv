@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-15 16:18:10
+ * @LastEditTime: 2021-07-15 19:11:49
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -159,8 +159,8 @@ module mycpu_top (
         .D_IsTLBStall           (D_IsTLBStall ),
         .Icache_busy            (cpu_ibus.busy ),
         .Dcache_busy            (cpu_dbus.busy ),
+        .DH_Stall               (DH_Stall),
         .ID_IsAImmeJump         (ID_IsAImmeJump),
-        
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         //-------------------------------- output-----------------------------//
@@ -416,6 +416,40 @@ module mycpu_top (
       .MEM_ExceptType_new          ( MEM_ExceptType_new)
     );
 
+    // logic [31:0] din,dout1,dout2;
+    // always_ff @( posedge aclk ) begin : blockName
+    //     if (~aresetn) begin
+    //         din<='0;
+    //     end else begin
+    //         din<=din+1;
+    //     end
+    // end
+
+    // simple_port_lutram U_test1(            
+    //         .clka(aclk),
+    //         .rsta(~aresetn),
+
+    //         //端口信号
+    //         .ena(1'b1),
+    //         .wea('1),
+    //         .addra('0),
+    //         .dina(din),
+    //         .douta(dout1));
+
+    // simple_port_ram U_test2(.clka(aclk),
+    //            .clk(aclk),
+    //         .rst(~aresetn),
+
+    //         //写端口
+    //         .ena(1'b1),
+    //         .wea(1),
+    //         .addra(read_add'0),
+    //         .dina(din),
+
+    //         //读端口
+    //         .enb(cpu_bus.valid & (~busy) & (~cpu_bus.stall)),
+    //         .addrb(read_addr),
+    //         .doutb(data_rdata[i]));
 
 
 endmodule
