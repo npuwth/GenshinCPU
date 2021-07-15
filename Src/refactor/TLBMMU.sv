@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-15 15:28:58
+ * @LastEditTime: 2021-07-15 19:23:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -440,6 +440,7 @@ module TLBMMU (
     assign MEM_ExceptType_new.Refetch                       = MEM_ExceptType.Refetch;
     
     always_comb begin //TLBD
+    if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
             D_IsTLBBufferValid = 1'b1; 
             MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
@@ -449,14 +450,6 @@ module TLBMMU (
             MEM_ExceptType_new.TLBModified                  = 1'b0;
         end
         else if(D_TLBBufferHit == 1'b0) begin 
-            D_IsTLBBufferValid = 1'b0;
-            MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-            MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-            MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-            MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-            MEM_ExceptType_new.TLBModified                  = 1'b0;
-        end
-        else if(MEM_LoadType.ReadMem == 1'b0 && MEM_StoreType.DMWr == 1'b0) begin //都没有访存请求，置为无效,没有例外
             D_IsTLBBufferValid = 1'b0;
             MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
             MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
@@ -556,6 +549,15 @@ module TLBMMU (
                 MEM_ExceptType_new.TLBModified                  = 1'b0;
             end
         end
+    end
+    else begin
+        D_IsTLBBufferValid = 1'b0;
+        MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
+        MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
+        MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
+        MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
+        MEM_ExceptType_new.TLBModified                  = 1'b0;
+    end
     end
 //--------------------------------------------------------------------------------------//
 endmodule

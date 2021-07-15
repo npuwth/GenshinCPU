@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:03:56
- * @LastEditTime: 2021-07-13 16:40:44
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-15 20:12:35
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\ForwardUnit.sv
  * 
@@ -46,7 +46,7 @@ module ForwardUnit (
         if(MEM_RegsWrType.RFWr        && MEM_Dst!=5'd0  && EXE_rt == MEM_Dst )begin
             EXE_ForwardB = 2'b01;
         end
-        else if (MEM2_RegsWrType.RFWr && MEM2_Dst!=5'd0 && EXE_rs == MEM2_Dst) begin
+        else if (MEM2_RegsWrType.RFWr && MEM2_Dst!=5'd0 && EXE_rt == MEM2_Dst) begin
             EXE_ForwardB = 2'b11;
         end
         else if (WB_RegsWrType.RFWr   && WB_Dst!=5'd0   && EXE_rt == WB_Dst  ) begin

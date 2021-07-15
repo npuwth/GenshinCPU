@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 19:08:55
+ * @LastEditTime: 2021-07-15 21:27:46
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -190,7 +190,7 @@ logic busy;
 
 //连cpu_bus接口
 assign cpu_bus.busy   = busy;
-assign cpu_bus.rdata  = data_rdata_final2;
+assign cpu_bus.rdata  = (cpu_bus.valid)?data_rdata_final2:'0;
 
 //连axi_bus接口
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
@@ -279,7 +279,7 @@ assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:
                              store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]]  : data_rdata_sel[`CLOG2(hit)];
 assign cache_hit = |hit;
 
-assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
+assign read_addr      = (state == REFILLDONE || state == REFILL)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 
 
@@ -294,7 +294,7 @@ assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata     = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
-assign data_read_en   = (state == REFILLDONE) ? 1'b1 : (busy) ? 1'b0 : 1'b1;
+assign data_read_en   = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
 always_comb begin : data_rdata_final2_blockname
     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
@@ -430,19 +430,24 @@ always_comb begin : state_next_blockname
 
     unique case (state)
         LOOKUP:begin
-            if (req_buffer.isCache == 1'b0 && req_buffer.valid) begin
-                state_next = REQ;
-            end else begin
-            if (cache_hit) begin
-                state_next = LOOKUP;
-            end else begin
-                if (pipe_tagv_rdata[`CLOG2(hit)].dirty) begin
-                    state_next = MISSDIRTY ;
+            if ( req_buffer.valid) begin
+                if (req_buffer.isCache == 1'b0 ) begin
+                    state_next = REQ;
                 end else begin
-                    state_next = MISSCLEAN ;
+                if (cache_hit) begin
+                    state_next = LOOKUP;
+                end else begin
+                    if (pipe_tagv_rdata[`CLOG2(hit)].dirty) begin
+                        state_next = MISSDIRTY ;
+                    end else begin
+                        state_next = MISSCLEAN ;
+                    end
                 end
+                end      
+            end else begin
+                state_next = LOOKUP;
             end
-            end              
+        
         end
         MISSCLEAN:begin
             if (axi_bus.rd_rdy) begin//可以读

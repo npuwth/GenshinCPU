@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 18:13:36
+ * @LastEditTime: 2021-07-15 21:13:13
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -207,7 +207,7 @@ generate;//PLRU
             .clk(clk),
             .resetn(resetn),
             .access(hit),
-            .update(req_buffer.valid),
+            .update(req_buffer.valid && i[INDEX_WIDTH-1:0] == req_buffer.index),
 
             .lru(lru[i])
         );
@@ -225,13 +225,13 @@ generate;//根据offset片选？
         assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
     end
 endgenerate
-assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (busy)? 1'b0:1'b1;
+assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall)? 1'b0:1'b1;
 //旁路
                             //
-assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(hit)];
+assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(hit)]: '0;
 assign cache_hit = |hit;
 
-assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
+assign read_addr      = (state == REFILLDONE || state == REFILL )? req_buffer.index : cpu_bus.index;
 
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
@@ -239,7 +239,7 @@ assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UN
 
 assign busy           = busy_cache | busy_uncache;
 
-assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
+assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
