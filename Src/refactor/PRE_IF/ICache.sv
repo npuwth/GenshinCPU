@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 11:37:49
+ * @LastEditTime: 2021-07-15 11:45:16
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -231,8 +231,8 @@ assign cache_hit = |hit;
 assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
 
 
-assign busy_cache     = (cache_hit & req_buffer.isCache) ? 1'b0:1'b1;
-assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0 :1'b1;
+assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
+assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
 
 assign busy           = busy_cache | busy_uncache;
 

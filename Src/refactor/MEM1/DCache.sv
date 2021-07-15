@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 11:24:48
+ * @LastEditTime: 2021-07-15 11:49:53
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -280,9 +280,9 @@ assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 
 
-assign busy_cache     = (cache_hit & req_buffer.isCache) ? 1'b0:1'b1;
-assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0 :1'b1;
-assign busy_collision = (store_buffer.index == read_addr)? 1'b1:1'b0;
+assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
+assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
+assign busy_collision = ((|store_buffer.hit ) && store_buffer.index == read_addr)? 1'b1:1'b0;
 assign busy           = busy_cache | busy_uncache | busy_collision;
 
 assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
