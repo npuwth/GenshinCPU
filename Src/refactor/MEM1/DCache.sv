@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 21:27:46
+ * @LastEditTime: 2021-07-15 23:45:14
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -11,7 +11,7 @@
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
 `define CLOG2(x) \
-((x <= 1) || (x > 512)) ? 0 : \
+((x <= 1) || (x > 512)                                                                ) ? 0 : \
 (x <= 2) ? 1 : \
 (x <= 4) ? 2 : \
 (x <= 8) ? 3 : \
@@ -190,7 +190,7 @@ logic busy;
 
 //连cpu_bus接口
 assign cpu_bus.busy   = busy;
-assign cpu_bus.rdata  = (cpu_bus.valid)?data_rdata_final2:'0;
+assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final2:'0;
 
 //连axi_bus接口
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
@@ -274,9 +274,19 @@ generate;//根据offset片选？
 endgenerate
 //旁路
                             //
-assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:
-                            (|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( (store_buffer.index == req_buffer.index) )?
-                             store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]]  : data_rdata_sel[`CLOG2(hit)];
+// assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:
+//                             ((|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( store_buffer.index == req_buffer.index ))?
+//                              store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]]  : data_rdata_sel[`CLOG2(hit)];
+
+ always_comb begin : data_rdata_final_blokcname
+     if (state == UNCACHEDONE ) begin
+         data_rdata_final =uncache_rdata;
+     end else if((|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( (store_buffer.index == req_buffer.index) )) begin
+        data_rdata_final =  '0;
+    end else begin
+        data_rdata_final= '0;
+    end
+end
 assign cache_hit = |hit;
 
 assign read_addr      = (state == REFILLDONE || state == REFILL)? req_buffer.index : cpu_bus.index;
@@ -294,7 +304,7 @@ assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata     = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
-assign data_read_en   = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall) ? 1'b0 : 1'b1;
+assign data_read_en   = (state == REFILLDONE) ? 1'b1 :(req_buffer.valid & req_buffer.op)? 1'b1 : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
 always_comb begin : data_rdata_final2_blockname
     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})

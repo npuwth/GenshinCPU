@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-15 16:16:51
+ * @LastEditTime: 2021-07-15 21:38:37
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -552,7 +552,6 @@ interface MEM2_WB_Interface();
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType;
-	logic       [31:0]      MEM_DMOut;
   
 	modport MEM2 (  // top MEM2使用
     	output				MEM2_ALUOut,		
@@ -562,8 +561,7 @@ interface MEM2_WB_Interface();
     	output				MEM2_Dst,
 		output				MEM2_DMOut,
 		output              MEM2_OutB,
-		output				MEM2_RegsWrType,
-		output 		        MEM_DMOut
+		output				MEM2_RegsWrType
 	);
 
 	modport WB ( 
@@ -574,7 +572,7 @@ interface MEM2_WB_Interface();
     	input				MEM2_Dst,
 		input				MEM2_DMOut,
 		input               MEM2_OutB,
-		input				MEM2_RegsWrType 
+		input				MEM2_RegsWrType
 	);
 
 endinterface

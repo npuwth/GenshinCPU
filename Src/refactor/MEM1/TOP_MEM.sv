@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 19:13:46
+ * @LastEditTime: 2021-07-15 21:40:01
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -192,7 +192,6 @@ module TOP_MEM (
     assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
                                                             (MEM_StoreType.DMWr) ? 1'b1  :
                                                              1'bx;
-    // assign MM2Bus.MEM_DMOut                               = cpu_dbus.rdata;       //读取结果直接放入DMOut
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
