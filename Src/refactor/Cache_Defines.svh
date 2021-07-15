@@ -23,14 +23,6 @@
 `define CACHEIDLE         0
 `define BRANCKFAILED      1
 
-        typedef struct packed {
-          logic                    valid;  //cache line的valid域 表示数据是否有效
-          logic [`TAGBITNUM-1  :0]   tag;  //cache line的tag域 在第一版中 tag应该是实地址
-          logic [`INDEXBITNUM-1:0] index;  //cache line的index域的大小 index以虚地址为好 这样才能及时读出数据
-          logic [`OFFSETNUM-1  :0] offset; //每个cache line 的偏执位
-          logic                    dirty;  //
-
-        } CacheLineType; //没用了呜呜
 
 typedef logic [31:0]        VirtualAddressType; //虚拟地址
 typedef logic [31:0]        PhysicalAddressType;//物理地址
