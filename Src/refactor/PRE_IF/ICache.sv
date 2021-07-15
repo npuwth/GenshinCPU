@@ -1,541 +1,392 @@
 /*
- * @Author: Juan Jiang
- * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-09 13:51:29
- * @LastEditors: npuwth
+ * @Author: your name
+ * @Date: 2021-06-29 23:11:11
+ * @LastEditTime: 2021-07-15 10:14:12
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \Src\Code\Cache.sv
+ * @FilePath: \Src\ICache.sv
  */
-`include "../Cache_Defines.svh"
-`include "../CPU_Defines.svh"
-module ICache(
+//重写之后的Cache Icache Dcache复用一个设计
+`include "Cache_Defines.svh"
+`include "CPU_Defines.svh"
+//`define Dcache  //如果是DCache就在文件中使用这个宏
+`define CLOG2(x) \
+((x <= 1) || (x > 512)) ? 0 : \
+(x <= 2) ? 1 : \
+(x <= 4) ? 2 : \
+(x <= 8) ? 3 : \
+(x <= 16) ? 4 : \
+(x <= 32) ? 5 : \
+(x <= 64) ? 6 : \
+(x <= 128) ? 7: \
+(x <= 256) ? 8: \
+(x <= 512) ? 9 : 0
+
+module Cache #(
+    //parameter bus_width = 4,//axi总线的id域有bus_width位
+    parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
+    parameter LINE_WORD_NUM = 4,//cache line大小 一块的字数
+    parameter ASSOC_NUM     = 4,//assoc_num组相连
+    parameter WAY_SIZE      = 4*1024*8,//一路cache 容量大小为way_size bit
+    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //
+
+) (
+    //external signals
     input logic clk,
     input logic resetn,
-    input logic [31:0] Phsy_Iaddr,
-    input logic PC_Wr,
-    input logic I_IsCached,
-    output logic [31:0] Virt_Iaddr,
-    CPU_Bus_Interface  CPUBus,//slave
-    AXI_Bus_Interface  AXIBus //master
-  );
 
-  assign Virt_Iaddr = {req_buffer.tag,req_buffer.index,req_buffer.offset};
-
-  typedef struct packed {
-            logic en;
-            logic we;
-            logic[7:0] addr;
-            logic[19:0] tagin;
-            logic[19:0] tagout;
-            logic validin;
-            logic validout;
-          } TagVType;//用于连到tag valid IP核上的线的结构体
-
-  typedef struct packed {
-            logic en;
-            logic [3:0]we;
-            logic[7:0] addr;
-            logic[31:0] din;
-            logic[31:0] dout;
-          } DataType;//用于连到Data IP核上的线的结构体
-
-  typedef enum logic [1:0] {
-            LOOKUP,
-            //HITWRITE,
-            MISS,
-            IDLE,
-            
-            REFILL
-          } StateType;
-
-  typedef struct packed {
-    logic valid;
-    logic op;
-    logic[7:0] index;
-    logic[19:0] tag;
-    logic[3:0] offset;
-    logic[3:0] wstrb;
-    logic[31:0] wdata;
-  } RequestType;
-
-  
-
-  RequestType req;//从cpu和request_buffer中选择出来的请求
-  logic isAgain;  //是否是未命中 需要再次查找
-  logic isAgain_new;//isAgain是reg isAgain_new是wire
-
-  StateType state;
-  StateType nextState;
-  logic[255:0] Dirty0;//第0路的dirty域
-  logic[255:0] Dirty1;//第1路的dirty域
-
-  logic Count0;//第0路的计数器
-  logic Count1;//第1路的计数器
-
-  TagVType tagV0,tagV1;//对于tagv的赋值 datain 连入的是axi接口模块进来的值 en 是当有req.valid成立 we当axi接口模块来的valid成立
-
-  DataType [`WordsPerCacheLine-1:0] data0;//第0路的data banks
-  DataType [`WordsPerCacheLine-1:0] data1;//第1路的data banks
-
-  RequestType req_buffer;
-  RequestType req_buffer_new;
-  
-  logic way0_hit;
-  logic way1_hit;
-  logic cache_hit;
-
-  logic [3:0]way0_we;
-  logic [3:0]way1_we;
-
-  // logic way0_data;因为没写注释 我也不知道这是啥
-  // logic way1_data;
-//----------------------------对req的选择 如果isAgain高电平 那就引入 req_buffer的内容 不然就是
-always_comb begin 
-  if (CPUBus.flush == `FlushEnable) begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata};
-  end
-  else if(isAgain == 1'b1 || (state == LOOKUP && cache_hit == `MISS ))begin
-    req = req_buffer;
-  end
-  else begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata };
-  end
-end
+    //with TLBMMU
+    //output VirtualAddressType virt_addr,
+    // input  PhysicalAddressType phsy_addr,现在移到cpu_bus中
+    // input  logic isCache,
 
 
+    //AXI_UNCACHE_Interface axi_ubus,
 
-//------------------------对tagv input的赋值
-assign tagV0.en      = req.valid;
-assign tagV0.we      = way0_we;//当在refill状态 并且 ret_valid有效时 并且换的还是这一路
-assign tagV0.addr    = req.index;
-assign tagV0.tagin   = Phsy_Iaddr[31:12];
-assign tagV0.validin = 1'b1;
-
-
-assign tagV1.en      = req.valid;
-assign tagV1.we      = way1_we;
-assign tagV1.addr    = req.index;
-assign tagV1.tagin   = Phsy_Iaddr[31:12];
-assign tagV1.validin = 1'b1;
-
-// 对tagV0/1_en的赋值 // 当在refill状态 并且 ret_valid有效时 并且换的还是这一路
-always_comb begin
-  if(nextState == IDLE && state == REFILL) begin
-    if (Count0 == 1'b1) begin
-      way0_we = 4'b1111;
-      way1_we = 4'b0000;
-    end
-    else begin
-      way0_we = 4'b0000;
-      way1_we = 4'b1111;      
-    end
-  end
-  else begin
-    way0_we = 4'b0000;
-    way1_we = 4'b0000;
-  end
-end
-
-//对 伪lru的计数器的赋值
-always_ff @( posedge clk ) begin 
-  if (state == LOOKUP && cache_hit == `HIT) begin
-    if (way0_hit == `HIT) begin
-      Count0 <= '0;
-      Count1 <= '1;
-    end
-    else begin
-      Count0 <= '1;
-      Count1 <= '0;      
-    end
-  end
-end
-
-// logic[`WordsPerCacheLine-1:0] way0_banks_we;
-// logic[`WordsPerCacheLine-1:0] way1_banks_we;
-//-----------------------------------对写使能进行赋值
-
-
-
-//------------------对data0 data1 的input的赋值
-generate;
-  for (genvar i=0; i<`WordsPerCacheLine ;i=i+1) begin
-    assign data0[i].addr = req.index;
-    assign data0[i].en = req.valid;
-    assign data0[i].we = way0_we;
-    assign data0[i].din = AXIBus.ret_data[(i+1)*32-1:i*32];
+    CPU_Bus_Interface  cpu_bus,//slave
+    AXI_Bus_Interface  axi_bus //master
     
+    
+);
+//parameters
+localparam int unsigned BYTES_PER_WORD = 4;
+localparam int unsigned INDEX_WIDTH    = $clog2(SET_NUM) ;
+localparam int unsigned OFFSET_WIDTH   = $clog2(LINE_WORD_NUM*BYTES_PER_WORD);//
+localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;
 
-    assign data1[i].addr = req.index;
-    assign data1[i].en = req.valid;
-    assign data1[i].we = way1_we;
-    assign data1[i].din = AXIBus.ret_data[(i+1)*32-1:i*32];
-  end
+
+//--definitions
+typedef struct packed {
+    logic valid;
+    logic [TAG_WIDTH-1:0] tag;  
+} tagv_t; //每一路 一个tag_t变量
+
+
+
+
+typedef logic [TAG_WIDTH-1:0]                     tag_t;
+typedef logic [INDEX_WIDTH-1:0]                   index_t;
+typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
+
+typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使能
+typedef logic [LINE_WORD_NUM-1:0][DATA_WIDTH-1:0] line_t;//每一路一个cache_line
+
+function index_t get_index( input logic [31:0] addr );
+    return addr[OFFSET_WIDTH + INDEX_WIDTH - 1 : OFFSET_WIDTH];
+endfunction
+
+function tag_t get_tag( input logic [31:0] addr );
+    return addr[31 : OFFSET_WIDTH + INDEX_WIDTH];
+endfunction
+
+function offset_t get_offset( input logic [31:0] addr );
+    return addr[OFFSET_WIDTH - 1 : 0];
+endfunction
+
+
+
+typedef enum logic [3:0] { 
+        REQ,
+        WAIT,
+        UNCACHEDONE,
+
+        LOOKUP,
+        MISSCLEAN,
+        REFILL,
+        REFILLDONE
+} state_t;
+
+
+
+
+typedef struct packed {
+    logic             valid;
+    logic             op;
+    tag_t             tag;
+    index_t           index;
+    offset_t          offset;
+    logic             isCache;
+} request_t;
+
+
+
+
+
+//declartion
+state_t state,state_next;
+
+logic [31:0] uncache_rdata;
+
+index_t read_addr;//read_addr 既是 查询的地址 又是重填的地址  write_addr是store的地址
+
+tagv_t [ASSOC_NUM-1:0] tagv_rdata;
+tagv_t tagv_wdata;
+we_t tagv_we;// 重填的时候写使能
+
+
+line_t [ASSOC_NUM-1:0] data_rdata;
+logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+logic [31:0] data_rdata_final;//
+
+line_t data_wdata;
+we_t  data_we;//数据表的写使能
+
+request_t req_buffer;
+logic req_buffer_en;
+
+logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
+logic [ASSOC_NUM-1:0] hit;
+logic cache_hit;
+
+tagv_t pipe_tagv_rdata;
+logic pipe_wr;
+
+logic busy_cache;// uncache 直到数据返回
+logic busy_uncache;
+
+
+
+//连cpu_bus接口
+assign cpu_bus.busy   = busy;
+assign cpu_bus.rdata  = data_rdata_final;
+
+//连axi_bus接口
+assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
+assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
+
+
+//连axi_ubus接口
+assign axi_ubus.rd_req   = (state == REQ && req_buffer.op==0) ? 1'b1:1'b0;
+assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
+
+//generate
+generate;
+    for (genvar i = 0;i<ASSOC_NUM ;i++ ) begin
+        simple_port_lutram  #(
+            .SIZE(SET_NUM),
+            .dtype(tagv_t)
+        ) mem_tag(
+            .clka(clk),
+            .rsta(~resetn),
+
+            //端口信号
+            .ena(1'b1),
+            .wea(tagv_we[i]),
+            .addra(read_addr),
+            .dina(tagv_wdata),
+            .douta(tagv_rdata[i])
+        );
+        simple_port_ram #(
+            .SIZE(SET_NUM),
+            .dtype(line_t)
+        )mem_data(
+            .clk(clk),
+            .rst(~resetn),
+
+            //写端口
+            .ena(1'b1),
+            .wea(data_we[i]),
+            .addra(read_addr),
+            .dina(data_wdata),
+
+            //读端口
+            .enb(cpu_bus.valid & (~busy) & (~cpu_bus.stall)),
+            .addrb(read_addr),
+            .doutb(data_rdata[i])
+        );
+    end
 endgenerate
 
+generate;//PLRU 
+    for (genvar  i=0; i<SET_NUM; i++) begin
+        PLRU #(
+            .ASSOC_NUM(ASSOC_NUM)
+        ) plru_reg(
+            .clk(clk),
+            .resetn(resetn),
+            .access(hit),
+            .update(req_buffer.valid),
 
-//----------------选取读取到的数据-------------
-
-logic [31:0] way0_word;
-logic [31:0] way1_word;
-
-always_comb begin//根据
-  unique case (req_buffer.offset[3:2])//根据req_buffer里面的信息 因为 req_buffer里面的信息是和从ram读出的数据是同一拍的
-      2'b00:begin
-        way0_word = data0[0].dout;
-        way1_word = data1[0].dout;
-      end
-      2'b01:begin
-        way0_word = data0[1].dout;
-        way1_word = data1[1].dout;       
-      end
-      2'b10:begin
-        way0_word = data0[2].dout;
-        way1_word = data1[2].dout;        
-      end
-      2'b11:begin
-        way0_word = data0[3].dout;
-        way1_word = data1[3].dout;      
-      end
-    default:begin
-        way0_word = 'x;
-        way1_word = 'x;      
+            .lru(lru[i])
+        );
     end
-  endcase
-end
+endgenerate
 
-logic [31:0] way_word;//读出的数据
-logic [31:0] way_word_r;//锁存下来正确的数据
-
-logic choose;
-always_ff @(posedge clk) begin
-  if (CPUBus.data_ok == 1'b1 ) begin
-    way_word_r <= way_word;
-  end
-  else begin
-    way_word_r <= way_word_r;
-  end
-end
-
-always_ff @(posedge clk) begin
-  if (CPUBus.data_ok == 1'b1 && CPUBus.ready == 1'b0) begin
-    choose <= 1'b1;
-  end
-  else if (CPUBus.ready == 1'b1) begin
-    choose <= 1'b0;
-  end
-  else begin
-    choose <= choose;
-  end
-end
-
-always_comb begin // 读出数的always块
-  if(cache_hit == `HIT && state == LOOKUP)begin
-    if(way0_hit == `HIT) way_word = way0_word;
-    else way_word = way1_word;
-  end
-  else begin//cache miss的情况
-        way_word = '0;
-  end
-end
-
-//对CPUBus 的output进行赋值
-assign CPUBus.rdata = (CPUBus.data_ok == 1'b1 && CPUBus.ready == 1'b1)?way_word:(choose)?way_word_r:'0;
-always_comb begin
-    if (state ==IDLE && isAgain == 1'b0) begin
-        CPUBus.addr_ok = `Ready;
+generate;//判断命中
+    for (genvar i=0; i<ASSOC_NUM; i++) begin
+        assign hit[i] = ( pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag) )  ;
     end
-    else if (state == LOOKUP && cache_hit == `HIT) begin
-      CPUBus.addr_ok = `Ready;
+endgenerate
+
+generate;//根据offset片选？
+    for (genvar i=0; i<ASSOC_NUM; i++) begin
+        assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
     end
-    else CPUBus.addr_ok = `Unready;
-end
+endgenerate
+//旁路
+                            //
+assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(hit)];
+assign cache_hit = |hit;
 
-always_comb begin
-  if (state == LOOKUP && cache_hit == `HIT) begin
-    CPUBus.data_ok = `Valid;
-  end
-  else CPUBus.data_ok = `Invalid;
-end
-
-//对isAgain的赋值  
-always_comb begin
-  if(state == LOOKUP && cache_hit == `MISS)begin
-    isAgain_new = 1'b1; 
-  end
-  else isAgain_new = 1'b0;
-end
-
-always_ff @(posedge clk) begin
-  if(resetn == `RstEnable || CPUBus.flush == `FlushEnable)begin
-    isAgain <= '0;
-  end
-  else if (state == IDLE || state == LOOKUP) begin
-    isAgain <= isAgain_new;
-  end
-  else begin
-    isAgain <= isAgain;
-  end
-end
-
-////对AXIBus 的output进行赋值
-assign AXIBus.rd_addr = {Phsy_Iaddr[31:12],req_buffer.index,4'b0000};
-always_comb begin
-  if (state == MISS) begin
-    AXIBus.rd_req = `Enable;
-  end
-  else AXIBus.rd_req = `Disable;
-end
+assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
+assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 
 
-//-----------------判断是否命中----------------------
-  assign way0_hit = ((tagV0.validout )& (tagV0.tagout == Phsy_Iaddr[31:12]))? 1'b1:1'b0;
-  assign way1_hit = ((tagV1.validout )& (tagV1.tagout == Phsy_Iaddr[31:12]))? 1'b1:1'b0;
-  assign cache_hit = way0_hit | way1_hit;
+assign busy_cache     = (cache_hit & req_buffer.isCache) ? 1'b0:1'b1;
+assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0 :1'b1;
 
-// req_buffer
-  logic req_buffer_en;
-always_comb begin 
-  if (CPUBus.flush == `FlushEnable) begin
-    req_buffer_en = 1'b1;
-  end
-  else if ( (state == LOOKUP && cache_hit == `MISS) || isAgain ==1'b1 ) begin//如果未命中 保持req_buffer不变 或者需要再次LOOKUP时 保持req_buffer不变
-    req_buffer_en = 1'b0;
-  end
-  else if (PC_Wr == 1'b0) begin
-    req_buffer_en = 1'b0;
-  end
-  else begin
-    req_buffer_en = 1'b1;
-  end
-end
+assign busy           = busy_cache | busy_uncache;
 
-  assign req_buffer_new = req_buffer_en ? {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata } : req_buffer;
-  always_ff @( posedge clk ) begin //request_buffer
-    if(resetn == `RstEnable)begin
-      req_buffer <='0;
-    end
-    else begin
-      req_buffer <= req_buffer_new;
-    end
-  end
-  
-  inst_ram_TagV TagV0(//第一路的tag 使用最后一位作为valid
-                  //input
-                  .clka(clk),
-                  .ena(tagV0.en),     //实际上在replace阶段也要读写 然后在判断命中的时候
-                  .wea(tagV0.we),     // 在refill是写使能打开
-                  .addra(tagV0.addr), //地址号 就是cache set的编号
-                  .dina({tagV0.tagin,tagV0.validin} ),
-                  //output
-                  .douta({tagV0.tagout,tagV0.validout} )
-                );
+assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:1'b0;
 
-  inst_ram_TagV TagV1(//第二路的tag 使用最后一位作为valid
-                  //input
-                  .clka(clk),
-                  .ena(tagV1.en),     //实际上在replace阶段也要读写 然后在判断命中的时候
-                  .wea(tagV1.we),     // 在refill是写使能打开
-                  .addra(tagV1.addr), //地址号 就是cache set的编号
-                  .dina({tagV1.tagin,tagV1.validin} ),
-                  //output
-                  .douta({tagV1.tagout,tagV1.validout} )
+assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
-                );
+assign data_wdata =  axi_bus.ret_data ;
+assign tagv_wdata =  {1'b1,req_buffer.tag} ;
 
-  generate
-    for(genvar i=0;i < `WordsPerCacheLine; i = i+1)
-    begin:gen_icache_ram
-      inst_ram_data Data0(//第0路的data block ram
-                      //input
-                      .clka(clk),
-                      .addra(data0[i].addr),
-                      .dina(data0[i].din),
-                      .ena(data0[i].en),
-                      .wea(data0[i].we),
-                      //output
-                      .douta(data0[i].dout)
-                    );
 
-      inst_ram_data Data1(//第1路的data block ram
-                      //input
-                      //input
-                      .clka(clk),
-                      .addra(data1[i].addr),
-                      .dina(data1[i].din),
-                      .ena(data1[i].en),
-                      .wea(data1[i].we),
-                      //output
-                      .douta(data1[i].dout)
-                    );
-    end
-    
-  endgenerate
 
-  always_ff @( posedge clk )
-  begin
-    state<=nextState;
-  end
 
-always_comb begin
-  //if()
-end
-
-/*Icache状态机说明
-IDLE->IDLE 该周期无访存请求
-IDLE->LOOKUP 该周期有访存请求 下一周期可达到命中信息
-LOOKUP->LOOKUP 该周期收到访存请求 且上周期的请求命中
-LOOKUP->MISS 上周期的访存请求未命中 这周期的命中结果是未命中
-MISS->MISS 如果不能发出读请求
-MISS->REFILL 发出了读请求
-REFILL->REFILL 等待AXI接口模块的数据
-REFILL->IDLE  AXI接口模块数据有效
- 如果外界的flush信号成立，那么以同周期的输入请求查询
-*/
-
-  always_comb //计算下一状态
-  begin
-    //如果复位
-    if(resetn==`RstEnable )
-    begin
-      nextState=IDLE;
-    end
-    //如果不复位
-    else if ( CPUBus.flush == `FlushEnable) begin
-      if (CPUBus.valid == 1'b1) begin
-        nextState=LOOKUP;
-      end else begin
-        nextState=IDLE;
-      end
-    end
-    else
-    begin
-      unique case (state)
-
-               IDLE:
-               begin
-                 if(req.valid == `Valid)
-                   nextState=LOOKUP;
-                 else
-                   nextState=IDLE;
-               end
-
-               LOOKUP:
-               begin
-                 if(cache_hit == `MISS) // cache_hit表示是否当前周期的查询命中
-                 begin
-                   nextState=MISS;
-                 end
-                 else if (req.valid ==`Valid)
-                 begin
-                   nextState=LOOKUP;
-                 end
-                 else
-                   nextState=IDLE;
-               end
-
-               MISS:
-               begin
-                 if(AXIBus.rd_rdy == 1'b0)//如果读请求不能被接收
-                 begin
-                   nextState = MISS;
-                 end
-                 else                     //如果读请求被接受了
-                 begin
-                   nextState = REFILL;
-                 end
-               end
-
-               REFILL:
-               begin
-                 if(AXIBus.ret_valid == 1'b1)
-                 begin
-                   nextState = IDLE ;
-                 end
-                 else
-                 begin
-                   nextState = REFILL;
-                 end
-               end
-
-              //  REFILL:
-              //  begin
-              //    if(AXIBus.ret_valid == `Valid && AXIBus.ret_last == `Valid)
-              //    begin
-              //      nextState = IDLE;
-              //    end
-              //    else
-              //    begin
-              //      nextState = REFILL;
-              //    end
-              //  end
-
-               default:
-               begin
-                 nextState = IDLE;
-               end
-             endcase
-           end
-         end
-
-logic [31:0] req_count;
-  logic [31:0] miss_count;
-  logic flag;
-
-  always_ff @( posedge clk) begin : miss_count_
-    if (resetn == 1'b0) begin
-      miss_count<='0;
+always_comb begin : tagv_we_blockName
+    if (state == REFILL) begin
+        tagv_we = '0;
+        tagv_we[lru[req_buffer.index]] =1'b1;
     end else begin
-      if (flag==1 && cache_hit==1'b0) begin
-        miss_count <= miss_count+1; 
-      end else begin
-        miss_count <= miss_count;
-      end
+        tagv_we = '0;
     end
-  end 
-
-    always_ff @( posedge clk) begin : req_count_
-    if (resetn == 1'b0) begin
-      req_count <='0;
-      flag <=0;
+end
+always_comb begin : data_we_blockName
+    if (state == REFILL) begin
+        data_we = '0;
+        data_we[lru[req_buffer.index]] =1'b1;
     end else begin
-      if (CPUBus.valid==1'b1 && CPUBus.addr_ok ==1'b1) begin
-        req_count <= req_count+1; 
-        flag<=1;
-      end else begin
-        req_count <= req_count;
-        flag<=0;
-      end
+        data_we = '0;
+    end    
+end
+
+
+always_ff @(posedge clk) begin : req_buffer_blockName
+    if (resetn == `RstEnable || cpu_bus.flush) begin
+        req_buffer <='0;
+    end else if(req_buffer_en) begin
+        req_buffer.valid    <=  cpu_bus.valid;
+        req_buffer.op       <=  cpu_bus.op;
+        req_buffer.tag      <=  cpu_bus.tag;
+        req_buffer.index    <=  cpu_bus.index;
+        req_buffer.offset   <=  cpu_bus.offset;
+        req_buffer.isCache  <=  cpu_bus.isCache;
+    end else begin
+        req_buffer <= req_buffer;
     end
-  end 
+end
+
+always_ff @( posedge clk ) begin : uncache_rdata_blockName//更新uncache读出来的值
+    if (axi_ubus.ret_valid) begin
+        uncache_rdata <= axi_ubus.ret_data;
+    end else begin
+        uncache_rdata <= uncache_rdata;
+    end
+end
+
+always_ff @( posedge clk ) begin : pipe_tagv_rdata_blockName
+    if (pipe_wr) begin
+        pipe_tagv_rdata.tag   <= tagv_rdata.tag;
+        pipe_tagv_rdata.dirty <= tagv_rdata.dirty ;
+        pipe_tagv_rdata.valid <= tagv_rdata.valid ;
+    end else begin
+        pipe_tagv_rdata.tag   <= pipe_tagv_rdata.tag;
+        pipe_tagv_rdata.dirty <= pipe_tagv_rdata.dirty ;
+        pipe_tagv_rdata.valid <= pipe_tagv_rdata.valid ;        
+    end
+end
+
+always_ff @( posedge clk ) begin : state_blockName
+    if (resetn == `RstEnable) begin
+        state <= LOOKUP;
+    end else begin
+        state <= state_next;
+    end
+end
+
+always_comb begin : state_next_blockname
+    state_next =LOOKUP;
+
+    unique case (state)
+        LOOKUP:begin
+            if (req_buffer.isCache == 1'b0) begin
+                state_next = REQ;
+            end else begin
+            if (cache_hit) begin
+                state_next = LOOKUP;
+            end else begin
+                state_next = MISSCLEAN ;
+            end
+            end              
+        end
+        MISSCLEAN:begin
+            if (axi_bus.rd_rdy) begin//可以读
+                state_next = REFILL;
+            end else begin
+                state_next = MISSCLEAN;
+            end
+        end
+        REFILL:begin
+            if (axi_bus.ret_valid) begin//值合法
+                state_next = REFILLDONE;
+            end else begin
+                state_next = REFILL;
+            end
+        end
+        REFILLDONE:begin
+            if (cpu_bus.stall) begin
+                state_next = REFILLDONE;
+            end else begin
+                state_next = LOOKUP;
+            end
+        end
+        REQ:begin
+            if (req_buffer.op == 1'b0) begin//uncache读
+                if (axi_ubus.rd_rdy) begin
+                    state_next = WAIT;
+                end else begin
+                    state_next = REQ;
+                end
+            end else begin//uncache写
+                if (axi_ubus.wr_rdy) begin
+                    state_next = WAIT;
+                end else begin
+                    state_next = REQ;
+                end
+            end
+        end
+        WAIT:begin
+            if (req_buffer.op == 1'b0) begin//uncache读
+                if (axi_ubus.ret_valid) begin
+                    state_next = UNCACHEDONE;
+                end else begin
+                    state_next = WAIT;
+                end
+            end else begin//uncache写
+                if (axi_ubus.wr_valid) begin
+                    state_next = UNCACHEDONE;
+                end else begin
+                    state_next = WAIT;
+                end
+            end
+        end
+        UNCACHEDONE:begin
+            if (cpu_bus.stall) begin
+                state_next = UNCACHEDONE;
+            end else begin
+                state_next = LOOKUP;
+            end
+             
+        end
+        default: begin
+            state_next =LOOKUP;
+        end
+    endcase
+end
 
 
-
-        
-         //        typedef enum logic  {
-         //                  IDLE,
-         //                  WRITE
-         //                } WriteBufferType;
-
-         // WriteBufferType writeState,nextWriteState;
-
-         // always_ff @( posedge clk )
-         // begin
-         //   writeState <= nextWriteState;
-         // end
-
-         // always_comb
-         // begin
-         //   //复位
-         //   if(rst == `RstEnable)
-         //   begin
-         //     nextWriteState <= IDLE;
-         //   end
-         //   //不复位
-         //   else
-         //   begin
-         //     nextWriteState <= IDLE;
-         //   end
-         // end
-
-
-       endmodule
+endmodule

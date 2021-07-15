@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 09:49:26
+ * @LastEditTime: 2021-07-15 10:14:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -309,7 +309,7 @@ always_ff @( posedge clk ) begin : state_blockName
 end
 
 always_comb begin : state_next_blockname
-    state =LOOKUP;
+    state_next =LOOKUP;
 
     unique case (state)
         LOOKUP:begin
@@ -383,7 +383,7 @@ always_comb begin : state_next_blockname
              
         end
         default: begin
-            state =LOOKUP;
+            state_next =LOOKUP;
         end
     endcase
 end

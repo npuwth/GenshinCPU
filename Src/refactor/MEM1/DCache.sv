@@ -1,924 +1,519 @@
 /*
- * @Author: Juan Jiang
- * @Date: 2021-05-03 23:33:50
- * @LastEditTime: 2021-07-09 11:41:39
- * @LastEditors: npuwth
+ * @Author: your name
+ * @Date: 2021-06-29 23:11:11
+ * @LastEditTime: 2021-07-15 10:14:28
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: \Src\Code\Cache.sv
+ * @FilePath: \Src\ICache.sv
  */
-`include "../Cache_Defines.svh"
-`include "../CPU_Defines.svh"
-`include "../CommonDefines.svh"
-module DCache(
+//重写之后的Cache Icache Dcache复用一个设计
+`include "Cache_Defines.svh"
+`include "CPU_Defines.svh"
+//`define Dcache  //如果是DCache就在文件中使用这个宏
+`define CLOG2(x) \
+((x <= 1) || (x > 512)) ? 0 : \
+(x <= 2) ? 1 : \
+(x <= 4) ? 2 : \
+(x <= 8) ? 3 : \
+(x <= 16) ? 4 : \
+(x <= 32) ? 5 : \
+(x <= 64) ? 6 : \
+(x <= 128) ? 7: \
+(x <= 256) ? 8: \
+(x <= 512) ? 9 : 0
+
+module Cache #(
+    //parameter bus_width = 4,//axi总线的id域有bus_width位
+    parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
+    parameter LINE_WORD_NUM = 4,//cache line大小 一块的字数
+    parameter ASSOC_NUM     = 4,//assoc_num组相连
+    parameter WAY_SIZE      = 4*1024*8,//一路cache 容量大小为way_size bit
+    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //
+
+) (
+    //external signals
     input logic clk,
     input logic resetn,
-    input logic [31:0] Phsy_Daddr,
-    input logic MEM_Wr,
-    input logic D_IsCached,
-    output logic [31:0] Virt_Daddr,
-    CPU_Bus_Interface  CPUBus,//slave
-    AXI_Bus_Interface  AXIBus, //master
-    AXI_UNCACHE_Interface UBus
-  );
 
-  assign Virt_Daddr = {req_buffer.tag,req_buffer.index,req_buffer.offset};
-
-  typedef struct packed {
-            logic en;
-            logic we;
-            logic[7:0] addr;
-            logic[19:0] tagin;
-            logic[19:0] tagout;
-            logic validin;
-            logic validout;
-          } TagVType;//用于连到tag valid IP核上的线的结构体
-
-  typedef struct packed {
-            logic en;
-            logic [3:0]we;
-            logic[7:0] addr;
-            logic[31:0] din;
-            logic[31:0] dout;
-          } DataType;//用于连到Data IP核上的线的结构体
-
-  typedef enum logic [3:0] {
-            LOOKUP,
-            WRITEBACK,
-            MISSCLEAN,
-            MISSDIRTY,
-            IDLE,
-            REFILL,
-            REQ,
-            WAIT,
-            STORE
-          } StateType;
-
-  // typedef enum logic  {
-  //                  IDLE_STORE,
-  //                  WRITE_STORE
-  //                } WriteBufferType;
-  // WriteBufferType writeState,nextWriteState;
+    //with TLBMMU
+    //output VirtualAddressType virt_addr,
+    // input  PhysicalAddressType phsy_addr,现在移到cpu_bus中
+    // input  logic isCache,
 
 
+    AXI_UNCACHE_Interface axi_ubus,
 
-  typedef struct packed {
-    logic valid;
-    logic op;
-    logic[7:0] index;
-    logic[19:0] tag;
-    logic[3:0] offset;
-    logic[3:0] wstrb;
-    logic[31:0] wdata;
-    StoreType  storeType;
-    LoadType   loadType;
-  } RequestType;
-
-  typedef struct  packed{
-    logic [3:0][31:0] bank;
-    logic [`TAGBITNUM-1:0] tag;
-    logic [`INDEXBITNUM-1:0] index;//保留要写入脏块的index�?
-    logic way0_hit;
-    logic way1_hit;
-    logic [3:0]wstrb;
-    StoreType  storeType;
-  } StoreBufferType;
-
-
-  StoreBufferType store_buffer;
-  RequestType req;//从cpu和request_buffer中�?�择出来的请�?
-  logic isAgain;  //是否是未命中 �?要再次查�?
-  logic isAgain_new;//isAgain是reg isAgain_new是wire
-
-  StateType state;
-  StateType nextState;
-  logic[255:0][0:0]  Dirty0;//�?0路的dirty�?
-  logic[255:0][0:0]  Dirty1;//�?1路的dirty�?
-
-  logic Count0;//�?0路的计数�?
-  logic Count1;//�?1路的计数�?
-
-  TagVType tagV0,tagV1;//对于tagv的赋�? datain 连入的是axi接口模块进来的�?? en 是当有req.valid成立 we当axi接口模块来的valid成立
-
-  DataType [`WordsPerCacheLine-1:0] data0;//�?0路的data banks
-  DataType [`WordsPerCacheLine-1:0] data1;//�?1路的data banks
-
-  RequestType req_buffer;
-  RequestType req_buffer_new;
-  
-  logic way0_hit;
-  logic way1_hit;
-  logic cache_hit;
-
-  logic [3:0]way0_we;
-  logic [3:0]way1_we;
-
-  logic [3:0]way0_web;
-  logic [3:0]way1_web; //store的写使能
-
-  logic isStore;//这个信号表征 在这个周�? 是否将store buffer的数据写入对应的bank和tag
-  logic [31:0]unCache_rdata;//用来存放来自axi模块的数�?
-  logic unCache_rdata_en;
-  logic [31:0]wdata;
-  logic [31:0]dirty_addr;
-  // logic way0_data;因为没写注释 我也不知道这是啥
-  // logic way1_data;
-//----------------------------对req的�?�择 如果isAgain高电�? 那就引入 req_buffer的内�? 不然就是
-always_comb begin 
-  if (CPUBus.flush == `FlushEnable) begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata, CPUBus.storeType,CPUBus.loadType };
-  end
-  else if(isAgain == 1'b1 || (state == LOOKUP && cache_hit== `MISS))begin
-    req = req_buffer;
-  end
-  else begin
-    req = {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata ,CPUBus.storeType,CPUBus.loadType};
-  end
-end
-
-
-
-//------------------------对tagv input的赋�?
-assign tagV0.en      = req.valid | isStore;
-assign tagV0.we      = (isStore)?way0_web:way0_we;//当在refill状�?? 并且 ret_valid有效�? 并且换的还是这一�?
-assign tagV0.addr    = (isStore)?store_buffer.index : req.index;
-assign tagV0.tagin   = (isStore)?store_buffer.tag : Phsy_Daddr[31:12];
-assign tagV0.validin = 1'b1;
-
-
-assign tagV1.en      = req.valid | isStore;
-assign tagV1.we      = (isStore)?way1_web:way1_we;
-assign tagV1.addr    = (isStore)?store_buffer.index :req.index;
-assign tagV1.tagin   = (isStore)?store_buffer.tag :Phsy_Daddr[31:12];
-assign tagV1.validin = 1'b1;
-
-// 对tagV0/1_en的赋�? // 当在refill状�?? 并且 ret_valid有效�? 并且换的还是这一�?
-always_comb begin
-  if(nextState == IDLE && state == REFILL) begin
-    if (Count0 == 1'b1) begin
-      way0_we = 4'b1111;
-      way1_we = 4'b0000;
-    end
-    else begin
-      way0_we = 4'b0000;
-      way1_we = 4'b1111;      
-    end
-  end
-  else begin
-    way0_we = 4'b0000;
-    way1_we = 4'b0000;
-  end
-end
-
-
-
-always_comb begin
-   if (state == STORE) begin// 不用考虑此时的flush信号 因为在外部看�? store应该是在上一个时钟就完成�?
-    if (store_buffer.way0_hit == 1'b1) begin
-      way0_web = store_buffer.wstrb;
-      way1_web = 4'b0000;
-    end
-    else begin
-      way0_web = 4'b0000;
-      way1_web = store_buffer.wstrb;      
-    end    
-  end
-  else begin
-    way0_web = 4'b0000;
-    way1_web = 4'b0000;        
-  end
-end
-
-//�? 伪lru的计数器的赋�?
-always_ff @( posedge clk ) begin 
-  if (state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1) begin
-    if (way0_hit == `HIT) begin
-      Count0 <= '0;
-      Count1 <= '1;
-    end
-    else begin
-      Count0 <= '1;
-      Count1 <= '0;      
-    end
-  end
-end
-
-//对于dirty位的读写
-
-always_ff @(posedge clk) begin
-  if (resetn == `RstEnable) begin
-  Dirty0 <= '0;
-  Dirty1 <= '0;
-  end
-  else if ( state == LOOKUP && req_buffer.op == 1'b1 && cache_hit == `HIT && D_IsCached == 1'b1) begin//store指令的第二拍 store命中 写dirty
-    if (way0_hit == `HIT) begin
-      Dirty0[req_buffer.index]<=1'b1;
-    end
-    else begin
-      Dirty1[req_buffer.index]<=1'b1;     
-    end
-  end
-  else if (state == WRITEBACK ) begin
-    if (Count0 == 1'b1) begin
-      Dirty0[req_buffer.index]<=1'b0;
-    end
-    else  begin
-      Dirty1[req_buffer.index]<=1'b0;
-    end
-  end
-  else begin
-    Dirty0 <= Dirty0;
-    Dirty1 <= Dirty1;
-  end
-end
-
-//TODO: storebuffer的赋�?
-always_ff @(posedge clk ) begin
-  store_buffer.index <= req_buffer.index;
-  store_buffer.tag <= Phsy_Daddr[31:12];
-  store_buffer.way0_hit <= way0_hit;
-  store_buffer.way1_hit <= way1_hit;
-  store_buffer.wstrb   <= req_buffer.wstrb;
-  store_buffer.storeType <=req_buffer.storeType;
-end
-
-  always_comb begin
-   
-     if(|req_buffer.wstrb) begin
-       unique case(req_buffer.storeType.size)
-         `STORETYPE_SW: begin //SW
-           // Dmem[MEM_ALUOut[11:2]] <=req_buffer.wdata;
-           wdata    =req_buffer.wdata;
-         end
-         `STORETYPE_SH: begin //SH
-           if(req_buffer.offset[1] == 1'b0)begin
-             wdata    = {16'b0,req_buffer.wdata[15:0]};
-           end
-             // Dmem[MEM_ALUOut[11:2]][15:0] <=req_buffer.wdata[15:0];
-           else begin
-             wdata    = {req_buffer.wdata[15:0],16'b0};
-           end
-             // Dmem[MEM_ALUOut[11:2]][31:16] <=req_buffer.wdata[15:0];
-         end
-         `STORETYPE_SB: begin //SB
-           if(req_buffer.offset[1:0] == 2'b00) begin
-             wdata    = {24'b0,req_buffer.wdata[7:0]};
-           end
-             // Dmem[MEM_ALUOut[11:2]][7:0] <=req_buffer.wdata[7:0];
-           else if(req_buffer.offset[1:0] == 2'b01) begin
-             wdata    = {16'b0,req_buffer.wdata[7:0],8'b0};
-           end
-             // Dmem[MEM_ALUOut[11:2]][15:8] <=req_buffer.wdata[7:0];
-           else if(req_buffer.offset[1:0] == 2'b10) begin
-             wdata    = {8'b0,req_buffer.wdata[7:0],16'b0};
-           end
-             // Dmem[MEM_ALUOut[11:2]][23:16] <=req_buffer.wdata[7:0];
-           else if(req_buffer.offset[1:0] == 2'b11) begin
-             wdata    = {req_buffer.wdata[7:0],24'b0};
-           end
-           else begin
-             wdata    = {req_buffer.wdata[7:0],24'b0};
-           end
-             // Dmem[MEM_ALUOut[11:2]][31:24] <=req_buffer.wdata[7:0];
-         end
-         default: begin
-             wdata    = 32'b0;
-         end
-     
-       endcase
-     end else begin
-       wdata    = 32'b0;
-     end
-   
-   end
-
-always_ff @(posedge clk) begin                                                                                                                                                        
-  if (req_buffer.op == 1'b1 ) begin
-  unique case (req_buffer.offset[3:2])
-    2'b00:begin
-      store_buffer.bank[0] <=wdata;
-      if (way0_hit == `HIT ) begin
-        store_buffer.bank[1] <= data0[1].dout;
-        store_buffer.bank[2] <= data0[2].dout;
-        store_buffer.bank[3] <= data0[3].dout;
-      end
-      else begin
-        store_buffer.bank[1] <= data1[1].dout;
-        store_buffer.bank[2] <= data1[2].dout;
-        store_buffer.bank[3] <= data1[3].dout;        
-      end
-    end
-    2'b01:begin
-      store_buffer.bank[1] <= wdata;
-      if (way0_hit == `HIT ) begin
-        store_buffer.bank[0] <= data0[0].dout;
-        store_buffer.bank[2] <= data0[2].dout;
-        store_buffer.bank[3] <= data0[3].dout;
-      end
-      else begin
-        store_buffer.bank[0] <= data1[0].dout;
-        store_buffer.bank[2] <= data1[2].dout;
-        store_buffer.bank[3] <= data1[3].dout;        
-      end
-    end      
-    2'b10:begin
-      store_buffer.bank[2] <= wdata; 
-      if (way0_hit == `HIT ) begin
-        store_buffer.bank[0] <= data0[0].dout;
-        store_buffer.bank[1] <= data0[1].dout;
-        store_buffer.bank[3] <= data0[3].dout;
-      end
-      else begin
-        store_buffer.bank[0] <= data1[0].dout;
-        store_buffer.bank[1] <= data1[1].dout;
-        store_buffer.bank[3] <= data1[3].dout;        
-      end      
-    end
-    2'b11:begin
-      store_buffer.bank[3] <= wdata;    
-      if (way0_hit == `HIT ) begin
-        store_buffer.bank[0] <= data0[0].dout;
-        store_buffer.bank[2] <= data0[2].dout;
-        store_buffer.bank[1] <= data0[1].dout;
-      end
-      else begin
-        store_buffer.bank[0] <= data1[0].dout;
-        store_buffer.bank[2] <= data1[2].dout;
-        store_buffer.bank[1] <= data1[1].dout;        
-      end   
-    end
-    default: begin
-      store_buffer.bank <= '0; 
-    end
-  endcase
-  end
-  else begin
-    store_buffer.bank <= '1; //TODO: �?以这到底是什么呢
-  end
-end
-
-
-
-//------------------对data0 data1 的input的赋�?
-generate;
-  for (genvar i=0; i<`WordsPerCacheLine ;i=i+1) begin
-    assign data0[i].addr = (isStore)?store_buffer.index :req.index;
-    assign data0[i].en = req.valid | (|way0_web);
-    assign data0[i].we = (isStore)?way0_web: way0_we;
-    assign data0[i].din =(isStore)?store_buffer.bank[i]: AXIBus.ret_data[(i+1)*32-1:i*32];
+    CPU_Bus_Interface  cpu_bus,//slave
+    AXI_Bus_Interface  axi_bus //master
     
+    
+);
+//parameters
+localparam int unsigned BYTES_PER_WORD = 4;
+localparam int unsigned INDEX_WIDTH    = $clog2(SET_NUM) ;
+localparam int unsigned OFFSET_WIDTH   = $clog2(LINE_WORD_NUM*BYTES_PER_WORD);//
+localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;
 
-    assign data1[i].addr = (isStore)?store_buffer.index :req.index;
-    assign data1[i].en = req.valid | (|way1_web);
-    assign data1[i].we = (isStore)?way1_web: way1_we;
-    assign data1[i].din = (isStore)?store_buffer.bank[i]:AXIBus.ret_data[(i+1)*32-1:i*32];
-  end
+
+//--definitions
+typedef struct packed {
+    logic valid;
+    logic dirty;
+    logic [TAG_WIDTH-1:0] tag;  
+} tagv_t; //每一路 一个tag_t变量
+
+
+
+
+typedef logic [TAG_WIDTH-1:0]                     tag_t;
+typedef logic [INDEX_WIDTH-1:0]                   index_t;
+typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
+
+typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使能
+typedef logic [LINE_WORD_NUM-1:0][DATA_WIDTH-1:0] line_t;//每一路一个cache_line
+
+function index_t get_index( input logic [31:0] addr );
+    return addr[OFFSET_WIDTH + INDEX_WIDTH - 1 : OFFSET_WIDTH];
+endfunction
+
+function tag_t get_tag( input logic [31:0] addr );
+    return addr[31 : OFFSET_WIDTH + INDEX_WIDTH];
+endfunction
+
+function offset_t get_offset( input logic [31:0] addr );
+    return addr[OFFSET_WIDTH - 1 : 0];
+endfunction
+
+
+
+function logic [31:0] mux_byteenable(
+    input logic [31:0] rdata,
+    input logic [31:0] wdata,
+    input logic [3:0] sel 
+);
+    return { 
+        sel[3] ? wdata[31:24] : rdata[31:24],
+        sel[2] ? wdata[23:16] : rdata[23:16],
+        sel[1] ? wdata[15:8] : rdata[15:8],
+        sel[0] ? wdata[7:0] : rdata[7:0]
+    };
+endfunction
+
+typedef enum logic [3:0] { 
+
+        MISSDIRTY,
+        WRITEBACK,//之后加入fifo就不用这个装态了
+
+        REQ,
+        WAIT,
+        UNCACHEDONE,
+
+        LOOKUP,
+        MISSCLEAN,
+        REFILL,
+        REFILLDONE
+} state_t;
+
+
+typedef enum logic [2:0] { 
+        WB_IDLE,
+        WB_STORE
+} wb_state_t;
+
+
+typedef struct packed {
+    logic             valid;
+    logic             op;
+    tag_t             tag;
+    index_t           index;
+    offset_t          offset;
+    logic[3:0]        wstrb; //写使能
+    logic[31:0]       wdata; //store数据
+    LoadType          loadType;//load类型
+    logic             isCache;
+} request_t;
+
+
+typedef struct packed {//store指令在读数的时候根据写使能替换
+    logic [ASSOC_NUM-1:0] hit;
+    tag_t   tag;
+    index_t index;
+    line_t  wdata;
+} store_t;
+
+//
+`ifdef Dcache
+
+`endif
+
+//declartion
+store_t store_buffer; //如果有写冲突 直接阻塞
+line_t store_wdata;
+state_t state,state_next;
+
+wb_state_t wb_state,wb_state_next;
+ 
+logic [31:0] uncache_rdata;
+
+index_t read_addr,write_addr;//read_addr 既是 查询的地址 又是重填的地址  write_addr是store的地址
+
+tagv_t [ASSOC_NUM-1:0] tagv_rdata;
+tagv_t tagv_wdata;
+we_t tagv_we;// 重填的时候写使能
+
+we_t wb_we;//store的写使能
+
+line_t [ASSOC_NUM-1:0] data_rdata;
+logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+logic [31:0] data_rdata_final;//
+logic [31:0] data_rdata_final2;//经过ext2的数据
+line_t data_wdata;
+we_t  data_we;//数据表的写使能
+
+request_t req_buffer;
+logic req_buffer_en;
+
+logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
+logic [ASSOC_NUM-1:0] hit;
+logic cache_hit;
+
+tagv_t pipe_tagv_rdata;
+logic pipe_wr;
+
+logic busy_cache;// uncache 直到数据返回
+logic busy_uncache;
+logic busy_collision;
+
+
+//连cpu_bus接口
+assign cpu_bus.busy   = busy;
+assign cpu_bus.rdata  = data_rdata_final2;
+
+//连axi_bus接口
+assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
+assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
+assign axi_bus.wr_req  = (state == MISSDIRTY) ? 1'b1:1'b0;
+assign axi_bus.wr_addr = {tagv_rdata[lru[req_buffer.index]],req_buffer.index,{OFFSET_WIDTH{1'b0}}};
+assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
+
+//连axi_ubus接口
+assign axi_ubus.rd_req   = (state == REQ && req_buffer.op==0) ? 1'b1:1'b0;
+assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
+assign axi_ubus.wr_req   = (state == REQ && req_buffer.op==1) ? 1'b1:1'b0;
+assign axi_ubus.wr_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset}; //TODO:没有抹零
+assign axi_ubus.wr_data  = {req_buffer.wdata};
+assign axi_ubus.wr_wstrb = req_buffer.wstrb;
+assign axi_ubus.loadType = req_buffer.loadType;
+
+//generate
+generate;
+    for (genvar i = 0;i<ASSOC_NUM ;i++ ) begin
+        simple_port_lutram  #(
+            .SIZE(SET_NUM),
+            .dtype(tagv_t)
+        ) mem_tag(
+            .clka(clk),
+            .rsta(~resetn),
+
+            //端口信号
+            .ena(1'b1),
+            .wea(tagv_we[i]),
+            .addra(read_addr),
+            .dina(tagv_wdata),
+            .douta(tagv_rdata[i])
+        );
+        simple_port_ram #(
+            .SIZE(SET_NUM),
+            .dtype(line_t)
+        )mem_data(
+            .clk(clk),
+            .rst(~resetn),
+
+            //写端口
+            .ena(1'b1),
+            .wea(data_we[i]),
+            .addra(write_addr),
+            .dina(data_wdata),
+
+            //读端口
+            .enb(cpu_bus.valid & (~busy) & (~cpu_bus.stall)),
+            .addrb(read_addr),
+            .doutb(data_rdata[i])
+        );
+    end
 endgenerate
 
+generate;//PLRU 
+    for (genvar  i=0; i<SET_NUM; i++) begin
+        PLRU #(
+            .ASSOC_NUM(ASSOC_NUM)
+        ) plru_reg(
+            .clk(clk),
+            .resetn(resetn),
+            .access(hit),
+            .update(req_buffer.valid),
 
-//----------------选取读取到的数据-------------
-
-logic [31:0] way0_word;
-logic [31:0] way1_word;
-
-always_comb begin//根据
-  unique case (req_buffer.offset[3:2])//根据req_buffer里面的信�? 因为 req_buffer里面的信息是和从ram读出的数据是同一拍的
-      2'b00:begin
-        way0_word = data0[0].dout;
-        way1_word = data1[0].dout;
-      end
-      2'b01:begin
-        way0_word = data0[1].dout;
-        way1_word = data1[1].dout;       
-      end
-      2'b10:begin
-        way0_word = data0[2].dout;
-        way1_word = data1[2].dout;        
-      end
-      2'b11:begin
-        way0_word = data0[3].dout;
-        way1_word = data1[3].dout;      
-      end
-    default:begin
-        way0_word = 'x;
-        way1_word = 'x;      
+            .lru(lru[i])
+        );
     end
-  endcase
-end
+endgenerate
 
-logic [31:0] way_word;//读出的数�?
-logic [31:0] way_word_r;//�?存下位接收的数据
-logic choose;
-always_ff @(posedge clk) begin
-  if (CPUBus.data_ok == 1'b1 ) begin
-    way_word_r <= way_word;
-  end
-  else begin
-    way_word_r <= way_word_r;
-  end
-end
-
-always_ff @(posedge clk) begin
-  if (CPUBus.data_ok == 1'b1 && CPUBus.ready == 1'b0) begin
-    choose <= 1'b1;
-  end
-  else if (CPUBus.ready == 1'b1) begin
-    choose <= 1'b0;
-  end
-  else begin
-    choose <= choose;
-  end
-end
-
-
-always_comb begin // 读出数的always�?
-  if (state == IDLE) begin
-    way_word = unCache_rdata;
-  end
-  else if(cache_hit == `HIT && state == LOOKUP && D_IsCached == 1'b1)begin
-    if(way0_hit == `HIT) way_word = way0_word;
-    else way_word = way1_word;
-  end
-  else begin//cache miss的情�?
-        way_word = '0;
-  end
-end
-
-
-
-//对CPUBus 的output进行赋�??
-assign CPUBus.rdata = (CPUBus.data_ok == 1'b1 && CPUBus.ready == 1'b1)?way_word:(choose)?way_word_r:'0;
-always_comb begin
-    if (state ==IDLE && isAgain == 1'b0) begin
-        CPUBus.addr_ok = `Ready;
+generate;//判断命中
+    for (genvar i=0; i<ASSOC_NUM; i++) begin
+        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag)) ? 1'b1:1'b0;
     end
-    else if (state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1 && req_buffer.op==1'b0) begin//当处于look up 命中 并且不是uncache�?
-      CPUBus.addr_ok = `Ready;
+endgenerate
+
+generate;//根据offset片选？
+    for (genvar i=0; i<ASSOC_NUM; i++) begin
+        assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
     end
-    else CPUBus.addr_ok = `Unready;
-end
+endgenerate
+//旁路
+                            //
+assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:
+                            (|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( (store_buffer.index == req_buffer.index) )?
+                             store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]]  : data_rdata_sel[`CLOG2(hit)];
+assign cache_hit = |hit;
 
-logic data_ok;
-logic data_ok_r;
-always_ff @(posedge clk) begin
-  data_ok_r <=data_ok;
-end
-
-always_comb begin
-  if ( state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1) begin
-    CPUBus.data_ok = `Valid;
-  end
-  else CPUBus.data_ok = data_ok_r;
-end
-
-always_comb begin
-  if (state == WAIT ) begin
-    unique case (req_buffer.op)
-      1'b0:begin
-        if (UBus.ret_valid == `Valid) begin
-          data_ok = `Valid;
-        end
-        else begin
-          data_ok = `Invalid;  
-        end
-      end
-      1'b1:begin
-        if (UBus.wr_valid == `Valid) begin
-          data_ok = `Valid;
-        end
-        else begin
-          data_ok = `Invalid;  
-        end        
-      end
-      default: begin
-        data_ok = `Invalid;
-      end
-    endcase
-  end
-  else begin
-    data_ok = `Invalid;
-  end
-end
-//对isAgain的赋�?  
-always_comb begin
-  if(state == LOOKUP && cache_hit == `MISS && D_IsCached == 1'b1  )begin //在LOOKUP阶段 未命�?
-    isAgain_new = 1'b1; 
-  end
-  else isAgain_new = 1'b0;
-end
-
-always_ff @(posedge clk) begin
-  if(resetn == `RstEnable || CPUBus.flush == `FlushEnable)begin
-    isAgain <= '0;
-  end
-  else if (state == IDLE || state == LOOKUP) begin
-    isAgain <= isAgain_new;
-  end
-  else begin
-    isAgain <= isAgain;
-  end
-end
-
-////对AXIBus 的output进行赋�??
-assign AXIBus.rd_addr = {Phsy_Daddr[31:12],req_buffer.index,4'b0000};
-always_comb begin
-  if (state == MISSCLEAN || state == WRITEBACK) begin
-    AXIBus.rd_req = `Enable;
-  end
-  else AXIBus.rd_req = `Disable;
-end
-
-assign dirty_addr = (Count0 == 1'b1) ? {tagV0.tagout,req_buffer.index,4'b0000}
-                                         : {tagV1.tagout,req_buffer.index,4'b0000}  ;
+assign read_addr      = (state == REFILLDONE)? req_buffer.index : cpu_bus.index;
+assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 
 
-assign AXIBus.wr_addr = dirty_addr;
-assign AXIBus.wr_data = (Count0 == 1'b1) ? {data0[3].dout,data0[2].dout,data0[1].dout,data0[0].dout}
-                                         : {data1[3].dout,data1[2].dout,data1[1].dout,data1[0].dout}  ;
-always_comb begin
-  if (state == MISSDIRTY) begin
-    AXIBus.wr_req = `Enable;
-  end
-  else begin
-    AXIBus.wr_req = `Disable;
-  end
-end
+assign busy_cache     = (cache_hit & req_buffer.isCache) ? 1'b0:1'b1;
+assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0 :1'b1;
+assign busy_collision = (store_buffer.index == read_addr)? 1'b1:1'b0;
+assign busy           = busy_cache | busy_uncache | busy_collision;
 
-//�? uncache的部分测�?
-always_comb begin
-  if (state == REQ) begin
-    unique case (req_buffer.op)
-      1'b0:begin
-        UBus.rd_req = `Enable;
-        UBus.rd_addr = Phsy_Daddr;
-        UBus.wr_req ='0;
-        UBus.wr_addr = '0;
-        UBus.wr_data ='0;
-      end
-      1'b1:begin
-      UBus.rd_req ='0;
-        UBus.rd_addr = '0;
-        UBus.wr_req  = `Enable;
-        UBus.wr_addr = {Phsy_Daddr[31:2],2'b00};
-        UBus.wr_data = wdata;
-      end
-      default: begin
-        UBus.rd_req ='0;
-        UBus.rd_addr = '0;
-        UBus.wr_req ='0;
-        UBus.wr_addr = '0;
-        UBus.wr_data ='0;
-      end
-    endcase
-  end
-  else begin
-      UBus.rd_req ='0;
-      UBus.rd_addr = '0;
-      UBus.wr_req ='0;
-      UBus.wr_addr = '0;
-      UBus.wr_data ='0;  
-  end
+assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:1'b0;
+
+assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
+
+assign data_wdata = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
+assign tagv_wdata = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
+
+
+always_comb begin : data_rdata_final2_blockname
+    unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
+          `LOADTYPE_LW: begin
+            data_rdata_final2 = data_rdata_final;  //LW
+          end 
+          `LOADTYPE_LH: begin
+            if(req_buffer.offset[1] == 1'b0) //LH
+              data_rdata_final2 = {{16{data_rdata_final[15]}},data_rdata_final[15:0]};
+            else
+              data_rdata_final2 = {{16{data_rdata_final[31]}},data_rdata_final[31:16]}; 
+          end
+          `LOADTYPE_LHU: begin
+            if(req_buffer.offset[1] == 1'b0) //LHU
+              data_rdata_final2 = {16'b0,data_rdata_final[15:0]};
+            else
+              data_rdata_final2 = {16'b0,data_rdata_final[31:16]};
+          end
+          `LOADTYPE_LB: begin
+            if(req_buffer.offset[1:0] == 2'b00) //LB
+              data_rdata_final2 = {{24{data_rdata_final[7]}},data_rdata_final[7:0]};
+            else if(req_buffer.offset[1:0] == 2'b01)
+              data_rdata_final2 = {{24{data_rdata_final[15]}},data_rdata_final[15:8]};
+            else if(req_buffer.offset[1:0] == 2'b10)
+              data_rdata_final2 = {{24{data_rdata_final[23]}},data_rdata_final[23:16]};
+            else
+              data_rdata_final2 = {{24{data_rdata_final[31]}},data_rdata_final[31:24]};
+          end
+          `LOADTYPE_LBU: begin
+            if(req_buffer.offset[1:0] == 2'b00) //LBU
+              data_rdata_final2 = {24'b0,data_rdata_final[7:0]};
+            else if(req_buffer.offset[1:0] == 2'b01)
+              data_rdata_final2 = {24'b0,data_rdata_final[15:8]};
+            else if(req_buffer.offset[1:0] == 2'b10)
+              data_rdata_final2 = {24'b0,data_rdata_final[23:16]};
+            else
+              data_rdata_final2 = {24'b0,data_rdata_final[31:24]};
+          end
+          default: begin
+            data_rdata_final2 = 32'bx;
+          end
+        endcase
 end
 
 
-
-assign UBus.wr_wstrb = req_buffer.wstrb;
-assign UBus.loadType = req_buffer.loadType;
-always_comb begin
-  if (state == WAIT && req_buffer.op == 1'b0 && UBus.ret_valid == `Valid) begin
-    unCache_rdata_en = `WriteEnable;
-    end
-  else begin
-    unCache_rdata_en = `WriteDisable;
-  end
+always_comb begin : store_wdata_block//TODO:救命写不出来
+      store_wdata                                      = data_rdata[`CLOG2(hit)]; //TODO：这个可综合吗？
+      store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
 end
 
-always_ff @(posedge clk) begin
-  if (resetn == `RstEnable) begin
-    unCache_rdata <= '0;
-  end
-  else if (unCache_rdata_en == `WriteEnable) begin
-    unCache_rdata <= UBus.ret_data;
-  end 
-  else begin
-    unCache_rdata <= unCache_rdata;
-  end 
-end
-
-//-----------------判断是否命中----------------------
-  assign way0_hit = (tagV0.validout )& (tagV0.tagout == Phsy_Daddr[31:12]);
-  assign way1_hit = (tagV1.validout )& (tagV1.tagout == Phsy_Daddr[31:12]);
-  assign cache_hit = way0_hit | way1_hit;
-
-// req_buffer
-  logic req_buffer_en;
-always_comb begin 
-  if (CPUBus.flush == `FlushEnable) begin
-    req_buffer_en = 1'b1;
-  end
-  else if (~(state ==IDLE && isAgain == 1'b0) && ~(state == LOOKUP && cache_hit == `HIT && D_IsCached == 1'b1 ) ) begin//如果未命�? 保持req_buffer不变 或�?�需要再次LOOKUP�? 保持req_buffer不变
-    req_buffer_en = 1'b0;
-  end
-  else if(MEM_Wr == 1'b0) begin
-    req_buffer_en = 1'b0;
-  end
-  else begin
-    req_buffer_en = 1'b1;
-  end
-end
-
-  assign req_buffer_new = (req_buffer_en ? {CPUBus.valid , CPUBus.op,CPUBus.index ,CPUBus.tag ,CPUBus.offset ,CPUBus.wstrb , CPUBus.wdata,CPUBus.storeType,CPUBus.loadType } : req_buffer);
-  always_ff @( posedge clk ) begin //request_buffer
-    if(resetn == `RstEnable)begin
-      req_buffer <='0;
-    end
-    else begin
-      req_buffer <= req_buffer_new;
-    end
-  end
-
-  // MMU MMU_dut (
-  //       .virt_addr ({req_buffer.tag,req_buffer.index,req_buffer.offset} ),
-  //       .isUncache (isUncache )
-  //     );//虚实地址转换
-
-
-
-  inst_ram_TagV TagV0(//第一路的tag 使用�?后一位作为valid
-                  //input
-                  .clka(clk),
-                  .ena(tagV0.en),     //实际上在replace阶段也要读写 然后在判断命中的时�??
-                  .wea(tagV0.we),     // 在refill是写使能打开
-                  .addra(tagV0.addr), //地址�? 就是cache set的编�?
-                  .dina({tagV0.tagin,tagV0.validin} ),
-                  //output
-                  .douta({tagV0.tagout,tagV0.validout} )
-
-                );
-
-  inst_ram_TagV TagV1(//第二路的tag 使用�?后一位作为valid
-                  //input
-                  .clka(clk),
-                  .ena(tagV1.en),     //实际上在replace阶段也要读写 然后在判断命中的时�??
-                  .wea(tagV1.we),     // 在refill是写使能打开
-                  .addra(tagV1.addr), //地址�? 就是cache set的编�?
-                  .dina({tagV1.tagin,tagV1.validin} ),
-                  //output
-                  .douta({tagV1.tagout,tagV1.validout} )
-
-
-                );
-
-  generate
-    for(genvar i=0;i < `WordsPerCacheLine; i = i+1)
-    begin:gen_icache_ram
-      inst_ram_data Data0(//�?0路的data block ram
-                      //input
-                      .clka(clk),
-                      .addra(data0[i].addr),
-                      .dina(data0[i].din),
-                      .ena(data0[i].en),
-                      .wea(data0[i].we),
-                      //output
-                      .douta(data0[i].dout)
-
-                
-                    );
-
-      inst_ram_data Data1(//�?1路的data block ram
-                      //input
-                      //input
-                      .clka(clk),
-                      .addra(data1[i].addr),
-                      .dina(data1[i].din),
-                      .ena(data1[i].en),
-                      .wea(data1[i].we),
-                      //output
-                      .douta(data1[i].dout)
-
-  
-                    );
-    end
-    
-  endgenerate
-
-  always_ff @( posedge clk )
-  begin
-    state<=nextState;
-  end
-
-
-
-/*Icache状�?�机说明
-IDLE->IDLE 该周期无访存请求
-IDLE->LOOKUP 该周期有访存请求 下一周期可达到命中信�?
-LOOKUP->LOOKUP 该周期收到访存请�? 且上周期的请求命�?
-LOOKUP->MISS 上周期的访存请求未命�? 这周期的命中结果是未命中
-MISS->MISS 如果不能发出读请�?
-MISS->REPLACE 发出了读请求
-REFILL->REFILL 等待AXI接口模块的数�?
-REFILL->IDLE  AXI接口模块数据有效
- 如果外界的flush信号成立，那么以同周期的输入请求查询
-*/
-
-  always_comb //计算下一状�??
-  begin
-    //如果复位
-    if(resetn==`RstEnable || CPUBus.flush == `FlushEnable)
-    begin
-      nextState=IDLE;
-    end
-    //如果不复�?
-    else
-    begin
-      unique case (state)
-
-               IDLE:
-               begin
-                 if(req.valid == `Valid  )
-                   nextState=LOOKUP;
-                 else
-                   nextState=IDLE;
-               end
-
-               LOOKUP:
-               begin
-                 if (D_IsCached == 1'b0) begin
-                   nextState = REQ;
-                 end
-                 else if(cache_hit == `MISS ) // cache_hit表示是否当前周期的查询命�?
-                 begin
-                 if (Count0 == 1'b1) begin //如果�?要替换的是第0�?
-                   if (Dirty0[req_buffer.index]==1'b1) begin //如果是dirty�?
-                     nextState=MISSDIRTY;
-                   end
-                   else begin
-                     nextState=MISSCLEAN;
-                   end
-                 end
-                 else begin//如果�?要替换的是第1�?
-                   if (Dirty1[req_buffer.index]==1'b1) begin
-                     nextState=MISSDIRTY;
-                   end
-                   else begin
-                     nextState=MISSCLEAN;
-                   end
-                 end
-                 end
-                 else if (req_buffer.op == 1'b1) begin
-                   nextState = STORE;
-                 end
-                 else if (req.valid ==`Valid )
-                 begin
-                   nextState=LOOKUP;
-                 end
-                 else
-                   nextState=IDLE;
-               end
-
-               STORE:begin
-                 nextState = IDLE;
-               end
-
-               MISSCLEAN:
-               begin
-                 if(AXIBus.rd_rdy == 1'b0)//如果读请求不能被接收
-                 begin
-                   nextState = MISSCLEAN;
-                 end
-                 else                     //如果读请求被接受�?
-                 begin
-                   nextState = REFILL;
-                 end
-               end
-
-               MISSDIRTY:
-               begin
-                 if (AXIBus.wr_rdy == 1'b0) begin
-                   nextState = MISSDIRTY;
-                 end
-                 else begin
-                   nextState = WRITEBACK;
-                 end
-               end
-
-               WRITEBACK:
-               begin
-                 if(AXIBus.wr_valid == 1'b0)begin
-                   nextState = WRITEBACK;
-                 end
-                 else begin
-                   nextState = MISSCLEAN;
-                 end
-               end
-
-              REQ:begin
-                unique case (req_buffer.op)
-                  1'b1:begin
-                    if (UBus.wr_rdy == `Unready) begin
-                      nextState = REQ;
-                    end
-                    else begin
-                      nextState = WAIT;
-                    end
-                  end
-                  1'b0:begin
-                    if (UBus.rd_rdy == `Unready) begin
-                      nextState = REQ;
-                    end
-                    else begin
-                      nextState = WAIT;
-                    end
-                  end
-                  default: begin
-                    nextState = IDLE;
-                  end
-                endcase
-              end
-
-              WAIT:begin
-                unique case (req_buffer.op)
-                  1'b1:begin
-                    if (UBus.wr_valid == `Valid) begin
-                      nextState = IDLE;
-                    end
-                    else begin
-                      nextState = WAIT;
-                    end
-                  end
-                  1'b0:begin
-                    if(UBus.ret_valid == `Valid)begin
-                      nextState = IDLE;
-                    end
-                    else begin
-                      nextState = WAIT; 
-                    end
-                  end
-                  default:begin
-                     nextState = WAIT;
-                  end
-                endcase
-              end
-
-               REFILL:
-               begin
-                 if(AXIBus.ret_valid == 1'b1)
-                 begin
-                   nextState = IDLE ;
-                 end
-                 else
-                 begin
-                   nextState = REFILL;
-                 end
-               end
-
-
-               default:
-               begin
-                 nextState = IDLE;
-               end
-             endcase
-           end
-         end
-
-
-           always_comb begin
-             if (state == STORE) begin
-               isStore = 1'b1;
-             end
-             else begin
-               isStore = 1'b0;
-             end
-           end
-
-  logic [31:0] req_count;
-  logic [31:0] miss_count;
-  logic flag;
-
-  always_ff @( posedge clk) begin : miss_count_
-    if (resetn == 1'b0) begin
-      miss_count<='0;
+always_comb begin : tagv_we_blockName
+    if (state == REFILL) begin
+        tagv_we = '0;
+        tagv_we[lru[req_buffer.index]] =1'b1;
     end else begin
-      if (flag==1 && cache_hit==1'b0) begin
-        miss_count <= miss_count+1; 
-      end else begin
-        miss_count <= miss_count;
-      end
+        tagv_we = store_buffer.hit;
     end
-  end 
-
-    always_ff @( posedge clk) begin : req_count_
-    if (resetn == 1'b0) begin
-      req_count <='0;
-      flag <=0;
+end
+always_comb begin : data_we_blockName
+    if (state == REFILL) begin
+        data_we = '0;
+        data_we[lru[req_buffer.index]] =1'b1;
     end else begin
-      if (CPUBus.valid==1'b1 && CPUBus.addr_ok ==1'b1) begin
-        req_count <= req_count+1; 
-        flag<=1;
-      end else begin
-        req_count <= req_count;
-        flag<=0;
-      end
+        data_we = store_buffer.hit;
+    end    
+end
+always_ff @( posedge clk ) begin : store_buffer_blockName
+    if ((resetn == `RstEnable) ||(cpu_bus.stall | busy) ) begin
+        store_buffer <= '0;
+    end else if(req_buffer.op & req_buffer.valid & cache_hit) begin//既是写 又是有效的
+        store_buffer.hit   <= hit;
+        store_buffer.index <= req_buffer.index;
+        store_buffer.wdata <= store_wdata;
+        store_buffer.tag   <= req_buffer.tag;
+    end else begin
+        store_buffer <= '0;
     end
-  end 
+end
 
-       endmodule
+always_ff @(posedge clk) begin : req_buffer_blockName
+    if (resetn == `RstEnable || cpu_bus.flush) begin
+        req_buffer <='0;
+    end else if(req_buffer_en) begin
+        req_buffer.valid    <=  cpu_bus.valid;
+        req_buffer.op       <=  cpu_bus.op;
+        req_buffer.tag      <=  cpu_bus.tag;
+        req_buffer.index    <=  cpu_bus.index;
+        req_buffer.offset   <=  cpu_bus.offset;
+        req_buffer.wstrb    <=  cpu_bus.wstrb;
+        req_buffer.wdata    <=  cpu_bus.wdata;
+        req_buffer.loadType <=  cpu_bus.loadType;
+        req_buffer.isCache  <=  cpu_bus.isCache;
+    end else begin
+        req_buffer <= req_buffer;
+    end
+end
+
+always_ff @( posedge clk ) begin : uncache_rdata_blockName//更新uncache读出来的值
+    if (axi_ubus.ret_valid) begin
+        uncache_rdata <= axi_ubus.ret_data;
+    end else begin
+        uncache_rdata <= uncache_rdata;
+    end
+end
+
+always_ff @( posedge clk ) begin : pipe_tagv_rdata_blockName
+    if (pipe_wr) begin
+        pipe_tagv_rdata.tag   <= tagv_rdata.tag;
+        pipe_tagv_rdata.dirty <= tagv_rdata.dirty ;
+        pipe_tagv_rdata.valid <= tagv_rdata.valid ;
+    end else begin
+        pipe_tagv_rdata.tag   <= pipe_tagv_rdata.tag;
+        pipe_tagv_rdata.dirty <= pipe_tagv_rdata.dirty ;
+        pipe_tagv_rdata.valid <= pipe_tagv_rdata.valid ;        
+    end
+end
+
+always_ff @( posedge clk ) begin : state_blockName
+    if (resetn == `RstEnable) begin
+        state <= LOOKUP;
+    end else begin
+        state <= state_next;
+    end
+end
+
+always_comb begin : state_next_blockname
+    state_next =LOOKUP;
+
+    unique case (state)
+        LOOKUP:begin
+            if (req_buffer.isCache == 1'b0) begin
+                state_next = REQ;
+            end else begin
+            if (cache_hit) begin
+                state_next = LOOKUP;
+            end else begin
+                if (pipe_tagv_rdata.dirty) begin
+                    state_next = MISSDIRTY ;
+                end else begin
+                    state_next = MISSCLEAN ;
+                end
+            end
+            end              
+        end
+        MISSCLEAN:begin
+            if (axi_bus.rd_rdy) begin//可以读
+                state_next = REFILL;
+            end else begin
+                state_next = MISSCLEAN;
+            end
+        end
+        REFILL:begin
+            if (axi_bus.ret_valid) begin//值合法
+                state_next = REFILLDONE;
+            end else begin
+                state_next = REFILL;
+            end
+        end
+        REFILLDONE:begin
+            if (cpu_bus.stall) begin
+                state_next = REFILLDONE;
+            end else begin
+                state_next = LOOKUP;
+            end
+        end
+        MISSDIRTY:begin
+            if (axi_bus.wr_rdy) begin
+                state_next = WRITEBACK;
+            end else begin
+                state_next =  MISSDIRTY;
+            end
+        end
+        WRITEBACK:begin
+            if (axi_bus.wr_valid) begin
+                state_next = MISSCLEAN;
+            end else begin
+                state_next = WRITEBACK;
+            end
+        end
+        REQ:begin
+            if (req_buffer.op == 1'b0) begin//uncache读
+                if (axi_ubus.rd_rdy) begin
+                    state_next = WAIT;
+                end else begin
+                    state_next = REQ;
+                end
+            end else begin//uncache写
+                if (axi_ubus.wr_rdy) begin
+                    state_next = WAIT;
+                end else begin
+                    state_next = REQ;
+                end
+            end
+        end
+        WAIT:begin
+            if (req_buffer.op == 1'b0) begin//uncache读
+                if (axi_ubus.ret_valid) begin
+                    state_next = UNCACHEDONE;
+                end else begin
+                    state_next = WAIT;
+                end
+            end else begin//uncache写
+                if (axi_ubus.wr_valid) begin
+                    state_next = UNCACHEDONE;
+                end else begin
+                    state_next = WAIT;
+                end
+            end
+        end
+        UNCACHEDONE:begin
+            if (cpu_bus.stall) begin
+                state_next = UNCACHEDONE;
+            end else begin
+                state_next = LOOKUP;
+            end
+             
+        end
+        default: begin
+            state_next =LOOKUP;
+        end
+    endcase
+end
+
+
+endmodule

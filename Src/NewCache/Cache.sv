@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-13 22:33:55
+ * @LastEditTime: 2021-07-15 10:13:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -418,7 +418,7 @@ always_ff @( posedge clk ) begin : state_blockName
 end
 
 always_comb begin : state_next_blockname
-    state =LOOKUP;
+    state_next =LOOKUP;
 
     unique case (state)
         LOOKUP:begin
@@ -451,7 +451,11 @@ always_comb begin : state_next_blockname
             end
         end
         REFILLDONE:begin
-            state_next = LOOKUP;
+            if (cpu_bus.stall) begin
+                state_next = REFILLDONE;
+            end else begin
+                state_next = LOOKUP;
+            end
         end
         MISSDIRTY:begin
             if (axi_bus.wr_rdy) begin
@@ -506,7 +510,7 @@ always_comb begin : state_next_blockname
              
         end
         default: begin
-            state =LOOKUP;
+            state_next =LOOKUP;
         end
     endcase
 end
