@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-14 21:01:24
+ * @LastEditTime: 2021-07-15 11:58:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -323,7 +323,7 @@ module TLBMMU (
             I_TLBBuffer.V1            <= '0;
         end
         else if(I_TLBBuffer_Wr ) begin
-            I_TLBBuffer.VPN2          <= I_TLBEntry.VPN2;
+            I_TLBBuffer.VPN2          <= Virt_Iaddr[31:13];
             I_TLBBuffer.ASID          <= I_TLBEntry.ASID;
             I_TLBBuffer.G             <= I_TLBEntry.G;
             I_TLBBuffer.PFN0          <= I_TLBEntry.PFN0;
@@ -352,7 +352,7 @@ module TLBMMU (
             D_TLBBuffer.V1            <= '0;
         end
         else if(D_TLBBuffer_Wr ) begin
-            D_TLBBuffer.VPN2          <= D_TLBEntry.VPN2;
+            D_TLBBuffer.VPN2          <= Virt_Daddr[31:13];
             D_TLBBuffer.ASID          <= D_TLBEntry.ASID;
             D_TLBBuffer.G             <= D_TLBEntry.G;
             D_TLBBuffer.PFN0          <= D_TLBEntry.PFN0;
