@@ -19,7 +19,7 @@ module TOP_IF (
     input logic                 IF_Wr,
     input logic                 IF_Flush,
     input logic  [31:0]         PREIF_PC,
-    input ExceptinPipeType      PREIF_ExceptType,
+    input ExceptinPipeType      IFTLB_ExceptType,
     IF_ID_Interface             IIBus,
     CPU_Bus_Interface           cpu_ibus
     // AXI_Bus_Interface   axi_ibus,
@@ -38,7 +38,7 @@ module TOP_IF (
         .IF_Flush               (IF_Flush ),
 
         .PREIF_PC               (PREIF_PC ),
-        .PREIF_ExceptType       (PREIF_ExceptType ),
+        .IFTLB_ExceptType       (IFTLB_ExceptType ),
 //-----------------------------output-------------------------------------//
         .IF_PC                  (IIBus.IF_PC ),
         .IF_ExceptType          (IIBus.IF_ExceptType)

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 11:10:49
+ * @LastEditTime: 2021-07-15 13:02:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -66,7 +66,7 @@ module TOP_MEM (
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType     = MM2Bus.MEM_RegsWrType;  // 传给EXE用于旁路
+    assign EMBus.MEM_RegsWrType     = MM2Bus.MEM_RegsWrType;        // 传给EXE用于旁路
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high
     assign EMBus.MEM_Result         = MEM_Result;                   // 传给EXE用于旁路    
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取

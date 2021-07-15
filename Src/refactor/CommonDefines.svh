@@ -75,8 +75,8 @@
 
 //**************************for the trap slove unit*****************************
 // 对于trap指令的立即数，都做有符号位的扩展
-`define TRAP_OP_TEQ     3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
-`define TRAP_OP_TEQI    3'b000 // 按照 有符号数 比较 ; 相等         即发生异常
+`define TRAP_OP_TEQ     3'b110 // 按照 有符号数 比较 ; 相等         即发生异常
+`define TRAP_OP_TEQI    3'b110 // 按照 有符号数 比较 ; 相等         即发生异常
 `define TRAP_OP_TGE     3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
 `define TRAP_OP_TGEI    3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常
 `define TRAP_OP_TGEIU   3'b010 // 按照 无符号数 比较 ; 大于或者相等 即发生异常

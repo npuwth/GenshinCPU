@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-14 21:15:52
+ * @LastEditTime: 2021-07-15 13:04:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -60,7 +60,7 @@ module TOP_EXE (
     logic                     Overflow_valid;
     logic                     Trap_valid;
     logic [2:0]               EXE_TrapOp;  
-    RegsWrType                EXE_Wr_Final;
+    RegsWrType                EXE_Final_Wr;
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
@@ -68,7 +68,7 @@ module TOP_EXE (
     assign IEBus.EXE_LoadType = EMBus.EXE_LoadType; 
     assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
 
-    assign EXE_Wr_Final       = (EXE_DisWr) ? '0:EMBus.EXE_RegsWrType;
+    assign EXE_Final_Wr       = (EXE_DisWr) ? '0:EMBus.EXE_RegsWrType;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
@@ -244,8 +244,8 @@ module TOP_EXE (
         .rst                   (resetn),
         .MULT_DIV_finish       (EXE_Finish & HiLo_Not_Flush),
         .EXE_MultiExtendOp     (EXE_MultiExtendOp),
-        .HIWr                  (EXE_Wr_Final.HIWr), //把写HI，LO统一在EXE级
-        .LOWr                  (EXE_Wr_Final.LOWr),
+        .HIWr                  (EXE_Final_Wr.HIWr), //把写HI，LO统一在EXE级
+        .LOWr                  (EXE_Final_Wr.LOWr),
         .Data_Wr               (EXE_BusA_L1),
         .EXE_MULTDIVtoLO       (EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI       (EXE_MULTDIVtoHI),

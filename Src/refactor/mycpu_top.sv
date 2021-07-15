@@ -270,7 +270,7 @@ module mycpu_top (
         .IF_Wr                     (IF_Wr ),
         .IF_Flush                  (IF_Flush ),
         .PREIF_PC                  (PREIF_PC ),
-        .PREIF_ExceptType          (PREIF_ExceptType ),
+        .IFTLB_ExceptType          (IF_ExceptType_new ),
         //-------------------------------output-------------------//
         .IIBus                     (IIBus.IF ),
         .cpu_ibus                  (cpu_ibus)
@@ -388,7 +388,7 @@ module mycpu_top (
       .Virt_Daddr                  (Virt_Daddr ),
       .MEM_LoadType                (MEM_LoadType ),
       .MEM_StoreType               (MEM_StoreType ),
-      .IF_ExceptType               (IF_ExceptType ),
+      .IF_ExceptType               (PREIF_ExceptType ),
       .MEM_ExceptType              (MEM_ExceptType ),
       .MEM_IsTLBP                  (MEM_IsTLBP ),
       .MEM_IsTLBW                  (MEM_IsTLBW ),
