@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-15 13:56:11
+ * @LastEditTime: 2021-07-15 16:18:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -300,7 +300,9 @@ module mycpu_top (
         // .DH_IFWr                   (DH_IFWr),
         // .DH_IDWr                   (DH_IDWr),
         // .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
-        .DH_Stall                  (DH_Stall)
+        .DH_Stall                  (DH_Stall),
+        .ID_PC                     (ID_PC),
+        .ID_Instr                  (ID_Instr)
     );
 
     TOP_EXE U_TOP_EXE ( 
