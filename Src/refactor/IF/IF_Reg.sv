@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-12 16:23:07
- * @LastEditTime: 2021-07-15 13:16:13
+ * @LastEditTime: 2021-07-15 13:27:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,12 +27,11 @@ module IF_REG(
   always_ff @( posedge clk ) begin
     if( (rst == `RstEnable) || (IF_Flush == `FlushEnable) ) begin
       IF_PC                 <= '0;
-      IFTLB_ExceptType      <= '0;
-
+      IF_ExceptType         <= '0;
     end
     else if( IF_Wr ) begin
       IF_PC                 <= PREIF_PC;
-      IFTLB_ExceptType      <= IF_ExceptType;
+      IF_ExceptType         <= IFTLB_ExceptType;
     end
   end
 

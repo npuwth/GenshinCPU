@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-11 18:34:44
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-15 12:03:23
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\ALU.sv
  * 
@@ -19,11 +19,11 @@ logic [31:0] EXE_ALUOut_r;
 logic [31:0] EXE_Countbit_Out;
 logic EXE_Countbit_Opt;
 
-Countbit U_Countbit (                 //CLO,CLZ
-    .option(EXE_Countbit_Opt),
-    .value(EXE_ResultA),
-    .count(EXE_Countbit_Out)
-);
+// Countbit U_Countbit (                 //CLO,CLZ
+//     .option(EXE_Countbit_Opt),
+//     .value(EXE_ResultA),
+//     .count(EXE_Countbit_Out)
+// );
 
 always_comb begin
     unique case (EXE_ALUOp)

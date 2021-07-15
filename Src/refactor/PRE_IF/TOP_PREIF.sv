@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-15 11:39:30
+ * @LastEditTime: 2021-07-15 13:50:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -99,8 +99,8 @@ module TOP_PREIF (
     
     Icache #(
     .DATA_WIDTH               (32),
-    .LINE_WORD_NUM            (4 ),
-    .ASSOC_NUM                (4 ),
+    .LINE_WORD_NUM            (`ICACHE_LINE_WORD ),
+    .ASSOC_NUM                (`ICACHE_SET_ASSOC ),
     .WAY_SIZE                 (4*1024*8 )
     )
     U_Icache (

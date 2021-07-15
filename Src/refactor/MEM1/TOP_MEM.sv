@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 13:02:47
+ * @LastEditTime: 2021-07-15 13:49:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,6 +12,7 @@
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
 `include "../Cache_Defines.svh"
+`include "../Cache_options.svh"
 // TODO: CUPTOP中需要修改接口
 module TOP_MEM (
     input logic                  clk,
@@ -197,8 +198,8 @@ module TOP_MEM (
     assign cpu_dbus.isCache                               = D_IsCached;
     Dcache #(
     .DATA_WIDTH                  (32 ),
-    .LINE_WORD_NUM               (4 ),
-    .ASSOC_NUM                   (4 ),
+    .LINE_WORD_NUM               (`DCACHE_LINE_WORD ),
+    .ASSOC_NUM                   (`DCACHE_SET_ASSOC ),
     .WAY_SIZE                    (4*1024*8 )
     )
     U_Dcache (

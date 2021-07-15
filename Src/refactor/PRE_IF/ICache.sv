@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 12:01:25
+ * @LastEditTime: 2021-07-15 14:58:19
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -318,10 +318,10 @@ always_comb begin : state_next_blockname
             if (req_buffer.isCache == 1'b0 && req_buffer.valid) begin
                 state_next = REQ;
             end else begin
-            if (cache_hit) begin
-                state_next = LOOKUP;
+            if (~cache_hit & req_buffer.valid) begin
+                state_next = MISSCLEAN;
             end else begin
-                state_next = MISSCLEAN ;
+                state_next = LOOKUP ;
             end
             end              
         end

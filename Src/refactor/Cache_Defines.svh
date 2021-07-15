@@ -1,11 +1,12 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-15 10:53:16
+ * @LastEditTime: 2021-07-15 14:21:19
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
+ `include "Cache_options.svh"
 `ifndef CACHE_DEFINES_SVH
 `define CACHE_DEFINES_SVH
 
@@ -71,13 +72,13 @@ interface AXI_Bus_Interface();
   //读返回通道
   logic           ret_valid; // 突发读完一次之后（缓冲区满了）
   // logic[1:0]      ret_last;  //    用不到
-  logic[127:0]     ret_data; // 数据
+  logic[`DCACHE_LINE_WORD*32-1:0]     ret_data; // 数据
   //写请求通道
   logic           wr_req;    // dcache store未命中
   // logic[2:0]      wr_type;   //     用不到
   logic[31:0]     wr_addr;   // 写地址 
   
-  logic[127:0]    wr_data;   // 写数据
+  logic[`DCACHE_LINE_WORD*32-1:0]    wr_data;   // 写数据
   logic           wr_rdy; //就是说只要当slave axi模块可以接收之后才发出写请求
   //写返回通道
   logic           wr_valid;//表示已经写入

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-15 11:40:34
+ * @LastEditTime: 2021-07-15 13:56:11
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -11,6 +11,7 @@
 
 `include "CPU_Defines.svh"
 `include "CommonDefines.svh"
+`include "Cache_options.svh"
 
 module mycpu_top (
     input  logic  [ 5:0]       ext_int,
@@ -193,12 +194,17 @@ module mycpu_top (
     assign cpu_ibus.valid =  IReq_valid & I_IsTLBBufferValid;
     assign cpu_dbus.valid =  DReq_valid & D_IsTLBBufferValid;
     //------------------------AXI-----------------------//
-    AXIInteract AXIInteract_dut (
+    AXIInteract  #(
+        `ICACHE_LINE_WORD,
+        `DCACHE_LINE_WORD
+    )
+    AXIInteract_dut
+    (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
-        .DcacheAXIBus           (axi_dbus.slave ),
-        .IcacheAXIBus           (axi_ibus.slave ),
-        .UncacheAXIBus          (axi_ubus.slave) ,
+        .dbus                   (axi_dbus.slave ),
+        .ibus                   (axi_ibus.slave ),
+        .udbus                  (axi_ubus.slave) ,
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),

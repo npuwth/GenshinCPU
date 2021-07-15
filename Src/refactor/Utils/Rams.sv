@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-13 09:48:09
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-15 16:01:17
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
  */
@@ -92,7 +92,7 @@ endmodule
 module simple_port_ram #(
 	// default data width if the fifo is of type logic
 	parameter int unsigned DATA_WIDTH = 32,
-	parameter int unsigned LATENCY    = 0,
+	parameter int unsigned LATENCY    = 1,
 	// $bits(dtype) * SIZE = bits of the block RAM
 	parameter int unsigned SIZE        = 1024, //指有多少块
 	parameter type dtype               = logic [DATA_WIDTH-1:0],
@@ -124,7 +124,7 @@ module simple_port_ram #(
       .MEMORY_INIT_FILE("none"),      // String
       .MEMORY_INIT_PARAM("0"),        // String
       .MEMORY_OPTIMIZATION("true"),   // String
-      .MEMORY_PRIMITIVE("auto"),      // String
+      .MEMORY_PRIMITIVE("block"),      // String
       .MEMORY_SIZE(MEMORY_SIZE),             // DECIMAL
       .MESSAGE_CONTROL(0),            // DECIMAL
       .READ_DATA_WIDTH_B($bits(dtype)),         // DECIMAL
@@ -137,7 +137,7 @@ module simple_port_ram #(
       .USE_MEM_INIT(1),               // DECIMAL
       .WAKEUP_TIME("disable_sleep"),  // String
       .WRITE_DATA_WIDTH_A($bits(dtype)),        // DECIMAL
-      .WRITE_MODE_B("write_first")      // String
+      .WRITE_MODE_B("no_change")      // String
    )
    xpm_memory_sdpram_inst (
       .dbiterrb(),             // 1-bit output: Status signal to indicate double bit error occurrence

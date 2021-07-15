@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-14 21:19:25
+ * @LastEditTime: 2021-07-15 15:52:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,9 @@ module TOP_ID (
     // output logic             DH_IFWr,
     // output logic             DH_IDWr,
     // output logic             EXE_Flush_DataHazard
-    output logic            DH_Stall
+    output logic            DH_Stall,
+    output logic [31:0]     ID_PC,
+    output logic [31:0]     ID_Instr
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
@@ -41,8 +43,8 @@ module TOP_ID (
     logic [1:0]              ID_rsrtRead;
     ExceptinPipeType         ID_ExceptType;
 
-    // assign IIBus.ID_Instr = IEBus.ID_Instr;//用于IF级的NPC
-    // assign IIBus.ID_PC    = IEBus.ID_PC;   //用于IF级的NPC
+    assign ID_Instr = IEBus.ID_Instr;//用于IF级的NPC
+    assign ID_PC    = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
 
     ID_Reg U_ID_REG ( 

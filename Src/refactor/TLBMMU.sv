@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-15 12:24:21
+ * @LastEditTime: 2021-07-15 15:28:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -64,7 +64,10 @@ module TLBMMU (
 
 //---------------------------TLB Buffer Hit信号的生成--------------------//
     always_comb begin //TLBI
-        if(Virt_Iaddr[31:13] == I_TLBBuffer.VPN2) begin
+        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+            I_TLBBufferHit = 1'b1;
+        end
+        else if(Virt_Iaddr[31:13] == I_TLBBuffer.VPN2) begin
             I_TLBBufferHit = 1'b1;
         end
         else begin
@@ -73,7 +76,10 @@ module TLBMMU (
     end
 
     always_comb begin //TLBD
-        if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
+        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+                D_TLBBufferHit = 1'b1; 
+        end
+        else if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
             if(Virt_Daddr[31:13] == D_TLBBuffer.VPN2) begin
                 D_TLBBufferHit = 1'b1;
             end
@@ -223,24 +229,25 @@ module TLBMMU (
         end
     end
 //--------------------------------------------对Cache属性进行判断--------------------------//
-    always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
-            I_IsCached                               = 1'b0;
-        end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
-            I_IsCached                               = 1'b1;
-        end
-        else begin
-            if(Virt_Iaddr[12] == 1'b0) begin
-                if(I_TLBBuffer.C0 == 3'b011)  I_IsCached           = 1'b1;
-                else                          I_IsCached           = 1'b0;
-            end
-            else begin
-                if(I_TLBBuffer.C1 == 3'b011)  I_IsCached           = 1'b1;
-                else                          I_IsCached           = 1'b0;
-            end
-        end
-    end
+    // always_comb begin //TLBI
+    //     if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+    //         I_IsCached                               = 1'b0;
+    //     end
+    //     else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+    //         I_IsCached                               = 1'b1;
+    //     end
+    //     else begin
+    //         if(Virt_Iaddr[12] == 1'b0) begin
+    //             if(I_TLBBuffer.C0 == 3'b011)  I_IsCached           = 1'b1;
+    //             else                          I_IsCached           = 1'b0;
+    //         end
+    //         else begin
+    //             if(I_TLBBuffer.C1 == 3'b011)  I_IsCached           = 1'b1;
+    //             else                          I_IsCached           = 1'b0;
+    //         end
+    //     end
+    // end
+    assign I_IsCached    =   1'b1;
 
     always_comb begin //TLBD
         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
