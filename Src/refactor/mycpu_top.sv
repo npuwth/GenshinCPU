@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-15 10:56:13
+ * @LastEditTime: 2021-07-15 11:40:34
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -143,6 +143,7 @@ module mycpu_top (
     AXI_Bus_Interface           axi_ibus();
     AXI_Bus_Interface           axi_dbus();
     AXI_UNCACHE_Interface       axi_ubus();
+    AXI_UNCACHE_Interface       axi_iubus();
     IF_ID_Interface             IIBus();
     ID_EXE_Interface            IEBus();
     EXE_MEM_Interface           EMBus();
@@ -256,6 +257,7 @@ module mycpu_top (
         .Exception_Vector          (Exception_Vector ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
+        .axi_iubus                 (axi_iubus),
         //-------------------------------output-------------------//
         .Virt_Iaddr                (Virt_Iaddr ),
         .PREIF_PC                  (PREIF_PC ),
