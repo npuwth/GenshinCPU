@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-15 11:09:20
+ * @LastEditTime: 2021-07-15 11:39:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,6 +34,7 @@ module TOP_PREIF (
     input logic [31:0]          Exception_Vector,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
+    AXI_UNCACHE_Interface       axi_iubus,
 //---------------------------output----------------------------------//
     output logic [31:0]         Virt_Iaddr,          //  输出给TLB
     output logic [31:0]         PREIF_PC,            //  输出到下一级
@@ -106,6 +107,7 @@ module TOP_PREIF (
     .clk                      (clk ),
     .resetn                   (resetn ),
     .cpu_bus                  (cpu_ibus ),
+    .axi_ubus                 (axi_iubus),
     .axi_bus                  ( axi_ibus)
     );
 
