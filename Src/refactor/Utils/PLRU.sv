@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:14:40
- * @LastEditTime: 2021-07-07 20:11:17
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-15 10:20:31
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\NewCache\plru.sv
  */
- `include "Cache_Defines.svh"
-`include "CPU_Defines.svh"
+`include "../Cache_Defines.svh"
+`include "../CPU_Defines.svh"
 module PLRU #(
     parameter int unsigned ASSOC_NUM = 4
 ) (

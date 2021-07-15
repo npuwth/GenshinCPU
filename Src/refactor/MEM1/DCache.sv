@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 10:14:28
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-15 11:24:48
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
 //重写之后的Cache Icache Dcache复用一个设计
-`include "Cache_Defines.svh"
-`include "CPU_Defines.svh"
+`include "../Cache_Defines.svh"
+`include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
 `define CLOG2(x) \
 ((x <= 1) || (x > 512)) ? 0 : \
@@ -22,7 +22,7 @@
 (x <= 256) ? 8: \
 (x <= 512) ? 9 : 0
 
-module Cache #(
+module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width位
     parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
     parameter LINE_WORD_NUM = 4,//cache line大小 一块的字数
@@ -177,7 +177,7 @@ logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
 
-tagv_t pipe_tagv_rdata;
+tagv_t [ASSOC_NUM-1:0] pipe_tagv_rdata;
 logic pipe_wr;
 
 logic busy_cache;// uncache 直到数据返回
@@ -285,7 +285,7 @@ assign busy_uncache   = ( (~req_buffer.isCache) & (state == UNCACHEDONE) ) ?1'b0
 assign busy_collision = (store_buffer.index == read_addr)? 1'b1:1'b0;
 assign busy           = busy_cache | busy_uncache | busy_collision;
 
-assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:1'b0;
+assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
@@ -397,17 +397,22 @@ always_ff @( posedge clk ) begin : uncache_rdata_blockName//更新uncache读出�
     end
 end
 
-always_ff @( posedge clk ) begin : pipe_tagv_rdata_blockName
-    if (pipe_wr) begin
-        pipe_tagv_rdata.tag   <= tagv_rdata.tag;
-        pipe_tagv_rdata.dirty <= tagv_rdata.dirty ;
-        pipe_tagv_rdata.valid <= tagv_rdata.valid ;
-    end else begin
-        pipe_tagv_rdata.tag   <= pipe_tagv_rdata.tag;
-        pipe_tagv_rdata.dirty <= pipe_tagv_rdata.dirty ;
-        pipe_tagv_rdata.valid <= pipe_tagv_rdata.valid ;        
+generate;//锁存读出的tag
+    for (genvar  i=0; i<ASSOC_NUM; i++) begin
+    always_ff @( posedge clk ) begin : pipe_tagv_rdata_blockName
+        if (pipe_wr) begin
+            pipe_tagv_rdata[i].tag   <= tagv_rdata[i].tag;
+            pipe_tagv_rdata[i].dirty <= tagv_rdata[i].dirty ;
+            pipe_tagv_rdata[i].valid <= tagv_rdata[i].valid ;
+        end else begin
+            pipe_tagv_rdata[i].tag   <= pipe_tagv_rdata[i].tag;
+            pipe_tagv_rdata[i].dirty <= pipe_tagv_rdata[i].dirty ;
+            pipe_tagv_rdata[i].valid <= pipe_tagv_rdata[i].valid ;        
+        end
+    end        
     end
-end
+endgenerate
+
 
 always_ff @( posedge clk ) begin : state_blockName
     if (resetn == `RstEnable) begin
@@ -422,13 +427,13 @@ always_comb begin : state_next_blockname
 
     unique case (state)
         LOOKUP:begin
-            if (req_buffer.isCache == 1'b0) begin
+            if (req_buffer.isCache == 1'b0 && req_buffer.valid) begin
                 state_next = REQ;
             end else begin
             if (cache_hit) begin
                 state_next = LOOKUP;
             end else begin
-                if (pipe_tagv_rdata.dirty) begin
+                if (pipe_tagv_rdata[`CLOG2(hit)].dirty) begin
                     state_next = MISSDIRTY ;
                 end else begin
                     state_next = MISSCLEAN ;
@@ -451,11 +456,7 @@ always_comb begin : state_next_blockname
             end
         end
         REFILLDONE:begin
-            if (cpu_bus.stall) begin
-                state_next = REFILLDONE;
-            end else begin
                 state_next = LOOKUP;
-            end
         end
         MISSDIRTY:begin
             if (axi_bus.wr_rdy) begin

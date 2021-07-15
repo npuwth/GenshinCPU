@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-14 21:04:35
+ * @LastEditTime: 2021-07-15 11:10:49
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,7 +23,6 @@ module TOP_MEM (
     input logic  [5:0]           Interrupt,//中断
     input ExceptinPipeType       MEM_ExceptType_new,
     input logic                  MEM_DisWr,
-    input logic                  D_IsTLBBufferValid,
     EXE_MEM_Interface            EMBus,
     MEM_MEM2_Interface           MM2Bus,
     CP0_MMU_Interface            CMBus,
@@ -186,27 +185,29 @@ module TOP_MEM (
     );
     //---------------------------------------------------------------------------//
 //-------------------------------------------TO Cache-------------------------------//
-    assign cpu_dbus.wdata                                 =  MM2Bus.MEM_ALUOut;
-    assign cpu_dbus.valid                                 = (MEM_LoadType.ReadMem || MEM_StoreType.DMWr )  ? 1 : 0;
-    assign {cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}  =  MM2Bus.MEM_ALUOut;                 // inst_sram_addr_o 虚拟地址
+    assign cpu_dbus.wdata                                 =  MM2Bus.MEM_OutB;
+    assign cpu_dbus.tag                                   = Phsy_Daddr[31:12];
+    assign {cpu_dbus.index,cpu_dbus.offset}               =  MM2Bus.MEM_ALUOut[11:0];                 // inst_sram_addr_o 虚拟地址
     assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
                                                             (MEM_StoreType.DMWr) ? 1'b1  :
                                                              1'bx;
     // assign MM2Bus.MEM_DMOut                               = cpu_dbus.rdata;       //读取结果直接放入DMOut
-    // assign cpu_dbus.storeType                             = MM2Bus.MEM_StoreType;
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
-    // DCache U_DCACHE(  // TODO: cache的组织结构
-    //     .clk            (clk),
-    //     .resetn         (resetn),
-    //     .Phsy_Daddr     (Phsy_Daddr),
-    //     .D_IsCached     (D_IsCached),
-    //     .MEM_Wr         (MEM_Wr),
-    //     .CPUBus         (cpu_dbus.slave),
-    //     .AXIBus         (axi_dbus.master),
-    //     .UBus           (axi_ubus.master),
-    //     .Virt_Daddr     (Virt_Daddr)
-    // );
+    assign cpu_dbus.isCache                               = D_IsCached;
+    Dcache #(
+    .DATA_WIDTH                  (32 ),
+    .LINE_WORD_NUM               (4 ),
+    .ASSOC_NUM                   (4 ),
+    .WAY_SIZE                    (4*1024*8 )
+    )
+    U_Dcache (
+    .clk                         (clk ),
+    .resetn                      (resetn ),
+    .axi_ubus                    (axi_ubus ),
+    .cpu_bus                     (cpu_dbus ),
+    .axi_bus                     ( axi_dbus)
+    );
 
     MUX4to1 #(32) U_MUX_OutB2 ( 
         .d0             (RFHILO_Bus),

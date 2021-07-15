@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-14 21:13:48
+ * @LastEditTime: 2021-07-15 10:37:43
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -13,17 +13,14 @@
 `include "CommonDefines.svh"
 `include "Cache_options.svh"
 
-typedef struct packed {
-    logic HardwareInterrupt1;//硬件中断例外1
-    logic HardwareInterrupt2;//硬件中断例外2
-    logic HardwareInterrupt3;//硬件中断例外3
-    logic HardwareInterrupt4;//硬件中断例外4
-    logic HardwareInterrupt5;//硬件中断例外5
-    logic HardwareInterrupt6;//硬件中断例外6
-    // logic SoftwareInterrupt1;//软件中断例外1
-    // logic SoftwareInterrupt2;//软件中断例外2
-
-} AsynExceptType;//异步信号类型
+// typedef struct packed {
+//     logic HardwareInterrupt1;//硬件中断例外1
+//     logic HardwareInterrupt2;//硬件中断例外2
+//     logic HardwareInterrupt3;//硬件中断例外3
+//     logic HardwareInterrupt4;//硬件中断例外4
+//     logic HardwareInterrupt5;//硬件中断例外5
+//     logic HardwareInterrupt6;//硬件中断例外6
+// } AsynExceptType;//异步信号类型
 
 typedef struct packed {
 	logic Interrupt;	 	  	// 中断信号

@@ -18,7 +18,7 @@ module ExceptionInEXE(
 
     logic  LoadAlign_valid;
     logic  StoreAlign_valid;
-    assign LoadAlign_valid    = (EXE_LoadType.DMWr  && EXE_LoadType.LeftOrRight != 2'b01  &&  EXE_LoadType.LeftOrRight != 2'b10) ? 1'b1 : 1'b0;
+    assign LoadAlign_valid    = (EXE_LoadType.ReadMem && EXE_LoadType.LeftOrRight != 2'b01  &&  EXE_LoadType.LeftOrRight != 2'b10) ? 1'b1 : 1'b0;
     assign StoreAlign_valid   = (EXE_StoreType.DMWr && EXE_StoreType.LeftOrRight != 2'b01 && EXE_StoreType.LeftOrRight != 2'b10) ? 1'b1 : 1'b0;
 // EXE级一共产生5种例外，溢出，trap ，TLBrefetch ， 数据访问地址错误
     assign EXE_ExceptType_final.Interrupt           =  EXE_ExceptType.Interrupt;

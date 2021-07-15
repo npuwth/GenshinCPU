@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-13 16:21:17
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-15 11:09:20
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -32,7 +32,6 @@ module TOP_PREIF (
     input logic                 I_IsCached,
     input logic [31:0]          MEM_PC,
     input logic [31:0]          Exception_Vector,
-    input logic                 I_IsTLBBufferValid,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
 //---------------------------output----------------------------------//
@@ -88,23 +87,27 @@ module TOP_PREIF (
 
     //---------------------------------cache--------------------------------//
     // assign IIBus.IF_Instr = cpu_ibus.rdata;  
-    assign {cpu_ibus.tag,cpu_ibus.index,cpu_ibus.offset} = PREIF_PC;    // 如果D$ busy 则将PC送给I$ ,否则送NPC
-    assign cpu_ibus.valid     = 1'b1;   // TODO:  Valid位需要控制
+    assign cpu_ibus.tag       = Phsy_Iaddr[31:12];
+    assign {cpu_ibus.index,cpu_ibus.offset} = PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.op        = 1'b0;
     assign cpu_ibus.wstrb     = '0;
     assign cpu_ibus.wdata     = 'x;
+    assign cpu_ibus.isCache   = I_IsCached;
     // assign cpu_ibus.storeType = '0;
     assign Virt_Iaddr         = PREIF_PC;
     
-    // ICache U_ICache(   // TODO: cache的接口没确定
-    //     .clk            (clk),
-    //     .resetn         (resetn),  
-    //     .Phsy_Iaddr     (Phsy_Iaddr),
-    //     .I_IsCached     (I_IsCached),
-    //     .PREIF_Wr       (PREIF_Wr),
-    //     .CPUBus         (cpu_ibus.slave),
-    //     .AXIBus         (axi_ibus.master),
-    //     .Virt_Iaddr     (Virt_Iaddr)
-    // );
+    Icache #(
+    .DATA_WIDTH               (32),
+    .LINE_WORD_NUM            (4 ),
+    .ASSOC_NUM                (4 ),
+    .WAY_SIZE                 (4*1024*8 )
+    )
+    U_Icache (
+    .clk                      (clk ),
+    .resetn                   (resetn ),
+    .cpu_bus                  (cpu_ibus ),
+    .axi_bus                  ( axi_ibus)
+    );
+
 
 endmodule

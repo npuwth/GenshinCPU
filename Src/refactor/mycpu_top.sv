@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-14 21:05:35
+ * @LastEditTime: 2021-07-15 10:56:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -254,7 +254,6 @@ module mycpu_top (
         .I_IsCached                (I_IsCached ),
         .MEM_PC                    (MEM_PC ),
         .Exception_Vector          (Exception_Vector ),
-        .I_IsTLBBufferValid        (I_IsTLBBufferValid ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         //-------------------------------output-------------------//
@@ -331,7 +330,6 @@ module mycpu_top (
         .Interrupt                 (ext_int),
         .MEM_ExceptType_new        (MEM_ExceptType_new),
         .MEM_DisWr                 (MEM_DisWr),
-        .D_IsTLBBufferValid        (D_IsTLBBufferValid ),
         .EMBus                     (EMBus.MEM ),
         .MM2Bus                    (MM2Bus.MEM ),
         .CMBus                     (CMBus ),
