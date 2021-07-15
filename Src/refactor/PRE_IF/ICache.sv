@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 11:37:49
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-15 11:59:17
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -143,6 +143,7 @@ logic pipe_wr;
 
 logic busy_cache;// uncache 直到数据返回
 logic busy_uncache;
+logic busy;
 
 
 
