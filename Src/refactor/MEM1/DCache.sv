@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 20:22:17
+ * @LastEditTime: 2021-07-16 20:22:54
  * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -474,7 +474,7 @@ always_comb begin : state_next_blockname
                 state_next = WRITEBACK;
             end
         end
-        REQ:begin 
+        REQ:begin  
             if (req_buffer.op == 1'b0) begin//uncache读
                 if (axi_ubus.rd_rdy) begin
                     state_next = WAIT;
