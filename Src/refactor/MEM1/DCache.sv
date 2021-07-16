@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 18:11:22
+ * @LastEditTime: 2021-07-16 19:16:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -249,7 +249,7 @@ generate;//PLRU
             .clk(clk),
             .resetn(resetn),
             .access(hit),
-            .update(req_buffer.valid),
+            .update(req_buffer.valid &&i[INDEX_WIDTH-1:0] == req_buffer.index),
 
             .lru(lru[i])
         );

@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-16 17:26:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-16 19:50:02
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -62,12 +62,11 @@ module Control(
 );
 
     logic Load_store_stall ;
-    logic Cache_offest;
     localparam int unsigned INDEX_WIDTH = $clog2(`ICACHE_LINE_WORD*4) ;
     
 
     always_comb begin
-        if (MEM_loadstore_req      == 1'b1 && MEM2_store_req == 1'b1 && MEM_Addr == MEM2_Addr) begin
+        if (MEM_loadstore_req      == 1'b1 && MEM2_store_req == 1'b1) begin
             if (MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH] ) begin
                 Load_store_stall = 1'b1;
             end
@@ -75,7 +74,7 @@ module Control(
                 Load_store_stall = 1'b0;
             end
         end
-        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 && MEM_Addr == WB_Addr) begin
+        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 ) begin
             if (MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
                 Load_store_stall = 1'b1;
             end
@@ -184,7 +183,7 @@ module Control(
             ID_Wr        = 1'b0;
             EXE_Wr       = 1'b0;
             MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b1;
+            MEM2_Wr      = 1'b0;
             WB_Wr        = 1'b1;
             
             EXE_DisWr    = 1'b0;
@@ -195,7 +194,7 @@ module Control(
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
-            MEM2_Flush   = 1'b0;
+            MEM2_Flush   = 1'b1;
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
