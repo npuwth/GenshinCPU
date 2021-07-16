@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 18:04:48
+ * @LastEditTime: 2021-07-16 18:11:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -140,10 +140,6 @@ typedef struct packed {//store指令在读数的时候根据写使能替换
     line_t  wdata;
 } store_t;
 
-//
-`ifdef Dcache
-
-`endif
 
 //declartion
 store_t store_buffer; //如果有写冲突 直接阻塞
