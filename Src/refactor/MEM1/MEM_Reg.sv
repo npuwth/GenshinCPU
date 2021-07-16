@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-14 21:17:50
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-17 02:48:59
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -71,8 +71,43 @@ module MEM_Reg (
     output logic                    MEM_TLBWIorR,
     output logic    [1:0]           MEM_RegsReadSel,
     output logic    [4:0]           MEM_rd,
-    output logic    [4:0]           MEM_rt
+    output logic    [4:0]           MEM_rt,
+    output logic                    dcache_flush
 );
+
+typedef enum logic [1:0] {
+    NORMAL,
+    EXC_CACHE_FLUSH
+} Exc_Cache_Flush;
+    Exc_Cache_Flush Exc_state,Exc_state_next;
+    always_ff @(posedge clk ) begin : FSM_blockname
+        if (rst == `RstEnable) begin
+            Exc_state = NORMAL;
+        end
+        else begin
+            Exc_state = Exc_state_next;
+        end
+    end
+
+    always_comb begin : next_state_gen
+        if (Exc_state == NORMAL &&  MEM_Flush == `FlushEnable) begin
+            Exc_state_next = EXC_CACHE_FLUSH;
+        end
+        else if (Exc_state == EXC_CACHE_FLUSH) begin
+            Exc_state_next = NORMAL;
+        end
+    end
+
+    always_comb begin
+        if(Exc_state == EXC_CACHE_FLUSH) begin
+            dcache_flush = 1'b1;
+        end
+        else begin  
+            dcache_flush = 1'b0;
+        end
+    end
+
+
 
     always_ff @( posedge clk  ) begin
         if( ( rst == `RstEnable )|| ( MEM_Flush == `FlushEnable )) begin

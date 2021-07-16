@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-16 21:48:33
+ * @LastEditTime: 2021-07-17 03:22:10
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -16,6 +16,7 @@
 
 
 module Control(
+    // input logic  [2:0]  EX_Entry_Sel,       
     input logic         Flush_Exception,          //异常Exception产生的
     input logic         I_IsTLBStall,             // TLB
     input logic         D_IsTLBStall,  
@@ -52,13 +53,14 @@ module Control(
     output logic        WB_DisWr,       //传到WB级 ，用于停滞流水线
 
     output logic       IcacheFlush,    //给Icache的Flush
-    output logic       DcacheFlush,    //给Dcache的Flush
+    // output logic       DcacheFlush,    //给Dcache的Flush
     output logic       IReq_valid,     //是否给Icache发送请求 1表示发送 0 表示不发送
     output logic       DReq_valid,     //是否给Dcache发送请求 1表示发送 0 表示不发送
 
     output logic       ICacheStall,    // 如果出现cache数据准备好，但CPU阻塞的清空，
                                     // 需要发送stall信号，cache状态机停滞知道数据被CPU接受
     output logic       DCacheStall
+    // output logic       HiLo_Not_Flush
 );
 
     logic Load_store_stall ;
@@ -66,21 +68,11 @@ module Control(
     
 
     always_comb begin
-        if (MEM_loadstore_req      == 1'b1 && MEM2_store_req == 1'b1 ) begin
-            if (MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH] ) begin
-                Load_store_stall = 1'b1;
-            end
-            else begin
-                Load_store_stall = 1'b0;
-            end
+        if (MEM_loadstore_req == 1'b1 && MEM2_store_req == 1'b1 && MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
+            Load_store_stall = 1'b1;
         end
-        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1  ) begin
-            if (MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
-                Load_store_stall = 1'b1;
-            end
-            else begin
-                Load_store_stall = 1'b0;
-            end
+        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 && MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
+            Load_store_stall = 1'b1;
         end
         else begin
             Load_store_stall = 1'b0;
@@ -110,7 +102,7 @@ module Control(
             WB_DisWr     = 1'b0;
             
             IcacheFlush  = 1'b1;
-            DcacheFlush  = 1'b1;
+            // DCacheFlush  = 1'b1;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b0;
@@ -140,7 +132,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
@@ -169,7 +161,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b0;
@@ -198,13 +190,13 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;  // 此时Icache  Dcache都不能发起请求
             DReq_valid   = 1'b0;
 
             ICacheStall  = 1'b1;
-            DCacheStall  = 1'b1;
+            DCacheStall  = 1'b0;
         end
         else if (DH_Stall == 1'b1) begin
             PREIF_Wr      = 1'b0;
@@ -227,7 +219,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b1;
@@ -256,7 +248,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b1;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
@@ -285,7 +277,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b1;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
@@ -314,7 +306,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b1;
@@ -343,7 +335,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            DcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b1;
@@ -354,7 +346,10 @@ module Control(
     end
 
 
-
+    // // HILO的flush
+    // always_comb begin
+    //     HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
+    // end
     
     
 endmodule

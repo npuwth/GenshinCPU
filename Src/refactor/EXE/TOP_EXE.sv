@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 13:04:24
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-17 03:20:01
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -60,6 +60,7 @@ module TOP_EXE (
     logic                     Overflow_valid;
     logic                     Trap_valid;
     logic [2:0]               EXE_TrapOp;  
+    logic                     MDU_flush;
     RegsWrType                EXE_Final_Wr;
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
@@ -126,7 +127,8 @@ module TOP_EXE (
         .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
-        .EXE_TrapOp           (EXE_TrapOp)
+        .EXE_TrapOp           (EXE_TrapOp),
+        .MDU_flush            (MDU_flush)
     );
 
 
@@ -220,7 +222,7 @@ module TOP_EXE (
         .rst                  (resetn),            
         .EXE_ResultA          (EXE_BusA_L1),
         .EXE_ResultB          (EXE_BusB_L1),
-        .ExceptionAssert      (~HiLo_Not_Flush),  // 如果产生flush信号，需要清除状态机
+        .ExceptionAssert      (MDU_flush),  // 如果产生flush信号，需要清除状态机
     //---------------------output--------------------------//
         .EXE_ALUOp            (EXE_ALUOp),
         .EXE_MULTDIVtoLO      (EXE_MULTDIVtoLO),
