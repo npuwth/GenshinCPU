@@ -10,19 +10,24 @@
 
 ## TODO:
 
-+  1. 重写cache
++  1. 重写cache   （需要TB的测试）
 
-+  2. 阅读相关PMON资料，准备添加指令，并启动操作系统
++  2. 阅读相关PMON资料，准备添加指令，并启动操作系统    （已经实现 但未经过测试）
 
-+  3. 现在时钟中断未经过测试，可能存在bug
++  3. 现在时钟中断未经过测试，可能存在bug    （中断标记的bug需要修复）
++  4. **MEM级扇出较大**，需要优化
++ 5. 减少一些**没用到的线**，可以优化时序 
 
+
+
+## OS相关
 +  PMON: 协处理器异常，自陷异常，非对齐访存，ebase+offset，去除branchlikely，CACHE指令
 
 +  ucore: 协处理器异常，自陷异常，非对齐访存，去除branchlikely，tlbwr
 
 +  linux（context寄存器？清华16spring的markdown）重大有wired和context，MADD，MOV指令
 
-+  Cause寄存器太弱了，Wired，Random？
++  Cause寄存器太弱了，Wired，Random？   （已经实现 但未经过测试）
 
 +  TLBWR去除（ucore请看清华15年报告，linux请看16spring的markdown）
 
