@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-16 17:31:51
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 10:43:35
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -42,25 +42,25 @@ module WB_Reg (
 
   always_ff @(posedge clk ) begin
     if( rst == `RstEnable || WB_Flush == `FlushEnable) begin
-      WB_WbSel                          <= 2'b0;
-      WB_PC                             <= 32'b0;
       WB_ALUOut                         <= 32'b0;
-      WB_OutB                           <= 32'b0;
-      WB_DMOut                          <= 32'b0;
-      WB_Dst                            <= 5'b0;
-      WB_RegsWrType                     <= '0;
+      WB_PC                             <= 32'b0;
       WB_Instr                          <= 32'b0;
+      WB_WbSel                          <= 2'b0;
+      WB_Dst                            <= 5'b0;
+      WB_DMOut                          <= 32'b0;
+      WB_OutB                           <= 32'b0;
+      WB_RegsWrType                     <= '0;
       WB_store_req                      <= '0;
     end
     else if( WB_Wr ) begin
-      WB_WbSel                          <= MEM2_WbSel;
-      WB_PC                             <= MEM2_PC;
       WB_ALUOut                         <= MEM2_ALUOut;
-      WB_OutB                           <= MEM2_OutB;
-      WB_DMOut                          <= MEM2_DMOut;
-      WB_Dst                            <= MEM2_Dst;
-      WB_RegsWrType                     <= MEM2_RegsWrType;
+      WB_PC                             <= MEM2_PC;
       WB_Instr                          <= MEM2_Instr;
+      WB_WbSel                          <= MEM2_WbSel;
+      WB_Dst                            <= MEM2_Dst;
+      WB_DMOut                          <= MEM2_DMOut;
+      WB_OutB                           <= MEM2_OutB;
+      WB_RegsWrType                     <= MEM2_RegsWrType;
       WB_store_req                      <= MEM2_store_req;
     end
   end
