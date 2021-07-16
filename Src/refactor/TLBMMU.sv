@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-30 22:17:38
- * @LastEditTime: 2021-07-15 19:23:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 12:25:24
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -18,12 +18,10 @@
 module TLBMMU (
     input logic                  clk,
     input logic                  rst,
-    input logic [31:0]           Virt_Iaddr,                        //也就是PC
-    input logic [31:0]           Virt_Daddr,                        //也就是MEM_ALUOut
+    input logic  [31:0]          Virt_Iaddr,                        //也就是PC
+    input logic  [31:0]          Virt_Daddr,                        //也就是MEM_ALUOut
     input LoadType               MEM_LoadType,
     input StoreType              MEM_StoreType,
-    input ExceptinPipeType       IF_ExceptType,
-    input ExceptinPipeType       MEM_ExceptType,
     input logic                  MEM_IsTLBP,                        //表示是否是TLBP指令
     input logic                  MEM_IsTLBW,                        //表示是否是TLBW指令
     input logic                  MEM_TLBWIorR,                      //TLBWI是0，TLBWR是1
@@ -37,8 +35,8 @@ module TLBMMU (
     output logic                 D_IsTLBBufferValid,                //告诉Cache是否发起访存请求
     output logic                 I_IsTLBStall,                      //是否要停滞流水线
     output logic                 D_IsTLBStall,                      //是否要停滞流水线
-    output ExceptinPipeType      IF_ExceptType_new,
-    output ExceptinPipeType      MEM_ExceptType_new
+    output logic [1:0]           IF_TLBExceptType,
+    output logic [2:0]           MEM_TLBExceptType
 );
 //------------------------------------------------------------------------------------------------------//
     logic                        s0_found;
@@ -362,201 +360,111 @@ module TLBMMU (
     );
 
 //------------------------------对异常和Valid信号进行赋值----------------------------------------------//
-    assign IF_ExceptType_new.Interrupt                      = IF_ExceptType.Interrupt;
-    assign IF_ExceptType_new.WrongAddressinIF               = IF_ExceptType.WrongAddressinIF;
-    assign IF_ExceptType_new.ReservedInstruction            = IF_ExceptType.ReservedInstruction;
-    assign IF_ExceptType_new.CoprocessorUnusable            = IF_ExceptType.CoprocessorUnusable;
-    assign IF_ExceptType_new.Overflow                       = IF_ExceptType.Overflow;
-    assign IF_ExceptType_new.Syscall                        = IF_ExceptType.Syscall;
-    assign IF_ExceptType_new.Break                          = IF_ExceptType.Break;
-    assign IF_ExceptType_new.Eret                           = IF_ExceptType.Eret;
-    assign IF_ExceptType_new.WrWrongAddressinMEM            = IF_ExceptType.WrWrongAddressinMEM;
-    assign IF_ExceptType_new.RdWrongAddressinMEM            = IF_ExceptType.RdWrongAddressinMEM;
-    assign IF_ExceptType_new.RdTLBRefillinMEM               = IF_ExceptType.RdTLBRefillinMEM;
-    assign IF_ExceptType_new.RdTLBInvalidinMEM              = IF_ExceptType.RdTLBInvalidinMEM;
-    assign IF_ExceptType_new.WrTLBRefillinMEM               = IF_ExceptType.WrTLBRefillinMEM;
-    assign IF_ExceptType_new.WrTLBInvalidinMEM              = IF_ExceptType.WrTLBInvalidinMEM;
-    assign IF_ExceptType_new.TLBModified                    = IF_ExceptType.TLBModified;
-    assign IF_ExceptType_new.Refetch                        = IF_ExceptType.Refetch;
-    assign IF_ExceptType_new.Trap                           = IF_ExceptType.Trap;
-
     always_comb begin //TLBI
         if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效，没有异常
             I_IsTLBBufferValid                              = 1'b1; 
-            IF_ExceptType_new.TLBRefillinIF                 = 1'b0;
-            IF_ExceptType_new.TLBInvalidinIF                = 1'b0; 
+            IF_TLBExceptType                                = `IF_TLBNoneEX;
         end
         else if(I_TLBBufferHit == 1'b0) begin //TLB Buffer没有命中，下一拍是search，valid无效，但exception不赋值，因为还不知道是什么例外类型
             I_IsTLBBufferValid                              = 1'b0;
-            IF_ExceptType_new.TLBRefillinIF                 = 1'b0;
-            IF_ExceptType_new.TLBInvalidinIF                = 1'b0; 
+            IF_TLBExceptType                                = `IF_TLBNoneEX;
         end
         else if(I_TLBBuffer.IsInTLB == 1'b1 && ((CMBus.CP0_asid == I_TLBBuffer.ASID) || I_TLBBuffer.G)) begin //说明TLB Buffer里面命中了，否则是缺页
             if(Virt_Iaddr[12] == 1'b0) begin
                 if(I_TLBBuffer.V0 == 1'b0) begin //无效异常
                     I_IsTLBBufferValid                      = 1'b0; 
-                    IF_ExceptType_new.TLBRefillinIF         = 1'b0;
-                    IF_ExceptType_new.TLBInvalidinIF        = 1'b1;
+                    IF_TLBExceptType                        = `IF_TLBInvalid;
                 end
                 else begin
                     I_IsTLBBufferValid                      = 1'b1;
-                    IF_ExceptType_new.TLBRefillinIF         = 1'b0;
-                    IF_ExceptType_new.TLBInvalidinIF        = 1'b0; 
+                    IF_TLBExceptType                        = `IF_TLBNoneEX;
                 end
             end
             else begin
                 if(I_TLBBuffer.V1 == 1'b0) begin
                     I_IsTLBBufferValid                      = 1'b0;
-                    IF_ExceptType_new.TLBRefillinIF         = 1'b0;
-                    IF_ExceptType_new.TLBInvalidinIF        = 1'b1;
+                    IF_TLBExceptType                        = `IF_TLBInvalid;
                 end
                 else begin
                     I_IsTLBBufferValid                      = 1'b1;
-                    IF_ExceptType_new.TLBRefillinIF         = 1'b0;
-                    IF_ExceptType_new.TLBInvalidinIF        = 1'b0; 
+                    IF_TLBExceptType                        = `IF_TLBNoneEX;
                 end                     
             end
         end
         else begin     //说明缺页异常
             I_IsTLBBufferValid                              = 1'b0;
-            IF_ExceptType_new.TLBRefillinIF                 = 1'b1;
-            IF_ExceptType_new.TLBInvalidinIF                = 1'b0;  
+            IF_TLBExceptType                                = `IF_TLBRefill;
         end
     end
-    
-    assign MEM_ExceptType_new.Interrupt                     = MEM_ExceptType.Interrupt;
-    assign MEM_ExceptType_new.WrongAddressinIF              = MEM_ExceptType.WrongAddressinIF;
-    assign MEM_ExceptType_new.ReservedInstruction           = MEM_ExceptType.ReservedInstruction;
-    assign MEM_ExceptType_new.CoprocessorUnusable           = MEM_ExceptType.CoprocessorUnusable;
-    assign MEM_ExceptType_new.Overflow                      = MEM_ExceptType.Overflow;
-    assign MEM_ExceptType_new.Syscall                       = MEM_ExceptType.Syscall;
-    assign MEM_ExceptType_new.Break                         = MEM_ExceptType.Break;
-    assign MEM_ExceptType_new.Eret                          = MEM_ExceptType.Eret;
-    assign MEM_ExceptType_new.WrWrongAddressinMEM           = MEM_ExceptType.WrWrongAddressinMEM;
-    assign MEM_ExceptType_new.RdWrongAddressinMEM           = MEM_ExceptType.RdWrongAddressinMEM;
-    assign MEM_ExceptType_new.TLBRefillinIF                 = MEM_ExceptType.TLBRefillinIF;
-    assign MEM_ExceptType_new.TLBInvalidinIF                = MEM_ExceptType.TLBInvalidinIF;
-    assign MEM_ExceptType_new.Trap                          = MEM_ExceptType.Trap;
-    assign MEM_ExceptType_new.Refetch                       = MEM_ExceptType.Refetch;
-    
+
     always_comb begin //TLBD
     if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
-            D_IsTLBBufferValid = 1'b1; 
-            MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-            MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-            MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-            MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-            MEM_ExceptType_new.TLBModified                  = 1'b0;
+            D_IsTLBBufferValid                              = 1'b1; 
+            MEM_TLBExceptType                               = `MEM_TLBNoneEX;
         end
         else if(D_TLBBufferHit == 1'b0) begin 
-            D_IsTLBBufferValid = 1'b0;
-            MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-            MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-            MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-            MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-            MEM_ExceptType_new.TLBModified                  = 1'b0;
+            D_IsTLBBufferValid                              = 1'b0;
+            MEM_TLBExceptType                               = `MEM_TLBNoneEX;
         end
         else if(D_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == D_TLBBuffer.ASID) || D_TLBBuffer.G)) begin //说明TLB Buffer对上了
             if(Virt_Daddr[12] == 1'b0) begin
                 if(D_TLBBuffer.V0 == 1'b0) begin //无效异常
                     if(MEM_LoadType.ReadMem == 1'b1) begin
-                    D_IsTLBBufferValid = 1'b0; 
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b1;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.TLBModified                  = 1'b0;
+                    D_IsTLBBufferValid                      = 1'b0; 
+                    MEM_TLBExceptType                       = `MEM_RdTLBInvalid;
                     end
                     else begin
-                    D_IsTLBBufferValid = 1'b0; 
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b1;
-                    MEM_ExceptType_new.TLBModified                  = 1'b0;
+                    D_IsTLBBufferValid                      = 1'b0; 
+                    MEM_TLBExceptType                       = `MEM_WrTLBInvalid;
                     end
                 end
                 else if(D_TLBBuffer.V0 == 1'b1 && D_TLBBuffer.D0 == 1'b0 && MEM_StoreType.DMWr == 1'b1) begin
-                    D_IsTLBBufferValid = 1'b0; //判断是否有修改例外
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.TLBModified                  = 1'b1;
+                    D_IsTLBBufferValid                      = 1'b0; //判断是否有修改例外
+                    MEM_TLBExceptType                       = `MEM_TLBModified;
                 end
                 else begin
-                    D_IsTLBBufferValid = 1'b1;
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.TLBModified                  = 1'b0;
+                    D_IsTLBBufferValid                      = 1'b1;
+                    MEM_TLBExceptType                       = `MEM_TLBNoneEX;
                 end                     
             end
             else begin
                 if(D_TLBBuffer.V1 == 1'b0) begin //无效异常
                     if(MEM_LoadType.ReadMem == 1'b1) begin
-                    D_IsTLBBufferValid = 1'b0; 
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b1;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.TLBModified                  = 1'b0;
+                    D_IsTLBBufferValid                      = 1'b0; 
+                    MEM_TLBExceptType                       = `MEM_RdTLBInvalid;
                     end
                     else begin
-                    D_IsTLBBufferValid = 1'b0; 
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b1;
-                    MEM_ExceptType_new.TLBModified                  = 1'b0;
+                    D_IsTLBBufferValid                      = 1'b0; 
+                    MEM_TLBExceptType                       = `MEM_WrTLBInvalid;
                     end
                 end
                 else if(D_TLBBuffer.V1 == 1'b1 && D_TLBBuffer.D1 == 1'b0 && MEM_StoreType.DMWr == 1'b1) begin
-                    D_IsTLBBufferValid = 1'b0; //判断是否有修改例外
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.TLBModified                  = 1'b1;
+                    D_IsTLBBufferValid                      = 1'b0; //判断是否有修改例外
+                    MEM_TLBExceptType                       = `MEM_TLBModified;
+
                 end
                 else begin
-                    D_IsTLBBufferValid = 1'b1;
-                    MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                    MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                    MEM_ExceptType_new.TLBModified                  = 1'b0;
+                    D_IsTLBBufferValid                      = 1'b1;
+                    MEM_TLBExceptType                       = `MEM_TLBNoneEX;
                 end   
             end
         end
         else begin     //说明缺页异常
             if(MEM_LoadType.ReadMem == 1'b1) begin
-                D_IsTLBBufferValid = 1'b0;
-                MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b1;
-                MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-                MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                MEM_ExceptType_new.TLBModified                  = 1'b0;
+                D_IsTLBBufferValid                         = 1'b0;
+                MEM_TLBExceptType                          = `MEM_RdTLBRefill;
             end
             else begin
-                D_IsTLBBufferValid = 1'b0;
-                MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-                MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-                MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b1;
-                MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-                MEM_ExceptType_new.TLBModified                  = 1'b0;
+                D_IsTLBBufferValid                         = 1'b0;
+                MEM_TLBExceptType                          = `MEM_WrTLBRefill;
+
             end
         end
     end
     else begin
-        D_IsTLBBufferValid = 1'b0;
-        MEM_ExceptType_new.RdTLBRefillinMEM             = 1'b0;
-        MEM_ExceptType_new.RdTLBInvalidinMEM            = 1'b0;
-        MEM_ExceptType_new.WrTLBRefillinMEM             = 1'b0;
-        MEM_ExceptType_new.WrTLBInvalidinMEM            = 1'b0;
-        MEM_ExceptType_new.TLBModified                  = 1'b0;
+        D_IsTLBBufferValid                                 = 1'b0;
+        MEM_TLBExceptType                                  = `MEM_TLBNoneEX;
     end
     end
 //--------------------------------------------------------------------------------------//

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-15 19:11:49
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 18:00:59
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -110,6 +110,10 @@ module mycpu_top (
 
     logic                      IReq_valid; 
     logic                      DReq_valid; 
+
+    logic                      MEM2_store_req;
+    logic                      WB_store_req;
+    logic [31:0]               WB_ALUOut;
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
     logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
     logic [31:0]               Virt_Daddr;                //传至TLBMMU，用于TLB转换
@@ -123,10 +127,8 @@ module mycpu_top (
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
     logic                      MEM_TLBWIorR;              //表示是TLBWI还是TLBWR
     logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
-    ExceptinPipeType           IF_ExceptType;             //用于TLB例外的判断        
-    ExceptinPipeType           IF_ExceptType_new;         //用于TLB例外的判断   
-    ExceptinPipeType           MEM_ExceptType;            //用于TLB例外的判断    
-    ExceptinPipeType           MEM_ExceptType_new;        //用于TLB例外的判断    
+    logic [1:0]                IF_TLBExceptType;
+    logic [2:0]                MEM_TLBExceptType; 
     LoadType                   MEM_LoadType;              //用于TLB例外的判断 & load指令的数据冒险
     StoreType                  MEM_StoreType;             //用于TLB例外的判断 
     logic                      I_IsTLBBufferValid;        //表示是否向Cache发请求
@@ -163,6 +165,12 @@ module mycpu_top (
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
+        .MEM_Addr               (MM2Bus.MEM_ALUOut),        
+        .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
+        .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
+        .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
+        .WB_Addr                (WB_ALUOut),                                    //WB级的地址
+        .WB_store_req           (WB_store_req),                                 //WB级的请求
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
         .IF_Wr                  (IF_Wr),
@@ -183,7 +191,7 @@ module mycpu_top (
         .MEM_DisWr              (MEM_DisWr ),
         .WB_DisWr               (WB_DisWr ),
 
-        .IcacheFlush            (cpu_ibus.flush),  //TODO:cache控制逻辑
+        .IcacheFlush            (cpu_ibus.flush),  
         .DcacheFlush            (cpu_dbus.flush),
         .IReq_valid             (IReq_valid),
         .DReq_valid             (DReq_valid),
@@ -266,8 +274,7 @@ module mycpu_top (
         .axi_iubus                 (axi_iubus),
         //-------------------------------output-------------------//
         .Virt_Iaddr                (Virt_Iaddr ),
-        .PREIF_PC                  (PREIF_PC ),
-        .PREIF_ExceptType          (PREIF_ExceptType) //TODO:传递给TLB
+        .PREIF_PC                  (PREIF_PC )
     );
 
     TOP_IF U_TOP_IF (
@@ -276,7 +283,7 @@ module mycpu_top (
         .IF_Wr                     (IF_Wr ),
         .IF_Flush                  (IF_Flush ),
         .PREIF_PC                  (PREIF_PC ),
-        .IFTLB_ExceptType          (IF_ExceptType_new ),
+        .IF_TLBExceptType          (IF_TLBExceptType),
         //-------------------------------output-------------------//
         .IIBus                     (IIBus.IF ),
         .cpu_ibus                  (cpu_ibus)
@@ -338,7 +345,7 @@ module mycpu_top (
         .Phsy_Daddr                (Phsy_Daddr),
         .D_IsCached                (D_IsCached),
         .Interrupt                 (ext_int),
-        .MEM_ExceptType_new        (MEM_ExceptType_new),
+        .MEM_TLBExceptType         (MEM_TLBExceptType),
         .MEM_DisWr                 (MEM_DisWr),
         .EMBus                     (EMBus.MEM ),
         .MM2Bus                    (MM2Bus.MEM ),
@@ -355,7 +362,6 @@ module mycpu_top (
         .MEM_TLBWIorR              (MEM_TLBWIorR),
         .MEM_PC                    (MEM_PC),
         .CP0_EPC                   (CP0_EPC),
-        .MEM_ExceptType            (MEM_ExceptType),
         .MEM_LoadType              (MEM_LoadType),
         .MEM_rt                    (MEM_rt),
         .MEM_StoreType             (MEM_StoreType)
@@ -368,9 +374,12 @@ module mycpu_top (
         .MM2Bus                    (MM2Bus.MEM2 ),
         .M2WBus                    (M2WBus.MEM2 ),
         .cpu_dbus                  (cpu_dbus ),
+        .MEM_store_req             (MEM_StoreType.DMWr),
+        //--------------------------output-------------------------//
         .MEM2_Result               (MEM2_Result ),
         .MEM2_Dst                  (MEM2_Dst ),
-        .MEM2_RegsWrType           (MEM2_RegsWrType)
+        .MEM2_RegsWrType           (MEM2_RegsWrType),
+        .MEM2_store_req            (MEM2_store_req)
     );
 
 
@@ -380,13 +389,16 @@ module mycpu_top (
         .WB_Flush                  (WB_Flush ),
         .WB_Wr                     (WB_Wr ),
         .WB_DisWr                  (WB_DisWr ),
+        .MEM2_store_req            (MEM2_store_req),
         .M2WBus                    (M2WBus.WB ),
         //--------------------------output-------------------------//
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_Final_Wr               (WB_Final_Wr ),
         .WB_RegsWrType             (WB_RegsWrType),
-        .WB_PC                     (WB_PC )
+        .WB_PC                     (WB_PC ),
+        .WB_store_req              (WB_store_req),
+        .WB_ALUOut                 (WB_ALUOut)
     );
 
     TLBMMU U_TLBMMU (
@@ -396,8 +408,6 @@ module mycpu_top (
       .Virt_Daddr                  (Virt_Daddr ),
       .MEM_LoadType                (MEM_LoadType ),
       .MEM_StoreType               (MEM_StoreType ),
-      .IF_ExceptType               (PREIF_ExceptType ),
-      .MEM_ExceptType              (MEM_ExceptType ),
       .MEM_IsTLBP                  (MEM_IsTLBP ),
       .MEM_IsTLBW                  (MEM_IsTLBW ),
       .MEM_TLBWIorR                (MEM_TLBWIorR),
@@ -412,8 +422,8 @@ module mycpu_top (
       .D_IsTLBBufferValid          (D_IsTLBBufferValid ),
       .I_IsTLBStall                (I_IsTLBStall ),
       .D_IsTLBStall                (D_IsTLBStall ),
-      .IF_ExceptType_new           (IF_ExceptType_new ),
-      .MEM_ExceptType_new          ( MEM_ExceptType_new)
+      .IF_TLBExceptType            (IF_TLBExceptType ),
+      .MEM_TLBExceptType           ( MEM_TLBExceptType)
     );
 
     // logic [31:0] din,dout1,dout2;

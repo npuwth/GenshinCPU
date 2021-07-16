@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-15 13:38:17
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 12:10:51
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -128,6 +128,17 @@
 `define IsInDelaySlot           1'b1     // 延迟槽指令
 `define ZeroWord                32'h0    // 寄存器32位全0信号
 //异常定义
+//用于TLB输出
+`define IF_TLBNoneEX            2'b00
+`define IF_TLBRefill            2'b01
+`define IF_TLBInvalid           2'b10
+`define MEM_TLBNoneEX           3'b000
+`define MEM_RdTLBRefill         3'b001
+`define MEM_RdTLBInvalid        3'b010
+`define MEM_WrTLBRefill         3'b011
+`define MEM_WrTLBInvalid        3'b100
+`define MEM_TLBModified         3'b101
+//用于MEM级检测译码
 `define EX_None                 5'b00000  //无异常，Refetch被认为不是异常，也包括在这里面
 `define EX_Interrupt            5'b00001  //
 `define EX_WrongAddressinIF     5'b00010
