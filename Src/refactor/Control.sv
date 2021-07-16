@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-16 19:50:02
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-16 21:48:33
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -66,7 +66,7 @@ module Control(
     
 
     always_comb begin
-        if (MEM_loadstore_req      == 1'b1 && MEM2_store_req == 1'b1) begin
+        if (MEM_loadstore_req      == 1'b1 && MEM2_store_req == 1'b1 ) begin
             if (MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH] ) begin
                 Load_store_stall = 1'b1;
             end
@@ -74,7 +74,7 @@ module Control(
                 Load_store_stall = 1'b0;
             end
         end
-        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 ) begin
+        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1  ) begin
             if (MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
                 Load_store_stall = 1'b1;
             end
