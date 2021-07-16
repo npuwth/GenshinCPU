@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 10:46:03
+ * @LastEditTime: 2021-07-16 11:05:50
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -96,6 +96,14 @@ function logic [31:0] mux_byteenable(
         sel[2] ? wdata[23:16] : rdata[23:16],
         sel[1] ? wdata[15:8] : rdata[15:8],
         sel[0] ? wdata[7:0] : rdata[7:0]
+    };
+endfunction
+
+function logic  clog2(
+    input logic [1:0] hit
+);
+    return{
+        (hit[1])?1'b1:1'b0
     };
 endfunction
 
@@ -282,9 +290,9 @@ endgenerate
      if (state == UNCACHEDONE ) begin
          data_rdata_final =uncache_rdata;
      end else if((|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( (store_buffer.index == req_buffer.index) )) begin
-        data_rdata_final =  '0;
+        data_rdata_final =   store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] ;
     end else begin
-        data_rdata_final= '0;
+        data_rdata_final= data_rdata_sel[clog2(hit)];
     end
 end
 assign cache_hit = |hit;
@@ -351,7 +359,7 @@ end
 
 
 always_comb begin : store_wdata_block//TODO:救命写不出来
-      store_wdata                                      = data_rdata[`CLOG2(hit)]; //TODO：这个可综合吗？
+      store_wdata                                      = data_rdata[clog2(hit)]; //TODO：这个可综合吗？
       store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
 end
 
@@ -447,7 +455,7 @@ always_comb begin : state_next_blockname
                 if (cache_hit) begin
                     state_next = LOOKUP;
                 end else begin
-                    if (pipe_tagv_rdata[`CLOG2(hit)].dirty) begin
+                    if (pipe_tagv_rdata[clog2(hit)].dirty) begin
                         state_next = MISSDIRTY ;
                     end else begin
                         state_next = MISSCLEAN ;
