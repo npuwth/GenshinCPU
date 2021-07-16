@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-16 19:50:02
+ * @LastEditTime: 2021-07-16 22:20:20
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -66,21 +66,11 @@ module Control(
     
 
     always_comb begin
-        if (MEM_loadstore_req      == 1'b1 && MEM2_store_req == 1'b1) begin
-            if (MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH] ) begin
-                Load_store_stall = 1'b1;
-            end
-            else begin
-                Load_store_stall = 1'b0;
-            end
+        if (MEM_loadstore_req == 1'b1 && MEM2_store_req == 1'b1 && MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
+            Load_store_stall = 1'b1;
         end
-        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 ) begin
-            if (MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
-                Load_store_stall = 1'b1;
-            end
-            else begin
-                Load_store_stall = 1'b0;
-            end
+        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 && MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
+            Load_store_stall = 1'b1;
         end
         else begin
             Load_store_stall = 1'b0;
@@ -204,7 +194,7 @@ module Control(
             DReq_valid   = 1'b0;
 
             ICacheStall  = 1'b1;
-            DCacheStall  = 1'b1;
+            DCacheStall  = 1'b0;
         end
         else if (DH_Stall == 1'b1) begin
             PREIF_Wr      = 1'b0;

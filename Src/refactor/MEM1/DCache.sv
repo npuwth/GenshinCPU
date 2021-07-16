@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 20:22:54
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-16 23:34:45
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -47,7 +47,7 @@ localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;
 //--definitions
 typedef struct packed {
     logic valid;
-    logic dirty;
+    logic dirty;//TODO: 记得把dirty从tagv lutram中分开 因为会存在 同时读写的情况 且读写地址不一致
     logic [TAG_WIDTH-1:0] tag;  
 } tagv_t; //每一路 一个tag_t变量
 
@@ -150,7 +150,7 @@ wb_state_t wb_state,wb_state_next;
  
 logic [31:0] uncache_rdata;
 
-index_t read_addr,write_addr;//read_addr 既是 查询的地址 又是重填的地址  write_addr是store的地址
+index_t read_addr,write_addr,tagv_addr;//read_addr 既是 查询的地址 又是重填的地址  write_addr是store的地址
 
 tagv_t [ASSOC_NUM-1:0] tagv_rdata;
 tagv_t tagv_wdata;
@@ -216,7 +216,7 @@ generate;
             //端口信号
             .ena(1'b1),
             .wea(tagv_we[i]),
-            .addra(read_addr),
+            .addra(tagv_addr),
             .dina(tagv_wdata),
             .douta(tagv_rdata[i])
         );
@@ -275,6 +275,7 @@ assign cache_hit        = |hit;
 
 assign read_addr      = (state == REFILLDONE || state == REFILL || cpu_bus.stall)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
+assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.index :cpu_bus.index;
 
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
@@ -284,7 +285,7 @@ assign busy           = busy_cache | busy_uncache ;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
-assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
+assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata     = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
@@ -343,28 +344,30 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
-    end else begin
+    end else if(wb_state == WB_STORE)begin
         tagv_we = store_buffer.hit;
+    end else begin
+        tagv_we = '0;
     end
 end
 always_comb begin : data_we_blockName
     if (state == REFILL) begin
         data_we = '0;
         data_we[lru[req_buffer.index]] =1'b1;
-    end else begin
+    end else  if(wb_state == WB_STORE)begin
         data_we = store_buffer.hit;
-    end    
+    end else begin
+        data_we = '0;
+    end   
 end
 always_ff @( posedge clk ) begin : store_buffer_blockName
     if ((resetn == `RstEnable)) begin
         store_buffer <= '0;
-    end else if(req_buffer.op & req_buffer.valid & cache_hit) begin//既是写 又是有效的
+    end else begin//既是写 又是有效的
         store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
         store_buffer.wdata <= store_wdata;
         store_buffer.tag   <= req_buffer.tag;
-    end else begin
-        store_buffer <= '0;
     end
 end
 
@@ -518,5 +521,21 @@ always_comb begin : state_next_blockname
     endcase
 end
 
+always_ff @(posedge clk) begin :wb_state_blockname
+    if (resetn == `RstEnable) begin
+        wb_state <= WB_IDLE;
+    end else begin
+        wb_state <= wb_state_next;
+    end
+end
+
+always_comb begin : wb_state_next_blockname
+    if (req_buffer.valid & req_buffer.op & cache_hit) begin
+        wb_state_next = WB_STORE;
+    end else begin
+        wb_state_next = WB_IDLE;
+    end
+
+end
 
 endmodule

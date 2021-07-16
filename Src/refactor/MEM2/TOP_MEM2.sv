@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-16 17:40:42
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-16 22:26:00
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -44,6 +44,7 @@ module TOP_MEM2 (
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
+    .MEM_store_req          (MEM_store_req),
 //-----------------------------output-------------------------------------//
     .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
@@ -55,7 +56,9 @@ module TOP_MEM2 (
     .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
-    .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot)
+    .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
+    .MEM2_store_req         (MEM2_store_req)
+
     );
     //output for forwarding 
     assign MEM2_Dst              = M2WBus.MEM2_Dst;
@@ -65,7 +68,6 @@ module TOP_MEM2 (
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;
     // output to WB
     assign M2WBus.MEM2_DMOut      = cpu_dbus.rdata;       //读取结果直接放入DMOut
-    assign MEM2_store_req         = MEM_store_req;
     //-------------------------------用于旁路的多选器-----------------------//
     MUX4to1 #(32) U_MUXINMEM2(
         .d0                  (M2WBus.MEM2_PC + 8),                                     // JAL,JALR等指令将PC+8写回RF
