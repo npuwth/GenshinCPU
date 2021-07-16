@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-16 12:46:30
+ * @LastEditTime: 2021-07-16 17:39:30
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -42,7 +42,8 @@ module TOP_MEM (
     output LoadType              MEM_LoadType,
     output StoreType             MEM_StoreType,
     output logic [4:0]           MEM_rt,
-    output logic [31:0]          Exception_Vector   
+    output logic [31:0]          Exception_Vector
+    // output logic                 MEM_store_req    // 给MEM2级 用于laod store的阻塞
 );
     ExceptinPipeType             MEM_ExceptType;
 	RegsWrType                   MEM_RegsWrType; 
@@ -76,6 +77,7 @@ module TOP_MEM (
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MM2Bus.MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
 
+    // assign MEM_store_req            = MEM_StoreType.DMWr ;
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
         .rst                     (resetn ),

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-16 14:21:37
+ * @LastEditTime: 2021-07-16 18:00:59
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -110,6 +110,10 @@ module mycpu_top (
 
     logic                      IReq_valid; 
     logic                      DReq_valid; 
+
+    logic                      MEM2_store_req;
+    logic                      WB_store_req;
+    logic [31:0]               WB_ALUOut;
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
     logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
     logic [31:0]               Virt_Daddr;                //传至TLBMMU，用于TLB转换
@@ -161,6 +165,12 @@ module mycpu_top (
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
+        .MEM_Addr               (MM2Bus.MEM_ALUOut),        
+        .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
+        .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
+        .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
+        .WB_Addr                (WB_ALUOut),                                    //WB级的地址
+        .WB_store_req           (WB_store_req),                                 //WB级的请求
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
         .IF_Wr                  (IF_Wr),
@@ -181,7 +191,7 @@ module mycpu_top (
         .MEM_DisWr              (MEM_DisWr ),
         .WB_DisWr               (WB_DisWr ),
 
-        .IcacheFlush            (cpu_ibus.flush),  //TODO:cache控制逻辑
+        .IcacheFlush            (cpu_ibus.flush),  
         .DcacheFlush            (cpu_dbus.flush),
         .IReq_valid             (IReq_valid),
         .DReq_valid             (DReq_valid),
@@ -364,9 +374,12 @@ module mycpu_top (
         .MM2Bus                    (MM2Bus.MEM2 ),
         .M2WBus                    (M2WBus.MEM2 ),
         .cpu_dbus                  (cpu_dbus ),
+        .MEM_store_req             (MEM_StoreType.DMWr),
+        //--------------------------output-------------------------//
         .MEM2_Result               (MEM2_Result ),
         .MEM2_Dst                  (MEM2_Dst ),
-        .MEM2_RegsWrType           (MEM2_RegsWrType)
+        .MEM2_RegsWrType           (MEM2_RegsWrType),
+        .MEM2_store_req            (MEM2_store_req)
     );
 
 
@@ -376,13 +389,16 @@ module mycpu_top (
         .WB_Flush                  (WB_Flush ),
         .WB_Wr                     (WB_Wr ),
         .WB_DisWr                  (WB_DisWr ),
+        .MEM2_store_req            (MEM2_store_req),
         .M2WBus                    (M2WBus.WB ),
         //--------------------------output-------------------------//
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_Final_Wr               (WB_Final_Wr ),
         .WB_RegsWrType             (WB_RegsWrType),
-        .WB_PC                     (WB_PC )
+        .WB_PC                     (WB_PC ),
+        .WB_store_req              (WB_store_req),
+        .WB_ALUOut                 (WB_ALUOut)
     );
 
     TLBMMU U_TLBMMU (
