@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-16 14:21:37
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-16 20:03:21
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -148,7 +148,7 @@ module mycpu_top (
     EXE_MEM_Interface           EMBus();
     MEM_MEM2_Interface          MM2Bus();
     MEM2_WB_Interface           M2WBus();
-    CP0_MMU_Interface           CMBus();
+    CP0_TLB_Interface           CTBus();
     //--------------------------------------------------------------------------------------------------------------//
     Control U_Control (
         
