@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 21:40:01
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 12:46:30
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -22,7 +22,7 @@ module TOP_MEM (
     input logic  [31:0]          Phsy_Daddr, 
     input logic                  D_IsCached,
     input logic  [5:0]           Interrupt,//中断
-    input ExceptinPipeType       MEM_ExceptType_new,
+    input logic  [2:0]           MEM_TLBExceptType,
     input logic                  MEM_DisWr,
     EXE_MEM_Interface            EMBus,
     MEM_MEM2_Interface           MM2Bus,
@@ -39,13 +39,12 @@ module TOP_MEM (
     output logic                 MEM_TLBWIorR,
     output logic [31:0]          MEM_PC,
     output logic [31:0]          CP0_EPC,
-    output ExceptinPipeType      MEM_ExceptType,
     output LoadType              MEM_LoadType,
     output StoreType             MEM_StoreType,
     output logic [4:0]           MEM_rt,
     output logic [31:0]          Exception_Vector   
 );
-
+    ExceptinPipeType             MEM_ExceptType;
 	RegsWrType                   MEM_RegsWrType; 
     logic [31:0]                 RFHILO_Bus;
     logic [1:0]                  MEM_RegsReadSel;
@@ -130,7 +129,8 @@ module TOP_MEM (
 
     Exception U_Exception(
         .MEM_RegsWrType          (MEM_RegsWrType),              
-        .MEM_ExceptType          (MEM_ExceptType_new),            
+        .MEM_ExceptType          (MEM_ExceptType),        
+        .MEM_TLBExceptType       (MEM_TLBExceptType),
         .MEM_PC                  (MM2Bus.MEM_PC),   
         .CP0_Status_BEV          (CP0_Status_BEV),                  
         .CP0_Status_IM7_0        (CP0_Status_IM7_0 ),

@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-13 21:18:18
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 14:19:22
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,6 +15,7 @@
  module Exception(
     input RegsWrType           MEM_RegsWrType,  
     input ExceptinPipeType     MEM_ExceptType,        //译码执行阶段收集到的异常信息
+    input logic [2:0]          MEM_TLBExceptType,
     input logic [31:0]         MEM_PC,                //用于判断取指令地址错例外
     input logic [22:22]        CP0_Status_BEV,
     input logic [7:0]          CP0_Status_IM7_0,
@@ -122,14 +123,13 @@ assign MEM_ExceptType_final.RdWrongAddressinMEM = MEM_ExceptType.RdWrongAddressi
 assign MEM_ExceptType_final.Overflow            = MEM_ExceptType.Overflow;
 assign MEM_ExceptType_final.TLBRefillinIF       = MEM_ExceptType.TLBRefillinIF;
 assign MEM_ExceptType_final.TLBInvalidinIF      = MEM_ExceptType.TLBInvalidinIF;
-assign MEM_ExceptType_final.RdTLBRefillinMEM    = MEM_ExceptType.RdTLBRefillinMEM;
-assign MEM_ExceptType_final.RdTLBInvalidinMEM   = MEM_ExceptType.RdTLBInvalidinMEM;
-assign MEM_ExceptType_final.WrTLBRefillinMEM    = MEM_ExceptType.WrTLBRefillinMEM; 
-assign MEM_ExceptType_final.WrTLBInvalidinMEM   = MEM_ExceptType.WrTLBInvalidinMEM;   
-assign MEM_ExceptType_final.TLBModified         = MEM_ExceptType.TLBModified;
+assign MEM_ExceptType_final.RdTLBRefillinMEM    = (MEM_TLBExceptType == `MEM_RdTLBRefill);
+assign MEM_ExceptType_final.RdTLBInvalidinMEM   = (MEM_TLBExceptType == `MEM_RdTLBInvalid);
+assign MEM_ExceptType_final.WrTLBRefillinMEM    = (MEM_TLBExceptType == `MEM_WrTLBRefill);
+assign MEM_ExceptType_final.WrTLBInvalidinMEM   = (MEM_TLBExceptType == `MEM_WrTLBInvalid);  
+assign MEM_ExceptType_final.TLBModified         = (MEM_TLBExceptType == `MEM_TLBModified);
 assign MEM_ExceptType_final.Refetch             = MEM_ExceptType.Refetch;
 assign MEM_ExceptType_final.Trap                = MEM_ExceptType.Trap;
-
 
 endmodule
 
