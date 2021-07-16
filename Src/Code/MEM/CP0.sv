@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-08 21:34:18
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-14 20:08:05
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -46,7 +46,7 @@ module cp0_reg (
     logic                   Count2;
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
     logic  [4:0]            ExcType;
-    logic  [6:0]            Interrupt_final;
+    logic  [5:0]            Interrupt_final;
 
     assign                  CP0_Status_IM7_0 = CP0.Status.IM7_0;
     assign                  CP0_Status_EXL   = CP0.Status.EXL;

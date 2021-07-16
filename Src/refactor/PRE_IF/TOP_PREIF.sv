@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-15 13:50:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 12:30:20
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -37,8 +37,7 @@ module TOP_PREIF (
     AXI_UNCACHE_Interface       axi_iubus,
 //---------------------------output----------------------------------//
     output logic [31:0]         Virt_Iaddr,          //  输出给TLB
-    output logic [31:0]         PREIF_PC,            //  输出到下一级
-    output ExceptinPipeType     PREIF_ExceptType     //  输出给TLB 
+    output logic [31:0]         PREIF_PC
 );
 
     logic   [31:0]              PREIF_NPC;
@@ -52,8 +51,6 @@ module TOP_PREIF (
     assign ID_PCAdd4         =   ID_PC+4;
     assign JumpAddr          =   {ID_PCAdd4[31:28],ID_Instr[25:0],2'b0};
     assign BranchAddr        =   EXE_PC+4+{EXE_Imm32[29:0],2'b0};
-
-    assign PREIF_ExceptType  =   '0;   //  输出给TLB 
 
     PC U_PC ( 
         .clk            (clk),
