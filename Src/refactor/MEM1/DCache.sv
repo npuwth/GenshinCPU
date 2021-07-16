@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 10:46:55
+ * @LastEditTime: 2021-07-16 18:04:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -10,17 +10,6 @@
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
-`define CLOG2(x) \
-((x <= 1) || (x > 512)                                                                ) ? 0 : \
-(x <= 2) ? 1 : \
-(x <= 4) ? 2 : \
-(x <= 8) ? 3 : \
-(x <= 16) ? 4 : \
-(x <= 32) ? 5 : \
-(x <= 64) ? 6 : \
-(x <= 128) ? 7: \
-(x <= 256) ? 8: \
-(x <= 512) ? 9 : 0
 
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width位
@@ -99,7 +88,9 @@ function logic [31:0] mux_byteenable(
     };
 endfunction
 
-function logic  clog2(
+
+
+function logic  clog2(//TODO: 配置的时候需要改动
     input logic [1:0] hit
 );
     return{
@@ -191,7 +182,7 @@ logic pipe_wr;
 
 logic busy_cache;// uncache 直到数据返回
 logic busy_uncache;
-logic busy_collision;
+//logic busy_collision;
 
 logic busy;
 
@@ -282,37 +273,26 @@ generate;//根据offset片选？
 endgenerate
 //旁路
                             //
-// assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata:
-//                             ((|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( store_buffer.index == req_buffer.index ))?
-//                              store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]]  : data_rdata_sel[`CLOG2(hit)];
+assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata: data_rdata_sel[clog2(hit)];
 
- always_comb begin : data_rdata_final_blokcname
-     if (state == UNCACHEDONE ) begin
-         data_rdata_final =uncache_rdata;
-     end else if((|store_buffer.hit) && (store_buffer.tag == req_buffer.tag) &&  ( (store_buffer.index == req_buffer.index) )) begin
-        data_rdata_final =   store_buffer.wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] ;
-    end else begin
-        data_rdata_final= data_rdata_sel[clog2(hit)];
-    end
-end
-assign cache_hit = |hit;
+assign cache_hit        = |hit;
 
-assign read_addr      = (state == REFILLDONE || state == REFILL)? req_buffer.index : cpu_bus.index;
+assign read_addr      = (state == REFILLDONE || state == REFILL || cpu_bus.stall)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
-assign busy_collision = ((|store_buffer.hit ) && store_buffer.index == read_addr)? 1'b1:1'b0;
-assign busy           = busy_cache | busy_uncache | busy_collision;
 
-assign pipe_wr        = (~(busy) | state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
+assign busy           = busy_cache | busy_uncache ;
+
+assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata     = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
-assign data_read_en   = (state == REFILLDONE) ? 1'b1 :(req_buffer.valid & req_buffer.op)? 1'b1 : (cpu_bus.stall) ? 1'b0 : 1'b1;
+assign data_read_en   = (state == REFILLDONE ||(req_buffer.valid & req_buffer.op)) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
 always_comb begin : data_rdata_final2_blockname
     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
@@ -380,7 +360,7 @@ always_comb begin : data_we_blockName
     end    
 end
 always_ff @( posedge clk ) begin : store_buffer_blockName
-    if ((resetn == `RstEnable) ||(cpu_bus.stall | busy) ) begin
+    if ((resetn == `RstEnable)) begin
         store_buffer <= '0;
     end else if(req_buffer.op & req_buffer.valid & cache_hit) begin//既是写 又是有效的
         store_buffer.hit   <= hit;
@@ -455,7 +435,7 @@ always_comb begin : state_next_blockname
                 if (cache_hit) begin
                     state_next = LOOKUP;
                 end else begin
-                    if (pipe_tagv_rdata[clog2(hit)].dirty) begin
+                    if (pipe_tagv_rdata[lru[req_buffer.index]].dirty) begin
                         state_next = MISSDIRTY ;
                     end else begin
                         state_next = MISSCLEAN ;
