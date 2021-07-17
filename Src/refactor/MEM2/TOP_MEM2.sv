@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-16 22:26:00
+ * @LastEditTime: 2021-07-17 16:18:18
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -45,6 +45,7 @@ module TOP_MEM2 (
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
     .MEM_store_req          (MEM_store_req),
+    .MEM_Isincache          (MM2Bus.MEM_Isincache),
 //-----------------------------output-------------------------------------//
     .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
@@ -57,7 +58,8 @@ module TOP_MEM2 (
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
-    .MEM2_store_req         (MEM2_store_req)
+    .MEM2_store_req         (MEM2_store_req),
+    .MEM2_Isincache         (M2WBus.MEM2_Isincache)
 
     );
     //output for forwarding 

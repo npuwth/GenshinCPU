@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-17 14:56:40
+ * @LastEditTime: 2021-07-17 16:17:00
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -114,6 +114,7 @@ module mycpu_top (
     logic                      MEM2_store_req;
     logic                      WB_store_req;
     logic [31:0]               WB_ALUOut;
+    logic                      WB_Isincache; 
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
     logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
@@ -163,10 +164,13 @@ module mycpu_top (
         .DIVMULTBusy            (EXE_MULTDIVStall),
         .MEM_Addr               (MM2Bus.MEM_ALUOut),        
         .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
+        .MEM_iscached           (MM2Bus.MEM_Isincache),
         .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
         .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
+        .MEM2_iscached          (M2WBus.MEM2_Isincache),
         .WB_Addr                (WB_ALUOut),                                    //WB级的地址
         .WB_store_req           (WB_store_req),                                 //WB级的请求
+        .WB_iscached            (WB_Isincache),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
         .IF_Wr                  (IF_Wr),
@@ -396,7 +400,8 @@ module mycpu_top (
         .WB_RegsWrType             (WB_RegsWrType),
         .WB_PC                     (WB_PC ),
         .WB_store_req              (WB_store_req),
-        .WB_ALUOut                 (WB_ALUOut)
+        .WB_ALUOut                 (WB_ALUOut),
+        .WB_Isincache              (WB_Isincache)
     );
 
     TLB U_TLB( 

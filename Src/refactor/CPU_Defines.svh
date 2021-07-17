@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-16 21:16:08
+ * @LastEditTime: 2021-07-17 16:06:38
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -512,6 +512,7 @@ interface MEM_MEM2_Interface();
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAImmeJump;
 	logic                   MEM2_IsInDelaySlot;
+	logic 				    MEM_Isincache;
 
 	modport MEM(  // top MEM使用
 		output  			MEM_ALUOut,		
@@ -525,6 +526,7 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsABranch,
 		output  			MEM_IsAImmeJump,
 		output  			MEM_IsInDelaySlot,
+		output              MEM_Isincache,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
 		input               MEM2_ExcType,
@@ -545,6 +547,8 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsABranch,
 		input  				MEM_IsAImmeJump,
 		input  				MEM_IsInDelaySlot,
+		input               MEM_Isincache,
+		
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
 		output   			MEM2_ExcType,
@@ -566,6 +570,7 @@ interface MEM2_WB_Interface();
 	logic 		[31:0] 		MEM2_DMOut;
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType;
+	logic 					MEM2_Isincache;
   
 	modport MEM2 (  // top MEM2使用
     	output				MEM2_ALUOut,		
@@ -575,7 +580,8 @@ interface MEM2_WB_Interface();
     	output				MEM2_Dst,
 		output				MEM2_DMOut,
 		output              MEM2_OutB,
-		output				MEM2_RegsWrType
+		output				MEM2_RegsWrType,
+		output 				MEM2_Isincache
 	);
 
 	modport WB ( 
@@ -586,7 +592,9 @@ interface MEM2_WB_Interface();
     	input				MEM2_Dst,
 		input				MEM2_DMOut,
 		input               MEM2_OutB,
-		input				MEM2_RegsWrType
+		input				MEM2_RegsWrType,
+		input 				MEM2_Isincache
+
 	);
 
 endinterface

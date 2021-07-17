@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-17 03:22:10
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 16:13:26
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -28,10 +28,13 @@ module Control(
     input logic         DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
     input logic [31:0]  MEM_Addr,                 // MEM级的访存地址信息
     input logic         MEM_loadstore_req,        // MEM级的requset信息
+    input logic         MEM_iscached,
     input logic [31:0]  MEM2_Addr,                // MEM2级的的地址信息
     input logic         MEM2_store_req,           // MEM2级的store信息
+    input logic         MEM2_iscached,
     input logic [31:0]  WB_Addr,                  // WB级的的地址信息            
     input logic         WB_store_req,             // WB级的store信息
+    input logic         WB_iscached,
 //------------------------------------output----------------------------------------------------//
     output logic        PREIF_Wr,
     output logic        IF_Wr,
@@ -68,10 +71,10 @@ module Control(
     
 
     always_comb begin
-        if (MEM_loadstore_req == 1'b1 && MEM2_store_req == 1'b1 && MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
+        if (MEM_loadstore_req == 1'b1 && MEM_iscached && MEM2_store_req == 1'b1 && MEM2_iscached&&MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
             Load_store_stall = 1'b1;
         end
-        else if (MEM_loadstore_req == 1'b1 && WB_store_req == 1'b1 && MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
+        else if (MEM_loadstore_req == 1'b1 && MEM_iscached && WB_store_req == 1'b1 && WB_iscached &&MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
             Load_store_stall = 1'b1;
         end
         else begin

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-17 14:56:18
+ * @LastEditTime: 2021-07-17 15:57:39
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,6 +46,7 @@ module TOP_MEM (
     output logic                 D_IsTLBBufferValid,
     output logic                 D_IsTLBStall,
     output logic                 TLBBuffer_Flush
+    // output logic                 MEM_in_cache
 );
     ExceptinPipeType             MEM_ExceptType;
 	RegsWrType                   MEM_RegsWrType; 
@@ -84,6 +85,8 @@ module TOP_MEM (
 
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     // assign MEM_store_req            = MEM_StoreType.DMWr ;
+    assign MM2Bus.MEM_Isincache     = cpu_dbus.isCache;
+
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
         .rst                     (resetn ),

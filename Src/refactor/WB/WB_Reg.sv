@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-17 10:43:35
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-17 16:04:20
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -28,6 +28,7 @@ module WB_Reg (
     input logic     [31:0]              MEM2_OutB,
 	  input RegsWrType                    MEM2_RegsWrType,//经过exception solvement的新写使能
     input logic                         MEM2_store_req,
+    input logic                         MEM2_Isincache,
 //------------------------------------------------------------------//
     output logic		[31:0] 		          WB_ALUOut,		
     output logic 		[31:0] 		          WB_PC,
@@ -37,7 +38,8 @@ module WB_Reg (
 	  output logic 		[31:0] 		          WB_DMOut,
     output logic    [31:0]              WB_OutB,
 	  output RegsWrType                   WB_RegsWrType,//经过exception solvement的新写使能
-    output logic                        WB_store_req
+    output logic                        WB_store_req,
+    output logic                        WB_Isincache
 );
 
   always_ff @(posedge clk ) begin
@@ -51,6 +53,7 @@ module WB_Reg (
       WB_OutB                           <= 32'b0;
       WB_RegsWrType                     <= '0;
       WB_store_req                      <= '0;
+      WB_Isincache                      <= '0;
     end
     else if( WB_Wr ) begin
       WB_ALUOut                         <= MEM2_ALUOut;
@@ -62,6 +65,7 @@ module WB_Reg (
       WB_OutB                           <= MEM2_OutB;
       WB_RegsWrType                     <= MEM2_RegsWrType;
       WB_store_req                      <= MEM2_store_req;
+      WB_Isincache                      <= MEM2_Isincache;
     end
   end
 
