@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-17 03:22:03
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 12:07:49
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -151,7 +151,7 @@ module mycpu_top (
     CP0_TLB_Interface           CTBus();
     //--------------------------------------------------------------------------------------------------------------//
     Control U_Control (
-        .EX_Entry_Sel           (EX_Entry_Sel),
+        // .EX_Entry_Sel           (EX_Entry_Sel),
         .Flush_Exception        (Flush_Exception ),
         .I_IsTLBStall           (I_IsTLBStall ),
         .D_IsTLBStall           (D_IsTLBStall ),

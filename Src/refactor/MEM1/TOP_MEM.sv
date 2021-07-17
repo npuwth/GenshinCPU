@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-17 02:48:17
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 12:23:48
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -195,7 +195,7 @@ module TOP_MEM (
     );
     //---------------------------------------------------------------------------//
 //-------------------------------------------TO Cache-------------------------------//
-    assign cpu_dbus.wdata                                 =  MM2Bus.MEM_OutB;
+    assign cpu_dbus.wdata                                 = MEM_DataToDcache;
     assign cpu_dbus.tag                                   = Phsy_Daddr[31:12];
     assign {cpu_dbus.index,cpu_dbus.offset}               =  MM2Bus.MEM_ALUOut[11:0];                 // inst_sram_addr_o 虚拟地址
     assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
