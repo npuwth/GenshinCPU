@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-18 01:54:26
+ * @LastEditTime: 2021-07-18 01:56:31
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -200,7 +200,7 @@ module Control(
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
-        end
+        end 
         else if (DH_Stall == 1'b1) begin
             PREIF_Wr      = 1'b0;
             IF_Wr        = 1'b0;
