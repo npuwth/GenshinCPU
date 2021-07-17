@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-03 09:49:07
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-17 13:41:52
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\Code\EXE\MULTDIV.sv
  * 

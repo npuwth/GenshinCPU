@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-14 21:23:09
+ * @LastEditTime: 2021-07-17 14:34:21
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -1669,11 +1669,11 @@ always_comb begin
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
-                            ReservedInstruction:1'b0,
-                            CoprocessorUnusable:1'b1,
+                            ReservedInstruction:1'b1,
+                            CoprocessorUnusable:1'b0,
                             Overflow:1'b0,
                             Syscall:1'b0,
-                            Eret:1'b1,
+                            Eret:1'b0,
                             WrWrongAddressinMEM:1'b0,
                             RdWrongAddressinMEM:1'b0,
                             TLBRefillinIF:ID_ExceptType.TLBRefillinIF,

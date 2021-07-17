@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-17 02:48:59
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 12:19:08
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -93,7 +93,7 @@ typedef enum logic [1:0] {
         if (Exc_state == NORMAL &&  MEM_Flush == `FlushEnable) begin
             Exc_state_next = EXC_CACHE_FLUSH;
         end
-        else if (Exc_state == EXC_CACHE_FLUSH) begin
+        else begin
             Exc_state_next = NORMAL;
         end
     end
