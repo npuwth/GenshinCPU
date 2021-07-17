@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-27 20:08:23
- * @LastEditTime: 2021-07-16 20:18:04
+ * @LastEditTime: 2021-07-16 22:03:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,14 +21,15 @@ module TLB
     input  logic                       rst,
     input  logic  [31:13]              I_VPN2,         //来自ITLB Buffer
     input  logic  [31:13]              D_VPN2,         //来自DTLB Buffer
+    input  logic                       MEM_IsTLBP,
     input  logic                       MEM_IsTLBW, 
     input  logic                       MEM_TLBWIorR,
-    output logic                       s0_found,       
-    output TLB_Entry                   I_TLBEntry,     
-    output logic                       s1_found,
-    output TLB_Entry                   D_TLBEntry,
+    CP0_TLB_Interface                  CTBus,
+    output logic                       s0_found,       //输出给ITLB Buffer
+    output TLB_Entry                   I_TLBEntry,     //输出给ITLB Buffer
+    output logic                       s1_found,       //输出给DTLB Buffer
+    output TLB_Entry                   D_TLBEntry      //输出给DTLB Buffer
 );
-    
     logic [18:0]  tlb_vpn2             [TLBNUM-1:0];
     logic [7:0]   tlb_asid             [TLBNUM-1:0];
     logic         tlb_g                [TLBNUM-1:0];
@@ -43,6 +44,24 @@ module TLB
     logic [TLBNUM-1:0]                 match0;
     logic [TLBNUM-1:0]                 match1;
 
+    logic [3:0]                        w_index;
+    logic [31:13]                      s1_vpn2;
+    logic [3:0]                        s0_index;
+    logic [3:0]                        s1_index;
+//--------------------------------w_index生成逻辑-----------------------------------------//
+    MUX2to1#(4) U_MUX_windex ( 
+        .d0                   (CTBus.CP0_index),
+        .d1                   (CTBus.CP0_random),
+        .sel2_to_1            (MEM_TLBWIorR),
+        .y                    (w_index)
+    );
+//--------------------------------复用访存实现TLBP----------------------------------------//
+    MUX2to1#(19) U_MUX_s1vpn (
+        .d0                   (I_VPN2),
+        .d1                   (CTBus.CP0_vpn2),
+        .sel2_to_1            (MEM_IsTLBP),//
+        .y                    (s1_vpn2)
+    );
 //----------------------------------write port-------------------------------------------//
 `ifdef  EN_TLBRST //开启TLB复位
     genvar i;
@@ -64,17 +83,17 @@ module TLB
                     tlb_v1[i]   <= '0;
     			end else begin
     				if( MEM_IsTLBW && i == w_index) begin
-    				tlb_vpn2[i] <= W_TLBEntry.VPN2;
-                    tlb_asid[i] <= W_TLBEntry.ASID;
-                    tlb_g[i]    <= W_TLBEntry.G;
-                    tlb_pfn0[i] <= W_TLBEntry.PFN0;
-                    tlb_c0[i]   <= W_TLBEntry.C0;
-                    tlb_d0[i]   <= W_TLBEntry.D0;
-                    tlb_v0[i]   <= W_TLBEntry.V0;
-                    tlb_pfn1[i] <= W_TLBEntry.PFN1;
-                    tlb_c1[i]   <= W_TLBEntry.C1;
-                    tlb_d1[i]   <= W_TLBEntry.D1;
-                    tlb_v1[i]   <= W_TLBEntry.V1;
+    				tlb_vpn2[i] <= CTBus.CP0_vpn2;
+                    tlb_asid[i] <= CTBus.CP0_asid;
+                    tlb_g[i]    <= CTBus.CP0_g0 & CTBus.CP0_g1;
+                    tlb_pfn0[i] <= CTBus.CP0_pfn0;
+                    tlb_c0[i]   <= CTBus.CP0_c0;
+                    tlb_d0[i]   <= CTBus.CP0_d0;
+                    tlb_v0[i]   <= CTBus.CP0_v0;
+                    tlb_pfn1[i] <= CTBus.CP0_pfn1;
+                    tlb_c1[i]   <= CTBus.CP0_c1;
+                    tlb_d1[i]   <= CTBus.CP0_d1;
+                    tlb_v1[i]   <= CTBus.CP0_v1;
                     end
     			end
     		end
@@ -84,51 +103,52 @@ module TLB
 `ifndef EN_TLBRST //不开启TLB复位
     always_ff @(posedge clk ) begin
             if(MEM_IsTLBW) begin
-                tlb_vpn2[w_index] <= W_TLBEntry.VPN2;
-                tlb_asid[w_index] <= W_TLBEntry.ASID;
-                tlb_g[w_index]    <= W_TLBEntry.G;
-                tlb_pfn0[w_index] <= W_TLBEntry.PFN0;
-                tlb_c0[w_index]   <= W_TLBEntry.C0;
-                tlb_d0[w_index]   <= W_TLBEntry.D0;
-                tlb_v0[w_index]   <= W_TLBEntry.V0;
-                tlb_pfn1[w_index] <= W_TLBEntry.PFN1;
-                tlb_c1[w_index]   <= W_TLBEntry.C1;
-                tlb_d1[w_index]   <= W_TLBEntry.D1;
-                tlb_v1[w_index]   <= W_TLBEntry.V1;
+                    tlb_vpn2[w_index] <= CTBus.CP0_vpn2;
+                    tlb_asid[w_index] <= CTBus.CP0_asid;
+                    tlb_g[w_index]    <= CTBus.CP0_g0 & CTBus.CP0_g1;
+                    tlb_pfn0[w_index] <= CTBus.CP0_pfn0;
+                    tlb_c0[w_index]   <= CTBus.CP0_c0;
+                    tlb_d0[w_index]   <= CTBus.CP0_d0;
+                    tlb_v0[w_index]   <= CTBus.CP0_v0;
+                    tlb_pfn1[w_index] <= CTBus.CP0_pfn1;
+                    tlb_c1[w_index]   <= CTBus.CP0_c1;
+                    tlb_d1[w_index]   <= CTBus.CP0_d1;
+                    tlb_v1[w_index]   <= CTBus.CP0_v1;
             end
         end
 `endif 
 //---------------------------------read port-------------------------------------------------------//
     always_comb begin
-        R_TLBEntry.VPN2 = tlb_vpn2[CTBus.CP0_index];
-        R_TLBEntry.ASID = tlb_asid[CTBus.CP0_index];
-        R_TLBEntry.G    = tlb_g[CTBus.CP0_index];
-        R_TLBEntry.PFN0 = tlb_pfn0[CTBus.CP0_index];
-        R_TLBEntry.C0   = tlb_c0[CTBus.CP0_index];
-        R_TLBEntry.D0   = tlb_d0[CTBus.CP0_index];
-        R_TLBEntry.V0   = tlb_v0[CTBus.CP0_index];
-        R_TLBEntry.PFN1 = tlb_pfn1[CTBus.CP0_index];
-        R_TLBEntry.C1   = tlb_c1[CTBus.CP0_index];
-        R_TLBEntry.D1   = tlb_d1[CTBus.CP0_index];
-        R_TLBEntry.V1   = tlb_v1[CTBus.CP0_index];    
+        CTBus.TLB_vpn2 = tlb_vpn2[CTBus.CP0_index];
+        CTBus.TLB_asid = tlb_asid[CTBus.CP0_index];
+        CTBus.TLB_pfn0 = tlb_pfn0[CTBus.CP0_index];
+        CTBus.TLB_c0   = tlb_c0[CTBus.CP0_index];
+        CTBus.TLB_d0   = tlb_d0[CTBus.CP0_index];
+        CTBus.TLB_v0   = tlb_v0[CTBus.CP0_index];
+        CTBus.TLB_g0   = tlb_g[CTBus.CP0_index];
+        CTBus.TLB_pfn1 = tlb_pfn1[CTBus.CP0_index];
+        CTBus.TLB_c1   = tlb_c1[CTBus.CP0_index];
+        CTBus.TLB_d1   = tlb_d1[CTBus.CP0_index];
+        CTBus.TLB_v1   = tlb_v1[CTBus.CP0_index];    
+        CTBus.TLB_g1   = tlb_g[CTBus.CP0_index];
     end
 //----------------------------------search port1-------------------------------------------------------//
-    assign match0[ 0] = (s0_vpn2 == tlb_vpn2[ 0]) && ((CTBus.CP0_asid == tlb_asid[ 0]) || tlb_g[ 0]);
-    assign match0[ 1] = (s0_vpn2 == tlb_vpn2[ 1]) && ((CTBus.CP0_asid == tlb_asid[ 1]) || tlb_g[ 1]);
-    assign match0[ 2] = (s0_vpn2 == tlb_vpn2[ 2]) && ((CTBus.CP0_asid == tlb_asid[ 2]) || tlb_g[ 2]);
-    assign match0[ 3] = (s0_vpn2 == tlb_vpn2[ 3]) && ((CTBus.CP0_asid == tlb_asid[ 3]) || tlb_g[ 3]);
-    assign match0[ 4] = (s0_vpn2 == tlb_vpn2[ 4]) && ((CTBus.CP0_asid == tlb_asid[ 4]) || tlb_g[ 4]);
-    assign match0[ 5] = (s0_vpn2 == tlb_vpn2[ 5]) && ((CTBus.CP0_asid == tlb_asid[ 5]) || tlb_g[ 5]);
-    assign match0[ 6] = (s0_vpn2 == tlb_vpn2[ 6]) && ((CTBus.CP0_asid == tlb_asid[ 6]) || tlb_g[ 6]);
-    assign match0[ 7] = (s0_vpn2 == tlb_vpn2[ 7]) && ((CTBus.CP0_asid == tlb_asid[ 7]) || tlb_g[ 7]);
-    assign match0[ 8] = (s0_vpn2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
-    assign match0[ 9] = (s0_vpn2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
-    assign match0[10] = (s0_vpn2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
-    assign match0[11] = (s0_vpn2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
-    assign match0[12] = (s0_vpn2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
-    assign match0[13] = (s0_vpn2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
-    assign match0[14] = (s0_vpn2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
-    assign match0[15] = (s0_vpn2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);
+    assign match0[ 0] = (I_VPN2 == tlb_vpn2[ 0]) && ((CTBus.CP0_asid == tlb_asid[ 0]) || tlb_g[ 0]);
+    assign match0[ 1] = (I_VPN2 == tlb_vpn2[ 1]) && ((CTBus.CP0_asid == tlb_asid[ 1]) || tlb_g[ 1]);
+    assign match0[ 2] = (I_VPN2 == tlb_vpn2[ 2]) && ((CTBus.CP0_asid == tlb_asid[ 2]) || tlb_g[ 2]);
+    assign match0[ 3] = (I_VPN2 == tlb_vpn2[ 3]) && ((CTBus.CP0_asid == tlb_asid[ 3]) || tlb_g[ 3]);
+    assign match0[ 4] = (I_VPN2 == tlb_vpn2[ 4]) && ((CTBus.CP0_asid == tlb_asid[ 4]) || tlb_g[ 4]);
+    assign match0[ 5] = (I_VPN2 == tlb_vpn2[ 5]) && ((CTBus.CP0_asid == tlb_asid[ 5]) || tlb_g[ 5]);
+    assign match0[ 6] = (I_VPN2 == tlb_vpn2[ 6]) && ((CTBus.CP0_asid == tlb_asid[ 6]) || tlb_g[ 6]);
+    assign match0[ 7] = (I_VPN2 == tlb_vpn2[ 7]) && ((CTBus.CP0_asid == tlb_asid[ 7]) || tlb_g[ 7]);
+    assign match0[ 8] = (I_VPN2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
+    assign match0[ 9] = (I_VPN2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
+    assign match0[10] = (I_VPN2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
+    assign match0[11] = (I_VPN2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
+    assign match0[12] = (I_VPN2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
+    assign match0[13] = (I_VPN2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
+    assign match0[14] = (I_VPN2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
+    assign match0[15] = (I_VPN2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);
     //--------------------s0_found生成逻辑，port0是否hit--------------------------------------------------// 
     always_comb begin          
         if(match0 == 0)
@@ -172,22 +192,22 @@ module TLB
     end
 
 //-----------------------------------search port2------------------------------------------------------//
-    assign match1[ 0] = (s1_vpn2 == tlb_vpn2[ 0]) && ((s1_asid == tlb_asid[ 0]) || tlb_g[ 0]);
-    assign match1[ 1] = (s1_vpn2 == tlb_vpn2[ 1]) && ((s1_asid == tlb_asid[ 1]) || tlb_g[ 1]);
-    assign match1[ 2] = (s1_vpn2 == tlb_vpn2[ 2]) && ((s1_asid == tlb_asid[ 2]) || tlb_g[ 2]);
-    assign match1[ 3] = (s1_vpn2 == tlb_vpn2[ 3]) && ((s1_asid == tlb_asid[ 3]) || tlb_g[ 3]);
-    assign match1[ 4] = (s1_vpn2 == tlb_vpn2[ 4]) && ((s1_asid == tlb_asid[ 4]) || tlb_g[ 4]);
-    assign match1[ 5] = (s1_vpn2 == tlb_vpn2[ 5]) && ((s1_asid == tlb_asid[ 5]) || tlb_g[ 5]);
-    assign match1[ 6] = (s1_vpn2 == tlb_vpn2[ 6]) && ((s1_asid == tlb_asid[ 6]) || tlb_g[ 6]);
-    assign match1[ 7] = (s1_vpn2 == tlb_vpn2[ 7]) && ((s1_asid == tlb_asid[ 7]) || tlb_g[ 7]);
-    assign match1[ 8] = (s1_vpn2 == tlb_vpn2[ 8]) && ((s1_asid == tlb_asid[ 8]) || tlb_g[ 8]);
-    assign match1[ 9] = (s1_vpn2 == tlb_vpn2[ 9]) && ((s1_asid == tlb_asid[ 9]) || tlb_g[ 9]);
-    assign match1[10] = (s1_vpn2 == tlb_vpn2[10]) && ((s1_asid == tlb_asid[10]) || tlb_g[10]);
-    assign match1[11] = (s1_vpn2 == tlb_vpn2[11]) && ((s1_asid == tlb_asid[11]) || tlb_g[11]);
-    assign match1[12] = (s1_vpn2 == tlb_vpn2[12]) && ((s1_asid == tlb_asid[12]) || tlb_g[12]);
-    assign match1[13] = (s1_vpn2 == tlb_vpn2[13]) && ((s1_asid == tlb_asid[13]) || tlb_g[13]);
-    assign match1[14] = (s1_vpn2 == tlb_vpn2[14]) && ((s1_asid == tlb_asid[14]) || tlb_g[14]);
-    assign match1[15] = (s1_vpn2 == tlb_vpn2[15]) && ((s1_asid == tlb_asid[15]) || tlb_g[15]);     
+    assign match1[ 0] = (s1_vpn2 == tlb_vpn2[ 0]) && ((CTBus.CP0_asid == tlb_asid[ 0]) || tlb_g[ 0]);
+    assign match1[ 1] = (s1_vpn2 == tlb_vpn2[ 1]) && ((CTBus.CP0_asid == tlb_asid[ 1]) || tlb_g[ 1]);
+    assign match1[ 2] = (s1_vpn2 == tlb_vpn2[ 2]) && ((CTBus.CP0_asid == tlb_asid[ 2]) || tlb_g[ 2]);
+    assign match1[ 3] = (s1_vpn2 == tlb_vpn2[ 3]) && ((CTBus.CP0_asid == tlb_asid[ 3]) || tlb_g[ 3]);
+    assign match1[ 4] = (s1_vpn2 == tlb_vpn2[ 4]) && ((CTBus.CP0_asid == tlb_asid[ 4]) || tlb_g[ 4]);
+    assign match1[ 5] = (s1_vpn2 == tlb_vpn2[ 5]) && ((CTBus.CP0_asid == tlb_asid[ 5]) || tlb_g[ 5]);
+    assign match1[ 6] = (s1_vpn2 == tlb_vpn2[ 6]) && ((CTBus.CP0_asid == tlb_asid[ 6]) || tlb_g[ 6]);
+    assign match1[ 7] = (s1_vpn2 == tlb_vpn2[ 7]) && ((CTBus.CP0_asid == tlb_asid[ 7]) || tlb_g[ 7]);
+    assign match1[ 8] = (s1_vpn2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
+    assign match1[ 9] = (s1_vpn2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
+    assign match1[10] = (s1_vpn2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
+    assign match1[11] = (s1_vpn2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
+    assign match1[12] = (s1_vpn2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
+    assign match1[13] = (s1_vpn2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
+    assign match1[14] = (s1_vpn2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
+    assign match1[15] = (s1_vpn2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);     
     //--------------------s1_found生成逻辑，port1是否hit--------------------------------------------------//    
     always_comb begin           
         if(match1 == 0)
@@ -207,6 +227,9 @@ module TLB
     assign D_TLBEntry.C1           = tlb_c1   [s1_index];
     assign D_TLBEntry.D1           = tlb_d1   [s1_index];
     assign D_TLBEntry.V1           = tlb_v1   [s1_index];
+
+    assign CTBus.TLB_index         = s1_index;
+    assign CTBus.TLB_s1found       = s1_found;
     //------------------------s1_index生成逻辑-----------------------------------------------------------//
     always_comb begin          
         unique case(match1)

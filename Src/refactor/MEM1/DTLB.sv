@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-16 19:55:26
+ * @LastEditTime: 2021-07-17 10:01:12
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,13 +28,13 @@ module DTLB (
     output logic                  D_IsCached,
     output logic                  D_IsTLBBufferValid,
     output logic                  D_IsTLBStall,
-    output logic [1:0]            MEM_TLBExceptType,
+    output logic [2:0]            MEM_TLBExceptType,
     output logic [31:13]          D_VPN2
 );
 
     logic                         D_TLBState;
     logic                         D_TLBNextState;
-    logic                         D_TLBBuffer;
+    TLB_Buffer                    D_TLBBuffer;
     logic                         D_TLBBuffer_Wr;
     logic                         D_TLBBufferHit;
 //-----------------TLB Buffer Hit信号的生成-------------------------------//
@@ -165,7 +165,7 @@ module DTLB (
             D_IsTLBBufferValid                              = 1'b0;
             MEM_TLBExceptType                               = `MEM_TLBNoneEX;
         end
-        else if(D_TLBBufferHit == 1'b1 && ((CMBus.CP0_asid == D_TLBBuffer.ASID) || D_TLBBuffer.G)) begin //说明TLB Buffer对上了
+        else if(D_TLBBufferHit == 1'b1 ) begin //说明TLB Buffer对上了
             if(Virt_Daddr[12] == 1'b0) begin
                 if(D_TLBBuffer.V0 == 1'b0) begin //无效异常
                     if(MEM_LoadType.ReadMem == 1'b1) begin
@@ -216,7 +216,6 @@ module DTLB (
             else begin
                 D_IsTLBBufferValid                         = 1'b0;
                 MEM_TLBExceptType                          = `MEM_WrTLBRefill;
-
             end
         end
     end

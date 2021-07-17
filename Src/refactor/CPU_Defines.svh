@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-16 20:02:57
+ * @LastEditTime: 2021-07-16 21:16:08
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -269,7 +269,21 @@ typedef struct packed {  //一个TLB项
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
 //-------------------------------------------------------------------------------------------------//
+interface PREIF_IF_Interface();
+	logic       [31:0]      PREIF_PC;
+	ExceptinPipeType        PREIF_ExceptType;
 
+	modport PREIF ( 
+	output                  PREIF_PC,
+	output                  PREIF_ExceptType
+	);
+
+	modport IF ( 
+	input                   PREIF_PC,
+	input                   PREIF_ExceptType
+	);
+
+endinterface
 
 interface IF_ID_Interface();
 
@@ -640,7 +654,7 @@ interface CP0_TLB_Interface ();
 	input                   TLB_s1found
 	);
 
-	modport MMU ( 
+	modport TLB ( 
     input                   CP0_vpn2,
 	input                   CP0_asid,
 	input                   CP0_pfn0,

@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-15 21:44:30
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 17:40:42
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -18,13 +18,15 @@ module TOP_MEM2 (
     input logic                  resetn,
     input logic                  MEM2_Flush,
     input logic                  MEM2_Wr,
+    input logic                  MEM_store_req,
     MEM_MEM2_Interface           MM2Bus,
     MEM2_WB_Interface            M2WBus,
     CPU_Bus_Interface            cpu_dbus,
     //--------------------output--------------------//
     output logic [31:0]          MEM2_Result,  // 用于旁路数据
     output logic [4:0]           MEM2_Dst,
-    output RegsWrType            MEM2_RegsWrType
+    output RegsWrType            MEM2_RegsWrType,
+    output logic                 MEM2_store_req
 );
     MEM2_Reg U_MEM2_REG(
     .clk                    (clk ),
@@ -63,6 +65,7 @@ module TOP_MEM2 (
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;
     // output to WB
     assign M2WBus.MEM2_DMOut      = cpu_dbus.rdata;       //读取结果直接放入DMOut
+    assign MEM2_store_req         = MEM_store_req;
     //-------------------------------用于旁路的多选器-----------------------//
     MUX4to1 #(32) U_MUXINMEM2(
         .d0                  (M2WBus.MEM2_PC + 8),                                     // JAL,JALR等指令将PC+8写回RF

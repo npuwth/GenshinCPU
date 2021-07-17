@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-16 12:46:30
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 10:05:16
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -19,21 +19,20 @@ module TOP_MEM (
     input logic                  resetn,
     input logic                  MEM_Flush,
     input logic                  MEM_Wr,
-    input logic  [31:0]          Phsy_Daddr, 
-    input logic                  D_IsCached,
+
     input logic  [5:0]           Interrupt,//中断
-    input logic  [2:0]           MEM_TLBExceptType,
     input logic                  MEM_DisWr,
+    input TLB_Entry              D_TLBEntry,
+    input logic                  s1_found,
+    
     EXE_MEM_Interface            EMBus,
     MEM_MEM2_Interface           MM2Bus,
-    CP0_MMU_Interface            CMBus,
+    CP0_TLB_Interface            CTBus,
     CPU_Bus_Interface            cpu_dbus,
     AXI_Bus_Interface            axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
-
     output logic                 Flush_Exception,
     output logic [2:0]           EX_Entry_Sel,
-    output logic [31:0]          Virt_Daddr,
     output logic                 MEM_IsTLBP,
     output logic                 MEM_IsTLBW,
     output logic                 MEM_TLBWIorR,
@@ -42,7 +41,11 @@ module TOP_MEM (
     output LoadType              MEM_LoadType,
     output StoreType             MEM_StoreType,
     output logic [4:0]           MEM_rt,
-    output logic [31:0]          Exception_Vector   
+    output logic [31:0]          Exception_Vector,
+    output logic [31:13]         D_VPN2,
+    output logic                 D_IsTLBBufferValid,
+    output logic                 D_IsTLBStall,
+    output logic                 TLBBuffer_Flush
 );
     ExceptinPipeType             MEM_ExceptType;
 	RegsWrType                   MEM_RegsWrType; 
@@ -63,6 +66,9 @@ module TOP_MEM (
     logic [7:2]                  CP0_Cause_IP7_2;
     logic [1:0]                  CP0_Cause_IP1_0;
     logic [31:0]                 CP0_Ebase;
+    logic [2:0]                  MEM_TLBExceptType;
+    logic [31:0]                 Phsy_Daddr;
+    logic                        D_IsCached;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
@@ -76,6 +82,8 @@ module TOP_MEM (
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MM2Bus.MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
 
+    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
+    // assign MEM_store_req            = MEM_StoreType.DMWr ;
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
         .rst                     (resetn ),
@@ -159,7 +167,7 @@ module TOP_MEM (
         .MEM_Result             (MEM_Result ),
         .MEM_IsTLBP             (MEM_IsTLBP ),
         .MEM_IsTLBR             (MEM_IsTLBR ),
-        .CMBus                  (CMBus.CP0 ),
+        .CTBus                  (CTBus.CP0 ),
         .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
         .MEM2_PC                (MM2Bus.MEM2_PC ),
         .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot ),
@@ -179,7 +187,7 @@ module TOP_MEM (
     MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                      (MM2Bus.MEM_PC + 8),
         .d1                      (MM2Bus.MEM_ALUOut),
-        .d2                      (RFHILO_Bus       ),
+        .d2                      (MM2Bus.MEM_OutB  ),
         .d3                      ('x               ),
         .sel4_to_1               (MM2Bus.MEM_WbSel ),
         .y                       (MEM_Result       )
@@ -196,26 +204,44 @@ module TOP_MEM (
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
     Dcache #(
-    .DATA_WIDTH                  (32 ),
-    .LINE_WORD_NUM               (`DCACHE_LINE_WORD ),
-    .ASSOC_NUM                   (`DCACHE_SET_ASSOC ),
-    .WAY_SIZE                    (4*1024*8 )
+        .DATA_WIDTH              (32 ),
+        .LINE_WORD_NUM           (`DCACHE_LINE_WORD ),
+        .ASSOC_NUM               (`DCACHE_SET_ASSOC ),
+        .WAY_SIZE                (4*1024*8 )
     )
     U_Dcache (
-    .clk                         (clk ),
-    .resetn                      (resetn ),
-    .axi_ubus                    (axi_ubus ),
-    .cpu_bus                     (cpu_dbus ),
-    .axi_bus                     ( axi_dbus)
+        .clk                     (clk ),
+        .resetn                  (resetn ),
+        .axi_ubus                (axi_ubus ),
+        .cpu_bus                 (cpu_dbus ),
+        .axi_bus                 ( axi_dbus)
     );
 
     MUX4to1 #(32) U_MUX_OutB2 ( 
-        .d0             (RFHILO_Bus),
-        .d1             (RFHILO_Bus),
-        .d2             (RFHILO_Bus),
-        .d3             (CP0_Bus),
-        .sel4_to_1      (MEM_RegsReadSel),
-        .y              (MM2Bus.MEM_OutB)
+        .d0                      (RFHILO_Bus),
+        .d1                      (RFHILO_Bus),
+        .d2                      (RFHILO_Bus),
+        .d3                      (CP0_Bus),
+        .sel4_to_1               (MEM_RegsReadSel),
+        .y                       (MM2Bus.MEM_OutB)
     );
+
+    DTLB U_DTLB (
+        .clk                     (clk ),
+        .rst                     (rst ),
+        .Virt_Daddr              (MM2Bus.MEM_ALUOut ),
+        .TLBBuffer_Flush         (TLBBuffer_Flush ),
+        .D_TLBEntry              (D_TLBEntry ),
+        .s1_found                (s1_found ),
+        .MEM_LoadType            (MEM_LoadType ),
+        .MEM_StoreType           (MEM_StoreType ),
+        .Phsy_Daddr              (Phsy_Daddr ),
+        .D_IsCached              (D_IsCached ),
+        .D_IsTLBBufferValid      (D_IsTLBBufferValid ),
+        .D_IsTLBStall            (D_IsTLBStall ),
+        .MEM_TLBExceptType       (MEM_TLBExceptType ),
+        .D_VPN2                  ( D_VPN2)
+  );
+
 
 endmodule

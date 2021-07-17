@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-15 21:13:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-16 19:11:10
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -241,7 +241,7 @@ assign busy           = busy_cache | busy_uncache;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
-assign req_buffer_en = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
+assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata =  axi_bus.ret_data ;
 assign tagv_wdata =  {1'b1,req_buffer.tag} ;

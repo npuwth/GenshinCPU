@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-07-16 19:54:27
+ * @LastEditTime: 2021-07-17 09:43:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -48,10 +48,10 @@ module ITLB (
         end
     end
 
-    assign I_IsTLBStall    = ~ I_TLBBufferHit;
+    assign I_IsTLBStall    = ~ I_TLBBufferHit;         //在TLB Buffer miss时下一拍进行search，需要进行阻塞
 
 //---------------状态机控制逻辑-------------------------------------//
-    assign I_TLBBuffer_Wr  = (I_TLBState == `SEARCH);
+    assign I_TLBBuffer_Wr  = (I_TLBState == `SEARCH);  //在search状态下打开TLB Buffer的写使能
 
     always_comb begin
         if(rst == `RstEnable) begin
@@ -158,7 +158,7 @@ module ITLB (
             I_IsTLBBufferValid                              = 1'b0;
             IF_TLBExceptType                                = `IF_TLBNoneEX;
         end
-        else if(I_TLBBuffer.IsInTLB == 1'b1 && ((CMBus.CP0_asid == I_TLBBuffer.ASID) || I_TLBBuffer.G)) begin //说明TLB Buffer里面命中了，否则是缺页
+        else if(I_TLBBuffer.IsInTLB == 1'b1 ) begin //说明TLB Buffer里面命中了，否则是缺页
             if(Virt_Iaddr[12] == 1'b0) begin
                 if(I_TLBBuffer.V0 == 1'b0) begin //无效异常
                     I_IsTLBBufferValid                      = 1'b0; 
