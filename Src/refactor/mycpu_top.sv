@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-16 18:00:59
+ * @LastEditTime: 2021-07-17 03:22:03
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -116,25 +116,20 @@ module mycpu_top (
     logic [31:0]               WB_ALUOut;
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
     logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
-    logic [31:0]               Virt_Daddr;                //传至TLBMMU，用于TLB转换
-    logic [31:0]               Phsy_Daddr;                //传至TLBMMU，用于TLB转换
-    logic [31:0]               Virt_Iaddr;                //传至TLBMMU，用于TLB转换
-    logic [31:0]               Phsy_Iaddr;                //传至TLBMMU，用于TLB转换
-    logic                      I_IsCached;                //指示Cache属性
-    logic                      D_IsCached;                //指示Cache属性
-    logic                      I_IsTLBException;          //指示TLB例外
-    logic                      D_IsTLBException;          //指示TLB例外
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
     logic                      MEM_TLBWIorR;              //表示是TLBWI还是TLBWR
     logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
-    logic [1:0]                IF_TLBExceptType;
-    logic [2:0]                MEM_TLBExceptType; 
-    LoadType                   MEM_LoadType;              //用于TLB例外的判断 & load指令的数据冒险
-    StoreType                  MEM_StoreType;             //用于TLB例外的判断 
+    LoadType                   MEM_LoadType;              //用于Control & load指令的数据冒险
+    StoreType                  MEM_StoreType;             //用于Control 
     logic                      I_IsTLBBufferValid;        //表示是否向Cache发请求
     logic                      D_IsTLBBufferValid;        //表示是否向Cache发请求
     logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
+    logic                      TLBBuffer_Flush;
+    TLB_Entry                  I_TLBEntry;
+    TLB_Entry                  D_TLBEntry;
+    logic [31:13]              I_VPN2;
+    logic [31:13]              D_VPN2;
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -147,15 +142,16 @@ module mycpu_top (
     AXI_Bus_Interface           axi_dbus();
     AXI_UNCACHE_Interface       axi_ubus();
     AXI_UNCACHE_Interface       axi_iubus();
+    PREIF_IF_Interface          PIBus();
     IF_ID_Interface             IIBus();
     ID_EXE_Interface            IEBus();
     EXE_MEM_Interface           EMBus();
     MEM_MEM2_Interface          MM2Bus();
     MEM2_WB_Interface           M2WBus();
-    CP0_MMU_Interface           CMBus();
+    CP0_TLB_Interface           CTBus();
     //--------------------------------------------------------------------------------------------------------------//
     Control U_Control (
-        
+        .EX_Entry_Sel           (EX_Entry_Sel),
         .Flush_Exception        (Flush_Exception ),
         .I_IsTLBStall           (I_IsTLBStall ),
         .D_IsTLBStall           (D_IsTLBStall ),
@@ -192,11 +188,12 @@ module mycpu_top (
         .WB_DisWr               (WB_DisWr ),
 
         .IcacheFlush            (cpu_ibus.flush),  
-        .DcacheFlush            (cpu_dbus.flush),
+        // .DcacheFlush            (cpu_dbus.flush),
         .IReq_valid             (IReq_valid),
         .DReq_valid             (DReq_valid),
         .ICacheStall            (cpu_ibus.stall),
         .DCacheStall            (cpu_dbus.stall)
+        // .HiLo_Not_Flush         (HiLo_Not_Flush)
     );
     
     assign cpu_ibus.valid =  IReq_valid & I_IsTLBBufferValid;
@@ -254,7 +251,7 @@ module mycpu_top (
     TOP_PREIF U_TOP_PREIF ( 
         .clk                       (aclk ),
         .resetn                    (aresetn ),
-        .PREIF_Wr                  (PREIF_Wr ),
+        .PREIF_Wr                  (PREIF_Wr ),//也就是PC写使能
         .MEM_CP0Epc                (CP0_EPC ),
         .EXE_BusA_L1               (EXE_BusA_L1 ),
         .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
@@ -265,16 +262,19 @@ module mycpu_top (
         .ID_Instr                  (ID_Instr ),
         .EXE_PC                    (EXE_PC ),
         .EXE_Imm32                 (EXE_Imm32 ),
-        .Phsy_Iaddr                (Phsy_Iaddr ),
-        .I_IsCached                (I_IsCached ),
         .MEM_PC                    (MEM_PC ),
         .Exception_Vector          (Exception_Vector ),
+        .I_TLBEntry                (I_TLBEntry ),
+        .s0_found                  (s0_found ),
+        .TLBBuffer_Flush           (TLBBuffer_Flush ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         .axi_iubus                 (axi_iubus),
-        //-------------------------------output-------------------//
-        .Virt_Iaddr                (Virt_Iaddr ),
-        .PREIF_PC                  (PREIF_PC )
+        .PIBus                     (PIBus.PREIF ),
+        //-----------------------output-------------------------------//
+        .I_VPN2                    (I_VPN2 ),
+        .I_IsTLBBufferValid        (I_IsTLBBufferValid ),
+        .I_IsTLBStall              (I_IsTLBStall )
     );
 
     TOP_IF U_TOP_IF (
@@ -282,9 +282,7 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .IF_Wr                     (IF_Wr ),
         .IF_Flush                  (IF_Flush ),
-        .PREIF_PC                  (PREIF_PC ),
-        .IF_TLBExceptType          (IF_TLBExceptType),
-        //-------------------------------output-------------------//
+        .PIBus                     (PIBus.IF ),
         .IIBus                     (IIBus.IF ),
         .cpu_ibus                  (cpu_ibus)
     );
@@ -303,10 +301,6 @@ module mycpu_top (
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
-        // .DH_PreIFWr                (DH_PreIFWr),
-        // .DH_IFWr                   (DH_IFWr),
-        // .DH_IDWr                   (DH_IDWr),
-        // .EXE_Flush_DataHazard      (EXE_Flush_DataHazard)
         .DH_Stall                  (DH_Stall),
         .ID_PC                     (ID_PC),
         .ID_Instr                  (ID_Instr)
@@ -342,30 +336,34 @@ module mycpu_top (
         .MEM_Flush                 (MEM_Flush ),
         .MEM_Wr                    (MEM_Wr ),
 
-        .Phsy_Daddr                (Phsy_Daddr),
-        .D_IsCached                (D_IsCached),
-        .Interrupt                 (ext_int),
-        .MEM_TLBExceptType         (MEM_TLBExceptType),
-        .MEM_DisWr                 (MEM_DisWr),
+        .Interrupt                 (ext_int ),
+        .MEM_DisWr                 (MEM_DisWr ),
+        .D_TLBEntry                (D_TLBEntry ),
+        .s1_found                  (s1_found ),
         .EMBus                     (EMBus.MEM ),
         .MM2Bus                    (MM2Bus.MEM ),
-        .CMBus                     (CMBus ),
+        .CTBus                     (CTBus ),
         .cpu_dbus                  (cpu_dbus),
         .axi_dbus                  (axi_dbus),
         .axi_ubus                  (axi_ubus),
         //--------------------------output-------------------------//
         .Flush_Exception           (Flush_Exception),
         .EX_Entry_Sel              (EX_Entry_Sel ),
-        .Virt_Daddr                (Virt_Daddr),
-        .MEM_IsTLBP                (MEM_IsTLBP),
-        .MEM_IsTLBW                (MEM_IsTLBW),
+        .MEM_IsTLBP                (MEM_IsTLBP ),
+        .MEM_IsTLBW                (MEM_IsTLBW ),
         .MEM_TLBWIorR              (MEM_TLBWIorR),
-        .MEM_PC                    (MEM_PC),
-        .CP0_EPC                   (CP0_EPC),
-        .MEM_LoadType              (MEM_LoadType),
-        .MEM_rt                    (MEM_rt),
-        .MEM_StoreType             (MEM_StoreType)
+        .MEM_PC                    (MEM_PC ),
+        .CP0_EPC                   (CP0_EPC ),
+        .MEM_LoadType              (MEM_LoadType ),
+        .MEM_StoreType             (MEM_StoreType ),
+        .MEM_rt                    (MEM_rt ),
+        .Exception_Vector          (Exception_Vector ),
+        .D_VPN2                    (D_VPN2 ),
+        .D_IsTLBBufferValid        (D_IsTLBBufferValid ),
+        .D_IsTLBStall              (D_IsTLBStall ),
+        .TLBBuffer_Flush           (TLBBuffer_Flush)
     );
+    
     TOP_MEM2 U_TOP_MEM2 (
         .clk                       (aclk ),
         .resetn                    (aresetn ),
@@ -401,66 +399,21 @@ module mycpu_top (
         .WB_ALUOut                 (WB_ALUOut)
     );
 
-    TLBMMU U_TLBMMU (
-      .clk                         (aclk ),
-      .rst                         (aresetn ),
-      .Virt_Iaddr                  (Virt_Iaddr ),
-      .Virt_Daddr                  (Virt_Daddr ),
-      .MEM_LoadType                (MEM_LoadType ),
-      .MEM_StoreType               (MEM_StoreType ),
-      .MEM_IsTLBP                  (MEM_IsTLBP ),
-      .MEM_IsTLBW                  (MEM_IsTLBW ),
-      .MEM_TLBWIorR                (MEM_TLBWIorR),
-      .TLBBuffer_Flush             (MEM_IsTLBW ), //当MEM级是TLBW时清空TLB Buffer
-      .CMBus                       (CMBus.MMU ),
-      //------------------------------output----------------//
-      .Phsy_Iaddr                  (Phsy_Iaddr ),
-      .Phsy_Daddr                  (Phsy_Daddr ),
-      .I_IsCached                  (I_IsCached ),
-      .D_IsCached                  (D_IsCached ),
-      .I_IsTLBBufferValid          (I_IsTLBBufferValid ),
-      .D_IsTLBBufferValid          (D_IsTLBBufferValid ),
-      .I_IsTLBStall                (I_IsTLBStall ),
-      .D_IsTLBStall                (D_IsTLBStall ),
-      .IF_TLBExceptType            (IF_TLBExceptType ),
-      .MEM_TLBExceptType           ( MEM_TLBExceptType)
+    TLB U_TLB( 
+        .clk                       (aclk ),
+        .rst                       (aresetn ),
+        .I_VPN2                    (I_VPN2 ),
+        .D_VPN2                    (D_VPN2 ),
+        .MEM_IsTLBP                (MEM_IsTLBP ),
+        .MEM_IsTLBW                (MEM_IsTLBW ),
+        .MEM_TLBWIorR              (MEM_TLBWIorR ),
+        .CTBus                     (CTBus.TLB ),
+        //---------------output---------------//
+        .s0_found                  (s0_found ),
+        .I_TLBEntry                (I_TLBEntry ),
+        .s1_found                  (s1_found ),
+        .D_TLBEntry                ( D_TLBEntry)
     );
-
-    // logic [31:0] din,dout1,dout2;
-    // always_ff @( posedge aclk ) begin : blockName
-    //     if (~aresetn) begin
-    //         din<='0;
-    //     end else begin
-    //         din<=din+1;
-    //     end
-    // end
-
-    // simple_port_lutram U_test1(            
-    //         .clka(aclk),
-    //         .rsta(~aresetn),
-
-    //         //端口信号
-    //         .ena(1'b1),
-    //         .wea('1),
-    //         .addra('0),
-    //         .dina(din),
-    //         .douta(dout1));
-
-    // simple_port_ram U_test2(.clka(aclk),
-    //            .clk(aclk),
-    //         .rst(~aresetn),
-
-    //         //写端口
-    //         .ena(1'b1),
-    //         .wea(1),
-    //         .addra(read_add'0),
-    //         .dina(din),
-
-    //         //读端口
-    //         .enb(cpu_bus.valid & (~busy) & (~cpu_bus.stall)),
-    //         .addrb(read_addr),
-    //         .doutb(data_rdata[i]));
-
 
 endmodule
 

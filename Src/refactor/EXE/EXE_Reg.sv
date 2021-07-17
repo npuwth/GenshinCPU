@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-14 21:17:17
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-17 03:01:25
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -68,9 +68,40 @@ module EXE_Reg (
     output logic                         EXE_IsTLBW,
     output logic                         EXE_IsTLBR,
     output logic                         EXE_TLBWIorR,
-    output logic      [2:0]              EXE_TrapOp
+    output logic      [2:0]              EXE_TrapOp,
+    output logic                         MDU_flush
 );
+typedef enum logic [1:0] {
+    NORMAL,
+    EXC_MDU_FLUSH
+} ExMDUFlush;
+    ExMDUFlush Exc_state,Exc_state_next;
+    always_ff @(posedge clk ) begin : FSM_blockname
+        if (rst == `RstEnable) begin
+            Exc_state = NORMAL;
+        end
+        else begin
+            Exc_state = Exc_state_next;
+        end
+    end
 
+    always_comb begin : next_state_gen
+        if (Exc_state == NORMAL &&  EXE_Flush == `FlushEnable) begin
+            Exc_state_next = EXC_MDU_FLUSH;
+        end
+        else if (Exc_state == EXC_MDU_FLUSH) begin
+            Exc_state_next = NORMAL;
+        end
+    end
+
+    always_comb begin
+        if(Exc_state == EXC_MDU_FLUSH) begin
+            MDU_flush = 1'b1;
+        end
+        else begin  
+            MDU_flush = 1'b0;
+        end
+    end
   always_ff @( posedge clk  ) begin
     if( (rst == `RstEnable) || (EXE_Flush == `FlushEnable) ) begin
       EXE_BusA                           <= 32'b0;

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-15 18:16:38
+ * @LastEditTime: 2021-07-16 10:50:21
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -29,7 +29,7 @@ module simple_port_lutram #(
       .ADDR_WIDTH_A(ADDR_WIDTH),               // DECIMAL
       .AUTO_SLEEP_TIME(0),                     // DECIMAL
       .BYTE_WRITE_WIDTH_A($bits(dtype)),       // DECIMAL
-      .CASCADE_HEIGHT(0),            		   // DECIMAL
+      //.CASCADE_HEIGHT(0),            		   // DECIMAL
       .ECC_MODE("no_ecc"),           		   // String
       .MEMORY_INIT_FILE("none"),     		   // String
       .MEMORY_INIT_PARAM("0"),       		   // String
@@ -40,8 +40,8 @@ module simple_port_lutram #(
       .READ_DATA_WIDTH_A($bits(dtype)),        // DECIMAL
       .READ_LATENCY_A(LATENCY),            	   // DECIMAL
       .READ_RESET_VALUE_A("0"),      		   // String
-      .RST_MODE_A("SYNC"),           		   // String
-      .SIM_ASSERT_CHK(0),            		   // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+      //.RST_MODE_A("SYNC"),           		   // String
+      //.SIM_ASSERT_CHK(0),            		   // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
       .USE_MEM_INIT(1),              		   // DECIMAL
       .WAKEUP_TIME("disable_sleep"), 		   // String
       .WRITE_DATA_WIDTH_A($bits(dtype)),       // DECIMAL
@@ -118,7 +118,7 @@ module simple_port_ram #(
       .ADDR_WIDTH_B(ADDR_WIDTH),               // DECIMAL
       .AUTO_SLEEP_TIME(0),            // DECIMAL
       .BYTE_WRITE_WIDTH_A($bits(dtype)),        // DECIMAL
-      .CASCADE_HEIGHT(0),             // DECIMAL
+      //.CASCADE_HEIGHT(0),             // DECIMAL
       .CLOCKING_MODE("common_clock"), // String
       .ECC_MODE("no_ecc"),            // String
       .MEMORY_INIT_FILE("none"),      // String
@@ -130,9 +130,9 @@ module simple_port_ram #(
       .READ_DATA_WIDTH_B($bits(dtype)),         // DECIMAL
       .READ_LATENCY_B(LATENCY),             // DECIMAL
       .READ_RESET_VALUE_B("0"),       // String
-      .RST_MODE_A("SYNC"),            // String
-      .RST_MODE_B("SYNC"),            // String
-      .SIM_ASSERT_CHK(0),             // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+      //.RST_MODE_A("SYNC"),            // String
+      //.RST_MODE_B("SYNC"),            // String
+      //.SIM_ASSERT_CHK(0),             // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
       .USE_EMBEDDED_CONSTRAINT(0),    // DECIMAL
       .USE_MEM_INIT(1),               // DECIMAL
       .WAKEUP_TIME("disable_sleep"),  // String

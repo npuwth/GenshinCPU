@@ -1,8 +1,8 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-16 14:19:22
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-16 17:05:13
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -37,8 +37,8 @@
     ExceptinPipeType           MEM_ExceptType_final;
 
     always_comb begin  //优先级可以查看MIPS文档第三册56页
-        if     (MEM_ExceptType_final.Interrupt           == 1'b1)    MEM_ExcType = `EX_Interrupt;
-        else if(MEM_ExceptType_final.Refetch             == 1'b1)    MEM_ExcType = `EX_Refetch;           //Refetch的优先级在这比较合适
+        if     (MEM_ExceptType_final.Refetch             == 1'b1)    MEM_ExcType = `EX_Refetch;           //Refetch的优先级在这比较合适
+        else if(MEM_ExceptType_final.Interrupt           == 1'b1)    MEM_ExcType = `EX_Interrupt;
         else if(MEM_ExceptType_final.WrongAddressinIF    == 1'b1)    MEM_ExcType = `EX_WrongAddressinIF;
         else if(MEM_ExceptType_final.TLBRefillinIF       == 1'b1)    MEM_ExcType = `EX_TLBRefillinIF;
         else if(MEM_ExceptType_final.TLBInvalidinIF      == 1'b1)    MEM_ExcType = `EX_TLBInvalidinIF;
@@ -59,15 +59,15 @@
         else                                                         MEM_ExcType = `EX_None;              
     end
 
+    assign Flush_Exception = (MEM_ExceptType_final != '0) && (MEM_ExceptType_final.Refetch != 1'b1);
+
     always_comb begin
         case(MEM_ExcType)
             `EX_None,`EX_Refetch:begin
                 MEM_RegsWrType_final   = MEM_RegsWrType;  
-                Flush_Exception        = `FlushDisable;
             end
             default:begin
                 MEM_RegsWrType_final   = `RegsWrTypeDisable;   
-                Flush_Exception        = `FlushEnable;
             end
         endcase
     end
@@ -110,8 +110,8 @@ end
 assign Exception_Vector  = base + offset; //生成异常入口向量
 
 //-----------------------------------------------生成MEM级的最终异常----------------------------------------------------------//
-assign MEM_ExceptType_final.Interrupt           = ( (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
-                                                     (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1)) ?1'b1:1'b0;
+assign MEM_ExceptType_final.Interrupt           = (MEM_PC != 32'b0) && (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
+                                                     (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1);
 assign MEM_ExceptType_final.WrongAddressinIF    = (MEM_PC[1:0] != 2'b00 )?1'b1:1'b0;
 assign MEM_ExceptType_final.ReservedInstruction = MEM_ExceptType.ReservedInstruction;
 assign MEM_ExceptType_final.CoprocessorUnusable = MEM_ExceptType.CoprocessorUnusable;

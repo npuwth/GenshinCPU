@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-14 20:52:15
+ * @LastEditTime: 2021-07-16 22:19:41
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,7 +29,7 @@ module cp0_reg (
     //write port from tlb
     input logic             MEM_IsTLBP,                //写index寄存器
     input logic             MEM_IsTLBR,                //写EntryHi，EntryLo0，EntryLo1
-    CP0_MMU_Interface       CMBus, 
+    CP0_TLB_Interface       CTBus, 
     //exception
     input logic  [4:0]      MEM2_ExcType,
     input logic  [31:0]     MEM2_PC,
@@ -88,8 +88,8 @@ module cp0_reg (
             CP0.Index.Index                <= 'x;
         end
         else if(MEM_IsTLBP) begin
-            CP0.Index.P                    <= ~CMBus.MMU_s1found;
-            CP0.Index.Index                <= CMBus.MMU_index;
+            CP0.Index.P                    <= ~CTBus.TLB_s1found;
+            CP0.Index.Index                <= CTBus.TLB_index;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_INDEX) begin
             CP0.Index.Index                <= MEM_Result[3:0];
@@ -114,11 +114,11 @@ module cp0_reg (
             CP0.EntryLo0.G0                <= 'x;
         end
         else if(MEM_IsTLBR) begin
-            CP0.EntryLo0.PFN0              <= CMBus.MMU_pfn0;
-            CP0.EntryLo0.C0                <= CMBus.MMU_c0;
-            CP0.EntryLo0.D0                <= CMBus.MMU_d0;
-            CP0.EntryLo0.V0                <= CMBus.MMU_v0;
-            CP0.EntryLo0.G0                <= CMBus.MMU_g0;
+            CP0.EntryLo0.PFN0              <= CTBus.TLB_pfn0;
+            CP0.EntryLo0.C0                <= CTBus.TLB_c0;
+            CP0.EntryLo0.D0                <= CTBus.TLB_d0;
+            CP0.EntryLo0.V0                <= CTBus.TLB_v0;
+            CP0.EntryLo0.G0                <= CTBus.TLB_g0;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_ENTRYLO0) begin
             CP0.EntryLo0.PFN0              <= MEM_Result[25:6];
@@ -138,11 +138,11 @@ module cp0_reg (
             CP0.EntryLo1.G1                <= 'x;
         end
         else if(MEM_IsTLBR) begin
-            CP0.EntryLo1.PFN1              <= CMBus.MMU_pfn1;
-            CP0.EntryLo1.C1                <= CMBus.MMU_c1;
-            CP0.EntryLo1.D1                <= CMBus.MMU_d1;
-            CP0.EntryLo1.V1                <= CMBus.MMU_v1;
-            CP0.EntryLo1.G1                <= CMBus.MMU_g1;
+            CP0.EntryLo1.PFN1              <= CTBus.TLB_pfn1;
+            CP0.EntryLo1.C1                <= CTBus.TLB_c1;
+            CP0.EntryLo1.D1                <= CTBus.TLB_d1;
+            CP0.EntryLo1.V1                <= CTBus.TLB_v1;
+            CP0.EntryLo1.G1                <= CTBus.TLB_g1;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_ENTRYLO1) begin
             CP0.EntryLo1.PFN1              <= MEM_Result[25:6];
@@ -232,8 +232,8 @@ module cp0_reg (
             CP0.EntryHi.ASID               <= 'x;
         end
         else if(MEM_IsTLBR) begin
-            CP0.EntryHi.VPN2               <= CMBus.MMU_vpn2;
-            CP0.EntryHi.ASID               <= CMBus.MMU_asid;
+            CP0.EntryHi.VPN2               <= CTBus.TLB_vpn2;
+            CP0.EntryHi.ASID               <= CTBus.TLB_asid;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_ENTRYHI) begin
             CP0.EntryHi.VPN2               <= MEM_Result[31:13];
@@ -464,18 +464,18 @@ module cp0_reg (
     end
 
     //与TLB交互
-    assign CMBus.CP0_index      = CP0.Index.Index;
-    assign CMBus.CP0_random     = CP0.Random.Random;
-    assign CMBus.CP0_vpn2       = CP0.EntryHi.VPN2;
-    assign CMBus.CP0_asid       = CP0.EntryHi.ASID;
-    assign CMBus.CP0_pfn0       = CP0.EntryLo0.PFN0;
-    assign CMBus.CP0_c0         = CP0.EntryLo0.C0;
-    assign CMBus.CP0_d0         = CP0.EntryLo0.D0;
-    assign CMBus.CP0_v0         = CP0.EntryLo0.V0;
-    assign CMBus.CP0_g0         = CP0.EntryLo0.G0;
-    assign CMBus.CP0_pfn1       = CP0.EntryLo1.PFN1;
-    assign CMBus.CP0_c1         = CP0.EntryLo1.C1;
-    assign CMBus.CP0_d1         = CP0.EntryLo1.D1;
-    assign CMBus.CP0_v1         = CP0.EntryLo1.V1;
-    assign CMBus.CP0_g1         = CP0.EntryLo1.G1;
+    assign CTBus.CP0_index      = CP0.Index.Index;
+    assign CTBus.CP0_random     = CP0.Random.Random;
+    assign CTBus.CP0_vpn2       = CP0.EntryHi.VPN2;
+    assign CTBus.CP0_asid       = CP0.EntryHi.ASID;
+    assign CTBus.CP0_pfn0       = CP0.EntryLo0.PFN0;
+    assign CTBus.CP0_c0         = CP0.EntryLo0.C0;
+    assign CTBus.CP0_d0         = CP0.EntryLo0.D0;
+    assign CTBus.CP0_v0         = CP0.EntryLo0.V0;
+    assign CTBus.CP0_g0         = CP0.EntryLo0.G0;
+    assign CTBus.CP0_pfn1       = CP0.EntryLo1.PFN1;
+    assign CTBus.CP0_c1         = CP0.EntryLo1.C1;
+    assign CTBus.CP0_d1         = CP0.EntryLo1.D1;
+    assign CTBus.CP0_v1         = CP0.EntryLo1.V1;
+    assign CTBus.CP0_g1         = CP0.EntryLo1.G1;
 endmodule

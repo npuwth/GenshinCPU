@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-17 11:37:39
+ * @LastEditTime: 2021-07-17 12:01:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -16,8 +16,8 @@ module Dcache #(
     parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
     parameter LINE_WORD_NUM = 4,//cache line大小 一块的字数
     parameter ASSOC_NUM     = 4,//assoc_num组相连
-    parameter WAY_SIZE      = 4*1024*8,//一路cache 容量大小为way_size bit
-    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //
+    parameter WAY_SIZE      = 4*1024*8,//一路cache 容量大小为way_size bit //4KB
+    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //256
 
 ) (
     //external signals
@@ -39,9 +39,9 @@ module Dcache #(
 );
 //parameters
 localparam int unsigned BYTES_PER_WORD = 4;
-localparam int unsigned INDEX_WIDTH    = $clog2(SET_NUM) ;
-localparam int unsigned OFFSET_WIDTH   = $clog2(LINE_WORD_NUM*BYTES_PER_WORD);//
-localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;
+localparam int unsigned INDEX_WIDTH    = $clog2(SET_NUM) ;//8
+localparam int unsigned OFFSET_WIDTH   = $clog2(LINE_WORD_NUM*BYTES_PER_WORD);//4
+localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;//20
 
 
 //--definitions
