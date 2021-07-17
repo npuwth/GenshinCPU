@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 19:11:10
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-17 14:10:17
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -305,7 +305,7 @@ generate;//锁存读出的tag
 endgenerate
 
 always_ff @( posedge clk ) begin : state_blockName
-    if (resetn == `RstEnable) begin
+    if (resetn == `RstEnable || cpu_bus.flush) begin
         state <= LOOKUP;
     end else begin
         state <= state_next;
