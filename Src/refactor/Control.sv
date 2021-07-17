@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-17 16:13:26
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-17 17:32:25
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -55,14 +55,14 @@ module Control(
     output logic        MEM_DisWr,      //传到MEM级，用于关闭CP0的写使能
     output logic        WB_DisWr,       //传到WB级 ，用于停滞流水线
 
-    output logic       IcacheFlush,    //给Icache的Flush
+    output logic        IcacheFlush,    //给Icache的Flush
     // output logic       DcacheFlush,    //给Dcache的Flush
-    output logic       IReq_valid,     //是否给Icache发送请求 1表示发送 0 表示不发送
-    output logic       DReq_valid,     //是否给Dcache发送请求 1表示发送 0 表示不发送
+    output logic        IReq_valid,     //是否给Icache发送请求 1表示发送 0 表示不发送
+    output logic        DReq_valid,     //是否给Dcache发送请求 1表示发送 0 表示不发送
 
-    output logic       ICacheStall,    // 如果出现cache数据准备好，但CPU阻塞的清空，
+    output logic        ICacheStall,    // 如果出现cache数据准备好，但CPU阻塞的清空，
                                     // 需要发送stall信号，cache状态机停滞知道数据被CPU接受
-    output logic       DCacheStall
+    output logic        DCacheStall
     // output logic       HiLo_Not_Flush
 );
 

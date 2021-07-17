@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-17 16:32:48
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-17 20:44:53
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -135,8 +135,8 @@ module TOP_MEM (
         .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
-        .MEM_rt                  (MEM_rt),
-        .dcache_flush            (cpu_dbus.flush)
+        .MEM_rt                  (MEM_rt)
+        // .dcache_flush            (cpu_dbus.flush)
     );
 
     Exception U_Exception(
@@ -207,6 +207,8 @@ module TOP_MEM (
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
+    assign cpu_dbus.flush                                 = 1'b0;
+    
     Dcache #(
         .DATA_WIDTH              (32 ),
         .LINE_WORD_NUM           (`DCACHE_LINE_WORD ),
