@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-07-17 17:33:23
+ * @LastEditTime: 2021-07-17 23:12:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -107,7 +107,6 @@ module ITLB (
     //         end
     //     end
     // end
-    
     assign I_IsCached                 = 1'b1;
 
 //-----------------------------对TLB Buffer进行赋值----------------------、、
