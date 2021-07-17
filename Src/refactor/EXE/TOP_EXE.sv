@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 13:04:24
+ * @LastEditTime: 2021-07-17 11:20:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -61,6 +61,7 @@ module TOP_EXE (
     logic                     Trap_valid;
     logic [2:0]               EXE_TrapOp;  
     RegsWrType                EXE_Final_Wr;
+    logic                     EXE_Final_Finish;
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
@@ -69,6 +70,7 @@ module TOP_EXE (
     assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
 
     assign EXE_Final_Wr       = (EXE_DisWr) ? '0:EMBus.EXE_RegsWrType;
+    assign EXE_Final_Finish   = (EXE_DisWr) ? '0:EXE_Finish;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
@@ -209,12 +211,12 @@ module TOP_EXE (
         .Overflow_valid       (Overflow_valid )       
     );
 
-     Trap U_TRAP (
+    Trap U_TRAP (
         .EXE_TrapOp           (EXE_TrapOp  ),   // trap控制信号信号的连线
         .EXE_ResultA          (EXE_BusA_L1 ),   // 旁路之后的数据
         .EXE_ResultB          (EXE_BusB_L2 ),   // 经过立即数选择之后的数据
         .Trap_valid           (Trap_valid  )
-  );
+    );
     MULTDIV U_MULTDIV(
         .clk                  (clk),    
         .rst                  (resetn),            
@@ -242,7 +244,7 @@ module TOP_EXE (
     HILO U_HILO (
         .clk                   (clk),
         .rst                   (resetn),
-        .MULT_DIV_finish       (EXE_Finish & HiLo_Not_Flush),
+        .MULT_DIV_finish       (EXE_Final_Finish),
         .EXE_MultiExtendOp     (EXE_MultiExtendOp),
         .HIWr                  (EXE_Final_Wr.HIWr), //把写HI，LO统一在EXE级
         .LOWr                  (EXE_Final_Wr.LOWr),
