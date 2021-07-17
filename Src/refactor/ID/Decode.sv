@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-17 14:34:21
+ * @LastEditTime: 2021-07-17 16:10:06
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,7 +57,7 @@ module Decode(
     logic [4:0]shamt;
     InstrType instrType;
     logic IsReserved;
-    logic CpU1_instr_valid;
+    logic [1:0] CpU1_instr_valid;
 
     assign opcode = ID_Instr[31:26];
     assign funct = ID_Instr[5:0];
@@ -321,35 +321,69 @@ module Decode(
         endcase
     end
 
+`ifdef FPU_DETECT_EN
 
     always_comb begin : CpU_valid
       // CpU1_instr_valid = 1时需要报出CpU例外
       case (opcode)
-        6'b000000 : begin
-          if (funct == 6'b000001) CpU1_instr_valid = 1'b1;  
-          else CpU1_instr_valid = 1'b0;  
+        6'b000000 : begin  // MOCVI
+          if (funct == 6'b000001) CpU1_instr_valid = `ISCOP1_INSTR;  
+          else CpU1_instr_valid = `NOTCOP1_INSTR;  // 正常指令
         end
         6'b110101 : begin  // LDC1A
-            CpU1_instr_valid = 1'b1;  
+            CpU1_instr_valid = `ISCOP1_INSTR;  
         end
         6'b111101 : begin  // SDC1A
-            CpU1_instr_valid = 1'b1;
+            CpU1_instr_valid = `ISCOP1_INSTR;
         end
-        6'b110001: begin  // LWC1
-            CpU1_instr_valid = 1'b1;
+        6'b110001: begin  //  LWC1
+            CpU1_instr_valid = `ISCOP1_INSTR;
         end  
         6'b111001 : begin // SWC1
-            CpU1_instr_valid = 1'b1;
+            CpU1_instr_valid = `ISCOP1_INSTR;
         end
-        6'b010001: begin
-            CpU1_instr_valid = 1'b1;
-        end
-        default:begin
-            CpU1_instr_valid = 1'b0;
-        end
-        
+        6'b010001: begin  // CPO1
+          case (ID_Instr[25:21])
+            5'b00000 : CpU1_instr_valid = `ISCOP1_INSTR;  // MFC1
+            5'b00010 : CpU1_instr_valid = `ISCOP1_INSTR;  // CFC1
+            5'b00100 : CpU1_instr_valid = `ISCOP1_INSTR;  // MTC1
+            5'b00110 : CpU1_instr_valid = `ISCOP1_INSTR;  // CTC1
+            5'b01000 : CpU1_instr_valid = `ISCOP1_INSTR;  // BC1
+            5'b10000 : begin
+              unique casez(funct) 
+                6'b000000 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_ADD
+                6'b000001 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_SUB
+                6'b000010 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_MUL
+                6'b000011 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_DIV
+                6'b000100 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_SQRT
+                6'b000101 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_ABS
+                6'b000111 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_NEG
+                6'b001100 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_ROUND
+                6'b001101 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_TRUNC
+                6'b001110 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_CEIL
+                6'b001111 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_FLOOR
+                6'b100100 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_CVTW
+                6'b000110 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_MOV
+                6'b010001 : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_CMOV
+                6'b01001? : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_CMOV
+                6'b11???? : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_COND
+                default   : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 浮点指令的保留指令例外
+            endcase
+          end
+          5'b10110 : begin
+              unique casez(funct)
+                  6'b100000  : CpU1_instr_valid = `ISCOP1_INSTR;  // CVTS.PU
+                  6'b101000  : CpU1_instr_valid = `ISCOP1_INSTR;  // CVTS.PL
+                  default    : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 浮点指令的保留指令例外
+              endcase
+          end
+        default : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 保留指令例外
+      endcase 
+      end
+      default : CpU1_instr_valid = `NOTCOP1_INSTR;  //正常指令
       endcase
     end
+`endif 
 
   always_comb begin
     unique case (instrType)
@@ -1664,13 +1698,14 @@ always_comb begin
                             Trap:1'b0
         };//关于ERET
   end
-  else if (CpU1_instr_valid == 1'b1) begin  // 浮点指令
+  `ifdef FPU_DETECT_EN
+  else if (CpU1_instr_valid == `ISCOP1_INSTR) begin  // 浮点指令
     ID_ExceptType_new = '{  
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
-                            ReservedInstruction:1'b1,
-                            CoprocessorUnusable:1'b0,
+                            ReservedInstruction:1'b0,
+                            CoprocessorUnusable:1'b1,
                             Overflow:1'b0,
                             Syscall:1'b0,
                             Eret:1'b0,
@@ -1687,12 +1722,17 @@ always_comb begin
                             Trap:1'b0
         };//关于ERET
   end
+  `endif 
   else begin
     ID_ExceptType_new = '{  
                             Interrupt:1'b0,
                             Break:1'b0,
                             WrongAddressinIF:1'b0,
+                            `ifdef FPU_DETECT_EN
+                            ReservedInstruction:(CpU1_instr_valid == `FPU_Reserve_INSTR || IsReserved == 1'b1),
+                            `else
                             ReservedInstruction:IsReserved,
+                            `endif 
                             CoprocessorUnusable:1'b0,
                             Overflow:1'b0,
                             Syscall:1'b0,
@@ -1708,9 +1748,9 @@ always_comb begin
                             TLBModified:1'b0,
                             Refetch:1'b0,
                             Trap:1'b0
-        };//
-    end
+        };//保留指令例外
   end
+end
 
 always_comb begin
   case(instrType) 

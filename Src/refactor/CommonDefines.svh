@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-16 12:10:51
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-17 15:35:43
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -11,7 +11,7 @@
 
 `ifndef CommonDefines_svh
 `define CommonDefines_svh
-
+`define FPU_DETECT_EN       1
 `define DEBUG               0             
 
 `define ALUOpLen            4:0
@@ -23,6 +23,10 @@
 
 `define Enable              1'b1
 `define Disable             1'b0
+
+`define ISCOP1_INSTR        2'b11
+`define NOTCOP1_INSTR       2'b00
+`define FPU_Reserve_INSTR   2'b10
 
 `define Valid               1'b1
 `define Invalid             1'b0
