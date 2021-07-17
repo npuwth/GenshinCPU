@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-16 12:31:53
+ * @LastEditTime: 2021-07-17 11:02:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -313,6 +313,10 @@ module AXIInteract #(
             FINISH:begin
                 istate_next =IDLE;
             end
+            default: begin
+                istate_next =IDLE;
+            end
+
         endcase
     end
 
@@ -425,6 +429,9 @@ module AXIInteract #(
                 end
             end
             FINISH:begin
+                dstate_next =IDLE;
+            end
+            default: begin
                 dstate_next =IDLE;
             end
         endcase
@@ -543,6 +550,9 @@ module AXIInteract #(
                 end
             end
             WB_FINISH:begin
+                dstate_wb_next = WB_IDLE;
+            end
+            default: begin
                 dstate_wb_next = WB_IDLE;
             end
         endcase
@@ -696,6 +706,9 @@ module AXIInteract #(
             UNCACHE_FINISH:begin
                 dstate_uncache_next =UNCACHE_IDLE;
             end
+            default: begin
+                dstate_uncache_next =UNCACHE_IDLE;
+            end            
             
         endcase
     end

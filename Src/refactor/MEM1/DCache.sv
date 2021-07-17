@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-16 23:34:45
+ * @LastEditTime: 2021-07-17 11:37:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -10,7 +10,7 @@
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
-
+`define DEBUG
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width位
     parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
@@ -47,11 +47,11 @@ localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;
 //--definitions
 typedef struct packed {
     logic valid;
-    logic dirty;//TODO: 记得把dirty从tagv lutram中分开 因为会存在 同时读写的情况 且读写地址不一致
+    //logic dirty;//TODO: 记得把dirty从tagv lutram中分开 因为会存在 同时读写的情况 且读写地址不一致
     logic [TAG_WIDTH-1:0] tag;  
 } tagv_t; //每一路 一个tag_t变量
 
-
+typedef  logic dirty_t;
 
 
 typedef logic [TAG_WIDTH-1:0]                     tag_t;
@@ -135,10 +135,10 @@ typedef struct packed {
 
 typedef struct packed {//store指令在读数的时候根据写使能替换
     logic [ASSOC_NUM-1:0] hit;
-    tag_t   tag;
     index_t index;
     line_t  wdata;
 } store_t;
+
 
 
 //declartion
@@ -155,6 +155,13 @@ index_t read_addr,write_addr,tagv_addr;//read_addr 既是 查询的地址 又是
 tagv_t [ASSOC_NUM-1:0] tagv_rdata;
 tagv_t tagv_wdata;
 we_t tagv_we;// 重填的时候写使能
+
+index_t dirty_addr;
+dirty_t [ASSOC_NUM-1:0]dirty_rdata;
+dirty_t dirty_wdata;
+we_t    dirty_we;
+
+
 
 we_t wb_we;//store的写使能
 
@@ -191,7 +198,7 @@ assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final2:'0;
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
 assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
 assign axi_bus.wr_req  = (state == MISSDIRTY) ? 1'b1:1'b0;
-assign axi_bus.wr_addr = {tagv_rdata[lru[req_buffer.index]],req_buffer.index,{OFFSET_WIDTH{1'b0}}};
+assign axi_bus.wr_addr = {pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
 assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
 
 //连axi_ubus接口
@@ -206,6 +213,21 @@ assign axi_ubus.loadType = req_buffer.loadType;
 //generate
 generate;
     for (genvar i = 0;i<ASSOC_NUM ;i++ ) begin
+        simple_port_lutram #(
+            .SIZE(SET_NUM),
+            .dtype(dirty_t)
+        )mem_dirty(
+            .clka(clk),
+            .rsta(~resetn),
+
+            //端口信号
+            .ena(1'b1),
+            .wea(dirty_we[i]),
+            .addra(dirty_addr),
+            .dina(dirty_wdata),
+            .douta(dirty_rdata[i])            
+        );
+
         simple_port_lutram  #(
             .SIZE(SET_NUM),
             .dtype(tagv_t)
@@ -288,8 +310,12 @@ assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
-assign tagv_wdata     = (state == REFILL)? {1'b1,1'b0,req_buffer.tag} :{1'b1,1'b1,store_buffer.tag};
+assign tagv_wdata     = {1'b1,req_buffer.tag};
 assign data_read_en   = (state == REFILLDONE ||(req_buffer.valid & req_buffer.op)) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
+
+assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
+assign dirty_addr     = req_buffer.index;
+
 
 always_comb begin : data_rdata_final2_blockname
     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
@@ -334,6 +360,16 @@ always_comb begin : data_rdata_final2_blockname
         endcase
 end
 
+always_comb begin : dirty_we_block
+    if (state == REFILL) begin
+        dirty_we = '0;
+        dirty_we[lru[req_buffer.index]] =1'b1;
+    end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
+        dirty_we = hit;
+    end else begin
+        dirty_we = '0;
+    end
+end
 
 always_comb begin : store_wdata_block//TODO:救命写不出来
       store_wdata                                      = data_rdata[clog2(hit)]; //TODO：这个可综合吗？
@@ -344,8 +380,6 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
-    end else if(wb_state == WB_STORE)begin
-        tagv_we = store_buffer.hit;
     end else begin
         tagv_we = '0;
     end
@@ -367,7 +401,6 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
         store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
         store_buffer.wdata <= store_wdata;
-        store_buffer.tag   <= req_buffer.tag;
     end
 end
 
@@ -402,11 +435,9 @@ generate;//锁存读出的tag
     always_ff @( posedge clk ) begin : pipe_tagv_rdata_blockName
         if (pipe_wr) begin
             pipe_tagv_rdata[i].tag   <= tagv_rdata[i].tag;
-            pipe_tagv_rdata[i].dirty <= tagv_rdata[i].dirty ;
             pipe_tagv_rdata[i].valid <= tagv_rdata[i].valid ;
         end else begin
             pipe_tagv_rdata[i].tag   <= pipe_tagv_rdata[i].tag;
-            pipe_tagv_rdata[i].dirty <= pipe_tagv_rdata[i].dirty ;
             pipe_tagv_rdata[i].valid <= pipe_tagv_rdata[i].valid ;        
         end
     end        
@@ -434,7 +465,7 @@ always_comb begin : state_next_blockname
                 if (cache_hit) begin
                     state_next = LOOKUP;
                 end else begin
-                    if (pipe_tagv_rdata[lru[req_buffer.index]].dirty) begin
+                    if (dirty_rdata[lru[req_buffer.index]]) begin
                         state_next = MISSDIRTY ;
                     end else begin
                         state_next = MISSCLEAN ;
@@ -537,5 +568,8 @@ always_comb begin : wb_state_next_blockname
     end
 
 end
-
+`ifdef DEBUG
+logic victim_num;
+assign victim_num = lru[req_buffer.index];
+`endif 
 endmodule
