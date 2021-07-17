@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-07-17 09:43:44
+ * @LastEditTime: 2021-07-17 16:47:00
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -107,7 +107,11 @@ module ITLB (
     //         end
     //     end
     // end
-    assign I_IsCached         = 1'b1;
+`ifdef All_Uncache
+    assign I_IsCached                 = 1'b0;
+`else
+    assign I_IsCached                 = 1'b1;
+`endif
 //-----------------------------对TLB Buffer进行赋值----------------------、、
     always_ff @(posedge clk ) begin //TLBI
         if(rst == `RstEnable || TLBBuffer_Flush == 1'b1) begin

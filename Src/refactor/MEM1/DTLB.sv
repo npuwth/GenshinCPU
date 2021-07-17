@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-17 10:01:12
+ * @LastEditTime: 2021-07-17 16:46:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -96,6 +96,9 @@ module DTLB (
         end
     end
 //----------------------对Cache属性进行判断----------------------------//
+`ifdef All_Uncache
+    assign D_IsCached                                = 1'b0;
+`else
     always_comb begin //TLBD
         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
             D_IsCached                               = 1'b0;
@@ -114,6 +117,7 @@ module DTLB (
             end
         end
     end
+`endif
 //-----------------------对TLB Buffer进行赋值----------------------------//
     always_ff @(posedge clk ) begin //TLBD
         if(rst == `RstEnable || TLBBuffer_Flush == 1'b1) begin

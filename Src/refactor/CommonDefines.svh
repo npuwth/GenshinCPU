@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-17 15:35:43
+ * @LastEditTime: 2021-07-17 16:47:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,7 +12,8 @@
 `ifndef CommonDefines_svh
 `define CommonDefines_svh
 `define FPU_DETECT_EN       1
-`define DEBUG               0             
+`define DEBUG               0        
+`define All_Uncache         1     
 
 `define ALUOpLen            4:0
 `define InstrLen            31:0
