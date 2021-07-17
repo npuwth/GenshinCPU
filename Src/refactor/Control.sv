@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-17 23:11:51
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-18 01:54:26
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -84,7 +84,36 @@ module Control(
 
 
     always_comb begin
-        if (Flush_Exception == `FlushEnable)begin
+        if (D_IsTLBStall == 1'b1  || Dcache_busy == 1'b1 ) begin
+            PREIF_Wr      = 1'b0;
+            IF_Wr        = 1'b0;
+            ID_Wr        = 1'b0;
+            EXE_Wr       = 1'b0;
+            MEM_Wr       = 1'b0; 
+            MEM2_Wr      = 1'b0;
+            WB_Wr        = 1'b0;
+            
+            EXE_DisWr    = 1'b0;
+            MEM_DisWr    = 1'b1;
+            WB_DisWr     = 1'b1; 
+                       
+            IF_Flush     = 1'b0;
+            ID_Flush     = 1'b0;
+            EXE_Flush    = 1'b0;
+            MEM_Flush    = 1'b0;
+            MEM2_Flush   = 1'b0;
+            WB_Flush     = 1'b0;
+
+            IcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
+
+            IReq_valid   = 1'b1;
+            DReq_valid   = 1'b0;
+
+            ICacheStall  = 1'b1;
+            DCacheStall  = 1'b1;
+        end
+        else if (Flush_Exception == `FlushEnable)begin
             PREIF_Wr      = 1'b1;
             IF_Wr        = 1'bx;
             ID_Wr        = 1'bx;
@@ -139,35 +168,6 @@ module Control(
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
-
-            ICacheStall  = 1'b1;
-            DCacheStall  = 1'b1;
-        end
-        else if (D_IsTLBStall == 1'b1  || Dcache_busy == 1'b1 ) begin
-            PREIF_Wr      = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b0;
-            WB_Wr        = 1'b0;
-            
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b1; 
-                       
-            IF_Flush     = 1'b0;
-            ID_Flush     = 1'b0;
-            EXE_Flush    = 1'b0;
-            MEM_Flush    = 1'b0;
-            MEM2_Flush   = 1'b0;
-            WB_Flush     = 1'b0;
-
-            IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
-
-            IReq_valid   = 1'b1;
-            DReq_valid   = 1'b0;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
