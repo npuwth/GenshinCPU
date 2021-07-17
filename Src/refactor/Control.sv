@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-17 16:13:26
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-17 17:38:21
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -123,7 +123,7 @@ module Control(
             MEM2_Wr      = 1'b0;
             WB_Wr        = 1'b0;
             
-            EXE_DisWr    = 1'b1;
+            EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
@@ -152,7 +152,7 @@ module Control(
             MEM2_Wr      = 1'b0;
             WB_Wr        = 1'b0;
             
-            EXE_DisWr    = 1'b1;
+            EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
