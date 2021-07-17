@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-17 14:10:48
+ * @LastEditTime: 2021-07-17 16:14:24
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -10,7 +10,7 @@
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
-`define DEBUG
+//`define DEBUG
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width位
     parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
