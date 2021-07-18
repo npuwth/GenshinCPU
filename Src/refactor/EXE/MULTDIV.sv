@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-18 10:59:22
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-18 16:20:21
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
  * 
@@ -205,8 +205,7 @@ always_comb begin
             EXE_MultiExtendOp = 2'b10;
         end
         default:begin
-            EXE_MultiExtendOp = 'x;
-            //Prod = 'x;
+            EXE_MultiExtendOp = 2'b00;
         end
     endcase
     

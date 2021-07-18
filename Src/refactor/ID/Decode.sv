@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-17 16:10:06
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-18 16:22:27
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -429,7 +429,7 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 'x;          //EXT
+        ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
@@ -525,7 +525,7 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 'x;          //EXT
+        ID_EXTOp      = '0;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;  
         IsReserved    = 1'b0;       
@@ -972,13 +972,13 @@ module Decode(
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = 'x;
+        ID_BranchType = '0;
         IsReserved    = 1'b0;
       end
       OP_SRL:begin
         ID_ALUOp      = `EXE_ALUOp_SRL;    //ALU操作
-        ID_LoadType   = 'x;                 //访存相关 
-        ID_StoreType  = 'x;                 //存储相关
+        ID_LoadType   = '0;                 //访存相关 
+        ID_StoreType  = '0;                 //存储相关
         ID_WbSel      = `WBSel_ALUOut;      //关于最后写回的是PC & ALU & RF ..
         ID_DstSel     = `DstSel_rd;         //Rtype选rd
         ID_RegsWrType = `RegsWrTypeRFEn;    //写回哪里
@@ -987,7 +987,7 @@ module Decode(
         ID_RegsReadSel= `RegsReadSel_RF;    //ID级选择RF读取结果
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
-        ID_BranchType = 'x;
+        ID_BranchType = '0;
         IsReserved    = 1'b0;
       end
 
@@ -1090,32 +1090,32 @@ module Decode(
       
       //自陷指令
       OP_BREAK:begin
-        ID_ALUOp      = 'x;
+        ID_ALUOp      = '0;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = 'x;
-        ID_DstSel     = 'x;
+        ID_WbSel      = '0;
+        ID_DstSel     = '0;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ALUSrcA    = 'x;
-        ID_ALUSrcB    = 'x;
-        ID_RegsReadSel= 'x;//选择ID级别读出的数据
-        ID_EXTOp      = 'x;
+        ID_ALUSrcA    = '0;
+        ID_ALUSrcB    = '0;
+        ID_RegsReadSel= '0;//选择ID级别读出的数据
+        ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
       end
 
       OP_SYSCALL:begin
-        ID_ALUOp      = 'x;
+        ID_ALUOp      = '0;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = 'x;
-        ID_DstSel     = 'x;
+        ID_WbSel      = '0;
+        ID_DstSel     = '0;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ALUSrcA    = 'x;
-        ID_ALUSrcB    = 'x;
-        ID_RegsReadSel= 'x;//选择ID级别读出的数据
-        ID_EXTOp      = 'x;
+        ID_ALUSrcA    = '0;
+        ID_ALUSrcB    = '0;
+        ID_RegsReadSel= '0;//选择ID级别读出的数据
+        ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
@@ -1367,16 +1367,16 @@ module Decode(
       end
       //特权指令  
       OP_ERET:begin
-        ID_ALUOp      = 'x;
+        ID_ALUOp      = '0;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = 'x;
-        ID_DstSel     = 'x;
+        ID_WbSel      = '0;
+        ID_DstSel     = '0;
         ID_RegsWrType = `RegsWrTypeDisable;
-        ID_ALUSrcA    = 'x;
-        ID_ALUSrcB    = 'x;
-        ID_RegsReadSel= 'x;//选择ID级别读出的数据
-        ID_EXTOp      = 'x;
+        ID_ALUSrcA    = '0;
+        ID_ALUSrcB    = '0;
+        ID_RegsReadSel= '0;//选择ID级别读出的数据
+        ID_EXTOp      = '0;
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
@@ -1387,11 +1387,11 @@ module Decode(
         ID_DstSel     = `DstSel_rt;//rt 
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_ALUSrcA    = 'x;
-        ID_ALUSrcB    = 'x;
+        ID_ALUSrcA    = '0;
+        ID_ALUSrcB    = '0;
         ID_RegsWrType = `RegsWrTypeRFEn;
         ID_RegsReadSel= `RegsReadSel_CP0;//选择CP0进行读取
-        ID_EXTOp      = 'x;                 //R型无关
+        ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
@@ -1403,11 +1403,11 @@ module Decode(
         ID_DstSel     = `DstSel_rd;//rd
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_ALUSrcA    = 'x;
-        ID_ALUSrcB    = 'x;
+        ID_ALUSrcA    = '0;
+        ID_ALUSrcB    = '0;
         ID_RegsWrType = `RegsWrTypeCP0En;//写CP0
         ID_RegsReadSel= `RegsReadSel_RF;//选择RF进行读取
-        ID_EXTOp      = 'x;                 //R型无关
+        ID_EXTOp      = '0;                 //R型无关
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
@@ -1581,8 +1581,8 @@ module Decode(
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = 'x;
-        ID_DstSel     = 'x;  //rd
+        ID_WbSel      = '0;
+        ID_DstSel     = '0;  //rd
         ID_RegsWrType = '0;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
@@ -1597,8 +1597,8 @@ module Decode(
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = 'x;
-        ID_DstSel     = 'x;//rt
+        ID_WbSel      = '0;
+        ID_DstSel     = '0;//rt
         ID_RegsWrType = '0;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
         ID_ALUSrcB    = `ALUSrcB_Sel_Imm;
@@ -1610,18 +1610,18 @@ module Decode(
       end
       
       default:begin
-        ID_ALUOp      = 'X;    //ALU操作
-        ID_LoadType   = 'X;    //访存相关 
-        ID_StoreType  = 'X;    //存储相关
-        ID_WbSel      = 'X;    //关于最后写回的是PC & ALU & RF ..
-        ID_DstSel     = 'X;    //Rtype选rd
-        ID_RegsWrType = 'X;    //写回哪里
-        ID_ALUSrcA    = 'X; //MUXA选择regs
-        ID_ALUSrcB    = 'X;  //MUXB选择regs
-        ID_RegsReadSel= 'X;        //ID级选择RF读取结果
-        ID_EXTOp      = 'X;                 //R型无关
-        ID_IsAImmeJump = 'X;
-        ID_BranchType = 'X;
+        ID_ALUOp      = '0;    //ALU操作
+        ID_LoadType   = '0;    //访存相关 
+        ID_StoreType  = '0;    //存储相关
+        ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
+        ID_DstSel     = '0;    //Rtype选rd
+        ID_RegsWrType = '0;    //写回哪里
+        ID_ALUSrcA    = '0; //MUXA选择regs
+        ID_ALUSrcB    = '0;  //MUXB选择regs
+        ID_RegsReadSel= '0;        //ID级选择RF读取结果
+        ID_EXTOp      = '0;                 //R型无关
+        ID_IsAImmeJump = '0;
+        ID_BranchType = '0;
         IsReserved    = 1'b1;        
       end
 
@@ -1751,7 +1751,7 @@ always_comb begin
         };//保留指令例外
   end
 end
-
+`ifdef TRAP
 always_comb begin
   case(instrType) 
     OP_TEQ  , OP_TEQI  : ID_TrapOp = `TRAP_OP_TEQ;
@@ -1760,8 +1760,8 @@ always_comb begin
     OP_TLT  , OP_TLTI  : ID_TrapOp = `TRAP_OP_TLT;
     OP_TLTU , OP_TLTIU : ID_TrapOp = `TRAP_OP_TLTU;
     OP_TNE  , OP_TNEI  : ID_TrapOp = `TRAP_OP_TNE;
-    default : ID_TrapOp = 'x;
+    default : ID_TrapOp = `TRAP_OP_None;
   endcase
 end
-
+`endif
 endmodule

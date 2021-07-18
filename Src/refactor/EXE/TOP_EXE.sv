@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-18 10:54:30
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-18 16:00:52
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -54,7 +54,6 @@ module TOP_EXE (
     logic                     EXE_Finish;        //来自乘除法
     logic [31:0]              EXE_MULTDIVtoHI;
     logic [31:0]              EXE_MULTDIVtoLO;
-    // logic [4:0]               EXE_rt;
     logic [31:0]              HI_Bus;
     logic [31:0]              LO_Bus;
     logic                     Overflow_valid;
