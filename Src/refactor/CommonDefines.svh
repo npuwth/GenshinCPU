@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-18 16:41:52
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-18 09:36:16
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -14,7 +14,7 @@
 // 取消功能,需要将`define注释掉
 // `define FPU_DETECT_EN       1  // 定义则打开浮点检测功能
 // `define DEBUG               1        
-// `define All_Uncache         1  // 定义则全走uncache  
+`define All_Uncache         1  // 定义则全走uncache  
 // `define TRAP                1   
 
 `define ALUOpLen            4:0
