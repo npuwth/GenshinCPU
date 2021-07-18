@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-17 20:44:53
+ * @LastEditTime: 2021-07-18 12:07:12
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -73,7 +73,7 @@ module TOP_MEM (
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType     = MM2Bus.MEM_RegsWrType;        // 传给EXE用于旁路
+    assign EMBus.MEM_RegsWrType     = MEM_RegsWrType;        // 传给EXE用于旁路
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high
     assign EMBus.MEM_Result         = MEM_Result;                   // 传给EXE用于旁路    
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
@@ -183,6 +183,7 @@ module TOP_MEM (
         .CP0_Status_IE          (CP0_Status_IE ),
         .CP0_Cause_IP7_2        (CP0_Cause_IP7_2 ),
         .CP0_Cause_IP1_0        (CP0_Cause_IP1_0),
+        .CP0_Ebase              (CP0_Ebase),
         .CP0_EPC                (CP0_EPC)
   );
 
@@ -191,7 +192,7 @@ module TOP_MEM (
     MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                      (MM2Bus.MEM_PC + 8),
         .d1                      (MM2Bus.MEM_ALUOut),
-        .d2                      (MM2Bus.MEM_OutB  ),
+        .d2                      (RFHILO_Bus       ), //这里使用的应该都是从寄存器出来的，而不是读取CP0后的MM2Bus.MEM_OutB,已经在dataHazard中对这种情况进行了阻塞
         .d3                      ('x               ),
         .sel4_to_1               (MM2Bus.MEM_WbSel ),
         .y                       (MEM_Result       )
@@ -218,9 +219,9 @@ module TOP_MEM (
     U_Dcache (
         .clk                     (clk ),
         .resetn                  (resetn ),
-        .axi_ubus                (axi_ubus ),
-        .cpu_bus                 (cpu_dbus ),
-        .axi_bus                 ( axi_dbus)
+        .axi_ubus                (axi_ubus.master ),
+        .cpu_bus                 (cpu_dbus.slave ),
+        .axi_bus                 ( axi_dbus.master)
     );
 
     MUX4to1 #(32) U_MUX_OutB2 ( 
@@ -234,7 +235,7 @@ module TOP_MEM (
 
     DTLB U_DTLB (
         .clk                     (clk ),
-        .rst                     (rst ),
+        .rst                     (resetn ),
         .Virt_Daddr              (MM2Bus.MEM_ALUOut ),
         .TLBBuffer_Flush         (TLBBuffer_Flush ),
         .D_TLBEntry              (D_TLBEntry ),

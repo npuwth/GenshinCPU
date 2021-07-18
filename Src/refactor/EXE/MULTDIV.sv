@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-17 15:37:01
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-18 10:59:22
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
  * 
@@ -62,7 +62,7 @@ logic signflag;
 
 
 always_ff @(posedge clk ) begin
-    if (!rst) begin
+    if (rst == `RstEnable) begin
             dividend_tdata <= `ZeroWord;
             divisor_tdata  <= `ZeroWord;
     end
@@ -78,7 +78,7 @@ end
 
 // 除法的状态机
 always_ff @(posedge clk ) begin
-        if (!rst) prestate <= T;
+        if (rst == `RstEnable) prestate <= T;
         else      prestate <= nextstate;
 end
 //除法状态机的状态转移
@@ -227,7 +227,7 @@ end
 
 //乘法的状态机
 always_ff @(posedge clk ) begin
-        if (!rst) prestate_mul <= T;
+        if (rst == `RstEnable) prestate_mul <= T;
         else      prestate_mul <= nextstate_mul;
 end
 
@@ -242,8 +242,10 @@ end
 
 // 乘法状态机的控制信号
 always_comb begin
-        if (ExceptionAssert == `InterruptAssert)  // 前面流水级有异常，需要清空状态机状态
+        if (ExceptionAssert == `InterruptAssert) begin // 前面流水级有异常，需要清空状态机状态
             nextstate_mul = T;
+            EXE_MULTStall = 1'b0;
+        end
         else begin
             case(prestate_mul)
                 T:begin

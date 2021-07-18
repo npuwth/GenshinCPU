@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-27 20:08:23
- * @LastEditTime: 2021-07-16 22:03:09
+ * @LastEditTime: 2021-07-18 11:01:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,7 +57,7 @@ module TLB
     );
 //--------------------------------复用访存实现TLBP----------------------------------------//
     MUX2to1#(19) U_MUX_s1vpn (
-        .d0                   (I_VPN2),
+        .d0                   (D_VPN2),
         .d1                   (CTBus.CP0_vpn2),
         .sel2_to_1            (MEM_IsTLBP),//
         .y                    (s1_vpn2)

@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-16 22:19:41
+ * @LastEditTime: 2021-07-18 10:42:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -456,8 +456,7 @@ module cp0_reg (
             end
             `CP0_REG_CONFIG0: begin
                 if(CP0_Sel == 1'b0) CP0_RdData = CP0.Config0;
-                else                CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , 
-                                               CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
+                else                CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
             end
             default:             CP0_RdData = 'x;
         endcase

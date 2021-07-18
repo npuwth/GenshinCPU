@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-17 16:46:24
+ * @LastEditTime: 2021-07-18 10:32:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -169,7 +169,7 @@ module DTLB (
             D_IsTLBBufferValid                              = 1'b0;
             MEM_TLBExceptType                               = `MEM_TLBNoneEX;
         end
-        else if(D_TLBBufferHit == 1'b1 ) begin //说明TLB Buffer对上了
+        else if(D_TLBBuffer.IsInTLB == 1'b1 ) begin //说明TLB Buffer对上了
             if(Virt_Daddr[12] == 1'b0) begin
                 if(D_TLBBuffer.V0 == 1'b0) begin //无效异常
                     if(MEM_LoadType.ReadMem == 1'b1) begin

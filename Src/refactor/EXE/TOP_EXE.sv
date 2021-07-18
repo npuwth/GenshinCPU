@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-17 03:24:18
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-18 10:54:30
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -192,6 +192,7 @@ module TOP_EXE (
         .d0                   (EXE_BusB_L1),
         .d1                   (HI_Bus),
         .d2                   (LO_Bus),
+        .d3                   ('x    ),      //这时候CP0还没读出来
         .sel4_to_1            (EMBus.EXE_RegsReadSel),
         .y                    (EMBus.EXE_OutB)
     );

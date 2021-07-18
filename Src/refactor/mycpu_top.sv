@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-17 16:17:00
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-18 11:03:10
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -373,10 +373,10 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .MEM2_Flush                (MEM2_Flush ),
         .MEM2_Wr                   (MEM2_Wr ),
+        .MEM_store_req             (MEM_StoreType.DMWr),
         .MM2Bus                    (MM2Bus.MEM2 ),
         .M2WBus                    (M2WBus.MEM2 ),
         .cpu_dbus                  (cpu_dbus ),
-        .MEM_store_req             (MEM_StoreType.DMWr),
         //--------------------------output-------------------------//
         .MEM2_Result               (MEM2_Result ),
         .MEM2_Dst                  (MEM2_Dst ),

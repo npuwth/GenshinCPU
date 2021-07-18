@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-16 21:48:45
+ * @LastEditTime: 2021-07-18 11:05:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -89,6 +89,7 @@ module TOP_PREIF (
         .d4             (BranchAddr),
         .d5             (EXE_BusA_L1),         // JR
         .d6             (MEM_PC),
+        .d7             ('x    ),
         .sel8_to_1      (PCSel),
         //---------------output----------------//
         .y              (PREIF_NPC)
@@ -121,14 +122,14 @@ module TOP_PREIF (
     U_Icache (
         .clk             (clk ),
         .resetn          (resetn ),
-        .cpu_bus         (cpu_ibus ),
-        .axi_ubus        (axi_iubus),
-        .axi_bus         ( axi_ibus)
+        .cpu_bus         (cpu_ibus.slave ),
+        .axi_ubus        (axi_iubus.master),
+        .axi_bus         ( axi_ibus.master)
     );
 
     ITLB U_ITLB (
         .clk             (clk ),
-        .rst             (rst ),
+        .rst             (resetn ),
         .Virt_Iaddr      (PREIF_PC ),
         .TLBBuffer_Flush (TLBBuffer_Flush ),
         .I_TLBEntry      (I_TLBEntry ),
