@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 04:57:30
+ * @LastEditTime: 2021-07-19 05:47:21
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -172,6 +172,7 @@ module mycpu_top (
         .Dcache_busy            (cpu_dbus.busy ),
         .ID_EX_DH_Stall         (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
+        .ID_IsAImmeJump         (ID_IsAImmeJump),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         .MEM_Addr               (MM2Bus.MEM_ALUOut),        

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 04:49:58
+ * @LastEditTime: 2021-07-19 05:54:56
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -132,9 +132,9 @@ module TOP_ID (
         .ID_TLBWIorR         (IEBus.ID_TLBWIorR),
         .ID_TrapOp           (IEBus.ID_TrapOp)
     );
-    assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : IEBus.ID_LoadType; 
-    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : IEBus.ID_StoreType; // TODO:可以删掉
-    assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : IEBus.ID_RegsWrType;   
+    assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
+    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; // TODO:可以删掉
+    assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : ID_RegsWrType;   
 
     DataHazard U_DataHazard ( 
         .ID_rs               (IEBus.ID_rs),
