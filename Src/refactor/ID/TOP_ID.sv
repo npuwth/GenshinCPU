@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-18 17:50:20
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 04:49:58
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -21,7 +21,8 @@ module TOP_ID (
     input logic [4:0]        WB_Dst,
     input RegsWrType         WB_RegsWrType,
     input logic [4:0]        MEM_rt,
-    input logic              MEM_ReadMEM, // MEM级的load信号        
+    input logic              MEM_ReadMEM, // MEM级的load信号     
+    input logic              ID_DisWr,   
     IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
@@ -30,7 +31,8 @@ module TOP_ID (
     // output logic             DH_IFWr,
     // output logic             DH_IDWr,
     // output logic             EXE_Flush_DataHazard
-    output logic            DH_Stall,
+    output logic            ID_EX_DH_Stall,
+    output logic            ID_MEM1_DH_Stall,
     output logic [31:0]     ID_PC,
     output logic [31:0]     ID_Instr
 );
@@ -42,6 +44,10 @@ module TOP_ID (
     logic                    ID_RF_ForwardB;
     logic [1:0]              ID_rsrtRead;
     ExceptinPipeType         ID_ExceptType;
+
+    LoadType                 ID_LoadType;
+    StoreType                ID_StoreType;
+    RegsWrType               ID_RegsWrType;
 
     assign ID_Instr       = IEBus.ID_Instr;//用于IF级的NPC
     assign ID_PC          = IEBus.ID_PC;   //用于IF级的NPC
@@ -107,9 +113,9 @@ module TOP_ID (
         .ID_ExceptType       (ID_ExceptType),
 //--------------------------out-------------------------------------//
         .ID_ALUOp            (IEBus.ID_ALUOp),
-        .ID_LoadType         (IEBus.ID_LoadType),
-        .ID_StoreType        (IEBus.ID_StoreType),
-        .ID_RegsWrType       (IEBus.ID_RegsWrType),
+        .ID_LoadType         (ID_LoadType),
+        .ID_StoreType        (ID_StoreType),
+        .ID_RegsWrType       (ID_RegsWrType),
         .ID_WbSel            (IEBus.ID_WbSel),
         .ID_DstSel           (IEBus.ID_DstSel),
         .ID_ExceptType_new   (IEBus.ID_ExceptType_new),
@@ -126,6 +132,9 @@ module TOP_ID (
         .ID_TLBWIorR         (IEBus.ID_TLBWIorR),
         .ID_TrapOp           (IEBus.ID_TrapOp)
     );
+    assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : IEBus.ID_LoadType; 
+    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : IEBus.ID_StoreType; // TODO:可以删掉
+    assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : IEBus.ID_RegsWrType;   
 
     DataHazard U_DataHazard ( 
         .ID_rs               (IEBus.ID_rs),
@@ -137,7 +146,8 @@ module TOP_ID (
         .MEM_ReadMEM         (MEM_ReadMEM ),
         .EXE_Instr           (IEBus.EXE_Instr),
         //-----------------------output-----------------------//
-        .DH_Stall            (DH_Stall)
+        .ID_EX_DH_Stall      (ID_EX_DH_Stall),
+        .ID_MEM1_DH_Stall    (ID_MEM1_DH_Stall)
     );
 
 endmodule  

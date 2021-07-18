@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-18 09:35:24
+ * @LastEditTime: 2021-07-19 04:30:36
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -62,7 +62,8 @@ module mycpu_top (
     logic [31:0]               WB_Result;                 //来自WB级,用于Debug
     logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
     logic                      Flush_Exception;           //来自MEM级的异常检测
-    logic                      DH_Stall;                  //来自DataHazard
+    logic                      ID_EX_DH_Stall;            //来自DataHazard
+    logic                      ID_MEM1_DH_Stall;          //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;
@@ -169,8 +170,8 @@ module mycpu_top (
         .D_IsTLBStall           (D_IsTLBStall ),
         .Icache_busy            (cpu_ibus.busy ),
         .Dcache_busy            (cpu_dbus.busy ),
-        .DH_Stall               (DH_Stall),
-        .ID_IsAImmeJump         (ID_IsAImmeJump),
+        .ID_EX_DH_Stall         (ID_EX_DH_Stall),
+        .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         .MEM_Addr               (MM2Bus.MEM_ALUOut),        
@@ -198,6 +199,7 @@ module mycpu_top (
         .MEM2_Flush             (MEM2_Flush ),
         .WB_Flush               (WB_Flush ),
 
+        .ID_DisWr               (ID_DisWr),
         .EXE_DisWr              (EXE_DisWr ),
         .MEM_DisWr              (MEM_DisWr ),
         .WB_DisWr               (WB_DisWr ),
@@ -356,11 +358,13 @@ module mycpu_top (
         .WB_RegsWrType             (WB_RegsWrType ),
         .MEM_rt                    (MEM_rt),   
         .MEM_ReadMEM               (MEM_LoadType.ReadMem), // load信号用于数据冒险 TODO:连线
+        .ID_DisWr                  (ID_DisWr),
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
-        .DH_Stall                  (DH_Stall),
+        .ID_EX_DH_Stall            (ID_EX_DH_Stall),
+        .ID_MEM1_DH_Stall          (ID_MEM1_DH_Stall),
         .ID_PC                     (ID_PC),
         .ID_Instr                  (ID_Instr)
     );

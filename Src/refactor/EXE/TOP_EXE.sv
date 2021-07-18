@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-18 16:00:52
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 04:54:38
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -61,6 +61,7 @@ module TOP_EXE (
     logic [2:0]               EXE_TrapOp;  
     logic                     MDU_flush;
     RegsWrType                EXE_Final_Wr;
+    // LoadType                  EXE_LoadType;
     logic                     EXE_Final_Finish;
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
@@ -69,7 +70,8 @@ module TOP_EXE (
     assign IEBus.EXE_LoadType = EMBus.EXE_LoadType; 
     assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
 
-    assign EXE_Final_Wr       = (EXE_DisWr) ? '0:EMBus.EXE_RegsWrType;
+    assign EXE_Final_Wr       = (EXE_DisWr) ? '0: EMBus.EXE_RegsWrType;
+    // assign EMBus.EXE_LoadType = (EXE_DisWr) ? '0: EXE_LoadType;
     assign EXE_Final_Finish   = (EXE_DisWr) ? '0:EXE_Finish;
 
     EXE_Reg U_EXE_Reg ( 
@@ -246,7 +248,7 @@ module TOP_EXE (
     HILO U_HILO (
         .clk                   (clk),
         .rst                   (resetn),
-        .MULT_DIV_finish       (EXE_Final_Finish),
+        .MULT_DIV_finish       (EXE_Final_Finish ),
         .EXE_MultiExtendOp     (EXE_MultiExtendOp),
         .HIWr                  (EXE_Final_Wr.HIWr), //把写HI，LO统一在EXE级
         .LOWr                  (EXE_Final_Wr.LOWr),
