@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-18 16:41:00
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-18 09:15:33
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -136,15 +136,15 @@ module mycpu_top (
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
-    ila CPU_TOP_ILA(
-        .clk(aclk),
-        .probe0(debug_wb_pc),
-        .probe1(debug_wb_rf_wdata),
-        .probe2(debug_wb_rf_wen),
-        .probe3(debug_wb_rf_wnum),
-        .probe4(IIBus.IF_Instr),
-        .probe5 (MM2Bus.MEM_ExcType)
-    );
+    // ila CPU_TOP_ILA(
+    //     .clk(aclk),
+    //     .probe0(debug_wb_pc),
+    //     .probe1(debug_wb_rf_wdata),
+    //     .probe2(debug_wb_rf_wen),
+    //     .probe3(debug_wb_rf_wnum),
+    //     .probe4(IIBus.IF_Instr),
+    //     .probe5 (MM2Bus.MEM_ExcType)
+    // );
 
                                         //写回寄存器的地址
     //---------------------------------------interface实例化-------------------------------------------------------//
