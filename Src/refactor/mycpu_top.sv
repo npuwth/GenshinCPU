@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-17 16:17:00
+ * @LastEditTime: 2021-07-18 13:35:44
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -203,17 +203,62 @@ module mycpu_top (
     assign cpu_ibus.valid =  IReq_valid & I_IsTLBBufferValid;
     assign cpu_dbus.valid =  DReq_valid & D_IsTLBBufferValid;
     //------------------------AXI-----------------------//
-    AXIInteract  #(
-        `ICACHE_LINE_WORD,
-        `DCACHE_LINE_WORD
-    )
-    AXIInteract_dut
+    // AXIInteract  #(
+    //     `ICACHE_LINE_WORD,
+    //     `DCACHE_LINE_WORD
+    // )
+    // AXIInteract_dut
+    // (
+    //     .clk                    (aclk ),
+    //     .resetn                 (aresetn ),
+    //     .dbus                   (axi_dbus.slave ),
+    //     .ibus                   (axi_ibus.slave ),
+    //     .udbus                  (axi_ubus.slave) ,
+    //     .m_axi_arid             (arid ),
+    //     .m_axi_araddr           (araddr ),
+    //     .m_axi_arlen            (arlen ),
+    //     .m_axi_arsize           (arsize ),
+    //     .m_axi_arburst          (arburst ),
+    //     .m_axi_arlock           (arlock ),
+    //     .m_axi_arcache          (arcache ),
+    //     .m_axi_arprot           (arprot ),
+    //     .m_axi_arvalid          (arvalid ),
+    //     .m_axi_arready          (arready ),
+    //     .m_axi_rid              (rid ),
+    //     .m_axi_rdata            (rdata ),
+    //     .m_axi_rresp            (rresp ),
+    //     .m_axi_rlast            (rlast ),
+    //     .m_axi_rvalid           (rvalid ),
+    //     .m_axi_rready           (rready ),
+    //     .m_axi_awid             (awid ),
+    //     .m_axi_awaddr           (awaddr ),
+    //     .m_axi_awlen            (awlen ),
+    //     .m_axi_awsize           (awsize ),
+    //     .m_axi_awburst          (awburst ),
+    //     .m_axi_awlock           (awlock ),
+    //     .m_axi_awcache          (awcache ),
+    //     .m_axi_awprot           (awprot ),
+    //     .m_axi_awvalid          (awvalid ),
+    //     .m_axi_awready          (awready ),
+    //     .m_axi_wid              (wid ),
+    //     .m_axi_wdata            (wdata ),
+    //     .m_axi_wstrb            (wstrb ),
+    //     .m_axi_wlast            (wlast ),
+    //     .m_axi_wvalid           (wvalid ),
+    //     .m_axi_wready           (wready ),
+    //     .m_axi_bid              (bid ),
+    //     .m_axi_bresp            (bresp ),
+    //     .m_axi_bvalid           (bvalid ),
+    //     .m_axi_bready           (bready)
+    // );
+    
+     AXIInteract AXIInteract_dut
     (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
-        .dbus                   (axi_dbus.slave ),
-        .ibus                   (axi_ibus.slave ),
-        .udbus                  (axi_ubus.slave) ,
+        .DcacheAXIBus           (axi_dbus.slave ),
+        .IcacheAXIBus           (axi_ibus.slave ),
+        .UncacheAXIBus          (axi_ubus.slave) ,
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),
@@ -251,7 +296,6 @@ module mycpu_top (
         .m_axi_bvalid           (bvalid ),
         .m_axi_bready           (bready)
     );
-    
     TOP_PREIF U_TOP_PREIF ( 
         .clk                       (aclk ),
         .resetn                    (aresetn ),
