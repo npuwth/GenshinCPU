@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-17 20:37:10
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-18 09:10:12
+ * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -405,7 +405,7 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
 end
 
 always_ff @(posedge clk) begin : req_buffer_blockName
-    if (resetn == `RstEnable ) begin
+    if (resetn == `RstEnable || cpu_bus.flush) begin
         req_buffer <='0;
     end else if(req_buffer_en) begin
         req_buffer.valid    <=  cpu_bus.valid;
@@ -446,7 +446,7 @@ endgenerate
 
 
 always_ff @( posedge clk ) begin : state_blockName
-    if (resetn == `RstEnable) begin
+    if (resetn == `RstEnable|| cpu_bus.flush) begin
         state <= LOOKUP;
     end else begin
         state <= state_next;
