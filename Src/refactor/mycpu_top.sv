@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-18 09:15:33
+ * @LastEditTime: 2021-07-18 09:35:24
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,7 +28,7 @@ module mycpu_top (
     output logic               arvalid,
     input  logic               arready,
     input  logic  [ 3:0]       rid,
-    input  logic  [31:0]       rdata,
+    input  logic  [31:0]       rdata, 
     input  logic  [ 1:0]       rresp,
     input  logic               rlast,
     input  logic               rvalid,
