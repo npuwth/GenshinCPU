@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 04:41:35
+ * @LastEditTime: 2021-07-19 06:11:09
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -56,8 +56,8 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
-    LoadType                     MEM_Final_LoadType;
-    StoreType                    MEM_Final_StoreType;
+    // LoadType                     MEM_Final_LoadType;
+    // StoreType                    MEM_Final_StoreType;
     logic [3:0]                  MEM_DCache_Wen;   
     logic [31:0]                 MEM_DataToDcache;
     logic                        MEM_IsTLBR;
@@ -86,8 +86,8 @@ module TOP_MEM (
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MM2Bus.MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
-    assign MEM_Final_LoadType       = (MEM_DisWr)? '0 : MEM_LoadType;
-    assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
+    // assign MEM_Final_LoadType       = (MEM_DisWr)? '0 : MEM_LoadType;
+    // assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
 
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     // assign MEM_store_req            = MEM_StoreType.DMWr ;
@@ -208,11 +208,11 @@ module TOP_MEM (
     assign cpu_dbus.wdata                                 = MEM_DataToDcache;
     assign cpu_dbus.tag                                   = Phsy_Daddr[31:12];
     assign {cpu_dbus.index,cpu_dbus.offset}               =  MM2Bus.MEM_ALUOut[11:0];                 // inst_sram_addr_o 虚拟地址
-    assign cpu_dbus.op                                    = (MEM_Final_LoadType.ReadMem)? 1'b0 :
-                                                            (MEM_Final_StoreType.DMWr) ? 1'b1  :
+    assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
+                                                            (MEM_StoreType.DMWr) ? 1'b1  :
                                                              1'bx;
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
-    assign cpu_dbus.loadType                              = MEM_Final_LoadType;
+    assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
     assign cpu_dbus.flush                                 = 1'b0;
     
@@ -246,8 +246,8 @@ module TOP_MEM (
         .TLBBuffer_Flush         (TLBBuffer_Flush ),
         .D_TLBEntry              (D_TLBEntry ),
         .s1_found                (s1_found ),
-        .MEM_LoadType            (MEM_Final_LoadType ),
-        .MEM_StoreType           (MEM_Final_StoreType ),
+        .MEM_LoadType            (MEM_LoadType ),
+        .MEM_StoreType           (MEM_StoreType ),
         .Phsy_Daddr              (Phsy_Daddr ),
         .D_IsCached              (D_IsCached ),
         .D_IsTLBBufferValid      (D_IsTLBBufferValid ),
