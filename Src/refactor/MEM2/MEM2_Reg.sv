@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-17 16:05:25
+ * @LastEditTime: 2021-07-19 16:34:29
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,7 +46,6 @@ module MEM2_Reg (
     output logic                        MEM2_IsInDelaySlot,
     output logic                        MEM2_store_req,
     output logic                        MEM2_Isincache
-
 );
 
   always_ff @(posedge clk ) begin

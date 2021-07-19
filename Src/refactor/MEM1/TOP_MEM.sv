@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 15:02:38
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 16:41:03
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -56,8 +56,7 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
-    // LoadType                     MEM_Final_LoadType;
-    // StoreType                    MEM_Final_StoreType;
+    StoreType                    MEM_Final_StoreType;
     logic [3:0]                  MEM_DCache_Wen;   
     logic [31:0]                 MEM_DataToDcache;
     logic                        MEM_IsTLBR;
@@ -87,12 +86,12 @@ module TOP_MEM (
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
     assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
-    // assign MEM_Final_LoadType       = (MEM_DisWr)? '0 : MEM_LoadType;
-    // assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
 
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     // assign MEM_store_req            = MEM_StoreType.DMWr ;
-    assign MM2Bus.MEM_Isincache     = cpu_dbus.isCache;
+    assign MM2Bus.MEM_Isincache     = D_IsCached;
+    assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
+    assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
