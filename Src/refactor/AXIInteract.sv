@@ -2,7 +2,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-19 17:05:40
+ * @LastEditTime: 2021-07-19 17:08:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -500,7 +500,7 @@ module AXIInteract #(
     //dbus上的赋值
     assign dbus.ret_valid = (dstate == FINISH)? 1'b1:1'b0;
     assign dbus.ret_data  = dcache_line_recv;
-    assign dbus.wr_valid  = (dstate_wb == WB_FINISH)? 1'b1:1'b0;
+    assign dbus.wr_valid  = (dstate_wb == WB_FINISH)? 1'b1 :1'b0; 
 
 //dcache写状态机 因为write buffer的存在 所以没法和uncache共用一个通道
     always_ff @( posedge clk ) begin : dstate_wb_block
