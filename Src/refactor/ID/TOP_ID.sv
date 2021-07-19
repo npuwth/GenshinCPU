@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 23:23:34
+ * @LastEditTime: 2021-07-19 23:35:01
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -40,6 +40,7 @@ module TOP_ID (
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
     output logic             ID_EX_DH_Stall,
     output logic             ID_MEM1_DH_Stall,
+    output logic             ID_MEM2_DH_Stall,
     output logic [31:0]      ID_PC,
     output logic [31:0]      ID_Instr
 );
