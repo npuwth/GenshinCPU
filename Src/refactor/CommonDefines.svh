@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-19 12:42:55
+ * @LastEditTime: 2021-07-19 16:53:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -14,8 +14,9 @@
 // 取消功能,需要将`define注释掉
 // `define FPU_DETECT_EN       1  // 定义则打开浮点检测功能
 // `define DEBUG               1        
+`define NEW_BRIDGE
 `define All_Uncache         1  // 定义则全走uncache  
-// `define EN_TLB              1   
+// `define TRAP                1   
 
 `define ALUOpLen            4:0
 `define InstrLen            31:0
@@ -82,6 +83,7 @@
 
 //**************************for the trap slove unit*****************************
 // 对于trap指令的立即数，都做有符号位的扩展
+`define TRAP_OP_None    3'b000 // 没有trap
 `define TRAP_OP_TEQ     3'b110 // 按照 有符号数 比较 ; 相等         即发生异常
 `define TRAP_OP_TEQI    3'b110 // 按照 有符号数 比较 ; 相等         即发生异常
 `define TRAP_OP_TGE     3'b001 // 按照 有符号数 比较 ; 大于或者相等 即发生异常

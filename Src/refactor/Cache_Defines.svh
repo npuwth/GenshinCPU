@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-15 14:21:19
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 11:26:48
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -35,8 +35,8 @@ interface CPU_Bus_Interface();            // 只需要满足读的请求 icache�
   logic 		    op;        // 0 读 1 写
 
   logic [19:0]  tag;       // 
-  logic [7:0] 	index;     //
-  logic [3:0] 	offset;    //  
+  logic [11-$clog2(`DCACHE_LINE_WORD*4):0] 	index;     //
+  logic [$clog2(`DCACHE_LINE_WORD*4)-1:0] 	offset;    //  
   logic [3:0] 	wstrb;     //  Icache 用不到
   //StoreType     storeType;
   LoadType      loadType;

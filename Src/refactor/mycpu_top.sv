@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 12:40:04
+ * @LastEditTime: 2021-07-19 16:52:27
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,7 +28,7 @@ module mycpu_top (
     output logic               arvalid,
     input  logic               arready,
     input  logic  [ 3:0]       rid,
-    input  logic  [31:0]       rdata,
+    input  logic  [31:0]       rdata, 
     input  logic  [ 1:0]       rresp,
     input  logic               rlast,
     input  logic               rvalid,
@@ -135,7 +135,18 @@ module mycpu_top (
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
-    assign debug_wb_rf_wnum = WB_Dst;                                                        //写回寄存器的地址
+    assign debug_wb_rf_wnum = WB_Dst;           
+    // ila CPU_TOP_ILA(
+    //     .clk(aclk),
+    //     .probe0(debug_wb_pc),
+    //     .probe1(debug_wb_rf_wdata),
+    //     .probe2(debug_wb_rf_wen),
+    //     .probe3(debug_wb_rf_wnum),
+    //     .probe4(IIBus.IF_Instr),
+    //     .probe5 (MM2Bus.MEM_ExcType)
+    // );
+
+                                        //写回寄存器的地址
     //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_Bus_Interface           cpu_ibus();
     CPU_Bus_Interface           cpu_dbus();
@@ -202,63 +213,19 @@ module mycpu_top (
     
     assign cpu_ibus.valid =  IReq_valid & I_IsTLBBufferValid;
     assign cpu_dbus.valid =  DReq_valid & D_IsTLBBufferValid;
+    `ifdef NEW_BRIDGE
     //------------------------AXI-----------------------//
-    // AXIInteract  #(
-    //     `ICACHE_LINE_WORD,
-    //     `DCACHE_LINE_WORD
-    // )
-    // AXIInteract_dut
-    // (
-    //     .clk                    (aclk ),
-    //     .resetn                 (aresetn ),
-    //     .dbus                   (axi_dbus.slave ),
-    //     .ibus                   (axi_ibus.slave ),
-    //     .udbus                  (axi_ubus.slave) ,
-    //     .m_axi_arid             (arid ),
-    //     .m_axi_araddr           (araddr ),
-    //     .m_axi_arlen            (arlen ),
-    //     .m_axi_arsize           (arsize ),
-    //     .m_axi_arburst          (arburst ),
-    //     .m_axi_arlock           (arlock ),
-    //     .m_axi_arcache          (arcache ),
-    //     .m_axi_arprot           (arprot ),
-    //     .m_axi_arvalid          (arvalid ),
-    //     .m_axi_arready          (arready ),
-    //     .m_axi_rid              (rid ),
-    //     .m_axi_rdata            (rdata ),
-    //     .m_axi_rresp            (rresp ),
-    //     .m_axi_rlast            (rlast ),
-    //     .m_axi_rvalid           (rvalid ),
-    //     .m_axi_rready           (rready ),
-    //     .m_axi_awid             (awid ),
-    //     .m_axi_awaddr           (awaddr ),
-    //     .m_axi_awlen            (awlen ),
-    //     .m_axi_awsize           (awsize ),
-    //     .m_axi_awburst          (awburst ),
-    //     .m_axi_awlock           (awlock ),
-    //     .m_axi_awcache          (awcache ),
-    //     .m_axi_awprot           (awprot ),
-    //     .m_axi_awvalid          (awvalid ),
-    //     .m_axi_awready          (awready ),
-    //     .m_axi_wid              (wid ),
-    //     .m_axi_wdata            (wdata ),
-    //     .m_axi_wstrb            (wstrb ),
-    //     .m_axi_wlast            (wlast ),
-    //     .m_axi_wvalid           (wvalid ),
-    //     .m_axi_wready           (wready ),
-    //     .m_axi_bid              (bid ),
-    //     .m_axi_bresp            (bresp ),
-    //     .m_axi_bvalid           (bvalid ),
-    //     .m_axi_bready           (bready)
-    // );
-    
-     AXIInteract AXIInteract_dut
+    AXIInteract  #(
+        `ICACHE_LINE_WORD,
+        `DCACHE_LINE_WORD
+    )
+    AXIInteract_dut
     (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
-        .DcacheAXIBus           (axi_dbus.slave ),
-        .IcacheAXIBus           (axi_ibus.slave ),
-        .UncacheAXIBus          (axi_ubus.slave) ,
+        .dbus                   (axi_dbus.slave ),
+        .ibus                   (axi_ibus.slave ),
+        .udbus                  (axi_ubus.slave) ,
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),
@@ -296,6 +263,54 @@ module mycpu_top (
         .m_axi_bvalid           (bvalid ),
         .m_axi_bready           (bready)
     );
+    `endif 
+
+    `ifndef NEW_BRIDGE
+     AXIInteract AXIInteract_dut
+    (
+        .clk                    (aclk ),
+        .resetn                 (aresetn ),
+        .DcacheAXIBus                   (axi_dbus.slave ),
+        .IcacheAXIBus                   (axi_ibus.slave ),
+        .UncacheAXIBus                  (axi_ubus.slave) ,
+        .m_axi_arid             (arid ),
+        .m_axi_araddr           (araddr ),
+        .m_axi_arlen            (arlen ),
+        .m_axi_arsize           (arsize ),
+        .m_axi_arburst          (arburst ),
+        .m_axi_arlock           (arlock ),
+        .m_axi_arcache          (arcache ),
+        .m_axi_arprot           (arprot ),
+        .m_axi_arvalid          (arvalid ),
+        .m_axi_arready          (arready ),
+        .m_axi_rid              (rid ),
+        .m_axi_rdata            (rdata ),
+        .m_axi_rresp            (rresp ),
+        .m_axi_rlast            (rlast ),
+        .m_axi_rvalid           (rvalid ),
+        .m_axi_rready           (rready ),
+        .m_axi_awid             (awid ),
+        .m_axi_awaddr           (awaddr ),
+        .m_axi_awlen            (awlen ),
+        .m_axi_awsize           (awsize ),
+        .m_axi_awburst          (awburst ),
+        .m_axi_awlock           (awlock ),
+        .m_axi_awcache          (awcache ),
+        .m_axi_awprot           (awprot ),
+        .m_axi_awvalid          (awvalid ),
+        .m_axi_awready          (awready ),
+        .m_axi_wid              (wid ),
+        .m_axi_wdata            (wdata ),
+        .m_axi_wstrb            (wstrb ),
+        .m_axi_wlast            (wlast ),
+        .m_axi_wvalid           (wvalid ),
+        .m_axi_wready           (wready ),
+        .m_axi_bid              (bid ),
+        .m_axi_bresp            (bresp ),
+        .m_axi_bvalid           (bvalid ),
+        .m_axi_bready           (bready)
+    );
+    `endif 
     TOP_PREIF U_TOP_PREIF ( 
         .clk                       (aclk ),
         .resetn                    (aresetn ),

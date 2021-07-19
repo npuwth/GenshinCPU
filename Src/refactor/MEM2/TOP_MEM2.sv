@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-17 16:18:18
+ * @LastEditTime: 2021-07-18 16:22:38
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -69,7 +69,7 @@ module TOP_MEM2 (
     assign MM2Bus.MEM2_ALUOut    = M2WBus.MEM2_ALUOut;
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;
     // output to WB
-    assign M2WBus.MEM2_DMOut      = cpu_dbus.rdata;       //读取结果直接放入DMOut
+    assign M2WBus.MEM2_DMOut     = cpu_dbus.rdata;       //读取结果直接放入DMOut
     //-------------------------------用于旁路的多选器-----------------------//
     MUX4to1 #(32) U_MUXINMEM2(
         .d0                  (M2WBus.MEM2_PC + 8),                                     // JAL,JALR等指令将PC+8写回RF

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-17 20:37:10
+ * @LastEditTime: 2021-07-18 18:26:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -405,7 +405,7 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
 end
 
 always_ff @(posedge clk) begin : req_buffer_blockName
-    if (resetn == `RstEnable ) begin
+    if (resetn == `RstEnable) begin
         req_buffer <='0;
     end else if(req_buffer_en) begin
         req_buffer.valid    <=  cpu_bus.valid;

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-15 15:52:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-18 17:50:20
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -43,8 +43,8 @@ module TOP_ID (
     logic [1:0]              ID_rsrtRead;
     ExceptinPipeType         ID_ExceptType;
 
-    assign ID_Instr = IEBus.ID_Instr;//用于IF级的NPC
-    assign ID_PC    = IEBus.ID_PC;   //用于IF级的NPC
+    assign ID_Instr       = IEBus.ID_Instr;//用于IF级的NPC
+    assign ID_PC          = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
 
     ID_Reg U_ID_REG ( 
