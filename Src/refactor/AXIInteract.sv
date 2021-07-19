@@ -2,10 +2,10 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-19 17:08:22
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 19:49:08
+ * @LastEditors: Seddon Shen
  * @Description: In User Settings Edit
- * @FilePath: \NewCache\AXI.sv
+ * @FilePath: \refactor\AXIInteract.sv
  */
 `include "Cache_Defines.svh"
 `include "CPU_Defines.svh"
@@ -287,8 +287,6 @@ module AXIInteract #(
     end
     
     always_comb begin : istate_next_block
-        istate_next = IDLE;
-
         unique case (istate)
             IDLE:begin
                 if (ibus.rd_req) begin
@@ -313,6 +311,9 @@ module AXIInteract #(
             end
             FINISH:begin
                 istate_next =IDLE;
+            end
+            default:begin
+                istate_next = IDLE;
             end
         endcase
     end
@@ -401,8 +402,6 @@ module AXIInteract #(
     end
     
     always_comb begin : dstate_next_block
-        dstate_next = IDLE;
-
         unique case (dstate)
             IDLE:begin
                 if (dbus.rd_req) begin
@@ -427,6 +426,9 @@ module AXIInteract #(
             end
             FINISH:begin
                 dstate_next =IDLE;
+            end
+            default:begin
+                dstate_next = IDLE;
             end
         endcase
     end
@@ -512,8 +514,6 @@ module AXIInteract #(
     end
 
     always_comb begin : dstate_wb_next_block
-        dstate_wb_next = WB_IDLE;
-
         unique case (dstate_wb)
             WB_IDLE:begin
                 if (dbus.wr_req) begin
@@ -544,6 +544,9 @@ module AXIInteract #(
                 end
             end
             WB_FINISH:begin
+                dstate_wb_next = WB_IDLE;
+            end
+            default:begin
                 dstate_wb_next = WB_IDLE;
             end
         endcase
@@ -645,8 +648,6 @@ module AXIInteract #(
     end
 
     always_comb begin : dstate_uncache_next_block
-        dstate_uncache_next =UNCACHE_IDLE;
-
         unique case (dstate_uncache)
             UNCACHE_IDLE:begin
                 if (udbus.rd_req | udbus.wr_req) begin
@@ -695,9 +696,11 @@ module AXIInteract #(
                 end                    
             end
             UNCACHE_FINISH:begin
-                dstate_uncache_next =UNCACHE_IDLE;
+                dstate_uncache_next = UNCACHE_IDLE;
             end
-            
+            default:begin
+                dstate_uncache_next = UNCACHE_IDLE;
+            end
         endcase
     end
 
