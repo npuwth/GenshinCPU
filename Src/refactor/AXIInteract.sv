@@ -2,7 +2,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-19 17:01:26
+ * @LastEditTime: 2021-07-19 17:05:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -629,10 +629,10 @@ module AXIInteract #(
 
 
     //空闲信号的输出
-    assign ibus. rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
-    assign ibus. wr_rdy  = 1'b0;
-    assign dbus. rd_rdy  = (dstate == IDLE ) ? 1'b1 : 1'b0;
-    assign dbus. wr_rdy  = (dstate_wb == WB_IDLE )  ? 1'b1 : 1'b0;
+    assign ibus.rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
+    assign ibus.wr_rdy  = 1'b0;
+    assign dbus.rd_rdy  = (dstate == IDLE ) ? 1'b1 : 1'b0;
+    assign dbus.wr_rdy  = (dstate_wb == WB_IDLE )  ? 1'b1 : 1'b0;
     assign udbus.rd_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
     assign udbus.wr_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
 
