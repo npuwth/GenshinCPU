@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-17 16:06:38
+ * @LastEditTime: 2021-07-19 17:01:38
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -414,8 +414,6 @@ interface EXE_MEM_Interface();
   	RegsWrType      		EXE_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	EXE_WbSel;        	// 选择写回数据
   	ExceptinPipeType 		EXE_ExceptType_final;// 异常类型
-	logic       [3:0]       EXE_DCache_Wen;
-	logic       [31:0]      EXE_DataToDcache;
 	logic                   EXE_IsTLBP;
 	logic                   EXE_IsTLBW;
 	logic                   EXE_IsTLBR;
@@ -430,8 +428,7 @@ interface EXE_MEM_Interface();
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
 	logic       [31:0]      MEM_Instr;
-	// logic       [3:0]       MEM_DCache_Wen;	
-	// logic       [31:0]      MEM_DataToDcache;
+
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
 	output      	        EXE_OutB,	 		// RF 中读取到的数据B
@@ -445,8 +442,6 @@ interface EXE_MEM_Interface();
   	output                  EXE_WbSel,        	// 选择写回数据
     output                  EXE_ExceptType_final,		// 异常类型
 	output                  EXE_BranchType,
-	output                  EXE_DCache_Wen,         //DCache的字节写使能
-	output                  EXE_DataToDcache,       //DCache的待写数据
 	output                  EXE_IsTLBP,
 	output                  EXE_IsTLBW,
 	output                  EXE_IsTLBR,
@@ -475,8 +470,6 @@ interface EXE_MEM_Interface();
   	input                   EXE_WbSel,        	// 选择写回数据
     input                   EXE_ExceptType_final,		// 异常类型
 	input                   EXE_BranchType,
-	input                   EXE_DCache_Wen,         //DCache的字节写使能
-	input                   EXE_DataToDcache,       //DCache的待写数据
 	input                   EXE_IsTLBP,
 	input                   EXE_IsTLBW,
 	input                   EXE_IsTLBR,
@@ -506,13 +499,14 @@ interface MEM_MEM2_Interface();
 	logic                   MEM_IsABranch;
 	logic                   MEM_IsAImmeJump;
 	logic                   MEM_IsInDelaySlot;
+	logic 				    MEM_Isincache;
 	logic		[31:0] 		MEM2_ALUOut;		
     logic 		[31:0] 		MEM2_PC;	
 	logic       [4:0]  		MEM2_ExcType;
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAImmeJump;
 	logic                   MEM2_IsInDelaySlot;
-	logic 				    MEM_Isincache;
+	logic                   MEM_store_req;
 
 	modport MEM(  // top MEM使用
 		output  			MEM_ALUOut,		
@@ -527,6 +521,7 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsAImmeJump,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
+		output              MEM_store_req,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
 		input               MEM2_ExcType,
@@ -548,7 +543,7 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsAImmeJump,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
-		
+		input               MEM_store_req,
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
 		output   			MEM2_ExcType,
@@ -571,6 +566,7 @@ interface MEM2_WB_Interface();
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType;
 	logic 					MEM2_Isincache;
+	logic                   MEM2_store_req;
   
 	modport MEM2 (  // top MEM2使用
     	output				MEM2_ALUOut,		
@@ -581,7 +577,8 @@ interface MEM2_WB_Interface();
 		output				MEM2_DMOut,
 		output              MEM2_OutB,
 		output				MEM2_RegsWrType,
-		output 				MEM2_Isincache
+		output 				MEM2_Isincache,
+		output              MEM2_store_req
 	);
 
 	modport WB ( 
@@ -593,8 +590,8 @@ interface MEM2_WB_Interface();
 		input				MEM2_DMOut,
 		input               MEM2_OutB,
 		input				MEM2_RegsWrType,
-		input 				MEM2_Isincache
-
+		input 				MEM2_Isincache,
+        input               MEM2_store_req
 	);
 
 endinterface

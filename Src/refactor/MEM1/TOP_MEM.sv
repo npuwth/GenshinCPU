@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 15:02:38
+ * @LastEditTime: 2021-07-19 17:15:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,7 +46,6 @@ module TOP_MEM (
     output logic                 D_IsTLBBufferValid,
     output logic                 D_IsTLBStall,
     output logic                 TLBBuffer_Flush
-    // output logic                 MEM_in_cache
 );
     ExceptinPipeType             MEM_ExceptType;
 	RegsWrType                   MEM_RegsWrType; 
@@ -56,10 +55,7 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
-    // LoadType                     MEM_Final_LoadType;
-    // StoreType                    MEM_Final_StoreType;
-    logic [3:0]                  MEM_DCache_Wen;   
-    logic [31:0]                 MEM_DataToDcache;
+    StoreType                    MEM_Final_StoreType;
     logic                        MEM_IsTLBR;
     //传给Exception
     logic                        CP0_Status_BEV;
@@ -69,11 +65,13 @@ module TOP_MEM (
     logic [7:2]                  CP0_Cause_IP7_2;
     logic [1:0]                  CP0_Cause_IP1_0;
     logic [31:0]                 CP0_Ebase;
+    //用于TLB
     logic [2:0]                  MEM_TLBExceptType;
     logic [31:0]                 Phsy_Daddr;
     logic                        D_IsCached;
-    
-    
+    //用于Dcache
+    logic [3:0]                  MEM_DCache_Wen;
+    logic [31:0]                 MEM_DataToDcache;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
@@ -85,14 +83,14 @@ module TOP_MEM (
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
+    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
+    
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
     assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
-    // assign MEM_Final_LoadType       = (MEM_DisWr)? '0 : MEM_LoadType;
-    // assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
-
-    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
-    // assign MEM_store_req            = MEM_StoreType.DMWr ;
-    assign MM2Bus.MEM_Isincache     = cpu_dbus.isCache;
+    assign MM2Bus.MEM_Isincache     = D_IsCached;
+    //往后传的是DisWr选择后的Store信号
+    assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
+    assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -112,8 +110,6 @@ module TOP_MEM (
         .EXE_RegsWrType          (EMBus.EXE_RegsWrType ),
         .EXE_WbSel               (EMBus.EXE_WbSel ),
         .EXE_ExceptType_final    (EMBus.EXE_ExceptType_final ),
-        .EXE_DCache_Wen          (EMBus.EXE_DCache_Wen),
-        .EXE_DataToDcache        (EMBus.EXE_DataToDcache),
         .EXE_IsTLBP              (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW              (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR              (EMBus.EXE_IsTLBR),
@@ -134,8 +130,6 @@ module TOP_MEM (
         .MEM_RegsWrType          (MEM_RegsWrType ),//未经过Exception的
         .MEM_WbSel               (MM2Bus.MEM_WbSel ),
         .MEM_ExceptType          (MEM_ExceptType ),
-        .MEM_DCache_Wen          (MEM_DCache_Wen),//DCache的字节写使能
-        .MEM_DataToDcache        (MEM_DataToDcache),
         .MEM_IsTLBP              (MEM_IsTLBP),
         .MEM_IsTLBW              (MEM_IsTLBW),
         .MEM_IsTLBR              (MEM_IsTLBR),
@@ -190,9 +184,18 @@ module TOP_MEM (
         .CP0_Cause_IP1_0        (CP0_Cause_IP1_0),
         .CP0_Ebase              (CP0_Ebase),
         .CP0_EPC                (CP0_EPC)
-  );
+    );
 
-    
+    //-----------------------------用于准备写往dcache的数据-----------------------//
+    DCacheWen U_DCACHEWEN(
+        .MEM_ALUOut           (MM2Bus.MEM_ALUOut),
+        .MEM_StoreType        (MEM_StoreType),
+        .MEM_OutB             (RFHILO_Bus),
+        //-----------------output-------------------------//
+        .cache_wen            (MEM_DCache_Wen),      //给出dcache的写使能信号，
+        .DataToDcache         (MEM_DataToDcache)           //给出dcache的写数据信号，
+    );
+
     //------------------------------用于旁路的多选器-------------------------------//
     MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                      (MM2Bus.MEM_PC + 8),

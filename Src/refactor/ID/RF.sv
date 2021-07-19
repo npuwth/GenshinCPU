@@ -27,9 +27,6 @@ always_ff @(posedge clk) begin// write the RF
         if (RFWr==1'b1 && WB_Dst != 5'b0) begin
             regs[WB_Dst] <= WB_Result;
         end
-        else begin
-            regs <= regs;
-        end
         // `ifdef DEBUG
         //     $display("Registers File:");
         //     $display("R[00-07]=%8X, %8X, %8X, %8X, %8X, %8X, %8X, %8X",regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);

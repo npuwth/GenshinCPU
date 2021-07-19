@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-17 10:35:14
+ * @LastEditTime: 2021-07-19 16:53:50
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\ALU.sv
@@ -9,6 +9,7 @@
  */
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
+`define   TEST 
 module ALU (
     input  logic  [31:0]       EXE_ResultA,
     input  logic  [31:0]       EXE_ResultB,
@@ -16,18 +17,18 @@ module ALU (
     output logic  [31:0]       EXE_ALUOut,
     output logic               Overflow_valid
 );
-
+`ifndef TEST
     logic [31:0] EXE_Countbit_Out;
     logic        EXE_Countbit_Opt;
     
     assign       EXE_Countbit_Opt = (EXE_ALUOp == `EXE_ALUOp_CLO);
     
-     Countbit U_Countbit (                 //CLO,CLZ
-         .option(EXE_Countbit_Opt),
-         .value(EXE_ResultA),
-         .count(EXE_Countbit_Out)
-     );
-    
+    Countbit U_Countbit (                 //CLO,CLZ
+        .option(EXE_Countbit_Opt),
+        .value(EXE_ResultA),
+        .count(EXE_Countbit_Out)
+    );
+`endif 
     always_comb begin
         unique case (EXE_ALUOp)
             `EXE_ALUOp_ADD,`EXE_ALUOp_ADDU :  EXE_ALUOut = EXE_ResultA + EXE_ResultB;//可以直接相加
@@ -50,8 +51,10 @@ module ALU (
             end
             `EXE_ALUOp_XOR  :  EXE_ALUOut = EXE_ResultA ^ EXE_ResultB;
             `EXE_ALUOp_AND  :  EXE_ALUOut = EXE_ResultA & EXE_ResultB;
+            `ifndef TEST
             `EXE_ALUOp_CLZ  :  EXE_ALUOut = EXE_Countbit_Out;
             `EXE_ALUOp_CLO  :  EXE_ALUOut = EXE_Countbit_Out;
+            `endif 
             default: EXE_ALUOut = '0;//Do nothing
         endcase
     end 
