@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-19 19:12:44
+ * @LastEditTime: 2021-07-19 19:14:30
  * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \refactor\EXE\ALU.sv
@@ -46,7 +46,7 @@ module ALU (
             end
             //包含SLTU和SLTIU
             `EXE_ALUOp_SLTU  : begin
-                if ((EXE_ResultA) < (EXE_ResultB) ) EXE_ALUOut = 32'b0000_0000_0000_0001;
+                if ((EXE_ResultA) < (EXE_ResultB) ) EXE_ALUOut = 32'b0000_0000_0000_0001;//TODO: 去掉了unsigned的系统函数
                 else  EXE_ALUOut = 32'b0;
             end
             `EXE_ALUOp_XOR  :  EXE_ALUOut = EXE_ResultA ^ EXE_ResultB;

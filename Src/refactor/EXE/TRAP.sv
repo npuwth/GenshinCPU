@@ -1,10 +1,10 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-11 19:32:14
- * @LastEditTime: 2021-07-13 15:00:04
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-19 19:15:35
+ * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \Code\EXE\TRAP.sv
+ * @FilePath: \refactor\EXE\TRAP.sv
  * 
  */
 `include "../CommonDefines.svh"
@@ -26,7 +26,7 @@ module Trap(
                 else Trap_valid = 1'b0;
             end
             `TRAP_OP_TGEIU : begin // TGEI & TGEIU 
-                if ($unsigned(EXE_ResultA) >= $unsigned(EXE_ResultB)) Trap_valid = 1'b1;
+                if ((EXE_ResultA) >= (EXE_ResultB)) Trap_valid = 1'b1;//TODO:spyglass提示 不必使用这个系统函数
                 else Trap_valid = 1'b0;
             end
             `TRAP_OP_TLT   : begin   // TLT & TLTI
@@ -34,7 +34,7 @@ module Trap(
                 else Trap_valid = 1'b0;
             end
             `TRAP_OP_TLTIU : begin // TLTIU & TLTU
-                if ($unsigned(EXE_ResultA) < $unsigned(EXE_ResultB))  Trap_valid = 1'b1;
+                if ((EXE_ResultA) < (EXE_ResultB))  Trap_valid = 1'b1;//TODO:
                 else Trap_valid = 1'b0;
             end
             `TRAP_OP_TNE   : begin
