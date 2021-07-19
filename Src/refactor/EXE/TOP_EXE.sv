@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 15:25:40
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 15:49:39
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -134,8 +134,8 @@ module TOP_EXE (
         .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
-        .EXE_TrapOp           (EXE_TrapOp),
-        .MDU_flush            (MDU_flush)
+        .EXE_TrapOp           (EXE_TrapOp)
+        // .MDU_flush            (MDU_flush)
     );
 
 
@@ -230,7 +230,7 @@ module TOP_EXE (
         .rst                  (resetn),            
         .EXE_ResultA          (EXE_BusA_L1),
         .EXE_ResultB          (EXE_BusB_L1),
-        .ExceptionAssert      (MDU_flush),  // 如果产生flush信号，需要清除状态机
+        .ExceptionAssert      (EXE_Flush),  // 如果产生flush信号，需要清除状态机
     //---------------------output--------------------------//
         .EXE_ALUOp            (EXE_ALUOp),
         .EXE_MULTDIVtoLO      (EXE_MULTDIVtoLO),
