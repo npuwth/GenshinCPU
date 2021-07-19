@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-19 16:39:35
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 22:51:39
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,7 +26,8 @@ module TOP_MEM2 (
     output logic [4:0]           MEM2_Dst,
     output RegsWrType            MEM2_RegsWrType,
     output logic                 MEM2_store_req,
-    output logic                 MEM2_Isincache
+    output logic                 MEM2_Isincache,
+    output LoadType              MEM2_LoadType
 );
     MEM2_Reg U_MEM2_REG(
     .clk                    (clk ),
@@ -46,6 +47,7 @@ module TOP_MEM2 (
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
     .MEM_store_req          (MM2Bus.MEM_store_req),
     .MEM_Isincache          (MM2Bus.MEM_Isincache),
+    .MEM_LoadType           (MM2Bus.MEM_LoadType),
 //-----------------------------output-------------------------------------//
     .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
@@ -59,7 +61,8 @@ module TOP_MEM2 (
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
     .MEM2_store_req         (M2WBus.MEM2_store_req),
-    .MEM2_Isincache         (M2WBus.MEM2_Isincache)
+    .MEM2_Isincache         (M2WBus.MEM2_Isincache),
+    .MEM2_LoadType          (MEM2_LoadType)
 
     );
     assign MEM2_store_req        = M2WBus.MEM2_store_req;

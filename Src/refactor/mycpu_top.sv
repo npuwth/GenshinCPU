@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 16:58:00
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 23:22:53
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -64,6 +64,7 @@ module mycpu_top (
     logic                      Flush_Exception;           //来自MEM级的异常检测
     logic                      ID_EX_DH_Stall;            //来自DataHazard
     logic                      ID_MEM1_DH_Stall;          //来自DataHazard
+    logic                      ID_MEM2_DH_Stall;          //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;
@@ -100,6 +101,7 @@ module mycpu_top (
     RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
 
     logic [4:0]                MEM_rt;                    //用于ID级检测load类型指令的数据冒险
+    LoadType                   MEM2_LoadType;             //用于ID级检测Load类型指令的数据冒险
     BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
     
     logic [31:0]               PREIF_PC;                  //传给IF级
@@ -109,7 +111,7 @@ module mycpu_top (
     logic [31:0]               ID_Instr;                  //来自ID级， 传至IF，用于生成NPC
     logic [31:0]               EXE_PC;                    //来自EXE级，传至IF，用于生成NPC
     logic [31:0]               EXE_Imm32;                 //来自EXE级，传至IF，用于生成NPC  
-
+    logic [31:0]               MEM_Instr;
     logic                      IReq_valid; 
     logic                      DReq_valid; 
 
@@ -135,6 +137,10 @@ module mycpu_top (
     TLB_Entry                  D_TLBEntry;
     logic [31:13]              I_VPN2;
     logic [31:13]              D_VPN2;
+    
+    logic [31:0]               MEM_Result;  // 用于旁路数据
+    logic [4:0]                MEM_Dst;
+    RegsWrType                 MEM_RegsWrType;
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -175,6 +181,7 @@ module mycpu_top (
         .Dcache_busy            (cpu_dbus.busy ),
         .ID_EX_DH_Stall         (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
+        .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
@@ -361,18 +368,28 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .ID_Flush                  (ID_Flush ),
         .ID_Wr                     (ID_Wr ),
+        .MEM_rt                    (MEM_rt),   
+        .MEM_ReadMEM               (MEM_LoadType.ReadMem), // load信号用于数据冒险 TODO:连线
+        .MEM2_rt                   (MEM2_Dst),
+        .MEM2_ReadMEM              (MEM2_LoadType.ReadMem),
+        .ID_DisWr                  (ID_DisWr),
+        .MEM_Result                (MEM_Result ),
+        .MEM_Dst                   (MEM_Dst ),
+        .MEM_RegsWrType            (MEM_RegsWrType ), //用于旁路
+        .MEM2_Result               (MEM2_Result ),      
+        .MEM2_Dst                  (MEM2_Dst ),               
+        .MEM2_RegsWrType           (MEM2_RegsWrType ),  
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_RegsWrType             (WB_RegsWrType ),
-        .MEM_rt                    (MEM_rt),   
-        .MEM_ReadMEM               (MEM_LoadType.ReadMem), // load信号用于数据冒险 TODO:连线
-        .ID_DisWr                  (ID_DisWr),
+        .MEM_Instr                 (MEM_Instr),
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
         .ID_EX_DH_Stall            (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall          (ID_MEM1_DH_Stall),
+        .ID_MEM2_DH_Stall          (ID_MEM2_DH_Stall),
         .ID_PC                     (ID_PC),
         .ID_Instr                  (ID_Instr)
     );
@@ -382,13 +399,6 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .EXE_Flush                 (EXE_Flush ),
         .EXE_Wr                    (EXE_Wr ),
-        //-------------------------input----------------------------//
-        .WB_RegsWrType             (WB_RegsWrType ), //用于旁路
-        .WB_Dst                    (WB_Dst ),
-        .WB_Result                 (WB_Result ),
-        .MEM2_RegsWrType           (MEM2_RegsWrType ),  
-        .MEM2_Dst                  (MEM2_Dst ),               
-        .MEM2_Result               (MEM2_Result ),      
         .EXE_DisWr                 (EXE_DisWr),
         .IEBus                     (IEBus.EXE ),
         .EMBus                     (EMBus.EXE ),
@@ -432,7 +442,11 @@ module mycpu_top (
         .D_VPN2                    (D_VPN2 ),
         .D_IsTLBBufferValid        (D_IsTLBBufferValid ),
         .D_IsTLBStall              (D_IsTLBStall ),
-        .TLBBuffer_Flush           (TLBBuffer_Flush)
+        .TLBBuffer_Flush           (TLBBuffer_Flush),
+        .MEM_Result                (MEM_Result),     
+        .MEM_Dst                   (MEM_Dst),     
+        .MEM_RegsWrType            (MEM_RegsWrType),
+        .MEM_Instr                 (MEM_Instr)
     );
     
     TOP_MEM2 U_TOP_MEM2 (
@@ -448,7 +462,8 @@ module mycpu_top (
         .MEM2_Dst                  (MEM2_Dst ),
         .MEM2_RegsWrType           (MEM2_RegsWrType),
         .MEM2_store_req            (MEM2_store_req),
-        .MEM2_Isincache            (MEM2_Isincache)
+        .MEM2_Isincache            (MEM2_Isincache),
+        .MEM2_LoadType             (MEM2_LoadType)
     );
 
 

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 17:15:54
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 23:21:43
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -45,14 +45,18 @@ module TOP_MEM (
     output logic [31:13]         D_VPN2,
     output logic                 D_IsTLBBufferValid,
     output logic                 D_IsTLBStall,
-    output logic                 TLBBuffer_Flush
+    output logic                 TLBBuffer_Flush,
+    output logic [31:0]          MEM_Result,  // 用于旁路数据
+    output logic [4:0]           MEM_Dst,
+    output RegsWrType            MEM_RegsWrType,
+    output logic [31:0]          MEM_Instr
 );
     ExceptinPipeType             MEM_ExceptType;
-	RegsWrType                   MEM_RegsWrType; 
+	// RegsWrType                   MEM_RegsWrType; 
     logic [31:0]                 RFHILO_Bus;
     logic [1:0]                  MEM_RegsReadSel;
     logic [4:0]                  MEM_rd;               //用于读CP0
-    logic [31:0]                 MEM_Result;
+    // logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
     StoreType                    MEM_Final_StoreType;
@@ -91,7 +95,11 @@ module TOP_MEM (
     //往后传的是DisWr选择后的Store信号
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
     assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
-
+    assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
+    // 用于旁路
+    assign MEM_Dst                  = MM2Bus.MEM_Dst;
+    // 用于MFC0型的阻塞
+    assign MEM_Instr                = MM2Bus.MEM_Instr;
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
         .rst                     (resetn ),
@@ -195,7 +203,6 @@ module TOP_MEM (
         .cache_wen            (MEM_DCache_Wen),      //给出dcache的写使能信号，
         .DataToDcache         (MEM_DataToDcache)           //给出dcache的写数据信号，
     );
-
     //------------------------------用于旁路的多选器-------------------------------//
     MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                      (MM2Bus.MEM_PC + 8),

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 16:58:28
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 22:22:21
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -17,12 +17,6 @@ module TOP_EXE (
     input logic               resetn,
     input logic               EXE_Flush,
     input logic               EXE_Wr,
-    input RegsWrType          WB_RegsWrType,
-    input logic [4:0]         WB_Dst,
-    input logic [31:0]        WB_Result,
-    input RegsWrType          MEM2_RegsWrType,
-    input logic [4:0]         MEM2_Dst,
-    input logic [31:0]        MEM2_Result,
     input logic               EXE_DisWr,
     
     ID_EXE_Interface          IEBus,
@@ -44,8 +38,8 @@ module TOP_EXE (
     logic                     EXE_ALUSrcB;
     logic [1:0]               EXE_RegsReadSel;
     ExceptinPipeType          EXE_ExceptType;    //未经过alu的
-    logic [1:0]               EXE_ForwardA;
-    logic [1:0]               EXE_ForwardB;
+    logic                     EXE_ForwardA;
+    logic                     EXE_ForwardB;
     logic [4:0]               EXE_Shamt;
     logic [31:0]              EXE_BusB_L1;
     logic [31:0]              EXE_BusA_L2;
@@ -139,15 +133,11 @@ module TOP_EXE (
     );
 
 
-    ForwardUnit U_ForwardUnit (             
-        .WB_RegsWrType        (WB_RegsWrType),
-        .MEM_RegsWrType       (EMBus.MEM_RegsWrType),
-        .MEM2_RegsWrType      (MEM2_RegsWrType),
+    ForwardUnitInEXE U_ForwardUnitInEXE (             
         .EXE_rs               (EXE_rs),
         .EXE_rt               (EMBus.EXE_rt),
         .MEM_Dst              (EMBus.MEM_Dst),
-        .MEM2_Dst             (MEM2_Dst),
-        .WB_Dst               (WB_Dst),
+        .MEM_RegsWrType       (EMBus.MEM_RegsWrType),
         //-----------------output-----------------------------//
         .EXE_ForwardA         (EXE_ForwardA),
         .EXE_ForwardB         (EXE_ForwardB)
@@ -161,21 +151,17 @@ module TOP_EXE (
         .ID_Flush             (ID_Flush_BranchSolvement)   
     );
     
-    MUX4to1 #(32) U_MUXA_L1 (
+    MUX2to1 #(32) U_MUXA_L1 (
         .d0                   (EXE_BusA),
         .d1                   (EMBus.MEM_Result),
-        .d2                   (WB_Result),
-        .d3                   (MEM2_Result),       
-        .sel4_to_1            (EXE_ForwardA),     
+        .sel2_to_1            (EXE_ForwardA),     
         .y                    (EXE_BusA_L1)
     );//EXE级旁路
     
-    MUX4to1 #(32) U_MUXB_L1 (
+    MUX2to1 #(32) U_MUXB_L1 (
         .d0                   (EXE_BusB),
-        .d1                   (EMBus.MEM_Result),
-        .d2                   (WB_Result),
-        .d3                   (MEM2_Result),       
-        .sel4_to_1            (EXE_ForwardB),      
+        .d1                   (EMBus.MEM_Result),  
+        .sel2_to_1            (EXE_ForwardB),      
         .y                    (EXE_BusB_L1)
     );//EXE级旁路
 

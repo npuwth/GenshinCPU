@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-19 16:34:29
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 23:00:58
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -32,6 +32,7 @@ module MEM2_Reg (
 	  input logic                         MEM_IsInDelaySlot,
     input logic                         MEM_store_req,
     input logic                         MEM_Isincache,
+    input LoadType                      MEM_LoadType,
 //------------------------------------------------------------------//
     output logic		[31:0] 		          MEM2_ALUOut,		
     output logic 		[31:0] 		          MEM2_PC,
@@ -45,7 +46,8 @@ module MEM2_Reg (
     output logic                        MEM2_IsAImmeJump,
     output logic                        MEM2_IsInDelaySlot,
     output logic                        MEM2_store_req,
-    output logic                        MEM2_Isincache
+    output logic                        MEM2_Isincache,
+    output LoadType                     MEM2_LoadType
 );
 
   always_ff @(posedge clk ) begin

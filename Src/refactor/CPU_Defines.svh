@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-19 17:01:38
+ * @LastEditTime: 2021-07-19 22:53:59
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -500,6 +500,7 @@ interface MEM_MEM2_Interface();
 	logic                   MEM_IsAImmeJump;
 	logic                   MEM_IsInDelaySlot;
 	logic 				    MEM_Isincache;
+	LoadType                MEM_LoadType;
 	logic		[31:0] 		MEM2_ALUOut;		
     logic 		[31:0] 		MEM2_PC;	
 	logic       [4:0]  		MEM2_ExcType;
@@ -522,6 +523,7 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
 		output              MEM_store_req,
+		output              MEM_LoadType,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
 		input               MEM2_ExcType,
@@ -544,6 +546,7 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
 		input               MEM_store_req,
+		input               MEM_LoadType,
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
 		output   			MEM2_ExcType,
