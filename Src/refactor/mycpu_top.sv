@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 05:47:21
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-19 14:52:09
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -85,6 +85,7 @@ module mycpu_top (
     logic                      MEM2_Flush;                //来自WRFlushControl
     logic                      WB_Flush;                  //来自WRFlushControl
     //--------------------------------------------------------------------------------------//
+    logic                      ID_DisWr;
     logic                      EXE_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
     logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
     logic                      WB_DisWr;                  //来自WRFlushControl,传至WB级，用于生成WB_Final_Wr

@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-19 03:25:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-19 15:26:49
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -553,7 +553,7 @@ module Decode(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -569,7 +569,7 @@ module Decode(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -585,7 +585,7 @@ module Decode(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
@@ -601,7 +601,7 @@ module Decode(
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回Regs 需要把ALU的输出扩张一个字
         ID_DstSel     = '0;//写入HILO寄存器中所以是无关
-        ID_RegsWrType = `RegsWrTypeHILOEn;
+        ID_RegsWrType = `RegsWrTypeDisable;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器

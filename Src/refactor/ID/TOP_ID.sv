@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 05:54:56
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-19 14:57:05
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -52,7 +52,10 @@ module TOP_ID (
     assign ID_Instr       = IEBus.ID_Instr;//用于IF级的NPC
     assign ID_PC          = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
-
+    assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
+    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; // TODO:可以删掉
+    assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : ID_RegsWrType;  
+    
     ID_Reg U_ID_REG ( 
         .clk                 (clk ),
         .rst                 (resetn ),
@@ -132,9 +135,7 @@ module TOP_ID (
         .ID_TLBWIorR         (IEBus.ID_TLBWIorR),
         .ID_TrapOp           (IEBus.ID_TrapOp)
     );
-    assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
-    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; // TODO:可以删掉
-    assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : ID_RegsWrType;   
+     
 
     DataHazard U_DataHazard ( 
         .ID_rs               (IEBus.ID_rs),
