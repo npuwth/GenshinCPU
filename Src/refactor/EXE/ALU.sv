@@ -1,10 +1,10 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-19 16:53:50
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 19:12:44
+ * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \Code\EXE\ALU.sv
+ * @FilePath: \refactor\EXE\ALU.sv
  * 
  */
 `include "../CommonDefines.svh"
@@ -46,7 +46,7 @@ module ALU (
             end
             //包含SLTU和SLTIU
             `EXE_ALUOp_SLTU  : begin
-                if ($unsigned(EXE_ResultA) < $unsigned(EXE_ResultB) ) EXE_ALUOut = 32'b0000_0000_0000_0001;
+                if ((EXE_ResultA) < (EXE_ResultB) ) EXE_ALUOut = 32'b0000_0000_0000_0001;
                 else  EXE_ALUOut = 32'b0;
             end
             `EXE_ALUOp_XOR  :  EXE_ALUOut = EXE_ResultA ^ EXE_ResultB;
