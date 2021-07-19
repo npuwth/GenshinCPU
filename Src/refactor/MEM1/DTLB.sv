@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-19 12:38:41
+ * @LastEditTime: 2021-07-19 17:28:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -256,7 +256,7 @@ module DTLB (
         end
     end
 `endif
-    assign D_IsTLBBufferValid = 1'b1;
+    assign D_IsTLBBufferValid = (MEM_LoadType.ReadMem == 1'b1) || (MEM_StoreType.DMWr == 1'b1);
     assign MEM_TLBExceptType  = `MEM_TLBNoneEX;
     assign D_IsTLBStall       = 1'b0;
 `endif

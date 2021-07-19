@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 17:06:17
+ * @LastEditTime: 2021-07-19 17:15:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -55,6 +55,7 @@ module TOP_MEM (
     logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
+    StoreType                    MEM_Final_StoreType;
     logic                        MEM_IsTLBR;
     //传给Exception
     logic                        CP0_Status_BEV;
