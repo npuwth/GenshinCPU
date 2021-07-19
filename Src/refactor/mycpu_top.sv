@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 23:09:57
+ * @LastEditTime: 2021-07-19 23:19:04
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -58,6 +58,8 @@ module mycpu_top (
     output [3:0]               debug_wb_rf_wen,    
     output [4:0]               debug_wb_rf_wnum   
 );
+    logic                      cpu_ibus_valid;
+    logic                      cpu_dbus_valid;
     logic [31:0]               WB_PC;                     //来自WB级,用于Debug
     logic [31:0]               WB_Result;                 //来自WB级,用于Debug
     logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
@@ -216,9 +218,10 @@ module mycpu_top (
         .DCacheStall            (cpu_dbus.stall)
         // .HiLo_Not_Flush         (HiLo_Not_Flush)
     );
-    
-    assign cpu_ibus.valid =  IReq_valid & I_IsTLBBufferValid;
-    assign cpu_dbus.valid =  DReq_valid & D_IsTLBBufferValid;
+    assign cpu_ibus_valid = IReq_valid & I_IsTLBBufferValid;
+    assign cpu_dbus_valid = DReq_valid & D_IsTLBBufferValid;
+    assign cpu_ibus.valid =  cpu_ibus_valid;
+    assign cpu_dbus.valid = cpu_dbus_valid;
     `ifdef NEW_BRIDGE
     //------------------------AXI-----------------------//
     AXIInteract  #(

@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-18 16:20:21
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 19:55:34
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
  * 
@@ -53,12 +53,12 @@ logic  [1:0]    nextstate;
 logic  [1:0]    prestate; 
 logic  [1:0]    nextstate_mul;
 logic  [1:0]    prestate_mul;                                                 
-logic EXE_MULTStall;
-logic EXE_DIVStall;
-logic  ismulti;
+logic           EXE_MULTStall;
+logic           EXE_DIVStall;
+logic           ismulti;
+logic           signflag;
 assign ismulti = (EXE_ALUOp == `EXE_ALUOp_MULT || EXE_ALUOp == `EXE_ALUOp_MULTU || EXE_ALUOp == `EXE_ALUOp_MADD || EXE_ALUOp == `EXE_ALUOp_MADDU || 
                 EXE_ALUOp == `EXE_ALUOp_MSUB || EXE_ALUOp == `EXE_ALUOp_MSUBU) ? 1 : 0 ;
-logic signflag;
 
 
 always_ff @(posedge clk ) begin
@@ -74,83 +74,81 @@ always_ff @(posedge clk ) begin
     end
 end
 
-
-
 // 除法的状态机
 always_ff @(posedge clk ) begin
-        if (rst == `RstEnable) prestate <= T;
-        else      prestate <= nextstate;
-end
-//除法状态机的状态转移
-always_comb begin
-         if (prestate == T) begin
-             Signed_divisor_tvalid    = 1'b0;
-             Signed_dividend_tvalid   = 1'b0;
-             Unsigned_divisor_tvalid  = 1'b0;
-             Unsigned_dividend_tvalid = 1'b0;
-         end  
-         else if (prestate == S) begin
-            if (EXE_ALUOp == `EXE_ALUOp_DIV) begin
-                Signed_divisor_tvalid    = 1'b1;
-                Signed_dividend_tvalid   = 1'b1;
-                Unsigned_divisor_tvalid  = 1'b0;
-                Unsigned_dividend_tvalid = 1'b0;
-                end 
-            else if(EXE_ALUOp == `EXE_ALUOp_DIVU) begin
-                Signed_divisor_tvalid    = 1'b0;
-                Signed_dividend_tvalid   = 1'b0;
-                Unsigned_divisor_tvalid  = 1'b1;
-                Unsigned_dividend_tvalid = 1'b1;
-                end
-            else begin
-                Signed_divisor_tvalid    = 1'b0;
-                Signed_dividend_tvalid   = 1'b0;
-                Unsigned_divisor_tvalid  = 1'b0;
-                Unsigned_dividend_tvalid = 1'b0;
-                end
-            end
-         else if (prestate == Q) begin
-             Signed_divisor_tvalid      = 1'b0;
-             Signed_dividend_tvalid     = 1'b0;
-             Unsigned_divisor_tvalid    = 1'b0;
-             Unsigned_dividend_tvalid   = 1'b0;
-         end else begin
-             Signed_divisor_tvalid      = 1'b0;
-             Signed_dividend_tvalid     = 1'b0;
-             Unsigned_divisor_tvalid    = 1'b0;
-             Unsigned_dividend_tvalid   = 1'b0;
-         end
+    if (rst == `RstEnable || ExceptionAssert == 1'b1) begin
+        prestate <= T;
+    end 
+    else begin
+        prestate <= nextstate;
     end
+end
 // 除法状态机的控制信号
 always_comb begin
-        if (ExceptionAssert == `InterruptAssert)  // 前面流水级有异常，需要清空状态机状态
+    if (prestate == T) begin
+        Signed_divisor_tvalid    = 1'b0;
+        Signed_dividend_tvalid   = 1'b0;
+        Unsigned_divisor_tvalid  = 1'b0;
+        Unsigned_dividend_tvalid = 1'b0;
+    end  
+    else if (prestate == S) begin
+       if (EXE_ALUOp == `EXE_ALUOp_DIV) begin
+           Signed_divisor_tvalid    = 1'b1;
+           Signed_dividend_tvalid   = 1'b1;
+           Unsigned_divisor_tvalid  = 1'b0;
+           Unsigned_dividend_tvalid = 1'b0;
+           end 
+       else if(EXE_ALUOp == `EXE_ALUOp_DIVU) begin
+           Signed_divisor_tvalid    = 1'b0;
+           Signed_dividend_tvalid   = 1'b0;
+           Unsigned_divisor_tvalid  = 1'b1;
+           Unsigned_dividend_tvalid = 1'b1;
+           end
+       else begin
+           Signed_divisor_tvalid    = 1'b0;
+           Signed_dividend_tvalid   = 1'b0;
+           Unsigned_divisor_tvalid  = 1'b0;
+           Unsigned_dividend_tvalid = 1'b0;
+           end
+       end
+    else if (prestate == Q) begin
+        Signed_divisor_tvalid      = 1'b0;
+        Signed_dividend_tvalid     = 1'b0;
+        Unsigned_divisor_tvalid    = 1'b0;
+        Unsigned_dividend_tvalid   = 1'b0;
+    end else begin
+        Signed_divisor_tvalid      = 1'b0;
+        Signed_dividend_tvalid     = 1'b0;
+        Unsigned_divisor_tvalid    = 1'b0;
+        Unsigned_dividend_tvalid   = 1'b0;
+    end
+    end
+// 除法状态机的状态转移
+always_comb begin
+    case(prestate)
+        T:begin
+          if(EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)
+            nextstate = S;
+          else
             nextstate = T;
-        else begin
-            case(prestate)
-                T:begin
-                  if(EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU)
-                    nextstate = S;
-                  else
-                    nextstate = T;
-                end
-                S:begin
-                  if(((Signed_dividend_tready == 1'b1 && Signed_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIV ) ||
-                    ((Unsigned_dividend_tready == 1'b1 && Unsigned_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIVU ))
-                    nextstate = Q;
-                  else
-                    nextstate = S;
-                end
-                Q:begin
-                  if(div_finish == 1'b1)
-                    nextstate = T;
-                  else
-                    nextstate = Q;
-                end
-                default:begin
-                    nextstate = T;
-                end
-            endcase
         end
+        S:begin
+          if(((Signed_dividend_tready == 1'b1 && Signed_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIV ) ||
+            ((Unsigned_dividend_tready == 1'b1 && Unsigned_divisor_tready == 1'b1) && EXE_ALUOp == `EXE_ALUOp_DIVU ))
+            nextstate = Q;
+          else
+            nextstate = S;
+        end
+        Q:begin
+          if(div_finish == 1'b1)
+            nextstate = T;
+          else
+            nextstate = Q;
+        end
+        default:begin
+            nextstate = T;
+        end
+    endcase
 end
 
 
@@ -226,72 +224,50 @@ end
 
 //乘法的状态机
 always_ff @(posedge clk ) begin
-        if (rst == `RstEnable) prestate_mul <= T;
-        else      prestate_mul <= nextstate_mul;
+    if (rst == `RstEnable || ExceptionAssert == 1'b1) begin
+		prestate_mul <= T;
+	end 
+    else begin
+		prestate_mul <= nextstate_mul;
+	end    
 end
 
 
+//空闲态T
+//执行态S
 //空闲态
-//执行态
-//执行完毕的状态（还在乘法指令）
-//空闲态
-//其实也刚好是T S Q三个状态即可
+//其实也刚好是T S 2个状态即可
 //因此复用状态名称
 
 
-// 乘法状态机的控制信号
+// 乘法状态机的状态转移
 always_comb begin
-        if (ExceptionAssert == `InterruptAssert) begin // 前面流水级有异常，需要清空状态机状态
+    case(prestate_mul)
+        T:begin
+          if(ismulti)
+            begin
+              nextstate_mul = S;
+            end
+          else
+            begin
+              nextstate_mul = T;
+            end
+        end
+        S:begin
             nextstate_mul = T;
-            EXE_MULTStall = 1'b0;
         end
-        else begin
-            case(prestate_mul)
-                T:begin
-                  if(ismulti)
-                    begin
-                      nextstate_mul = S;
-                      EXE_MULTStall = 1'b1;
-                    end
-                  else
-                    begin
-                      nextstate_mul = T;
-                      EXE_MULTStall = 1'b0;
-                    end
-                end
-                S:begin
-                    nextstate_mul = Q;
-                    EXE_MULTStall = 1'b0;
-                end
-                Q:begin
-                 if(ismulti)
-                    begin
-                      nextstate_mul = Q;
-                      EXE_MULTStall = 1'b0;
-                    end
-                  else
-                    begin
-                      nextstate_mul = T;
-                      EXE_MULTStall = 1'b0;
-                    end
-                end
-                default:begin
-                    nextstate_mul = T;
-                    EXE_MULTStall = 1'b0;
-                end
-            endcase
+        default:begin
+            nextstate_mul = T;
         end
+    endcase
 end
-
+// 乘法状态机的控制信号
 always_comb begin
         if (prestate_mul == T) begin
             multi_finish = 1'b0;
         end  
         else if (prestate_mul == S) begin
             multi_finish = 1'b1;
-        end
-        else if (prestate_mul == Q) begin
-            multi_finish = 1'b0;
         end
         else begin
             multi_finish = 1'b0;
@@ -309,9 +285,9 @@ always_comb begin
     assign EXE_MULTDIVtoHI = (multi_finish        ) ? Prod[63:32] : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[31:0]   : 
                              (Unsigned_div_finish ) ? Unsigned_dout_tdata[31:0] : 31'bx;
-    //assign EXE_ALUOut = ;
-    // assign EXE_MULTStall = multi_finish;
+                             
     assign EXE_DIVStall = ((EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) && div_finish == 1'b0) ? 1 : 0 ;
+    assign EXE_MULTStall= ((EXE_ALUOp == `EXE_ALUOp_MULT|| EXE_ALUOp == `EXE_ALUOp_MULTU)&& multi_finish == 1'b0) ? 1 : 0;
     assign EXE_MULTDIVStall = EXE_MULTStall || EXE_DIVStall;
 endmodule
 
