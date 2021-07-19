@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-18 10:32:42
+ * @LastEditTime: 2021-07-19 12:38:41
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -32,6 +32,7 @@ module DTLB (
     output logic [31:13]          D_VPN2
 );
 
+`ifdef EN_TLB
     logic                         D_TLBState;
     logic                         D_TLBNextState;
     TLB_Buffer                    D_TLBBuffer;
@@ -228,4 +229,35 @@ module DTLB (
         MEM_TLBExceptType                                  = `MEM_TLBNoneEX;
     end
     end
+`else 
+    always_comb begin //TLBD
+        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
+            Phsy_Daddr        = Virt_Daddr - 32'hA000_0000;
+        end
+        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+            Phsy_Daddr        = Virt_Daddr - 32'h8000_0000;
+        end
+        else begin
+            Phsy_Daddr        = Virt_Daddr;
+        end
+    end
+`ifdef All_Uncache
+    assign D_IsCached         = 1'b0;
+`else 
+    always_comb begin
+        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
+            D_IsCached                               = 1'b0;
+        end
+        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+            D_IsCached                               = 1'b1;
+        end
+        else begin
+            D_IsCached                               = 1'b1;
+        end
+    end
+`endif
+    assign D_IsTLBBufferValid = 1'b1;
+    assign MEM_TLBExceptType  = `MEM_TLBNoneEX;
+    assign D_IsTLBStall       = 1'b0;
+`endif
 endmodule

@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-17 10:35:14
+ * @LastEditTime: 2021-07-18 21:17:44
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Code\EXE\ALU.sv
@@ -22,11 +22,11 @@ module ALU (
     
     assign       EXE_Countbit_Opt = (EXE_ALUOp == `EXE_ALUOp_CLO);
     
-     Countbit U_Countbit (                 //CLO,CLZ
-         .option(EXE_Countbit_Opt),
-         .value(EXE_ResultA),
-         .count(EXE_Countbit_Out)
-     );
+    Countbit U_Countbit (                 //CLO,CLZ
+        .option(EXE_Countbit_Opt),
+        .value(EXE_ResultA),
+        .count(EXE_Countbit_Out)
+    );
     
     always_comb begin
         unique case (EXE_ALUOp)

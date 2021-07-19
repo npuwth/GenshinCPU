@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-18 13:59:55
+ * @LastEditTime: 2021-07-19 12:40:04
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -443,11 +443,11 @@ module mycpu_top (
         .WB_Final_Wr               (WB_Final_Wr ),
         .WB_RegsWrType             (WB_RegsWrType),
         .WB_PC                     (WB_PC ),
-        .WB_store_req              (WB_store_req),
         .WB_ALUOut                 (WB_ALUOut),
+        .WB_store_req              (WB_store_req),
         .WB_Isincache              (WB_Isincache)
     );
-
+`ifdef EN_TLB
     TLB U_TLB( 
         .clk                       (aclk ),
         .rst                       (aresetn ),
@@ -463,6 +463,7 @@ module mycpu_top (
         .s1_found                  (s1_found ),
         .D_TLBEntry                ( D_TLBEntry)
     );
+`endif
 
 endmodule
 

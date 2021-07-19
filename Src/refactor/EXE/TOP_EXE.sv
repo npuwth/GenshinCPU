@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-18 10:54:30
+ * @LastEditTime: 2021-07-19 10:37:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -235,15 +235,6 @@ module TOP_EXE (
         .EXE_MultiExtendOp    (EXE_MultiExtendOp)
     );
 
-    DCacheWen U_DCACHEWEN(
-        .EXE_ALUOut           (EMBus.EXE_ALUOut),
-        .EXE_StoreType        (EMBus.EXE_StoreType),
-        .EXE_OutB             (EMBus.EXE_OutB),
-        //-----------------output-------------------------//
-        .cache_wen            (EMBus.EXE_DCache_Wen),      //给出dcache的写使能信号，
-        .DataToDcache         (EMBus.EXE_DataToDcache)           //给出dcache的写数据信号，
-    );
-
     HILO U_HILO (
         .clk                   (clk),
         .rst                   (resetn),
@@ -269,9 +260,8 @@ module TOP_EXE (
         .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut           ),
         .EXE_StoreType         (EMBus.EXE_StoreType        ),
-
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
-  );
+    );
     
 endmodule
 

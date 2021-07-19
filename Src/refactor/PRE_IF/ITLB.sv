@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-07-17 23:12:15
+ * @LastEditTime: 2021-07-19 12:27:11
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,6 +30,7 @@ module ITLB (
     output logic [31:13]          I_VPN2
 );
 
+`ifdef  EN_TLB
     logic                         I_TLBState;
     logic                         I_TLBNextState;
     TLB_Buffer                    I_TLBBuffer;
@@ -186,4 +187,21 @@ module ITLB (
             IF_TLBExceptType                                = `IF_TLBRefill;
         end
     end
+`else 
+    always_comb begin //TLBI
+        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+            Phsy_Iaddr        = Virt_Iaddr - 32'hA000_0000; 
+        end
+        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+            Phsy_Iaddr        = Virt_Iaddr - 32'h8000_0000;
+        end
+        else begin
+            Phsy_Iaddr        = Virt_Iaddr;
+        end
+    end
+    assign I_IsCached         = 1'b1;
+    assign I_IsTLBBufferValid = 1'b1;
+    assign IF_TLBExceptType   = `IF_TLBNoneEX;
+    assign I_IsTLBStall       = 1'b0;
+`endif
 endmodule

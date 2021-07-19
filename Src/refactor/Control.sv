@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-18 01:56:31
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-19 12:51:04
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,8 +15,7 @@
 `include "Cache_options.svh"
 
 
-module Control(
-    // input logic  [2:0]  EX_Entry_Sel,       
+module Control(    
     input logic         Flush_Exception,          //异常Exception产生的
     input logic         I_IsTLBStall,             // TLB
     input logic         D_IsTLBStall,  
@@ -56,14 +55,12 @@ module Control(
     output logic        WB_DisWr,       //传到WB级 ，用于停滞流水线
 
     output logic        IcacheFlush,    //给Icache的Flush
-    // output logic       DcacheFlush,    //给Dcache的Flush
     output logic        IReq_valid,     //是否给Icache发送请求 1表示发送 0 表示不发送
     output logic        DReq_valid,     //是否给Dcache发送请求 1表示发送 0 表示不发送
 
     output logic        ICacheStall,    // 如果出现cache数据准备好，但CPU阻塞的清空，
                                     // 需要发送stall信号，cache状态机停滞知道数据被CPU接受
     output logic        DCacheStall
-    // output logic       HiLo_Not_Flush
 );
 
     logic Load_store_stall ;
@@ -82,10 +79,11 @@ module Control(
         end
     end
 
+    // assign EXE_DisWr = (Flush_Exception == `FlushEnable) || (DIVMULTBusy == 1'b1);
 
     always_comb begin
         if (D_IsTLBStall == 1'b1  || Dcache_busy == 1'b1 ) begin
-            PREIF_Wr      = 1'b0;
+            PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
             EXE_Wr       = 1'b0;
@@ -105,7 +103,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b0;
@@ -114,7 +111,7 @@ module Control(
             DCacheStall  = 1'b1;
         end
         else if (Flush_Exception == `FlushEnable)begin
-            PREIF_Wr      = 1'b1;
+            PREIF_Wr     = 1'b1;
             IF_Wr        = 1'bx;
             ID_Wr        = 1'bx;
             EXE_Wr       = 1'bx;
@@ -134,7 +131,6 @@ module Control(
             WB_DisWr     = 1'b0;
             
             IcacheFlush  = 1'b1;
-            // DCacheFlush  = 1'b1;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b0;
@@ -144,7 +140,7 @@ module Control(
 
         end
         else if (I_IsTLBStall == 1'b1  || Icache_busy == 1'b1 ) begin
-            PREIF_Wr      = 1'b0;
+            PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
             EXE_Wr       = 1'b0;
@@ -164,7 +160,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
@@ -193,7 +188,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;  // 此时Icache  Dcache都不能发起请求
             DReq_valid   = 1'b0;
@@ -202,7 +196,7 @@ module Control(
             DCacheStall  = 1'b0;
         end 
         else if (DH_Stall == 1'b1) begin
-            PREIF_Wr      = 1'b0;
+            PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
             EXE_Wr       = 1'bx;
@@ -222,7 +216,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b1;
@@ -231,7 +224,7 @@ module Control(
             DCacheStall  = 1'b0;
         end
         else if (ID_IsAImmeJump == 1'b1) begin
-            PREIF_Wr      = 1'b1;
+            PREIF_Wr     = 1'b1;
             IF_Wr        = 1'bx;
             ID_Wr        = 1'b1;
             EXE_Wr       = 1'b1;
@@ -251,7 +244,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b1;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
@@ -260,7 +252,7 @@ module Control(
             DCacheStall  = 1'b0;
         end
         else if (BranchFailed == 1'b1) begin
-            PREIF_Wr      = 1'b1;
+            PREIF_Wr     = 1'b1;
             IF_Wr        = 1'bx;
             ID_Wr        = 1'bx;
             EXE_Wr       = 1'b1;
@@ -280,7 +272,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b1;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
@@ -289,7 +280,7 @@ module Control(
             DCacheStall  = 1'b0;
         end
         else if (DIVMULTBusy == 1'b1) begin
-            PREIF_Wr      = 1'b0;
+            PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
             EXE_Wr       = 1'b0;
@@ -309,7 +300,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b1;
@@ -318,7 +308,7 @@ module Control(
             DCacheStall  = 1'b1;
         end
         else begin
-            PREIF_Wr      = 1'b1;
+            PREIF_Wr     = 1'b1;
             IF_Wr        = 1'b1;
             ID_Wr        = 1'b1;
             EXE_Wr       = 1'b1;
@@ -338,7 +328,6 @@ module Control(
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
 
             IReq_valid   = 1'b1;
             DReq_valid   = 1'b1;
@@ -348,11 +337,4 @@ module Control(
         end
     end
 
-
-    // // HILO的flush
-    // always_comb begin
-    //     HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
-    // end
-    
-    
 endmodule

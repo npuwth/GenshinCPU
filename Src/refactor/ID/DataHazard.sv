@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-06-16 16:07:56
- * @LastEditTime: 2021-07-13 19:19:55
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-19 14:21:03
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -11,7 +11,7 @@
 
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
-
+//TODO: DH_STALL的检测可以是并行的
 module DataHazard (
     input logic [4:0]  ID_rs,
     input logic [4:0]  ID_rt,
