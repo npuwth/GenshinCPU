@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 16:58:00
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 23:09:57
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -116,7 +116,7 @@ module mycpu_top (
     
     logic                      MEM2_store_req;
     logic                      MEM2_Isincache;
-    logic [31:0]               WB_ALUOut;
+    // logic [31:0]               WB_ALUOut;
     logic                      WB_store_req;
     logic                      WB_Isincache; 
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
@@ -178,15 +178,15 @@ module mycpu_top (
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
-        .MEM_Addr               (MM2Bus.MEM_ALUOut),        
-        .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
-        .MEM_iscached           (MM2Bus.MEM_Isincache),
-        .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
-        .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
-        .MEM2_iscached          (MEM2_Isincache),
-        .WB_Addr                (WB_ALUOut),                                    //WB级的地址
-        .WB_store_req           (WB_store_req),                                 //WB级的请求
-        .WB_iscached            (WB_Isincache),
+        // .MEM_Addr               (MM2Bus.MEM_ALUOut),        
+        // .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
+        // .MEM_iscached           (MM2Bus.MEM_Isincache),
+        // .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
+        // .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
+        // .MEM2_iscached          (MEM2_Isincache),
+        // .WB_Addr                (WB_ALUOut),                                    //WB级的地址
+        // .WB_store_req           (WB_store_req),                                 //WB级的请求
+        // .WB_iscached            (WB_Isincache),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
         .IF_Wr                  (IF_Wr),
@@ -445,10 +445,10 @@ module mycpu_top (
         .cpu_dbus                  (cpu_dbus ),
         //--------------------------output-------------------------//
         .MEM2_Result               (MEM2_Result ),
-        .MEM2_Dst                  (MEM2_Dst ),
-        .MEM2_RegsWrType           (MEM2_RegsWrType),
-        .MEM2_store_req            (MEM2_store_req),
-        .MEM2_Isincache            (MEM2_Isincache)
+        .MEM2_Dst                  (MEM2_Dst )
+        // .MEM2_RegsWrType           (MEM2_RegsWrType)
+        // .MEM2_store_req            (MEM2_store_req),
+        // .MEM2_Isincache            (MEM2_Isincache)
     );
 
 
@@ -464,10 +464,10 @@ module mycpu_top (
         .WB_Dst                    (WB_Dst ),
         .WB_Final_Wr               (WB_Final_Wr ),
         .WB_RegsWrType             (WB_RegsWrType),
-        .WB_PC                     (WB_PC ),
-        .WB_ALUOut                 (WB_ALUOut),
-        .WB_store_req              (WB_store_req),
-        .WB_Isincache              (WB_Isincache)
+        .WB_PC                     (WB_PC )
+        // .WB_ALUOut                 (WB_ALUOut)
+        // .WB_store_req              (WB_store_req),
+        // .WB_Isincache              (WB_Isincache)
     );
 `ifdef EN_TLB
     TLB U_TLB( 

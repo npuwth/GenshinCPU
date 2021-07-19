@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-18 18:26:04
+ * @LastEditTime: 2021-07-19 22:18:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -185,9 +185,15 @@ logic pipe_wr;
 
 logic busy_cache;// uncache 直到数据返回
 logic busy_uncache;
-//logic busy_collision;
+logic busy_collision;
+logic busy_collision1;
+logic busy_collision2;
+
+
+logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲突
 
 logic busy;
+
 
 
 //连cpu_bus接口
@@ -302,8 +308,10 @@ assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.in
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
-
-assign busy           = busy_cache | busy_uncache ;
+assign busy_collision1= (cpu_bus.valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+assign busy_collision2= (cpu_bus.valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+assign busy_collision = busy_collision1 | busy_collision2;
+assign busy           = busy_cache | busy_uncache | busy_collision ;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
@@ -315,6 +323,18 @@ assign data_read_en   = (state == REFILLDONE ||(req_buffer.valid & req_buffer.op
 
 assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;
+
+always_ff @( posedge clk ) begin : MEM2_blockName
+    if (  cpu_bus.stall ) begin
+        MEM2<='0;
+    end else begin
+        MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
+    end
+end
+
+always_ff @( posedge clk ) begin : WB_blockName
+    WB<= MEM2;
+end
 
 
 always_comb begin : data_rdata_final2_blockname
