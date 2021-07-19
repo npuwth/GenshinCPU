@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 16:59:10
+ * @LastEditTime: 2021-07-19 17:06:17
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -82,12 +82,12 @@ module TOP_MEM (
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
+    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
+    
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
     assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
-
-    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
-    // assign MEM_store_req            = MEM_StoreType.DMWr ;
     assign MM2Bus.MEM_Isincache     = D_IsCached;
+    //往后传的是DisWr选择后的Store信号
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
     assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
 
