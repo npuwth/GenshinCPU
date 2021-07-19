@@ -2,7 +2,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-19 10:33:01
+ * @LastEditTime: 2021-07-19 10:37:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\AXI.sv
@@ -268,7 +268,7 @@ module AXIInteract #(
     logic [DCACHE_LINE_SIZE-1:0][31:0] dcache_line_recv;
 //dcache写 使用数据
     logic [31:0] dcache_wb_addr;
-    logic [DCACHE_LINE_SIZE-1:0] dcache_line_wb;
+    logic [DCACHE_LINE_SIZE-1:0][31:0] dcache_line_wb;
 //uncache读写 使用数据
     logic [31:0] uncache_addr_rd;
     logic [31:0] uncache_addr_wb;
