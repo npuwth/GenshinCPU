@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-19 15:26:49
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 19:42:13
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -219,6 +219,11 @@ module Decode(
               `EXE_BLTZAL:instrType = OP_BLTZAL;
 
               `EXE_BGEZAL:instrType = OP_BGEZAL;
+                
+              default: begin
+                instrType = OP_INVALID;
+              end
+              
               endcase
               
             end// some branch

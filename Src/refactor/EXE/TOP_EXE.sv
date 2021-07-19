@@ -1,8 +1,13 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
+<<<<<<< HEAD
  * @LastEditTime: 2021-07-19 22:22:21
  * @LastEditors: Johnson Yang
+=======
+ * @LastEditTime: 2021-07-19 19:29:01
+ * @LastEditors: npuwth
+>>>>>>> 6e31d28a1be5269bd2bdbf1497e65e1b9abf2532
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -63,7 +68,7 @@ module TOP_EXE (
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
     assign IEBus.EXE_rt       = EMBus.EXE_rt;
-    assign IEBus.EXE_LoadType = EMBus.EXE_LoadType; 
+    assign IEBus.EXE_LoadType = EXE_LoadType; 
     assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
 
     assign EXE_Final_Wr       = (EXE_DisWr) ? '0: EXE_RegsWrType;

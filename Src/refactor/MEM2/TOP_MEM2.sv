@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-19 22:51:39
+ * @LastEditTime: 2021-07-19 23:27:41
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,13 +23,16 @@ module TOP_MEM2 (
     CPU_Bus_Interface            cpu_dbus,
     //--------------------output--------------------//
     output logic [31:0]          MEM2_Result,  // 用于旁路数据
-    output logic [4:0]           MEM2_Dst,
-    output RegsWrType            MEM2_RegsWrType,
-    output logic                 MEM2_store_req,
-    output logic                 MEM2_Isincache,
-    output LoadType              MEM2_LoadType
+    output logic [4:0]           MEM2_Dst
+    // output RegsWrType            MEM2_RegsWrType,
+    // output logic                 MEM2_store_req,
+    // output logic                 MEM2_Isincache
 );
-    MEM2_Reg U_MEM2_REG(
+
+    logic [31:0]                 MEM2_Result_Final;
+    logic [31:0]                 MEM2_ALUOut;
+
+    MEM2_Reg U_MEM2_REG( //TODO:多了很多无用信号
     .clk                    (clk ),
     .rst                    (resetn ),
     .MEM2_Flush             (MEM2_Flush ),
@@ -45,11 +48,10 @@ module TOP_MEM2 (
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
-    .MEM_store_req          (MM2Bus.MEM_store_req),
-    .MEM_Isincache          (MM2Bus.MEM_Isincache),
-    .MEM_LoadType           (MM2Bus.MEM_LoadType),
+    // .MEM_store_req          (MM2Bus.MEM_store_req),
+    // .MEM_Isincache          (MM2Bus.MEM_Isincache),
 //-----------------------------output-------------------------------------//
-    .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
+    .MEM2_ALUOut            (MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
     .MEM2_Instr             (M2WBus.MEM2_Instr ),
     .MEM2_WbSel             (M2WBus.MEM2_WbSel ),
@@ -59,19 +61,18 @@ module TOP_MEM2 (
     .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
-    .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
-    .MEM2_store_req         (M2WBus.MEM2_store_req),
-    .MEM2_Isincache         (M2WBus.MEM2_Isincache),
-    .MEM2_LoadType          (MEM2_LoadType)
+    .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot)
+    // .MEM2_store_req         (M2WBus.MEM2_store_req)
+    // .MEM2_Isincache         (M2WBus.MEM2_Isincache)
 
     );
-    assign MEM2_store_req        = M2WBus.MEM2_store_req;
-    assign MEM2_Isincache        = M2WBus.MEM2_Isincache;
+    // assign MEM2_store_req        = M2WBus.MEM2_store_req;
+    // assign MEM2_Isincache        = M2WBus.MEM2_Isincache;
     //output for forwarding 
-    assign MEM2_Dst              = M2WBus.MEM2_Dst;
-    assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;
+    // assign MEM2_Dst              = M2WBus.MEM2_Dst;
+    // assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;
     // output to MEM for CP0
-    assign MM2Bus.MEM2_ALUOut    = M2WBus.MEM2_ALUOut;
+    assign MM2Bus.MEM2_ALUOut    = MEM2_ALUOut;
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;
     // output to WB
     assign M2WBus.MEM2_DMOut     = cpu_dbus.rdata;       //读取结果直接放入DMOut
@@ -85,5 +86,13 @@ module TOP_MEM2 (
         .y                   (MEM2_Result       )                                    
     );
     
+    MUX2to1 #(32) U_MUXINMEM2_Final( 
+        .d0                  (MEM2_Result       ),
+        .d1                  (cpu_dbus.rdata    ),
+        .sel2_to_1           (M2Bus.MEM2_WbSel == 2'b11),
+        .y                   (MEM2_Result_Final ) 
+    );
+
+    assign M2WBus.MEM2_Result = MEM2_Result_Final;
 endmodule
 

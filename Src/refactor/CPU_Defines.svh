@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-19 22:53:59
+ * @LastEditTime: 2021-07-19 23:28:59
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -507,7 +507,7 @@ interface MEM_MEM2_Interface();
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAImmeJump;
 	logic                   MEM2_IsInDelaySlot;
-	logic                   MEM_store_req;
+	// logic                   MEM_store_req;
 
 	modport MEM(  // top MEM使用
 		output  			MEM_ALUOut,		
@@ -522,7 +522,7 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsAImmeJump,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
-		output              MEM_store_req,
+		// output              MEM_store_req,
 		output              MEM_LoadType,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
@@ -545,7 +545,7 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsAImmeJump,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
-		input               MEM_store_req,
+		// input               MEM_store_req,
 		input               MEM_LoadType,
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
@@ -560,7 +560,7 @@ endinterface
 
 interface MEM2_WB_Interface();
 
-    logic		[31:0] 		MEM2_ALUOut;		
+    // logic		[31:0] 		MEM2_ALUOut;		
     logic 		[31:0] 		MEM2_PC;	
 	logic       [31:0]      MEM2_Instr;		
     logic 		[1:0]  		MEM2_WbSel;				
@@ -569,10 +569,11 @@ interface MEM2_WB_Interface();
 	logic       [31:0]      MEM2_OutB;
 	RegsWrType              MEM2_RegsWrType;
 	logic 					MEM2_Isincache;
-	logic                   MEM2_store_req;
+	logic       [31:0]      MEM2_Result;
+	// logic                   MEM2_store_req;
   
 	modport MEM2 (  // top MEM2使用
-    	output				MEM2_ALUOut,		
+    	// output				MEM2_ALUOut,		
     	output				MEM2_PC,		
 		output              MEM2_Instr,	
     	output				MEM2_WbSel,				
@@ -581,11 +582,12 @@ interface MEM2_WB_Interface();
 		output              MEM2_OutB,
 		output				MEM2_RegsWrType,
 		output 				MEM2_Isincache,
-		output              MEM2_store_req
+		output				MEM2_Result
+		// output              MEM2_store_req
 	);
 
 	modport WB ( 
-		input				MEM2_ALUOut,		
+		// input				MEM2_ALUOut,		
     	input				MEM2_PC,		
 		input               MEM2_Instr,	
     	input				MEM2_WbSel,				
@@ -594,7 +596,8 @@ interface MEM2_WB_Interface();
 		input               MEM2_OutB,
 		input				MEM2_RegsWrType,
 		input 				MEM2_Isincache,
-        input               MEM2_store_req
+		input				MEM2_Result
+        // input               MEM2_store_req
 	);
 
 endinterface

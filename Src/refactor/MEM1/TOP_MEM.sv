@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 23:21:43
+ * @LastEditTime: 2021-07-19 23:30:00
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -72,7 +72,7 @@ module TOP_MEM (
     //用于TLB
     logic [2:0]                  MEM_TLBExceptType;
     logic [31:0]                 Phsy_Daddr;
-    logic                        D_IsCached;
+    // logic                        D_IsCached;
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
@@ -91,10 +91,10 @@ module TOP_MEM (
     
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
     assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
-    assign MM2Bus.MEM_Isincache     = D_IsCached;
+    // assign MM2Bus.MEM_Isincache     = D_IsCached;
     //往后传的是DisWr选择后的Store信号
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
-    assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
+    // assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
     assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
