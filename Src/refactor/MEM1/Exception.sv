@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-16 17:05:13
+ * @LastEditTime: 2021-07-19 14:50:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -13,7 +13,6 @@
 `include "../CPU_Defines.svh"
 
  module Exception(
-    input RegsWrType           MEM_RegsWrType,  
     input ExceptinPipeType     MEM_ExceptType,        //译码执行阶段收集到的异常信息
     input logic [2:0]          MEM_TLBExceptType,
     input logic [31:0]         MEM_PC,                //用于判断取指令地址错例外
@@ -28,7 +27,6 @@
     output logic [4:0]         MEM_ExcType,
 
     output logic [2:0]         EX_Entry_Sel,           //用于生成NPC
-    output RegsWrType          MEM_RegsWrType_final,   //最终的异常类型
     output logic [31:0]        Exception_Vector,       // 异常处理的入口地址
     output logic               Flush_Exception
  );
@@ -60,17 +58,6 @@
     end
 
     assign Flush_Exception = (MEM_ExceptType_final != '0) && (MEM_ExceptType_final.Refetch != 1'b1);
-
-    always_comb begin
-        case(MEM_ExcType)
-            `EX_None,`EX_Refetch:begin
-                MEM_RegsWrType_final   = MEM_RegsWrType;  
-            end
-            default:begin
-                MEM_RegsWrType_final   = `RegsWrTypeDisable;   
-            end
-        endcase
-    end
 
     always_comb begin
         case(MEM_ExcType)

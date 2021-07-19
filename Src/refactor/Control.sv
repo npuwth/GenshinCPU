@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-19 12:51:04
+ * @LastEditTime: 2021-07-19 16:57:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,7 +21,8 @@ module Control(
     input logic         D_IsTLBStall,  
     input logic         Icache_busy,              // Icache信号 表示Icache是否要暂停流水线 
     input logic         Dcache_busy,              // Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
-    input logic         DH_Stall,                 //DataHazard产生的
+    input logic         ID_EX_DH_Stall,                 //DataHazard产生的
+    input logic         ID_MEM1_DH_Stall,                 //DataHazard产生的
     input logic         ID_IsAImmeJump,           // ID级的J, JAL指令,需要flush一拍
     input logic         BranchFailed,             // 分支预测失败时，需要flush两拍
     input logic         DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
@@ -50,6 +51,7 @@ module Control(
     output logic        MEM2_Flush,
     output logic        WB_Flush,
 
+    output logic        ID_DisWr,
     output logic        EXE_DisWr,      //传到EXE级，用于关闭HILO写使能
     output logic        MEM_DisWr,      //传到MEM级，用于关闭CP0的写使能
     output logic        WB_DisWr,       //传到WB级 ，用于停滞流水线
@@ -91,7 +93,8 @@ module Control(
             MEM2_Wr      = 1'b0;
             WB_Wr        = 1'b0;
             
-            EXE_DisWr    = 1'b0;
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
@@ -104,40 +107,11 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b1;
+            IReq_valid   = 1'b0;
             DReq_valid   = 1'b0;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
-        end
-        else if (Flush_Exception == `FlushEnable)begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'bx;
-            ID_Wr        = 1'bx;
-            EXE_Wr       = 1'bx;
-            MEM_Wr       = 1'bx; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            IF_Flush     = 1'b1;
-            ID_Flush     = 1'b1;
-            EXE_Flush    = 1'b1;
-            MEM_Flush    = 1'b1;
-            MEM2_Flush   = 1'b0;
-            WB_Flush     = 1'b0;
-
-            EXE_DisWr    = 1'b1;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b0;
-            
-            IcacheFlush  = 1'b1;
-
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b0;
-
-            ICacheStall  = 1'b0;
-            DCacheStall  = 1'b0;
-
         end
         else if (I_IsTLBStall == 1'b1  || Icache_busy == 1'b1 ) begin
             PREIF_Wr     = 1'b0;
@@ -148,7 +122,8 @@ module Control(
             MEM2_Wr      = 1'b0;
             WB_Wr        = 1'b0;
             
-            EXE_DisWr    = 1'b0;
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
@@ -162,10 +137,71 @@ module Control(
             IcacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
-            DReq_valid   = 1'b1;
+            DReq_valid   = 1'b0;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
+        end
+        else if (DIVMULTBusy == 1'b1) begin
+            PREIF_Wr     = 1'b0;
+            IF_Wr        = 1'b0;
+            ID_Wr        = 1'b0;
+            EXE_Wr       = 1'b0;
+            MEM_Wr       = 1'b0; 
+            MEM2_Wr      = 1'b0;
+            WB_Wr        = 1'b0;
+            
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b1;
+            MEM_DisWr    = 1'b1;
+            WB_DisWr     = 1'b1; 
+                       
+            IF_Flush     = 1'b0;
+            ID_Flush     = 1'b0;
+            EXE_Flush    = 1'b0;
+            MEM_Flush    = 1'b0;
+            MEM2_Flush   = 1'b0;
+            WB_Flush     = 1'b0;
+
+            IcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
+
+            IReq_valid   = 1'b0;
+            DReq_valid   = 1'b0;
+
+            ICacheStall  = 1'b1;
+            DCacheStall  = 1'b1;
+        end
+        else if (Flush_Exception == `FlushEnable)begin
+            PREIF_Wr     = 1'b1;
+            IF_Wr        = 1'b0;
+            ID_Wr        = 1'b0;
+            EXE_Wr       = 1'b0;
+            MEM_Wr       = 1'b0; 
+            MEM2_Wr      = 1'b1;
+            WB_Wr        = 1'b1;
+            
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b1;
+            MEM_DisWr    = 1'b1;
+            WB_DisWr     = 1'b0;
+
+            IF_Flush     = 1'b1;
+            ID_Flush     = 1'b1;
+            EXE_Flush    = 1'b1;
+            MEM_Flush    = 1'b1;
+            MEM2_Flush   = 1'b0;
+            WB_Flush     = 1'b0;
+
+            
+            IcacheFlush  = 1'b1;
+
+            IReq_valid   = 1'b0;
+            DReq_valid   = 1'b0;
+
+            ICacheStall  = 1'b0;
+            DCacheStall  = 1'b0;
+
         end
         else if (Load_store_stall) begin
             PREIF_Wr     = 1'b0;
@@ -173,18 +209,19 @@ module Control(
             ID_Wr        = 1'b0;
             EXE_Wr       = 1'b0;
             MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b0;
+            MEM2_Wr      = 1'b1;
             WB_Wr        = 1'b1;
             
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
+            MEM_DisWr    = 1'b1;  //TODO:MEM2模块描述
             WB_DisWr     = 1'b0; 
                        
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
-            MEM2_Flush   = 1'b1;
+            MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
@@ -195,72 +232,76 @@ module Control(
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
         end 
-        else if (DH_Stall == 1'b1) begin
+        else if (ID_MEM1_DH_Stall == 1'b1) begin
             PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
-            EXE_Wr       = 1'bx;
+            EXE_Wr       = 1'b0;
             MEM_Wr       = 1'b1; 
             MEM2_Wr      = 1'b1;
             WB_Wr        = 1'b1;
             
-            EXE_DisWr    = 1'b0;
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
             IF_Flush     = 1'b0;
-            ID_Flush     = 1'b0;
-            EXE_Flush    = 1'b1;
-            MEM_Flush    = 1'b0;
-            MEM2_Flush   = 1'b0;
-            WB_Flush     = 1'b0;
-
-            IcacheFlush  = 1'b0;
-
-            IReq_valid   = 1'b1;
-            DReq_valid   = 1'b1;
-
-            ICacheStall  = 1'b1;
-            DCacheStall  = 1'b0;
-        end
-        else if (ID_IsAImmeJump == 1'b1) begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'bx;
-            ID_Wr        = 1'b1;
-            EXE_Wr       = 1'b1;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
-            IF_Flush     = 1'b1;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b1;
+            IcacheFlush  = 1'b0;
 
             IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
 
-            ICacheStall  = 1'b0;
+            ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
         end
-        else if (BranchFailed == 1'b1) begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'bx;
-            ID_Wr        = 1'bx;
+        else if (ID_EX_DH_Stall == 1'b1) begin
+            PREIF_Wr     = 1'b0;
+            IF_Wr        = 1'b0;
+            ID_Wr        = 1'b0;
             EXE_Wr       = 1'b1;
             MEM_Wr       = 1'b1; 
             MEM2_Wr      = 1'b1;
             WB_Wr        = 1'b1;
             
-            EXE_DisWr    = 1'b0;
+            ID_DisWr     = 1'b1;  //TODO:模块内描述
+            // EXE_DisWr    = 1'b0;
+            MEM_DisWr    = 1'b0;
+            WB_DisWr     = 1'b0; 
+                       
+            IF_Flush     = 1'b0;
+            ID_Flush     = 1'b0;
+            EXE_Flush    = 1'b0;
+            MEM_Flush    = 1'b0;
+            MEM2_Flush   = 1'b0;
+            WB_Flush     = 1'b0;
+
+            IcacheFlush  = 1'b0;
+            // DCacheFlush  = 1'b0;
+
+            IReq_valid   = 1'b0;
+            DReq_valid   = 1'b1;
+
+            ICacheStall  = 1'b1;
+            DCacheStall  = 1'b0;
+        end
+        else if (BranchFailed == 1'b1) begin
+            PREIF_Wr     = 1'b1;
+            IF_Wr        = 1'b0;
+            ID_Wr        = 1'b0;
+            EXE_Wr       = 1'b1;
+            MEM_Wr       = 1'b1; 
+            MEM2_Wr      = 1'b1;
+            WB_Wr        = 1'b1;
+            
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -279,34 +320,39 @@ module Control(
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
         end
-        else if (DIVMULTBusy == 1'b1) begin
-            PREIF_Wr     = 1'b0;
+        
+
+        else if (ID_IsAImmeJump == 1'b1) begin
+            PREIF_Wr     = 1'b1;
             IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b0;
-            WB_Wr        = 1'b0;
+            ID_Wr        = 1'b1;
+            EXE_Wr       = 1'b1;
+            MEM_Wr       = 1'b1; 
+            MEM2_Wr      = 1'b1;
+            WB_Wr        = 1'b1;
             
-            EXE_DisWr    = 1'b1;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b1; 
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
+            MEM_DisWr    = 1'b0;
+            WB_DisWr     = 1'b0; 
                        
-            IF_Flush     = 1'b0;
+            IF_Flush     = 1'b1;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            IcacheFlush  = 1'b1;
+            // DCacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b1;
+            IReq_valid   = 1'b0;
             DReq_valid   = 1'b1;
 
-            ICacheStall  = 1'b1;
-            DCacheStall  = 1'b1;
+            ICacheStall  = 1'b0;
+            DCacheStall  = 1'b0;
         end
+       
         else begin
             PREIF_Wr     = 1'b1;
             IF_Wr        = 1'b1;
@@ -316,7 +362,8 @@ module Control(
             MEM2_Wr      = 1'b1;
             WB_Wr        = 1'b1;
             
-            EXE_DisWr    = 1'b0;
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -337,4 +384,24 @@ module Control(
         end
     end
 
+    always_comb begin : EXE_DisWrGen
+        if (Flush_Exception == `FlushEnable)begin
+            EXE_DisWr    = 1'b1;
+        end
+        else if (ID_MEM1_DH_Stall == 1'b1) begin
+            EXE_DisWr    = 1'b1;
+        end
+        else if (DIVMULTBusy == 1'b1) begin
+            EXE_DisWr    = 1'b1;
+        end
+        else begin
+            EXE_DisWr    = 1'b0;
+        end
+    end
+    // // HILO的flush
+    // always_comb begin
+    //     HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
+    // end
+    
+    
 endmodule
