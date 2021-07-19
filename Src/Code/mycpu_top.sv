@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-13 21:09:35
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-18 13:14:17
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -167,9 +167,9 @@ module mycpu_top (
     AXIInteract AXIInteract_dut (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
-        .dbus                   (axi_dbus.slave ),
-        .ibus                   (axi_ibus.slave ),
-        .udbus                  (axi_ubus.slave) ,
+        .DcacheAXIBus                  (axi_dbus.slave ),
+        .IcacheAXIBus                   (axi_ibus.slave ),
+        .UncacheAXIBus                  (axi_ubus.slave) ,
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),

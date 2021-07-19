@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-18 16:22:38
+ * @LastEditTime: 2021-07-19 16:39:35
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,7 +18,6 @@ module TOP_MEM2 (
     input logic                  resetn,
     input logic                  MEM2_Flush,
     input logic                  MEM2_Wr,
-    input logic                  MEM_store_req,
     MEM_MEM2_Interface           MM2Bus,
     MEM2_WB_Interface            M2WBus,
     CPU_Bus_Interface            cpu_dbus,
@@ -26,7 +25,8 @@ module TOP_MEM2 (
     output logic [31:0]          MEM2_Result,  // 用于旁路数据
     output logic [4:0]           MEM2_Dst,
     output RegsWrType            MEM2_RegsWrType,
-    output logic                 MEM2_store_req
+    output logic                 MEM2_store_req,
+    output logic                 MEM2_Isincache
 );
     MEM2_Reg U_MEM2_REG(
     .clk                    (clk ),
@@ -44,7 +44,7 @@ module TOP_MEM2 (
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
-    .MEM_store_req          (MEM_store_req),
+    .MEM_store_req          (MM2Bus.MEM_store_req),
     .MEM_Isincache          (MM2Bus.MEM_Isincache),
 //-----------------------------output-------------------------------------//
     .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
@@ -58,10 +58,12 @@ module TOP_MEM2 (
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
-    .MEM2_store_req         (MEM2_store_req),
+    .MEM2_store_req         (M2WBus.MEM2_store_req),
     .MEM2_Isincache         (M2WBus.MEM2_Isincache)
 
     );
+    assign MEM2_store_req        = M2WBus.MEM2_store_req;
+    assign MEM2_Isincache        = M2WBus.MEM2_Isincache;
     //output for forwarding 
     assign MEM2_Dst              = M2WBus.MEM2_Dst;
     assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;

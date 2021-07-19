@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 16:52:27
+ * @LastEditTime: 2021-07-19 16:58:00
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -62,7 +62,8 @@ module mycpu_top (
     logic [31:0]               WB_Result;                 //来自WB级,用于Debug
     logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
     logic                      Flush_Exception;           //来自MEM级的异常检测
-    logic                      DH_Stall;                  //来自DataHazard
+    logic                      ID_EX_DH_Stall;            //来自DataHazard
+    logic                      ID_MEM1_DH_Stall;          //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;
@@ -84,6 +85,7 @@ module mycpu_top (
     logic                      MEM2_Flush;                //来自WRFlushControl
     logic                      WB_Flush;                  //来自WRFlushControl
     //--------------------------------------------------------------------------------------//
+    logic                      ID_DisWr;
     logic                      EXE_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
     logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
     logic                      WB_DisWr;                  //来自WRFlushControl,传至WB级，用于生成WB_Final_Wr
@@ -111,9 +113,11 @@ module mycpu_top (
     logic                      IReq_valid; 
     logic                      DReq_valid; 
 
+    
     logic                      MEM2_store_req;
-    logic                      WB_store_req;
+    logic                      MEM2_Isincache;
     logic [31:0]               WB_ALUOut;
+    logic                      WB_store_req;
     logic                      WB_Isincache; 
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
     logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
@@ -169,7 +173,8 @@ module mycpu_top (
         .D_IsTLBStall           (D_IsTLBStall ),
         .Icache_busy            (cpu_ibus.busy ),
         .Dcache_busy            (cpu_dbus.busy ),
-        .DH_Stall               (DH_Stall),
+        .ID_EX_DH_Stall         (ID_EX_DH_Stall),
+        .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_IsAImmeJump         (ID_IsAImmeJump),
         .BranchFailed           (ID_Flush_BranchSolvement),
         .DIVMULTBusy            (EXE_MULTDIVStall),
@@ -178,7 +183,7 @@ module mycpu_top (
         .MEM_iscached           (MM2Bus.MEM_Isincache),
         .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
         .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
-        .MEM2_iscached          (M2WBus.MEM2_Isincache),
+        .MEM2_iscached          (MEM2_Isincache),
         .WB_Addr                (WB_ALUOut),                                    //WB级的地址
         .WB_store_req           (WB_store_req),                                 //WB级的请求
         .WB_iscached            (WB_Isincache),
@@ -198,6 +203,7 @@ module mycpu_top (
         .MEM2_Flush             (MEM2_Flush ),
         .WB_Flush               (WB_Flush ),
 
+        .ID_DisWr               (ID_DisWr),
         .EXE_DisWr              (EXE_DisWr ),
         .MEM_DisWr              (MEM_DisWr ),
         .WB_DisWr               (WB_DisWr ),
@@ -270,9 +276,9 @@ module mycpu_top (
     (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
-        .DcacheAXIBus                   (axi_dbus.slave ),
-        .IcacheAXIBus                   (axi_ibus.slave ),
-        .UncacheAXIBus                  (axi_ubus.slave) ,
+        .DcacheAXIBus           (axi_dbus.slave ),
+        .IcacheAXIBus           (axi_ibus.slave ),
+        .UncacheAXIBus          (axi_ubus.slave) ,
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),
@@ -360,11 +366,13 @@ module mycpu_top (
         .WB_RegsWrType             (WB_RegsWrType ),
         .MEM_rt                    (MEM_rt),   
         .MEM_ReadMEM               (MEM_LoadType.ReadMem), // load信号用于数据冒险 TODO:连线
+        .ID_DisWr                  (ID_DisWr),
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
         .ID_IsAImmeJump            (ID_IsAImmeJump),
-        .DH_Stall                  (DH_Stall),
+        .ID_EX_DH_Stall            (ID_EX_DH_Stall),
+        .ID_MEM1_DH_Stall          (ID_MEM1_DH_Stall),
         .ID_PC                     (ID_PC),
         .ID_Instr                  (ID_Instr)
     );
@@ -432,7 +440,6 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .MEM2_Flush                (MEM2_Flush ),
         .MEM2_Wr                   (MEM2_Wr ),
-        .MEM_store_req             (MEM_StoreType.DMWr),
         .MM2Bus                    (MM2Bus.MEM2 ),
         .M2WBus                    (M2WBus.MEM2 ),
         .cpu_dbus                  (cpu_dbus ),
@@ -440,7 +447,8 @@ module mycpu_top (
         .MEM2_Result               (MEM2_Result ),
         .MEM2_Dst                  (MEM2_Dst ),
         .MEM2_RegsWrType           (MEM2_RegsWrType),
-        .MEM2_store_req            (MEM2_store_req)
+        .MEM2_store_req            (MEM2_store_req),
+        .MEM2_Isincache            (MEM2_Isincache)
     );
 
 
@@ -450,7 +458,6 @@ module mycpu_top (
         .WB_Flush                  (WB_Flush ),
         .WB_Wr                     (WB_Wr ),
         .WB_DisWr                  (WB_DisWr ),
-        .MEM2_store_req            (MEM2_store_req),
         .M2WBus                    (M2WBus.WB ),
         //--------------------------output-------------------------//
         .WB_Result                 (WB_Result ),

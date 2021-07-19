@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-17 16:07:19
+ * @LastEditTime: 2021-07-19 16:41:37
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,7 +18,6 @@ module TOP_WB (
     input logic                  WB_Flush,
     input logic                  WB_Wr,
     input logic                  WB_DisWr,
-    input logic                  MEM2_store_req,
     MEM2_WB_Interface            M2WBus,
     //--------------------output--------------------//
     output logic [31:0]          WB_Result,
@@ -26,8 +25,8 @@ module TOP_WB (
     output RegsWrType            WB_Final_Wr,
     output RegsWrType            WB_RegsWrType,
     output logic [31:0]          WB_PC,
-    output logic                 WB_store_req,
     output logic [31:0]          WB_ALUOut,
+    output logic                 WB_store_req,
     output logic                 WB_Isincache
 );
     logic [31:0]                 WB_DMOut;
@@ -52,7 +51,7 @@ module TOP_WB (
         .MEM2_DMOut           (M2WBus.MEM2_DMOut ),
         .MEM2_OutB            (M2WBus.MEM2_OutB ),
         .MEM2_RegsWrType      (M2WBus.MEM2_RegsWrType ),
-        .MEM2_store_req       (MEM2_store_req),
+        .MEM2_store_req       (M2WBus.MEM2_store_req),
         .MEM2_Isincache       (M2WBus.MEM2_Isincache),
         //-------------------------out----------------------------//
         .WB_ALUOut            (WB_ALUOut ),

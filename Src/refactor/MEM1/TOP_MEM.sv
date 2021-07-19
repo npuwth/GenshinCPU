@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-18 17:23:01
+ * @LastEditTime: 2021-07-19 16:59:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -74,7 +74,7 @@ module TOP_MEM (
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType     = MEM_RegsWrType;        // 传给EXE用于旁路
+    assign EMBus.MEM_RegsWrType     = MEM_RegsWrType;               // 传给EXE用于旁路
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high
     assign EMBus.MEM_Result         = MEM_Result;                   // 传给EXE用于旁路    
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
@@ -82,11 +82,14 @@ module TOP_MEM (
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
-    assign MEM_Final_Wr             = (MEM_DisWr)? '0: MM2Bus.MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
+    assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
+    assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
 
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     // assign MEM_store_req            = MEM_StoreType.DMWr ;
     assign MM2Bus.MEM_Isincache     = D_IsCached;
+    assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
+    assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
 
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
@@ -136,8 +139,7 @@ module TOP_MEM (
         // .dcache_flush            (cpu_dbus.flush)
     );
 
-    Exception U_Exception(
-        .MEM_RegsWrType          (MEM_RegsWrType),              
+    Exception U_Exception(             
         .MEM_ExceptType          (MEM_ExceptType),        
         .MEM_TLBExceptType       (MEM_TLBExceptType),
         .MEM_PC                  (MM2Bus.MEM_PC),   
@@ -148,8 +150,7 @@ module TOP_MEM (
         .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
         .CP0_Cause_IP1_0         (CP0_Cause_IP1_0), 
         .CP0_Ebase               (CP0_Ebase),     
-    //------------------------------out--------------------------------------------//
-        .MEM_RegsWrType_final    (MM2Bus.MEM_RegsWrType),             
+    //------------------------------out--------------------------------------------//         
         .Flush_Exception         (Flush_Exception),                         
         .EX_Entry_Sel            (EX_Entry_Sel),            
         .MEM_ExcType             (MM2Bus.MEM_ExcType),
@@ -254,7 +255,7 @@ module TOP_MEM (
         .D_IsTLBStall            (D_IsTLBStall ),
         .MEM_TLBExceptType       (MEM_TLBExceptType ),
         .D_VPN2                  ( D_VPN2)
-  );
+    );
 
 
 endmodule
