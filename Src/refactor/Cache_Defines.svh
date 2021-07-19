@@ -1,12 +1,13 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-19 11:26:48
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-19 18:41:25
+ * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
  `include "Cache_options.svh"
+ `include "CPU_Defines.svh"
 `ifndef CACHE_DEFINES_SVH
 `define CACHE_DEFINES_SVH
 
