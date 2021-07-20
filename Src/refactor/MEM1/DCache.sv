@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-20 16:30:36
+ * @LastEditTime: 2021-07-20 16:30:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -90,7 +90,7 @@ endfunction
 
 
 
-function logic  clog2(//TODO:  配置的时候需要改动
+function logic  clog2(//TODO:   配置的时候需要改动
     input logic [1:0] hit
 );
     return{
