@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-20 11:15:08
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-20 14:42:56
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,7 +15,7 @@
 // `define FPU_DETECT_EN         // 定义则打开浮点检测功能
 // `define DEBUG                       
 `define NEW_BRIDGE          
-`define All_Uncache           // 定义则全走uncache  
+//`define All_Uncache           // 定义则全走uncache  
 // `define TRAP                   
 // `define EN_TLB               
 
