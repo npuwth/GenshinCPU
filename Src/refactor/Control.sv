@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-20 11:12:40
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-20 15:06:28
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -84,6 +84,25 @@ module Control(
 
     // assign EXE_DisWr = (Flush_Exception == `FlushEnable) || (DIVMULTBusy == 1'b1);
 
+
+    always_comb begin : IReq_valid_blockName
+        if(Flush_Exception == `FlushEnable || ID_MEM2_DH_Stall || ID_IsAImmeJump == 1'b1||ID_MEM1_DH_Stall ||ID_EX_DH_Stall ||BranchFailed == 1'b1)begin
+            IReq_valid   = 1'b0;
+        end
+        else begin
+            IReq_valid   = 1'b1;
+        end
+
+    end
+
+    always_comb begin : DReq_valid_blockName
+        if (Flush_Exception == `FlushEnable) begin
+            DReq_valid   = 1'b0;
+        end else begin
+            DReq_valid   = 1'b1;
+        end
+    end
+
     always_comb begin
         if (D_IsTLBStall == 1'b1  || Dcache_busy == 1'b1 ) begin
             PREIF_Wr     = 1'b0;
@@ -108,8 +127,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b1;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b1;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -137,8 +156,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b1;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b1;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -167,8 +186,8 @@ module Control(
             IcacheFlush  = 1'b0;
             // DCacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b1;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b1;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -197,8 +216,8 @@ module Control(
             
             IcacheFlush  = 1'b1;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b0;
+            // IReq_valid   = 1'b0;
+            // DReq_valid   = 1'b0;
 
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
@@ -256,8 +275,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b0;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
@@ -285,8 +304,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b0;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
@@ -315,8 +334,8 @@ module Control(
             IcacheFlush  = 1'b0;
             // DCacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b0;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
@@ -344,8 +363,8 @@ module Control(
 
             IcacheFlush  = 1'b1;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b0;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
@@ -376,8 +395,8 @@ module Control(
             IcacheFlush  = 1'b1;
             // DCacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b0;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
@@ -406,8 +425,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b1;
-            DReq_valid   = 1'b1;
+            // IReq_valid   = 1'b1;
+            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
