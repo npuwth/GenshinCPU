@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-19 22:18:02
+ * @LastEditTime: 2021-07-20 14:34:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -324,11 +324,15 @@ assign data_read_en   = (state == REFILLDONE ||(req_buffer.valid & req_buffer.op
 assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;
 
+
+//if not stall 更新 if stall check if hit & store & cache
 always_ff @( posedge clk ) begin : MEM2_blockName
-    if (  cpu_bus.stall ) begin
+    if (  cpu_bus.stall & (~(busy_cache|busy_uncache)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
         MEM2<='0;
-    end else begin
+    end else if(~(cpu_bus.stall))begin
         MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
+    end else begin
+        MEM2<=MEM2;
     end
 end
 
