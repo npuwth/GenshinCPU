@@ -10,6 +10,7 @@ read_file -type verilog {/home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cp
 set_option enableSV yes
 set_option incdir /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/Src/refactor/
 set_option incdir /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/Src/refactor/*
+set_option top mycpu_top
 ```
 
 ## 参考资料
