@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-19 19:42:13
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-20 16:30:16
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1598,7 +1598,7 @@ module Decode(
         IsReserved    = 1'b0;
       end
 
-      OP_TEQI , OP_TGEI , OP_TGEIU , OP_TLTI , OP_TNEI : begin
+      OP_TEQI , OP_TGEI , OP_TGEIU , OP_TLTI , OP_TLTIU ,  OP_TNEI : begin
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
