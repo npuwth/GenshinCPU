@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 14:57:05
+ * @LastEditTime: 2021-07-20 10:01:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,33 +17,43 @@ module TOP_ID (
     input logic              resetn,
     input logic              ID_Flush,
     input logic              ID_Wr,
-    input logic [31:0]       WB_Result,  //写寄存器堆来自WB
+    
+    input logic [31:0]       MEM_Result,  //写寄存器堆来自MEM
+    input logic [4:0]        MEM_Dst,
+    input RegsWrType         MEM_RegsWrType,
+    input logic [31:0]       MEM2_Result, //写寄存器堆来自MEM2
+    input logic [4:0]        MEM2_Dst,
+    input RegsWrType         MEM2_RegsWrType,
+    input logic [31:0]       WB_Result,   //写寄存器堆来自WB
     input logic [4:0]        WB_Dst,
     input RegsWrType         WB_RegsWrType,
-    input logic [4:0]        MEM_rt,
+
+    input logic [4:0]        MEM_rt,      //用于DataHazard检测
     input logic              MEM_ReadMEM, // MEM级的load信号     
+    input logic [4:0]        MEM2_rt,
+    input logic              MEM2_ReadMEM,
     input logic              ID_DisWr,   
+    input logic [31:0]       MEM_Instr,
     IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
     output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
-    // output logic             DH_PreIFWr,
-    // output logic             DH_IFWr,
-    // output logic             DH_IDWr,
-    // output logic             EXE_Flush_DataHazard
-    output logic            ID_EX_DH_Stall,
-    output logic            ID_MEM1_DH_Stall,
-    output logic [31:0]     ID_PC,
-    output logic [31:0]     ID_Instr
+    output logic             ID_EX_DH_Stall,
+    output logic             ID_MEM1_DH_Stall,
+    output logic             ID_MEM2_DH_Stall,
+    output logic [31:0]      ID_PC,
+    output logic [31:0]      ID_Instr
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
     logic [31:0]             RF_BusA;  //从寄存器堆读出的数据
     logic [31:0]             RF_BusB;
-    logic                    ID_RF_ForwardA;
-    logic                    ID_RF_ForwardB;
     logic [1:0]              ID_rsrtRead;
     ExceptinPipeType         ID_ExceptType;
+    logic [1: 0]             ID_ForwardA;
+    logic [1: 0]             ID_ForwardB;
+    logic [4:0]              ID_rs;
+    logic [4:0]              ID_rt;
 
     LoadType                 ID_LoadType;
     StoreType                ID_StoreType;
@@ -52,8 +62,10 @@ module TOP_ID (
     assign ID_Instr       = IEBus.ID_Instr;//用于IF级的NPC
     assign ID_PC          = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
+    assign ID_rs          = IEBus.ID_rs;
+    assign ID_rt          = IEBus.ID_rt;
     assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
-    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; // TODO:可以删掉
+    assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; 
     assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : ID_RegsWrType;  
     
     ID_Reg U_ID_REG ( 
@@ -93,21 +105,37 @@ module TOP_ID (
         .ID_BusB             (RF_BusB)
     );
 //---------------------------对RF读出的数据进行WB/ID级旁路------------//
-    assign ID_RF_ForwardA = WB_RegsWrType.RFWr && (WB_Dst == IEBus.ID_rs);
-    assign ID_RF_ForwardB = WB_RegsWrType.RFWr && (WB_Dst == IEBus.ID_rt);
+    // ID级旁路MEM MEM2的数据
+    MUX4to1 #(32) U_MUXA_L1 (
+        .d0                   (RF_BusA),
+        .d1                   (MEM_Result),
+        .d2                   (MEM2_Result),       
+        .d3                   (WB_Result),
+        .sel4_to_1            (ID_ForwardA),     
+        .y                    (IEBus.ID_BusA)
+    );//EXE级旁路
 
-    MUX2to1 #(32) U_MUX_RF_FORWARDA ( 
-        .d0                  (RF_BusA),
-        .d1                  (WB_Result),
-        .sel2_to_1           (ID_RF_ForwardA),
-        .y                   (IEBus.ID_BusA)
-    );
-    
-    MUX2to1 #(32) U_MUX_RF_FORWARDB ( 
-        .d0                  (RF_BusB),
-        .d1                  (WB_Result),
-        .sel2_to_1           (ID_RF_ForwardB),
-        .y                   (IEBus.ID_BusB)
+    // ID级旁路MEM MEM2的数据
+    MUX4to1 #(32) U_MUXB_L1 (
+        .d0                   (RF_BusB),
+        .d1                   (MEM_Result),
+        .d2                   (MEM2_Result),       
+        .d3                   (WB_Result),
+        .sel4_to_1            (ID_ForwardB),      
+        .y                    (IEBus.ID_BusB)
+    );//EXE级旁路
+
+    ForwardUnitInID U_ForwardUnitInID (
+        .MEM_RegsWrType      (MEM_RegsWrType ),
+        .MEM2_RegsWrType     (MEM2_RegsWrType ),
+        .WB_RegsWrType       (WB_RegsWrType),
+        .MEM_Dst             (MEM_Dst ),
+        .MEM2_Dst            (MEM2_Dst ),
+        .WB_Dst              (WB_Dst),
+        .ID_rs               (ID_rs ),
+        .ID_rt               (ID_rt ),
+        .ID_ForwardA         (ID_ForwardA ),
+        .ID_ForwardB         (ID_ForwardB)
     );
 
 //-----------------------------------------------------------------//
@@ -145,10 +173,14 @@ module TOP_ID (
         .EXE_ReadMEM         (IEBus.EXE_LoadType.ReadMem),
         .MEM_rt              (MEM_rt ),
         .MEM_ReadMEM         (MEM_ReadMEM ),
+        .MEM2_rt             (MEM2_rt),
+        .MEM2_ReadMEM        (MEM2_ReadMEM),
         .EXE_Instr           (IEBus.EXE_Instr),
+        .MEM_Instr           (MEM_Instr),
         //-----------------------output-----------------------//
         .ID_EX_DH_Stall      (ID_EX_DH_Stall),
-        .ID_MEM1_DH_Stall    (ID_MEM1_DH_Stall)
+        .ID_MEM1_DH_Stall    (ID_MEM1_DH_Stall),
+        .ID_MEM2_DH_Stall    (ID_MEM2_DH_Stall)
     );
 
 endmodule  

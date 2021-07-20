@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-19 16:57:05
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-19 22:36:32
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -23,18 +23,19 @@ module Control(
     input logic         Dcache_busy,              // Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
     input logic         ID_EX_DH_Stall,                 //DataHazard产生的
     input logic         ID_MEM1_DH_Stall,                 //DataHazard产生的
+    input logic         ID_MEM2_DH_Stall,                 //DataHazard产生的
     input logic         ID_IsAImmeJump,           // ID级的J, JAL指令,需要flush一拍
     input logic         BranchFailed,             // 分支预测失败时，需要flush两拍
     input logic         DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
-    input logic [31:0]  MEM_Addr,                 // MEM级的访存地址信息
-    input logic         MEM_loadstore_req,        // MEM级的requset信息
-    input logic         MEM_iscached,
-    input logic [31:0]  MEM2_Addr,                // MEM2级的的地址信息
-    input logic         MEM2_store_req,           // MEM2级的store信息
-    input logic         MEM2_iscached,
-    input logic [31:0]  WB_Addr,                  // WB级的的地址信息            
-    input logic         WB_store_req,             // WB级的store信息
-    input logic         WB_iscached,
+    // input logic [31:0]  MEM_Addr,                 // MEM级的访存地址信息
+    // input logic         MEM_loadstore_req,        // MEM级的requset信息
+    // input logic         MEM_iscached,
+    // input logic [31:0]  MEM2_Addr,                // MEM2级的的地址信息
+    // input logic         MEM2_store_req,           // MEM2级的store信息
+    // input logic         MEM2_iscached,
+    // input logic [31:0]  WB_Addr,                  // WB级的的地址信息            
+    // input logic         WB_store_req,             // WB级的store信息
+    // input logic         WB_iscached,
 //------------------------------------output----------------------------------------------------//
     output logic        PREIF_Wr,
     output logic        IF_Wr,
@@ -65,21 +66,21 @@ module Control(
     output logic        DCacheStall
 );
 
-    logic Load_store_stall ;
-    localparam int unsigned INDEX_WIDTH = $clog2(`ICACHE_LINE_WORD*4) ;
+    // logic Load_store_stall ;
+    // localparam int unsigned INDEX_WIDTH = $clog2(`ICACHE_LINE_WORD*4) ;
     
 
-    always_comb begin
-        if (MEM_loadstore_req == 1'b1 && MEM_iscached && MEM2_store_req == 1'b1 && MEM2_iscached&&MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
-            Load_store_stall = 1'b1;
-        end
-        else if (MEM_loadstore_req == 1'b1 && MEM_iscached && WB_store_req == 1'b1 && WB_iscached &&MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
-            Load_store_stall = 1'b1;
-        end
-        else begin
-            Load_store_stall = 1'b0;
-        end
-    end
+    // always_comb begin
+    //     if (MEM_loadstore_req == 1'b1 && MEM_iscached && MEM2_store_req == 1'b1 && MEM2_iscached&&MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
+    //         Load_store_stall = 1'b1;
+    //     end
+    //     else if (MEM_loadstore_req == 1'b1 && MEM_iscached && WB_store_req == 1'b1 && WB_iscached &&MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
+    //         Load_store_stall = 1'b1;
+    //     end
+    //     else begin
+    //         Load_store_stall = 1'b0;
+    //     end
+    // end
 
     // assign EXE_DisWr = (Flush_Exception == `FlushEnable) || (DIVMULTBusy == 1'b1);
 
@@ -107,8 +108,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b0;
+            IReq_valid   = 1'b1;
+            DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -136,8 +137,8 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b0;
+            IReq_valid   = 1'b1;
+            DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -166,8 +167,8 @@ module Control(
             IcacheFlush  = 1'b0;
             // DCacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;
-            DReq_valid   = 1'b0;
+            IReq_valid   = 1'b1;
+            DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -203,7 +204,36 @@ module Control(
             DCacheStall  = 1'b0;
 
         end
-        else if (Load_store_stall) begin
+        // else if (Load_store_stall) begin
+        //     PREIF_Wr     = 1'b0;
+        //     IF_Wr        = 1'b0;
+        //     ID_Wr        = 1'b0;
+        //     EXE_Wr       = 1'b0;
+        //     MEM_Wr       = 1'b0; 
+        //     MEM2_Wr      = 1'b1;
+        //     WB_Wr        = 1'b1;
+            
+        //     ID_DisWr     = 1'b0;
+        //     // EXE_DisWr    = 1'b0;
+        //     MEM_DisWr    = 1'b1;  //TODO:MEM2模块描述
+        //     WB_DisWr     = 1'b0; 
+                       
+        //     IF_Flush     = 1'b0;
+        //     ID_Flush     = 1'b0;
+        //     EXE_Flush    = 1'b0;
+        //     MEM_Flush    = 1'b0;
+        //     MEM2_Flush   = 1'b0;
+        //     WB_Flush     = 1'b0;
+
+        //     IcacheFlush  = 1'b0;
+
+        //     IReq_valid   = 1'b0;  // 此时Icache  Dcache都不能发起请求
+        //     DReq_valid   = 1'b0;
+
+        //     ICacheStall  = 1'b1;
+        //     DCacheStall  = 1'b0;
+        // end 
+        else if (ID_MEM2_DH_Stall == 1'b1) begin
             PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
@@ -214,7 +244,7 @@ module Control(
             
             ID_DisWr     = 1'b0;
             // EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b1;  //TODO:MEM2模块描述
+            MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b0; 
                        
             IF_Flush     = 1'b0;
@@ -226,12 +256,12 @@ module Control(
 
             IcacheFlush  = 1'b0;
 
-            IReq_valid   = 1'b0;  // 此时Icache  Dcache都不能发起请求
-            DReq_valid   = 1'b0;
+            IReq_valid   = 1'b0;
+            DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
-        end 
+        end
         else if (ID_MEM1_DH_Stall == 1'b1) begin
             PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
