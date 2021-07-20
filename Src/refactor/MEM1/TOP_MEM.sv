@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 09:26:22
+ * @LastEditTime: 2021-07-20 14:25:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -72,7 +72,7 @@ module TOP_MEM (
     //用于TLB
     logic [2:0]                  MEM_TLBExceptType;
     logic [31:0]                 Phsy_Daddr;
-    // logic                        D_IsCached;
+    logic                        D_IsCached;
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
