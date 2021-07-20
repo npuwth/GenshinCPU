@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-19 22:36:32
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-20 11:12:40
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -251,7 +251,7 @@ module Control(
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
-            MEM2_Flush   = 1'b0;
+            MEM2_Flush   = 1'b1;
             WB_Flush     = 1'b0;
 
             IcacheFlush  = 1'b0;
@@ -279,7 +279,7 @@ module Control(
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
-            MEM_Flush    = 1'b0;
+            MEM_Flush    = 1'b1;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
@@ -307,7 +307,7 @@ module Control(
                        
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
-            EXE_Flush    = 1'b0;
+            EXE_Flush    = 1'b1;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
