@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-20 11:15:08
+ * @LastEditTime: 2021-07-20 15:06:17
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,7 +17,7 @@
 `define NEW_BRIDGE          
 `define All_Uncache           // 定义则全走uncache  
 // `define TRAP                   
-// `define EN_TLB               
+`define EN_TLB               
 
 `define ALUOpLen            4:0
 `define InstrLen            31:0
