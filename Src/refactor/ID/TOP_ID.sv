@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 10:01:47
+ * @LastEditTime: 2021-07-20 22:24:02
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -50,8 +50,8 @@ module TOP_ID (
     logic [31:0]             RF_BusB;
     logic [1:0]              ID_rsrtRead;
     ExceptinPipeType         ID_ExceptType;
-    logic [1: 0]             ID_ForwardA;
-    logic [1: 0]             ID_ForwardB;
+    logic [2: 0]             ID_ForwardA;
+    logic [2: 0]             ID_ForwardB;
     logic [4:0]              ID_rs;
     logic [4:0]              ID_rt;
 
@@ -106,29 +106,33 @@ module TOP_ID (
     );
 //---------------------------对RF读出的数据进行WB/ID级旁路------------//
     // ID级旁路MEM MEM2的数据
-    MUX4to1 #(32) U_MUXA_L1 (
+    MUX5to1 #(32) U_MUXA_L1 (
         .d0                   (RF_BusA),
-        .d1                   (MEM_Result),
-        .d2                   (MEM2_Result),       
-        .d3                   (WB_Result),
-        .sel4_to_1            (ID_ForwardA),     
+        .d1                   (IEBus.EXE_Result),
+        .d2                   (MEM_Result),
+        .d3                   (MEM2_Result),       
+        .d4                   (WB_Result),
+        .sel5_to_1            (ID_ForwardA),     
         .y                    (IEBus.ID_BusA)
     );//EXE级旁路
 
     // ID级旁路MEM MEM2的数据
-    MUX4to1 #(32) U_MUXB_L1 (
+    MUX5to1 #(32) U_MUXB_L1 (
         .d0                   (RF_BusB),
-        .d1                   (MEM_Result),
-        .d2                   (MEM2_Result),       
-        .d3                   (WB_Result),
-        .sel4_to_1            (ID_ForwardB),      
+        .d1                   (IEBus.EXE_Result),
+        .d2                   (MEM_Result),
+        .d3                   (MEM2_Result),       
+        .d4                   (WB_Result),
+        .sel5_to_1            (ID_ForwardB),      
         .y                    (IEBus.ID_BusB)
     );//EXE级旁路
 
     ForwardUnitInID U_ForwardUnitInID (
+        .EXE_RegsWrType      (IEBus.EXE_RegsWrType ),
         .MEM_RegsWrType      (MEM_RegsWrType ),
         .MEM2_RegsWrType     (MEM2_RegsWrType ),
         .WB_RegsWrType       (WB_RegsWrType),
+        .EXE_Dst             (IEBus.EXE_Dst ),
         .MEM_Dst             (MEM_Dst ),
         .MEM2_Dst            (MEM2_Dst ),
         .WB_Dst              (WB_Dst),

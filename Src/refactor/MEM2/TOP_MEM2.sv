@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-20 10:24:42
+ * @LastEditTime: 2021-07-20 22:02:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -82,7 +82,7 @@ module TOP_MEM2 (
     //-------------------------------用于旁路的多选器-----------------------//
     MUX4to1 #(32) U_MUXINMEM2(
         .d0                  (M2WBus.MEM2_PC + 8),                                     // JAL,JALR等指令将PC+8写回RF
-        .d1                  (MEM2_ALUOut),                                   // ALU计算结果
+        .d1                  (MEM2_ALUOut       ),                                     // ALU计算结果
         .d2                  (M2WBus.MEM2_OutB  ),                                     // MTC0 MTHI LO等指令需要写寄存器
         .d3                  ('x                ),                               
         .sel4_to_1           (M2WBus.MEM2_WbSel ),

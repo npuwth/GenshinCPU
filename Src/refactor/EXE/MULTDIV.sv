@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-19 19:55:34
+ * @LastEditTime: 2021-07-20 21:55:19
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
@@ -57,9 +57,27 @@ logic           EXE_MULTStall;
 logic           EXE_DIVStall;
 logic           ismulti;
 logic           signflag;
+logic  [63:0]   mul_result;
 assign ismulti = (EXE_ALUOp == `EXE_ALUOp_MULT || EXE_ALUOp == `EXE_ALUOp_MULTU || EXE_ALUOp == `EXE_ALUOp_MADD || EXE_ALUOp == `EXE_ALUOp_MADDU || 
                 EXE_ALUOp == `EXE_ALUOp_MSUB || EXE_ALUOp == `EXE_ALUOp_MSUBU) ? 1 : 0 ;
 
+//重构乘法 改为两个周期
+// assign abs_reg1 = (is_signed && reg1[31]) ? -reg1 : reg1;
+// assign abs_reg2 = (is_signed && reg2[31]) ? -reg2 : reg2;
+logic [31:0]    multiA;
+logic [31:0]    multiB;
+logic negative_result;
+assign multiA = (signflag && EXE_ResultA[31]) ? -EXE_ResultA : EXE_ResultA;
+assign multiB = (signflag && EXE_ResultB[31]) ? -EXE_ResultB : EXE_ResultB;
+assign negative_result = signflag && (EXE_ResultA[31] ^ EXE_ResultB[31]);
+assign mul_result = negative_result ? -Prod : Prod;
+
+UMult UMult(
+    .CLK(clk),
+    .A(multiA),
+    .B(multiB),
+    .P(Prod)
+);
 
 always_ff @(posedge clk ) begin
     if (rst == `RstEnable) begin
@@ -176,20 +194,7 @@ Unsigned_div U_UnsignedDIV (
    .m_axis_dout_tvalid     (Unsigned_div_finish),        // output wire m_axis_dout_tvalid
    .m_axis_dout_tdata      (Unsigned_dout_tdata)         // output wire [63 : 0] m_axis_dout_tdata
 );
-// always_comb begin 
-//     EXE_ExceptType_new = EXE_ExceptType;
-//     EXE_ExceptType_new.Overflow = ((!EXE_ResultA[31] && !EXE_ResultB[31]) && (EXE_ALUOut_r[31]))||((EXE_ResultA[31] && EXE_ResultB[31]) && (!EXE_ALUOut_r[31]));
-// end
-    //assign EXE_ALUOut = EXE_ALUOut_r;
-    //assign EXE_ALUOut = Prod[63:0];
-mulsinglecycle mul1sign(
-    .mul_clk(clk),
-    .resetn(rst),
-    .mul_signed(signflag),
-    .x(EXE_ResultA),
-    .y(EXE_ResultB),
-    .result(Prod)
-);
+
 //MADD MSUB指令支持
 always_comb begin
     unique case (EXE_ALUOp)
@@ -254,6 +259,9 @@ always_comb begin
             end
         end
         S:begin
+            nextstate_mul = Q;
+        end
+        Q:begin
             nextstate_mul = T;
         end
         default:begin
@@ -261,146 +269,30 @@ always_comb begin
         end
     endcase
 end
+
 // 乘法状态机的控制信号
 always_comb begin
-        if (prestate_mul == T) begin
-            multi_finish = 1'b0;
-        end  
-        else if (prestate_mul == S) begin
+        if (prestate_mul == Q) begin
             multi_finish = 1'b1;
         end
         else begin
             multi_finish = 1'b0;
         end
-    end
+end
 
     assign div_finish   = Signed_div_finish | Unsigned_div_finish;                                  //除法完成信号
     //assign multi_finish = (EXE_ALUOp == `EXE_ALUOp_MULT || EXE_ALUOp == `EXE_ALUOp_MULTU) ? 1 : 0;  //乘法完成信号
     assign EXE_Finish   = multi_finish | div_finish;                                                //总完成信号
 
-    assign EXE_MULTDIVtoLO = (multi_finish        ) ? Prod[31:0] : 
+    assign EXE_MULTDIVtoLO = (multi_finish        ) ? mul_result[31:0] : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[63:32]  : 
                              (Unsigned_div_finish ) ? Unsigned_dout_tdata[63:32]: 31'bx;
 
-    assign EXE_MULTDIVtoHI = (multi_finish        ) ? Prod[63:32] : 
+    assign EXE_MULTDIVtoHI = (multi_finish        ) ? mul_result[63:32] : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[31:0]   : 
                              (Unsigned_div_finish ) ? Unsigned_dout_tdata[31:0] : 31'bx;
                              
     assign EXE_DIVStall = ((EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) && div_finish == 1'b0) ? 1 : 0 ;
     assign EXE_MULTStall= ((EXE_ALUOp == `EXE_ALUOp_MULT|| EXE_ALUOp == `EXE_ALUOp_MULTU)&& multi_finish == 1'b0) ? 1 : 0;
     assign EXE_MULTDIVStall = EXE_MULTStall || EXE_DIVStall;
-endmodule
-
-
-//为了代码的方便起见，我将乘法的Booth编码和树均放在了单元同模块下
-// partial product generator for booth algorithm
-module booth_gen
-(
-    input  logic [63:0] x,
-    input  logic [2:0] y,  // {y[i+1], y[i], y[i-1]}
-    output logic [63:0] p,
-    output logic c
-);
-
-  wire [64:0] x_ = {x, 1'b0};
-  generate
-    genvar i;
-    for (i=0; i<64; i=i+1) begin
-      assign p[i] = (y == 3'b001 || y == 3'b010) & x_[i+1]
-                  | (y == 3'b101 || y == 3'b110) & ~x_[i+1]
-                  | (y == 3'b011) & x_[i]
-                  | (y == 3'b100) & ~x_[i];
-    end
-  endgenerate
-  assign c = y == 3'b100 || y == 3'b101 || y == 3'b110;
-
-endmodule
-
-// 17-bit wallace tree unit
-module wallace_unit_17(
-    input  logic [16:0] in,
-    input  logic [14:0] cin,
-    output logic c,
-    output logic out,
-    output logic [14:0] cout
-);
-
-  wire [14:0] s;
-  assign {cout[0], s[0]} = in[16] + in[15] + in[14];
-  assign {cout[1], s[1]} = in[13] + in[12] + in[11];
-  assign {cout[2], s[2]} = in[10] + in[9] + in[8];
-  assign {cout[3], s[3]} = in[7] + in[6] + in[5];
-  assign {cout[4], s[4]} = in[4] + in[3] + in[2];
-  assign {cout[5], s[5]} = in[1] + in[0];
-  assign {cout[6], s[6]} = s[0] + s[1] + s[2];
-  assign {cout[7], s[7]} = s[3] + s[4] + s[5];
-  assign {cout[8], s[8]} = cin[0] + cin[1] + cin[2];
-  assign {cout[9], s[9]} = cin[3] + cin[4] + cin[5];
-  assign {cout[10], s[10]} = s[6] + s[7] + s[8];
-  assign {cout[11], s[11]} = s[9] + cin[6] + cin[7];
-  assign {cout[12], s[12]} = s[10] + s[11] + cin[8];
-  assign {cout[13], s[13]} = cin[9] + cin[10] + cin[11];
-  assign {cout[14], s[14]} = s[12] + s[13] + cin[12];
-  assign {c, out} = s[14] + cin[13] + cin[14];
-
-endmodule
-
-module mulsinglecycle(
-    input  logic mul_clk,
-    input  logic resetn,
-    input  logic mul_signed,
-    input  logic [31:0] x,
-    input  logic [31:0] y,
-    output logic [63:0] result
-);
-
-  wire [63:0] x_ext = {{32{x[31] & mul_signed}}, x};
-  wire [34:0] y_ext = {{2{y[31] & mul_signed}}, y, 1'b0};
-  wire [63:0] part_prod [16:0];     // partial product
-  wire [16:0] part_switch [63:0];   // switched partial product
-  wire [16:0] part_carry;
-
-  genvar i, j;
-  generate
-    for (i=0; i<17; i=i+1) begin
-      booth_gen part_mul(
-        .x(x_ext << 2*i),
-        .y(y_ext[(i+1)*2:i*2]),
-        .p(part_prod[i]),
-        .c(part_carry[i])
-      );
-      for (j=0; j<64; j=j+1) begin
-        assign part_switch[j][i] = part_prod[i][j];
-      end
-    end
-  endgenerate
-
-  reg [16:0] part_switch_reg [63:0];
-  reg [16:0] part_carry_reg;
-  integer k;
-  always @(posedge mul_clk) begin
-    for (k=0; k<64; k=k+1) begin
-      part_switch_reg[k] <= part_switch[k];
-    end
-    part_carry_reg <= part_carry;
-  end
-
-  wire [14:0] wallace_carry [64:0];
-  assign wallace_carry[0] = part_carry_reg[14:0];
-  wire [63:0] out_carry, out_sum;
-  generate
-    for (i=0; i<64; i=i+1) begin
-      wallace_unit_17 u_wallace(
-        .in(part_switch_reg[i]),
-        .cin(wallace_carry[i]),
-        .c(out_carry[i]),
-        .out(out_sum[i]),
-        .cout(wallace_carry[i+1])
-      );
-    end
-  endgenerate
-  
-
-  assign result = {out_carry[62:0], part_carry_reg[15]} + out_sum + part_carry_reg[16];
-
 endmodule

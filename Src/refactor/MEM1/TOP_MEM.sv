@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 14:34:42
+ * @LastEditTime: 2021-07-20 23:10:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -52,11 +52,9 @@ module TOP_MEM (
     output logic [31:0]          MEM_Instr
 );
     ExceptinPipeType             MEM_ExceptType;
-	// RegsWrType                   MEM_RegsWrType; 
     logic [31:0]                 RFHILO_Bus;
     logic [1:0]                  MEM_RegsReadSel;
     logic [4:0]                  MEM_rd;               //用于读CP0
-    // logic [31:0]                 MEM_Result;
     logic [31:0]                 CP0_Bus;
     RegsWrType                   MEM_Final_Wr;
     StoreType                    MEM_Final_StoreType;
@@ -79,9 +77,7 @@ module TOP_MEM (
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
-    assign EMBus.MEM_RegsWrType     = MEM_RegsWrType;               // 传给EXE用于旁路
-    assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high
-    assign EMBus.MEM_Result         = MEM_Result;                   // 传给EXE用于旁路    
+    assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high  
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
@@ -123,6 +119,7 @@ module TOP_MEM (
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
         .EXE_rt                  (EMBus.EXE_rt),
+        .EXE_Result              (EMBus.EXE_Result),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
@@ -142,7 +139,8 @@ module TOP_MEM (
         .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
-        .MEM_rt                  (MEM_rt)
+        .MEM_rt                  (MEM_rt),
+        .MEM_Result              (MEM_Result)
     );
 
     Exception U_Exception(             
@@ -201,14 +199,14 @@ module TOP_MEM (
         .DataToDcache         (MEM_DataToDcache)           //给出dcache的写数据信号，
     );
     //------------------------------用于旁路的多选器-------------------------------//
-    MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
-        .d0                      (MM2Bus.MEM_PC + 8),
-        .d1                      (MM2Bus.MEM_ALUOut),
-        .d2                      (RFHILO_Bus       ), //这里使用的应该都是从寄存器出来的，而不是读取CP0后的MM2Bus.MEM_OutB,已经在dataHazard中对这种情况进行了阻塞
-        .d3                      ('x               ),
-        .sel4_to_1               (MM2Bus.MEM_WbSel ),
-        .y                       (MEM_Result       )
-    );
+    // MUX4to1 U_MUXINMEM ( //选择用于旁路的数据来自ALUOut还是OutB
+    //     .d0                      (MM2Bus.MEM_PC + 8),
+    //     .d1                      (MM2Bus.MEM_ALUOut),
+    //     .d2                      (RFHILO_Bus       ), //这里使用的应该都是从寄存器出来的，而不是读取CP0后的MM2Bus.MEM_OutB,已经在dataHazard中对这种情况进行了阻塞
+    //     .d3                      ('x               ),
+    //     .sel4_to_1               (MM2Bus.MEM_WbSel ),
+    //     .y                       (MEM_Result       )
+    // );
     //---------------------------------------------------------------------------//
 //-------------------------------------------TO Cache-------------------------------//
     assign cpu_dbus.wdata                                 = MEM_DataToDcache;

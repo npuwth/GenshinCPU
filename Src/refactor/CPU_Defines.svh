@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-19 23:28:59
+ * @LastEditTime: 2021-07-20 23:10:01
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -335,6 +335,9 @@ interface ID_EXE_Interface();
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic       [31:0]      EXE_Instr;
+	RegsWrType              EXE_RegsWrType;
+	logic       [4:0]       EXE_Dst;
+	logic       [31:0]      EXE_Result;
 
 	modport ID (
 	output                  ID_BusA,            //从RF中读出的A数据
@@ -364,7 +367,10 @@ interface ID_EXE_Interface();
 	output                  ID_TLBWIorR,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
-	input                   EXE_Instr
+	input                   EXE_Instr,
+	input                   EXE_RegsWrType,
+	input                   EXE_Dst,
+	input                   EXE_Result
 	);
 
 	modport EXE (
@@ -395,7 +401,10 @@ interface ID_EXE_Interface();
 	input                   ID_TLBWIorR,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
-	output                  EXE_Instr
+	output                  EXE_Instr,
+	output                  EXE_RegsWrType,
+	output                  EXE_Dst,
+	output                  EXE_Result
 	);
 	
 endinterface
@@ -421,10 +430,8 @@ interface EXE_MEM_Interface();
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
 	logic       [4:0]       EXE_rt;
-
-	RegsWrType              MEM_RegsWrType;
+	logic       [31:0]      EXE_Result;
 	logic       [4:0]       MEM_Dst;
-	logic       [31:0]      MEM_Result;
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
 	logic       [31:0]      MEM_Instr;
@@ -449,9 +456,8 @@ interface EXE_MEM_Interface();
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
 	output   			  	EXE_rt,
-	input                   MEM_RegsWrType,     //下面三个是MEM级给EXE级的旁路
+	output                  EXE_Result,
 	input                   MEM_Dst,
-	input                   MEM_Result,          //
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
 	input                   MEM_Instr
@@ -477,9 +483,8 @@ interface EXE_MEM_Interface();
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
 	input   			  	EXE_rt,
-	output                  MEM_RegsWrType,
+	input                   EXE_Result,
 	output                  MEM_Dst,
-	output                  MEM_Result,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,
 	output                  MEM_Instr

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-20 11:17:14
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-20 20:58:54
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -150,7 +150,7 @@ logic busy;
 
 //连cpu_bus接口
 assign cpu_bus.busy   = busy;
-assign cpu_bus.rdata  = data_rdata_final;
+assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final:'0;
 
 //连axi_bus接口
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
@@ -241,7 +241,7 @@ assign busy           = busy_cache | busy_uncache;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
-assign req_buffer_en  = (busy | cpu_bus.stall)? 1'b0:1'b1 ;
+assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata =  axi_bus.ret_data ;
 assign tagv_wdata =  {1'b1,req_buffer.tag} ;

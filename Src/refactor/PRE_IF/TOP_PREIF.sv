@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-18 11:05:20
+ * @LastEditTime: 2021-07-20 22:00:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -81,7 +81,7 @@ module TOP_PREIF (
         .PREIF_PC       (PREIF_PC)
     );
 
-    MUX8to1 U_PCMUX (
+    MUX7to1 U_PCMUX (
         .d0             (PC_4),
         .d1             (JumpAddr),
         .d2             (MEM_CP0Epc),
@@ -89,8 +89,7 @@ module TOP_PREIF (
         .d4             (BranchAddr),
         .d5             (EXE_BusA_L1),         // JR
         .d6             (MEM_PC),
-        .d7             ('x    ),
-        .sel8_to_1      (PCSel),
+        .sel7_to_1      (PCSel),
         //---------------output----------------//
         .y              (PREIF_NPC)
     );

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-18 17:21:11
+ * @LastEditTime: 2021-07-20 23:00:27
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -45,6 +45,7 @@ module MEM_Reg (
     input  logic    [1:0]           EXE_RegsReadSel,
     input  logic    [4:0]           EXE_rd,
     input  logic    [4:0]           EXE_rt,
+    input  logic    [31:0]          EXE_Result, 
  //----------------------------------------------------------//   
     output logic	[31:0] 		    MEM_ALUOut,	
     output logic    [31:0]          MEM_OutB,	
@@ -69,8 +70,8 @@ module MEM_Reg (
     output logic                    MEM_TLBWIorR,
     output logic    [1:0]           MEM_RegsReadSel,
     output logic    [4:0]           MEM_rd,
-    output logic    [4:0]           MEM_rt
-    // output logic                    dcache_flush
+    output logic    [4:0]           MEM_rt,
+    output logic    [31:0]          MEM_Result
 );
 
 // typedef enum logic [1:0] {
@@ -126,6 +127,7 @@ module MEM_Reg (
             MEM_RegsReadSel         <= 1'b0;
             MEM_rd                  <= 1'b0;
             MEM_rt                  <= 1'b0;
+            MEM_Result              <= '0;
         end
         else if( MEM_Wr ) begin
             MEM_ALUOut              <= EXE_ALUOut;
@@ -147,6 +149,7 @@ module MEM_Reg (
             MEM_RegsReadSel         <= EXE_RegsReadSel;
             MEM_rd                  <= EXE_rd;
             MEM_rt                  <= EXE_rt;
+            MEM_Result              <= EXE_Result;
         end
     end
 endmodule

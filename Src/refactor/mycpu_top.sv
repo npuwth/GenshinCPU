@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-20 10:23:01
+ * @LastEditTime: 2021-07-20 23:06:17
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -408,7 +408,7 @@ module mycpu_top (
         //--------------------------output-------------------------//
         .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
         .EXE_MULTDIVStall          (EXE_MULTDIVStall),
-        .EXE_BusA_L1               (EXE_BusA_L1),
+        .EXE_BusA                  (EXE_BusA_L1),
         .EXE_BranchType            (EXE_BranchType),
         .EXE_PC                    (EXE_PC),
         .EXE_Imm32                 (EXE_Imm32)
