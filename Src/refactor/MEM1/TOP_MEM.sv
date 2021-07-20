@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 14:25:58
+ * @LastEditTime: 2021-07-20 14:34:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -91,10 +91,8 @@ module TOP_MEM (
     
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
     assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
-    // assign MM2Bus.MEM_Isincache     = D_IsCached;
     //往后传的是DisWr选择后的Store信号
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
-    // assign MM2Bus.MEM_store_req     = MEM_Final_StoreType.DMWr;
     assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
@@ -145,7 +143,6 @@ module TOP_MEM (
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
         .MEM_rt                  (MEM_rt)
-        // .dcache_flush            (cpu_dbus.flush)
     );
 
     Exception U_Exception(             
