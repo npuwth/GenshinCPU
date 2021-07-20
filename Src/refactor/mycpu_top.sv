@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-19 23:29:21
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-20 09:56:13
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -462,8 +462,8 @@ module mycpu_top (
         .cpu_dbus                  (cpu_dbus ),
         //--------------------------output-------------------------//
         .MEM2_Result               (MEM2_Result ),
-        .MEM2_Dst                  (MEM2_Dst )
-        // .MEM2_RegsWrType           (MEM2_RegsWrType)
+        .MEM2_Dst                  (MEM2_Dst ),
+        .MEM2_RegsWrType           (MEM2_RegsWrType)
         // .MEM2_store_req            (MEM2_store_req),
         // .MEM2_Isincache            (MEM2_Isincache)
     );

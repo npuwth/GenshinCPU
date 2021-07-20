@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 23:35:01
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-20 10:01:47
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -52,6 +52,8 @@ module TOP_ID (
     ExceptinPipeType         ID_ExceptType;
     logic [1: 0]             ID_ForwardA;
     logic [1: 0]             ID_ForwardB;
+    logic [4:0]              ID_rs;
+    logic [4:0]              ID_rt;
 
     LoadType                 ID_LoadType;
     StoreType                ID_StoreType;
@@ -60,6 +62,8 @@ module TOP_ID (
     assign ID_Instr       = IEBus.ID_Instr;//用于IF级的NPC
     assign ID_PC          = IEBus.ID_PC;   //用于IF级的NPC
     assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
+    assign ID_rs          = IEBus.ID_rs;
+    assign ID_rt          = IEBus.ID_rt;
     assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
     assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; 
     assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : ID_RegsWrType;  
@@ -175,7 +179,8 @@ module TOP_ID (
         .MEM_Instr           (MEM_Instr),
         //-----------------------output-----------------------//
         .ID_EX_DH_Stall      (ID_EX_DH_Stall),
-        .ID_MEM1_DH_Stall    (ID_MEM1_DH_Stall)
+        .ID_MEM1_DH_Stall    (ID_MEM1_DH_Stall),
+        .ID_MEM2_DH_Stall    (ID_MEM2_DH_Stall)
     );
 
 endmodule  

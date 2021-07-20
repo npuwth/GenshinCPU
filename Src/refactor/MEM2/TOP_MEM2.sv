@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-19 23:38:44
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-20 09:57:25
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -23,8 +23,8 @@ module TOP_MEM2 (
     CPU_Bus_Interface            cpu_dbus,
     //--------------------output--------------------//
     output logic [31:0]          MEM2_Result,  // 用于旁路数据
-    output logic [4:0]           MEM2_Dst
-    // output RegsWrType            MEM2_RegsWrType,
+    output logic [4:0]           MEM2_Dst,
+    output RegsWrType            MEM2_RegsWrType
     // output logic                 MEM2_store_req,
     // output logic                 MEM2_Isincache
 );
@@ -69,8 +69,8 @@ module TOP_MEM2 (
     // assign MEM2_store_req        = M2WBus.MEM2_store_req;
     // assign MEM2_Isincache        = M2WBus.MEM2_Isincache;
     //output for forwarding 
-    // assign MEM2_Dst              = M2WBus.MEM2_Dst;
-    // assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;
+    assign MEM2_Dst              = M2WBus.MEM2_Dst;
+    assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;
     // output to MEM for CP0
     assign MM2Bus.MEM2_ALUOut    = MEM2_ALUOut;
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;

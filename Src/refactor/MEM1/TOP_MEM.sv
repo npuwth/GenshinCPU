@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 23:30:00
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-20 09:26:22
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -239,7 +239,7 @@ module TOP_MEM (
         .axi_bus                 ( axi_dbus.master)
     );
 
-    MUX4to1 #(32) U_MUX_OutB2 ( 
+    MUX4to1 #(32) U_MUX_OutB2 ( //TODO:这里可以优化一下，换成2选1
         .d0                      (RFHILO_Bus),
         .d1                      (RFHILO_Bus),
         .d2                      (RFHILO_Bus),

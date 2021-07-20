@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-19 23:36:23
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-20 09:30:54
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -51,7 +51,7 @@ module TOP_WB (
         .MEM2_DMOut           (M2WBus.MEM2_DMOut ),
         .MEM2_OutB            (M2WBus.MEM2_OutB ),
         .MEM2_RegsWrType      (M2WBus.MEM2_RegsWrType ),
-        .MEM2_Result           (M2WBus.MEM2_Result),  
+        .MEM2_Result          (M2WBus.MEM2_Result),  
         // .MEM2_store_req       (M2WBus.MEM2_store_req),
         // .MEM2_Isincache       (M2WBus.MEM2_Isincache),
         //-------------------------out----------------------------//
