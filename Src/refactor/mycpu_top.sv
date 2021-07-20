@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-20 09:56:13
+ * @LastEditTime: 2021-07-20 10:23:01
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -463,7 +463,8 @@ module mycpu_top (
         //--------------------------output-------------------------//
         .MEM2_Result               (MEM2_Result ),
         .MEM2_Dst                  (MEM2_Dst ),
-        .MEM2_RegsWrType           (MEM2_RegsWrType)
+        .MEM2_RegsWrType           (MEM2_RegsWrType),
+        .MEM2_LoadType             (MEM2_LoadType)
         // .MEM2_store_req            (MEM2_store_req),
         // .MEM2_Isincache            (MEM2_Isincache)
     );

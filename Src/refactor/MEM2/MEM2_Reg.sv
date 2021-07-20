@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-19 23:30:43
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-20 10:25:22
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -63,6 +63,7 @@ module MEM2_Reg (
       MEM2_IsABranch                      <= 1'b0;
       MEM2_IsAImmeJump                    <= 1'b0;
       MEM2_IsInDelaySlot                  <= 1'b0;
+      MEM2_LoadType                       <= '0;
       // MEM2_store_req                      <= '0;
       // MEM2_Isincache                      <= '0;
     end
@@ -78,6 +79,7 @@ module MEM2_Reg (
       MEM2_IsABranch                      <= MEM_IsABranch;
       MEM2_IsAImmeJump                    <= MEM_IsAImmeJump;
       MEM2_IsInDelaySlot                  <= MEM_IsInDelaySlot;
+      MEM2_LoadType                       <= MEM_LoadType;
       // MEM2_store_req                      <= MEM_store_req;
       // MEM2_Isincache                      <= MEM_Isincache;
     end

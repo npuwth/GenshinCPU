@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-20 09:57:25
+ * @LastEditTime: 2021-07-20 10:24:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,7 +24,8 @@ module TOP_MEM2 (
     //--------------------output--------------------//
     output logic [31:0]          MEM2_Result,  // 用于旁路数据
     output logic [4:0]           MEM2_Dst,
-    output RegsWrType            MEM2_RegsWrType
+    output RegsWrType            MEM2_RegsWrType,
+    output LoadType              MEM2_LoadType
     // output logic                 MEM2_store_req,
     // output logic                 MEM2_Isincache
 );
@@ -48,6 +49,7 @@ module TOP_MEM2 (
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
     .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
+    .MEM_LoadType           (MM2Bus.MEM_LoadType),
     // .MEM_store_req          (MM2Bus.MEM_store_req),
     // .MEM_Isincache          (MM2Bus.MEM_Isincache),
 //-----------------------------output-------------------------------------//
@@ -61,7 +63,8 @@ module TOP_MEM2 (
     .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
-    .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot)
+    .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
+    .MEM2_LoadType          (MEM2_LoadType)
     // .MEM2_store_req         (M2WBus.MEM2_store_req)
     // .MEM2_Isincache         (M2WBus.MEM2_Isincache)
 
