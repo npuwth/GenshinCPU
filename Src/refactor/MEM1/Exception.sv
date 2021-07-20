@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-19 14:50:15
+ * @LastEditTime: 2021-07-20 15:47:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -57,7 +57,7 @@
         else                                                         MEM_ExcType = `EX_None;              
     end
 
-    assign Flush_Exception = (MEM_ExceptType_final != '0) && (MEM_ExceptType_final.Refetch != 1'b1);
+    assign Flush_Exception = (MEM_ExceptType_final != '0);
 
     always_comb begin
         case(MEM_ExcType)
