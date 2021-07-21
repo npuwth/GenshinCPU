@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-20 21:55:19
+ * @LastEditTime: 2021-07-21 10:39:45
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
@@ -240,26 +240,29 @@ end
 
 //空闲态T
 //执行态S
-//空闲态
-//其实也刚好是T S 2个状态即可
-//因此复用状态名称
+//结束态Q
 
+logic [2:0] Count;//计数器
+
+always_ff @(posedge clk ) begin
+    if (prestate_mul == T && ismulti == 1'b1) begin
+        Count <= 1;
+    end
+    else begin
+        Count <= Count + 1;
+    end
+end
 
 // 乘法状态机的状态转移
 always_comb begin
     case(prestate_mul)
         T:begin
-          if(ismulti)
-            begin
-              nextstate_mul = S;
-            end
-          else
-            begin
-              nextstate_mul = T;
-            end
+            if(ismulti) nextstate_mul = S;
+            else        nextstate_mul = T;
         end
         S:begin
-            nextstate_mul = Q;
+            if(Count == `MUL_Circle - 1) nextstate_mul = Q;
+            else                         nextstate_mul = S;
         end
         Q:begin
             nextstate_mul = T;

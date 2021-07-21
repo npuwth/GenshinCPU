@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-20 20:57:39
+ * @LastEditTime: 2021-07-21 10:44:07
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,7 +17,8 @@
 `define NEW_BRIDGE          
 // `define All_Uncache           // 定义则全走uncache  
 `define TRAP                   
-`define EN_TLB               
+`define EN_TLB         
+`define MUL_Circle          3    //按照乘法IP核中的参数来设置，最大是8
 
 `define ALUOpLen            4:0
 `define InstrLen            31:0
