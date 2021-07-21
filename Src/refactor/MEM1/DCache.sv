@@ -1,22 +1,22 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-21 09:30:02
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-21 15:28:19
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
-//重写之后的Cache Icache Dcache复用�?个设�?
+//重写之后的Cache Icache Dcache复用�?个设�?
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
 //`define DEBUG
 module Dcache #(
-    //parameter bus_width = 4,//axi总线的id域有bus_width�?
+    //parameter bus_width = 4,//axi总线的id域有bus_width�?
     parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
-    parameter LINE_WORD_NUM = 4,//cache line大小 �?块的字数
-    parameter ASSOC_NUM     = 4,//assoc_num组相�?
-    parameter WAY_SIZE      = 4*1024*8,//�?路cache 容量大小为way_size bit //4KB
+    parameter LINE_WORD_NUM = 4,//cache line大小 �?块的字数
+    parameter ASSOC_NUM     = 4,//assoc_num组相�?
+    parameter WAY_SIZE      = 4*1024*8,//�?路cache 容量大小为way_size bit //4KB
     parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //256
 
 ) (
@@ -26,7 +26,7 @@ module Dcache #(
 
     //with TLBMMU
     //output VirtualAddressType virt_addr,
-    // input  PhysicalAddressType phsy_addr,现在移到cpu_bus�?
+    // input  PhysicalAddressType phsy_addr,现在移到cpu_bus�?
     // input  logic isCache,
 
 
@@ -47,9 +47,9 @@ localparam int unsigned TAG_WIDTH      = 32-INDEX_WIDTH-OFFSET_WIDTH ;//20
 //--definitions
 typedef struct packed {
     logic valid;
-    //logic dirty;//TODO: 记得把dirty从tagv lutram中分�? 因为会存�? 同时读写的情�? 且读写地�?不一�?
+    //logic dirty;//TODO: 记得把dirty从tagv lutram中分�? 因为会存�? 同时读写的情�? 且读写地�?不一�?
     logic [TAG_WIDTH-1:0] tag;  
-} tagv_t; //每一�? �?个tag_t变量
+} tagv_t; //每一�? �?个tag_t变量
 
 typedef  logic dirty_t;
 
@@ -58,7 +58,7 @@ typedef logic [TAG_WIDTH-1:0]                     tag_t;
 typedef logic [INDEX_WIDTH-1:0]                   index_t;
 typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
 
-typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使�?
+typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使�?
 typedef logic [LINE_WORD_NUM-1:0][DATA_WIDTH-1:0] line_t;//每一路一个cache_line
 
 function index_t get_index( input logic [31:0] addr );
@@ -90,7 +90,7 @@ endfunction
 
 
 
-function logic  clog2(//TODO: 配置的时候需要改�?
+function logic  clog2(//TODO: 配置的时候需要改�?
     input logic [1:0] hit
 );
     return{
@@ -126,14 +126,14 @@ typedef struct packed {
     tag_t             tag;
     index_t           index;
     offset_t          offset;
-    logic[3:0]        wstrb; //写使�?
+    logic[3:0]        wstrb; //写使�?
     logic[31:0]       wdata; //store数据
     LoadType          loadType;//load类型
     logic             isCache;
 } request_t;
 
 
-typedef struct packed {//store指令在读数的时�?�根据写使能替换
+typedef struct packed {//store指令在读数的时�?�根据写使能替换
     logic [ASSOC_NUM-1:0] hit;
     index_t index;
     line_t  wdata;
@@ -150,7 +150,7 @@ wb_state_t wb_state,wb_state_next;
  
 logic [31:0] uncache_rdata;
 
-index_t read_addr,write_addr,tagv_addr;//read_addr 既是 查询的地�? 又是重填的地�?  write_addr是store的地�?
+index_t read_addr,write_addr,tagv_addr;//read_addr 既是 查询的地�? 又是重填的地�?  write_addr是store的地�?
 
 tagv_t [ASSOC_NUM-1:0] tagv_rdata;
 tagv_t tagv_wdata;
@@ -168,9 +168,9 @@ we_t wb_we;//store的写使能
 line_t [ASSOC_NUM-1:0] data_rdata;
 logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
 logic [31:0] data_rdata_final;//
-logic [31:0] data_rdata_final2;//经过ext2的数�?
+logic [31:0] data_rdata_final2;//经过ext2的数�?
 line_t data_wdata;
-we_t  data_we;//数据表的写使�?
+we_t  data_we;//数据表的写使�?
 logic data_read_en;
 
 request_t req_buffer;
@@ -190,7 +190,7 @@ logic busy_collision1;
 logic busy_collision2;
 
 
-logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲�?
+logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲�?
 
 logic busy;
 
@@ -255,13 +255,13 @@ generate;
             .clk(clk),
             .rst(~resetn),
 
-            //写端�?
+            //写端�?
             .ena(1'b1),
             .wea(data_we[i]),
             .addra(write_addr),
             .dina(data_wdata),
 
-            //读端�?
+            //读端�?
             .enb(data_read_en),
             .addrb(read_addr),
             .doutb(data_rdata[i])
@@ -290,7 +290,7 @@ generate;//判断命中
     end
 endgenerate
 
-generate;//根据offset片�?�？
+generate;//根据offset片�?�？
     for (genvar i=0; i<ASSOC_NUM; i++) begin
         assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
     end
@@ -308,8 +308,8 @@ assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.in
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
-assign busy_collision1= (cpu_bus.valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
-assign busy_collision2= (cpu_bus.valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+assign busy_collision1= (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+assign busy_collision2= (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision = busy_collision1 | busy_collision2;
 assign busy           = busy_cache | busy_uncache | busy_collision ;
 
@@ -319,7 +319,7 @@ assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
 assign tagv_wdata     = {1'b1,req_buffer.tag};
-assign data_read_en   = (state == REFILLDONE ||(req_buffer.valid & req_buffer.op)) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
+assign data_read_en   = (state == REFILLDONE ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
 assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;
@@ -421,7 +421,7 @@ end
 always_ff @( posedge clk ) begin : store_buffer_blockName
     if ((resetn == `RstEnable)) begin
         store_buffer <= '0;
-    end else begin//既是�? 又是有效�?
+    end else begin//既是�? 又是有效�?
         store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
         store_buffer.wdata <= store_wdata;
@@ -446,7 +446,7 @@ always_ff @(posedge clk) begin : req_buffer_blockName
     end
 end
 
-always_ff @( posedge clk ) begin : uncache_rdata_blockName//更新uncache读出来的�?
+always_ff @( posedge clk ) begin : uncache_rdata_blockName//更新uncache读出来的�?
     if (axi_ubus.ret_valid) begin
         uncache_rdata <= axi_ubus.ret_data;
     end else begin
@@ -502,14 +502,14 @@ always_comb begin : state_next_blockname
         
         end
         MISSCLEAN:begin
-            if (axi_bus.rd_rdy) begin//可以�?
+            if (axi_bus.rd_rdy) begin//可以�?
                 state_next = REFILL;
             end else begin
                 state_next = MISSCLEAN;
             end
         end
         REFILL:begin
-            if (axi_bus.ret_valid) begin//值合�?
+            if (axi_bus.ret_valid) begin//值合�?
                 state_next = REFILLDONE;
             end else begin
                 state_next = REFILL;
@@ -533,13 +533,13 @@ always_comb begin : state_next_blockname
             end
         end
         REQ:begin  
-            if (req_buffer.op == 1'b0) begin//uncache�?
+            if (req_buffer.op == 1'b0) begin//uncache�?
                 if (axi_ubus.rd_rdy) begin
                     state_next = WAIT;
                 end else begin
                     state_next = REQ;
                 end
-            end else begin//uncache�?
+            end else begin//uncache�?
                 if (axi_ubus.wr_rdy) begin
                     state_next = WAIT;
                 end else begin
@@ -548,13 +548,13 @@ always_comb begin : state_next_blockname
             end
         end
         WAIT:begin
-            if (req_buffer.op == 1'b0) begin//uncache�?
+            if (req_buffer.op == 1'b0) begin//uncache�?
                 if (axi_ubus.ret_valid) begin
                     state_next = UNCACHEDONE;
                 end else begin
                     state_next = WAIT;
                 end
-            end else begin//uncache�?
+            end else begin//uncache�?
                 if (axi_ubus.wr_valid) begin
                     state_next = UNCACHEDONE;
                 end else begin

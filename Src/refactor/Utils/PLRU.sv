@@ -17,7 +17,7 @@ module PLRU #(
     input [ASSOC_NUM-1:0] access, //表示这次命中了哪一路 这是独热码 access的第i位 表示第i路命中
     input update,               //表示命中了  不然就没法表示没有访存导致的不需要更新lru的情况
 
-    output [$clog2(ASSOC_NUM)-1:0] lru //表示 这次如果替换 替换哪一路
+    output [$clog2(ASSOC_NUM)-1:0] lru  //表示 这次如果替换 替换哪一路
 );
 
 logic [ASSOC_NUM-2:0] state, state_d;
