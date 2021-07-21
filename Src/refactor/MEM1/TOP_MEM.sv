@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-21 10:46:51
+ * @LastEditTime: 2021-07-21 11:35:27
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -13,7 +13,7 @@
 `include "../CPU_Defines.svh"
 `include "../Cache_Defines.svh"
 `include "../Cache_options.svh"
-// TODO: CUPTOP中需要修改接口
+
 module TOP_MEM (
     input logic                  clk,
     input logic                  resetn,
@@ -75,7 +75,7 @@ module TOP_MEM (
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
-    logic [31:0]                 Virt_Daddr;
+    logic [31:0]                 MEM_ALUOut2;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
@@ -84,7 +84,6 @@ module TOP_MEM (
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
-    assign Virt_Daddr               = MM2Bus.MEM_ALUOut;
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
@@ -124,6 +123,7 @@ module TOP_MEM (
         .EXE_Result              (EMBus.EXE_Result),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
+        .MEM_ALUOut2             (MEM_ALUOut2),
         .MEM_OutB                (RFHILO_Bus ),
         .MEM_PC                  (MM2Bus.MEM_PC ),
         .MEM_Instr               (MM2Bus.MEM_Instr ),
@@ -213,7 +213,7 @@ module TOP_MEM (
 //-------------------------------------------TO Cache-------------------------------//
     assign cpu_dbus.wdata                                 = MEM_DataToDcache;
     assign cpu_dbus.tag                                   = Phsy_Daddr[31:12];
-    assign {cpu_dbus.index,cpu_dbus.offset}               =  MM2Bus.MEM_ALUOut[11:0];                 // inst_sram_addr_o 虚拟地址
+    assign {cpu_dbus.index,cpu_dbus.offset}               = MEM_ALUOut2[11:0];                 // inst_sram_addr_o 虚拟地址
     assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
                                                             (MEM_StoreType.DMWr) ? 1'b1  :
                                                              1'bx;
@@ -249,7 +249,7 @@ module TOP_MEM (
     DTLB U_DTLB (
         .clk                     (clk ),
         .rst                     (resetn ),
-        .Virt_Daddr              (Virt_Daddr ),
+        .Virt_Daddr              (MEM_ALUOut2 ),
         .TLBBuffer_Flush         (TLBBuffer_Flush ),
         .D_TLBEntry              (D_TLBEntry ),
         .s1_found                (s1_found ),

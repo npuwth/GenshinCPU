@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-20 23:00:27
+ * @LastEditTime: 2021-07-21 11:30:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -48,6 +48,7 @@ module MEM_Reg (
     input  logic    [31:0]          EXE_Result, 
  //----------------------------------------------------------//   
     output logic	[31:0] 		    MEM_ALUOut,	
+    output logic    [31:0]          MEM_ALUOut2,
     output logic    [31:0]          MEM_OutB,	
 
     output logic 	[31:0] 		    MEM_PC,			
@@ -109,6 +110,7 @@ module MEM_Reg (
     always_ff @( posedge clk  ) begin
         if( ( rst == `RstEnable )|| ( MEM_Flush == `FlushEnable )) begin
             MEM_ALUOut              <= 32'b0;
+            MEM_ALUOut2             <= '0;
             MEM_PC                  <= 32'b0;
             MEM_WbSel               <= 2'b0;
             MEM_Dst                 <= 5'b0;
@@ -131,6 +133,7 @@ module MEM_Reg (
         end
         else if( MEM_Wr ) begin
             MEM_ALUOut              <= EXE_ALUOut;
+            MEM_ALUOut2             <= EXE_ALUOut;
             MEM_PC                  <= EXE_PC;
             MEM_WbSel               <= EXE_WbSel;
             MEM_Dst                 <= EXE_Dst;
