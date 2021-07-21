@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-20 23:06:17
+ * @LastEditTime: 2021-07-21 09:52:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -217,7 +217,7 @@ module mycpu_top (
         .MEM_DisWr              (MEM_DisWr ),
         .WB_DisWr               (WB_DisWr ),
 
-        .IcacheFlush            (cpu_ibus.flush),  
+        // .IcacheFlush            (cpu_ibus.flush),  
         // .DcacheFlush            (cpu_dbus.flush),
         .IReq_valid             (IReq_valid),
         .DReq_valid             (DReq_valid),
@@ -424,6 +424,7 @@ module mycpu_top (
         .MEM_DisWr                 (MEM_DisWr ),
         .D_TLBEntry                (D_TLBEntry ),
         .s1_found                  (s1_found ),
+        .DReq_valid                (DReq_valid),
         .EMBus                     (EMBus.MEM ),
         .MM2Bus                    (MM2Bus.MEM ),
         .CTBus                     (CTBus ),

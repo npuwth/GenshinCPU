@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-19 18:41:25
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-21 09:53:57
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -45,19 +45,19 @@ interface CPU_Bus_Interface();            // 只需要满足读的请求 icache�
   logic     		busy;   //  表示访存请求可以接受（空闲
   // logic     		data_ok;   //  访存结果可以发送到CPU  (1 ok 0 NotOk)
   logic [31:0]  rdata;     //          
-  logic         flush;
+  logic         origin_valid;
   logic         stall;   // 如果出现cache数据准备好，但CPU阻塞的清空，需要发送stall信号，cache状态机停滞知道数据被CPU接受
   logic         isCache;
 
   modport master ( //cpu的接口
             output  valid,op,index,tag,
-            output  offset,wstrb,wdata,flush,loadType,stall,isCache,
+            output  offset,wstrb,wdata,origin_valid,loadType,stall,isCache,
             input   busy,rdata
           );
 
   modport slave ( //cache的接口
             input  valid,op,index,tag,
-            input  offset,wstrb,wdata,flush,loadType,stall,isCache,
+            input  offset,wstrb,wdata,origin_valid,loadType,stall,isCache,
             output busy,rdata
 
           );

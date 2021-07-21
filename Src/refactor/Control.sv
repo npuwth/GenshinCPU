@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-20 15:06:28
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-21 09:53:21
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -57,7 +57,7 @@ module Control(
     output logic        MEM_DisWr,      //传到MEM级，用于关闭CP0的写使能
     output logic        WB_DisWr,       //传到WB级 ，用于停滞流水线
 
-    output logic        IcacheFlush,    //给Icache的Flush
+    // output logic        IcacheFlush,    //给Icache的Flush
     output logic        IReq_valid,     //是否给Icache发送请求 1表示发送 0 表示不发送
     output logic        DReq_valid,     //是否给Dcache发送请求 1表示发送 0 表示不发送
 
@@ -125,7 +125,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b1;
             // DReq_valid   = 1'b1;
@@ -154,7 +154,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b1;
             // DReq_valid   = 1'b1;
@@ -183,7 +183,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
             // DCacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b1;
@@ -214,7 +214,7 @@ module Control(
             WB_Flush     = 1'b0;
 
             
-            IcacheFlush  = 1'b1;
+            // IcacheFlush  = 1'b1;
 
             // IReq_valid   = 1'b0;
             // DReq_valid   = 1'b0;
@@ -273,7 +273,7 @@ module Control(
             MEM2_Flush   = 1'b1;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b0;
             // DReq_valid   = 1'b1;
@@ -302,7 +302,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b0;
             // DReq_valid   = 1'b1;
@@ -331,7 +331,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
             // DCacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b0;
@@ -361,7 +361,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b1;
+            // IcacheFlush  = 1'b1;
 
             // IReq_valid   = 1'b0;
             // DReq_valid   = 1'b1;
@@ -392,7 +392,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b1;
+            // IcacheFlush  = 1'b1;
             // DCacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b0;
@@ -423,7 +423,7 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            IcacheFlush  = 1'b0;
+            // IcacheFlush  = 1'b0;
 
             // IReq_valid   = 1'b1;
             // DReq_valid   = 1'b1;

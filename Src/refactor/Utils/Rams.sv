@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-16 10:50:21
+ * @LastEditTime: 2021-07-21 09:30:42
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -124,7 +124,7 @@ module simple_port_ram #(
       .MEMORY_INIT_FILE("none"),      // String
       .MEMORY_INIT_PARAM("0"),        // String
       .MEMORY_OPTIMIZATION("true"),   // String
-      .MEMORY_PRIMITIVE("block"),      // String
+      .MEMORY_PRIMITIVE("auto"),      // String
       .MEMORY_SIZE(MEMORY_SIZE),             // DECIMAL
       .MESSAGE_CONTROL(0),            // DECIMAL
       .READ_DATA_WIDTH_B($bits(dtype)),         // DECIMAL

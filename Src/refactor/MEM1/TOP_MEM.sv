@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 23:10:25
+ * @LastEditTime: 2021-07-21 09:57:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,6 +24,7 @@ module TOP_MEM (
     input logic                  MEM_DisWr,
     input TLB_Entry              D_TLBEntry,
     input logic                  s1_found,
+    input logic                  DReq_valid,
     
     EXE_MEM_Interface            EMBus,
     MEM_MEM2_Interface           MM2Bus,
@@ -191,7 +192,7 @@ module TOP_MEM (
 
     //-----------------------------用于准备写往dcache的数据-----------------------//
     DCacheWen U_DCACHEWEN(
-        .MEM_ALUOut           (MM2Bus.MEM_ALUOut),
+        .MEM_ALUOut           (MM2Bus.MEM_ALUOut[1:0]),
         .MEM_StoreType        (MEM_StoreType),
         .MEM_OutB             (RFHILO_Bus),
         //-----------------output-------------------------//
@@ -219,6 +220,7 @@ module TOP_MEM (
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
     assign cpu_dbus.flush                                 = 1'b0;
+    assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     
     Dcache #(
         .DATA_WIDTH              (32 ),
@@ -246,7 +248,7 @@ module TOP_MEM (
     DTLB U_DTLB (
         .clk                     (clk ),
         .rst                     (resetn ),
-        .Virt_Daddr              (MM2Bus.MEM_ALUOut ),
+        .Virt_Daddr              (Virt_Daddr ),
         .TLBBuffer_Flush         (TLBBuffer_Flush ),
         .D_TLBEntry              (D_TLBEntry ),
         .s1_found                (s1_found ),

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-20 14:34:35
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-21 10:00:18
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -308,8 +308,8 @@ assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.in
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
-assign busy_collision1= (cpu_bus.valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
-assign busy_collision2= (cpu_bus.valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+assign busy_collision1= (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+assign busy_collision2= (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision = busy_collision1 | busy_collision2;
 assign busy           = busy_cache | busy_uncache | busy_collision ;
 
@@ -395,8 +395,8 @@ always_comb begin : dirty_we_block
     end
 end
 
-always_comb begin : store_wdata_block//TODO:救命写不出来
-      store_wdata                                      = data_rdata[clog2(hit)]; //TODO：这个可综合吗？
+always_comb begin : store_wdata_block//
+      store_wdata                                      = data_rdata[clog2(hit)]; //
       store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
 end
 

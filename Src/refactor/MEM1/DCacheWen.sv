@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 15:27:17
- * @LastEditTime: 2021-07-20 14:41:29
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-21 09:47:07
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0 
  * @IO PORT:
@@ -13,7 +13,7 @@
 `include "../CPU_Defines.svh"
 
 module DCacheWen(
-    input  logic [31:0]       MEM_ALUOut,    // 地址信息
+    input  logic [1:0]       MEM_ALUOut,    // 地址信息
     input  StoreType          MEM_StoreType, // store类型
     input  logic [31:0]       MEM_OutB,      // 即将给cache的写入的数据
     //----------------------------output---------------------------------//
