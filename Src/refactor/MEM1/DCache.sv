@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-21 21:56:55
+ * @LastEditTime: 2021-07-21 22:14:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -619,12 +619,12 @@ always_comb begin : uncache_state_next_blockName
                         uncache_state_next = UNCACHE_READ_WAIT_AXI;
                     end
                 end 
-                else begin//流水线流动 且没有新请求
+                else begin//流水线流动   且没有新请求
                     uncache_state_next = UNCACHE_IDLE;
                 end
             end
         end
-        UNCACHE_WAIT_BVALID:begin//等待写完成 可接受下一拍请求
+        UNCACHE_WAIT_BVALID: begin//等待写完成 可接受下一拍请求
             if (axi_ubus.wr_valid) begin
                 uncache_state_next = UNCACHE_IDLE;
             end else if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin
