@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 23:11:55
+ * @LastEditTime: 2021-07-21 18:15:45
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -189,7 +189,7 @@ module TOP_EXE (
     Trap U_TRAP (
         .EXE_TrapOp           (EXE_TrapOp  ),   // trap控制信号信号的连线
         .EXE_ResultA          (EXE_BusA ),   // 旁路之后的数据
-        .EXE_ResultB          (EXE_BusB ),   // 经过立即数选择之后的数据
+        .EXE_ResultB          (EXE_BusB_L2 ),   // 经过立即数选择之后的数据
         .Trap_valid           (Trap_valid  )
     );
 `else 
