@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-21 09:57:08
+ * @LastEditTime: 2021-07-21 10:04:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -219,7 +219,7 @@ module TOP_MEM (
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
-    assign cpu_dbus.flush                                 = 1'b0;
+    // assign cpu_dbus.flush                                 = 1'b0;
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     
     Dcache #(
