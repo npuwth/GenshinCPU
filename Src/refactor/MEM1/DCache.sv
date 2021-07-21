@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-21 15:28:19
+ * @LastEditTime: 2021-07-21 21:56:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -103,10 +103,6 @@ typedef enum logic [3:0] {
         MISSDIRTY,
         WRITEBACK,//之后加入fifo就不用这个装态了
 
-        REQ,
-        WAIT,
-        UNCACHEDONE,
-
         LOOKUP,
         MISSCLEAN,
         REFILL,
@@ -139,9 +135,21 @@ typedef struct packed {//store指令在读数的时�?�根据写使能替换
     line_t  wdata;
 } store_t;
 
+typedef enum logic [2:0]{ 
+    UNCACHE_IDLE,//空闲态
+    UNCACHE_READ_WAIT_AXI,//等待读握手
+    UNCACHE_WRITE_WAIT_AXI,//等待写握手
+    UNCACHE_READ,//等待读数据
+    UNCACHE_READ_DONE,//读完成
+    UNCACHE_WAIT_BVALID,//等待写完成
+    UNCACHE_WAIT_BVALID_RW,//等待写完成同时 有了新的读写访存
+    UNCACHE_WAIT_RW
+} uncache_state_t;
 
 
 //declartion
+
+uncache_state_t uncache_state,uncache_state_next;
 store_t store_buffer; //如果有写冲突 直接阻塞
 line_t store_wdata;
 state_t state,state_next;
@@ -208,9 +216,9 @@ assign axi_bus.wr_addr = {pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.
 assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
 
 //连axi_ubus接口
-assign axi_ubus.rd_req   = (state == REQ && req_buffer.op==0) ? 1'b1:1'b0;
+assign axi_ubus.rd_req   = (uncache_state == UNCACHE_READ_WAIT_AXI) ? 1'b1:1'b0;
 assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
-assign axi_ubus.wr_req   = (state == REQ && req_buffer.op==1) ? 1'b1:1'b0;
+assign axi_ubus.wr_req   = (uncache_state == UNCACHE_WRITE_WAIT_AXI) ? 1'b1:1'b0;
 assign axi_ubus.wr_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset}; //TODO:没有抹零
 assign axi_ubus.wr_data  = {req_buffer.wdata};
 assign axi_ubus.wr_wstrb = req_buffer.wstrb;
@@ -297,7 +305,7 @@ generate;//根据offset片�?�？
 endgenerate
 //旁路
                             //
-assign data_rdata_final =   (state == UNCACHEDONE )? uncache_rdata: data_rdata_sel[clog2(hit)];
+assign data_rdata_final =   (uncache_state == UNCACHE_READ_DONE )? uncache_rdata: data_rdata_sel[clog2(hit)];
 
 assign cache_hit        = |hit;
 
@@ -307,7 +315,7 @@ assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.in
 
 
 assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
-assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
+assign busy_uncache   = (uncache_state == UNCACHE_IDLE  || uncache_state == UNCACHE_WAIT_BVALID || uncache_state == UNCACHE_READ_DONE) ? 1'b0 : 1'b1;
 assign busy_collision1= (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision2= (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision = busy_collision1 | busy_collision2;
@@ -484,7 +492,7 @@ always_comb begin : state_next_blockname
         LOOKUP:begin
             if ( req_buffer.valid) begin
                 if (req_buffer.isCache == 1'b0 ) begin
-                    state_next = REQ;
+                    state_next = LOOKUP;
                 end else begin
                 if (cache_hit) begin
                     state_next = LOOKUP;
@@ -532,44 +540,6 @@ always_comb begin : state_next_blockname
                 state_next = WRITEBACK;
             end
         end
-        REQ:begin  
-            if (req_buffer.op == 1'b0) begin//uncache�?
-                if (axi_ubus.rd_rdy) begin
-                    state_next = WAIT;
-                end else begin
-                    state_next = REQ;
-                end
-            end else begin//uncache�?
-                if (axi_ubus.wr_rdy) begin
-                    state_next = WAIT;
-                end else begin
-                    state_next = REQ;
-                end
-            end
-        end
-        WAIT:begin
-            if (req_buffer.op == 1'b0) begin//uncache�?
-                if (axi_ubus.ret_valid) begin
-                    state_next = UNCACHEDONE;
-                end else begin
-                    state_next = WAIT;
-                end
-            end else begin//uncache�?
-                if (axi_ubus.wr_valid) begin
-                    state_next = UNCACHEDONE;
-                end else begin
-                    state_next = WAIT;
-                end
-            end
-        end
-        UNCACHEDONE:begin
-            if (cpu_bus.stall) begin
-                state_next = UNCACHEDONE;
-            end else begin
-                state_next = LOOKUP;
-            end
-             
-        end
         default: begin
             state_next =LOOKUP;
         end
@@ -596,4 +566,76 @@ end
 logic victim_num;
 assign victim_num = lru[req_buffer.index];
 `endif 
+
+//uncache 部分
+
+
+
+always_ff @( posedge clk ) begin : uncache_state_blockName
+    if (resetn == `RstEnable) begin
+        uncache_state <= UNCACHE_IDLE;
+    end else begin
+        uncache_state <= uncache_state_next;
+    end
+end
+
+always_comb begin : uncache_state_next_blockName
+
+    uncache_state_next = uncache_state;
+
+    case (uncache_state)
+        UNCACHE_IDLE:begin
+            if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin //如果可以接受下一个请求
+                if (cpu_bus.op) begin
+                    uncache_state_next = UNCACHE_WRITE_WAIT_AXI;
+                end else begin
+                    uncache_state_next = UNCACHE_READ_WAIT_AXI;
+                end
+            end 
+        end
+        UNCACHE_READ_WAIT_AXI:begin
+            if (axi_ubus.rd_rdy) begin
+                uncache_state_next = UNCACHE_READ;
+            end
+        end
+        UNCACHE_WRITE_WAIT_AXI:begin
+           if (axi_ubus.wr_rdy) begin
+                uncache_state_next = UNCACHE_WAIT_BVALID;
+            end            
+        end
+        UNCACHE_READ:begin
+            if (axi_ubus.ret_valid) begin
+                uncache_state_next = UNCACHE_READ_DONE;
+            end
+        end
+        UNCACHE_READ_DONE:begin//可以接受下一拍请求
+            if (cpu_bus.stall) begin//如果有下一拍的数据
+                uncache_state_next = UNCACHE_READ_DONE;
+            end else begin
+                if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin //必然下一拍要发起访存
+                    if (cpu_bus.op) begin
+                        uncache_state_next = UNCACHE_WRITE_WAIT_AXI;
+                    end else begin
+                        uncache_state_next = UNCACHE_READ_WAIT_AXI;
+                    end
+                end 
+                else begin//流水线流动 且没有新请求
+                    uncache_state_next = UNCACHE_IDLE;
+                end
+            end
+        end
+        UNCACHE_WAIT_BVALID:begin//等待写完成 可接受下一拍请求
+            if (axi_ubus.wr_valid) begin
+                uncache_state_next = UNCACHE_IDLE;
+            end else if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin
+                    if (cpu_bus.op) begin
+                        uncache_state_next = UNCACHE_WRITE_WAIT_AXI;
+                    end else begin
+                        uncache_state_next = UNCACHE_READ_WAIT_AXI;
+                    end
+            end
+        end
+    endcase
+end
+
 endmodule
