@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-21 14:44:54
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-22 15:45:11
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -44,7 +44,6 @@ module TOP_MEM (
     output logic [4:0]           MEM_rt,
     output logic [31:0]          Exception_Vector,
     output logic [31:13]         D_VPN2,
-    output logic                 D_IsTLBBufferValid,
     output logic                 D_IsTLBStall,
     output logic                 TLBBuffer_Flush,
     output logic [31:0]          MEM_Result,  // 用于旁路数据
@@ -72,6 +71,7 @@ module TOP_MEM (
     logic [2:0]                  MEM_TLBExceptType;
     logic [31:0]                 Phsy_Daddr;
     logic                        D_IsCached;
+    logic                        D_IsTLBBufferValid;
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
@@ -218,7 +218,7 @@ module TOP_MEM (
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
-    // assign cpu_dbus.flush                                 = 1'b0;
+    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType.RdWrongAddressinMEM == 1'b0) && (MEM_ExceptType.WrWrongAddressinMEM == 1'b0);
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     
     Dcache #(

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-21 18:15:45
+ * @LastEditTime: 2021-07-22 15:53:03
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -233,7 +233,7 @@ module TOP_EXE (
         .MEM_IsTLBW            (EMBus.MEM_IsTLBW           ),
         .MEM_Instr             (EMBus.MEM_Instr            ),
         .MEM_Dst               (EMBus.MEM_Dst              ),
-        .EXE_ALUOut            (EMBus.EXE_ALUOut           ),
+        .EXE_ALUOut            (EMBus.EXE_ALUOut[1:0]      ),
         .EXE_StoreType         (EMBus.EXE_StoreType        ),
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
     );
