@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-20 22:00:57
+ * @LastEditTime: 2021-07-22 15:37:02
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -33,13 +33,13 @@ module TOP_PREIF (
     input TLB_Entry             I_TLBEntry,
     input logic                 s0_found,
     input logic                 TLBBuffer_Flush,
+    input logic                 IReq_valid,
     PREIF_IF_Interface          PIBus,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
     AXI_UNCACHE_Interface       axi_iubus,
 //---------------------------output----------------------------------//
     output logic [31:13]        I_VPN2,
-    output logic                I_IsTLBBufferValid,
     output logic                I_IsTLBStall
 );
     logic   [31:0]              PREIF_PC;
@@ -52,6 +52,7 @@ module TOP_PREIF (
     logic   [1:0]               IF_TLBExceptType;
     logic   [31:0]              Phsy_Iaddr;
     logic                       I_IsCached;
+    logic                       I_IsTLBBufferValid;
 
     assign PC_4              =   PREIF_PC + 4;
     assign ID_PCAdd4         =   ID_PC+4;
@@ -110,7 +111,7 @@ module TOP_PREIF (
     assign cpu_ibus.wstrb     = '0;
     assign cpu_ibus.wdata     = 'x;
     assign cpu_ibus.isCache   = I_IsCached;
-    assign Virt_Iaddr         = PREIF_PC;
+    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0);
     
     Icache #(
         .DATA_WIDTH      (32),
@@ -136,7 +137,7 @@ module TOP_PREIF (
     //--------------------output----------------------//    
         .Phsy_Iaddr      (Phsy_Iaddr ),
         .I_IsCached      (I_IsCached ),
-        .I_IsTLBBufferValid (I_IsTLBBufferValid ),
+        .I_IsTLBBufferValid(I_IsTLBBufferValid ),
         .I_IsTLBStall    (I_IsTLBStall ),
         .IF_TLBExceptType(IF_TLBExceptType ),
         .I_VPN2          ( I_VPN2)

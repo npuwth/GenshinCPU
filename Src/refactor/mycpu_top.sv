@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-21 09:52:19
+ * @LastEditTime: 2021-07-22 15:47:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -130,8 +130,6 @@ module mycpu_top (
     logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
     LoadType                   MEM_LoadType;              //用于Control & load指令的数据冒险
     StoreType                  MEM_StoreType;             //用于Control 
-    logic                      I_IsTLBBufferValid;        //表示是否向Cache发请求
-    logic                      D_IsTLBBufferValid;        //表示是否向Cache发请求
     logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     logic                      TLBBuffer_Flush;
@@ -225,12 +223,9 @@ module mycpu_top (
         .DCacheStall            (cpu_dbus.stall)
         // .HiLo_Not_Flush         (HiLo_Not_Flush)
     );
-    assign cpu_ibus_valid = IReq_valid & I_IsTLBBufferValid;
-    assign cpu_dbus_valid = DReq_valid & D_IsTLBBufferValid;
-    assign cpu_ibus.valid =  cpu_ibus_valid;
-    assign cpu_dbus.valid = cpu_dbus_valid;
+
+//------------------------AXI-----------------------//
     `ifdef NEW_BRIDGE
-    //------------------------AXI-----------------------//
     AXIInteract  #(
         `ICACHE_LINE_WORD,
         `DCACHE_LINE_WORD
@@ -279,10 +274,8 @@ module mycpu_top (
         .m_axi_bvalid           (bvalid ),
         .m_axi_bready           (bready)
     );
-    `endif 
-
-    `ifndef NEW_BRIDGE
-     AXIInteract AXIInteract_dut
+    `else
+    AXIInteract AXIInteract_dut
     (
         .clk                    (aclk ),
         .resetn                 (aresetn ),
@@ -327,6 +320,7 @@ module mycpu_top (
         .m_axi_bready           (bready)
     );
     `endif 
+    
     TOP_PREIF U_TOP_PREIF ( 
         .clk                       (aclk ),
         .resetn                    (aresetn ),
@@ -346,13 +340,13 @@ module mycpu_top (
         .I_TLBEntry                (I_TLBEntry ),
         .s0_found                  (s0_found ),
         .TLBBuffer_Flush           (TLBBuffer_Flush ),
+        .IReq_valid                (IReq_valid),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         .axi_iubus                 (axi_iubus),
         .PIBus                     (PIBus.PREIF ),
         //-----------------------output-------------------------------//
         .I_VPN2                    (I_VPN2 ),
-        .I_IsTLBBufferValid        (I_IsTLBBufferValid ),
         .I_IsTLBStall              (I_IsTLBStall )
     );
 
