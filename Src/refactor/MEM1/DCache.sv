@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-23 14:48:29
+ * @LastEditTime: 2021-07-23 19:43:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -145,12 +145,12 @@ typedef struct packed {//store指令在读数的时�?�根据写使能替换
 typedef enum logic [2:0]{ 
     UNCACHE_IDLE,//空闲态
     UNCACHE_READ_WAIT_AXI,//等待读握手
-    UNCACHE_WRITE_WAIT_AXI,//等待写握手
+    // UNCACHE_WRITE_WAIT_AXI,//等待写握手
     UNCACHE_READ,//等待读数据
-    UNCACHE_READ_DONE,//读完成
-    UNCACHE_WAIT_BVALID,//等待写完成
-    UNCACHE_WAIT_BVALID_RW,//等待写完成同时 有了新的读写访存
-    UNCACHE_WAIT_RW
+    UNCACHE_READ_DONE//读完成
+    // UNCACHE_WAIT_BVALID,//等待写完成
+    // UNCACHE_WAIT_BVALID_RW,//等待写完成同时 有了新的读写访存
+    // UNCACHE_WAIT_RW
 } uncache_state_t;
 
 
@@ -215,7 +215,7 @@ uncache_store_t fifo_din;//input
 logic fifo_wr_en;
 logic fifo_rd_en;
 
-logic fifo_rd_rst_busy;//output
+logic fifo_rd_rst_busy;// output
 logic fifo_full;
 logic fifo_empty;
 uncache_store_t fifo_dout;
@@ -225,8 +225,8 @@ logic fifo_wr_rst_busy;
 
 //连fifo接口
 assign fifo_din   = {req_buffer.tag,req_buffer.index,req_buffer.offset,req_buffer.wdata,req_buffer.wstrb};
-assign fifo_wr_en = ( cpu_bus.stall || fifo_wr_rst_busy || fifo_full || (~(req_buffer.valid & req_buffer.op & (~req_buffer.isCache))) ) ?  1'b0 : 1'b1;//流水线停滞 不能写 fifo满 不是uncache写指令
-// assign fifo_rd_en = (axi_ubus.wr_);//
+assign fifo_wr_en = (cpu_bus.stall || fifo_wr_rst_busy || fifo_full || (~(req_buffer.valid & req_buffer.op & (~req_buffer.isCache))) ) ?  1'b0 : 1'b1;//流水线停滞 不能写 fifo满 不是uncache写指令
+assign fifo_rd_en = (axi_ubus.wr_rdy && (!fifo_empty) && (!fifo_rd_rst_busy)) ? 1'b1 :1'b0;//非空 能写 
 
 
 //连cpu_bus接口
@@ -243,10 +243,10 @@ assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
 //连axi_ubus接口
 assign axi_ubus.rd_req   = (uncache_state == UNCACHE_READ_WAIT_AXI) ? 1'b1:1'b0;
 assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
-assign axi_ubus.wr_req   = (uncache_state == UNCACHE_WRITE_WAIT_AXI) ? 1'b1:1'b0;
-assign axi_ubus.wr_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset}; //TODO:没有抹零
-assign axi_ubus.wr_data  = {req_buffer.wdata};
-assign axi_ubus.wr_wstrb = req_buffer.wstrb;
+assign axi_ubus.wr_req   = (fifo_empty || fifo_rd_rst_busy) ? 1'b0:1'b1;//有隐患 fifo不empty 只是无法出栈 就会导致无法发出写请求那么可能就会让读先了 不过都resetn了 我该就没有读了
+assign axi_ubus.wr_addr  = {fifo_dout.address}; //TODO:没有抹零
+assign axi_ubus.wr_data  = {fifo_dout.data};
+assign axi_ubus.wr_wstrb = fifo_dout.wstrb;
 assign axi_ubus.loadType = req_buffer.loadType;
 
 //generate
@@ -319,7 +319,7 @@ endgenerate
 
 generate;//判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
-        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag)) ? 1'b1:1'b0;
+        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0;
     end
 endgenerate
 
@@ -344,8 +344,8 @@ assign busy_uncache_read   = (uncache_state == UNCACHE_IDLE  || uncache_state ==
 assign busy_collision1     = (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision      = busy_collision1 | busy_collision2;
-// assign busy_uncache_write  = value;
-assign busy                = busy_cache | busy_uncache_read | busy_collision | busy_uncache_write;
+assign busy_uncache_write  = (cpu_bus.origin_valid & (~cpu_bus.isCache) & cpu_bus.op & fifo_full) ? 1'b1:1'b0;
+assign busy                = busy_cache | busy_uncache_read | busy_collision | busy_uncache_write | busy_uncache_write;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
@@ -361,7 +361,7 @@ assign dirty_addr     = req_buffer.index;
 
 //if not stall 更新 if stall check if hit & store & cache
 always_ff @( posedge clk ) begin : MEM2_blockName
-    if (  cpu_bus.stall & (~(busy_cache|busy_uncache_read)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
+    if (  cpu_bus.stall & (~(busy_cache|busy_uncache_read|busy_uncache_write)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
         MEM2<='0;
     end else if(~(cpu_bus.stall))begin
         MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
@@ -652,7 +652,7 @@ end
   FIFO #(
     .SIZE(STORE_BUFFER_SIZE),
     .dtype(uncache_store_t),
-    .LATENCY (1)
+    .LATENCY (0) //调整为0
   )
   FIFO_dut (
     .clk (clk ),

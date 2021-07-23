@@ -2,8 +2,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-19 19:49:08
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-23 16:35:42
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
  */
@@ -636,7 +636,7 @@ module AXIInteract #(
     assign ibus.wr_rdy  = 1'b0;
     assign dbus.rd_rdy  = (dstate == IDLE ) ? 1'b1 : 1'b0;
     assign dbus.wr_rdy  = (dstate_wb == WB_IDLE )  ? 1'b1 : 1'b0;
-    assign udbus.rd_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
+    assign udbus.rd_rdy  = (dstate_uncache == UNCACHE_IDLE && udbus.wr_req ==1'b0 ) ? 1'b1 : 1'b0;
     assign udbus.wr_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
 
     always_ff @( posedge clk ) begin : dstate_uncache_block
@@ -651,10 +651,10 @@ module AXIInteract #(
         unique case (dstate_uncache)
             UNCACHE_IDLE:begin
                 if (udbus.rd_req | udbus.wr_req) begin
-                    if (udbus.rd_req) begin
-                        dstate_uncache_next =UNCACHE_RD;
-                    end else begin
+                    if (udbus.wr_req) begin
                         dstate_uncache_next =UNCACHE_WB;
+                    end else begin
+                        dstate_uncache_next =UNCACHE_RD;
                     end
                 end else begin
                     dstate_uncache_next =UNCACHE_IDLE;
