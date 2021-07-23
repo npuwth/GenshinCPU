@@ -29,6 +29,7 @@ module DcacheRdataSel(
             default : LoadByteData = 'x;
             endcase
         end
+        default : LoadByteData = 'x;
         endcase
     end
 
