@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-23 11:47:22
+ * @LastEditTime: 2021-07-23 11:59:43
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -96,7 +96,6 @@ module TOP_MEM2 (
         .sel2_to_1           (M2WBus.MEM2_WbSel == 2'b11),
         .y                   (MEM2_Result_Final ) 
     );
-
     DcacheRdataSel U_DcacheRdataSel (
         .MEM2_LoadType       (MEM2_LoadType),                           
         .cache_rdata         (cpu_dbus.rdata),                           

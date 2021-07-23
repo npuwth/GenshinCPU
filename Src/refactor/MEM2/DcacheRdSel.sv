@@ -19,6 +19,7 @@ module DcacheRdataSel(
             2'b11 : LoadByteData = {{24{cache_rdata[31]}},cache_rdata[31:24]};
             default : LoadByteData = 'x;
             endcase
+        end
         `LOADTYPE_LBU: begin
             unique case (RdAddr[1:0])
             2'b00 : LoadByteData = {{24{1'b0}},cache_rdata[7:0]  };
@@ -28,8 +29,10 @@ module DcacheRdataSel(
             default : LoadByteData = 'x;
             endcase
         end
+        endcase
+    end
 
-    always_comb begin : DcacheRdData_blockname
+    always_comb begin
         unique case (MEM2_LoadType.LeftOrRight)
         2'b10:begin  // LWL
             unique case (RdAddr[1:0])
@@ -49,12 +52,12 @@ module DcacheRdataSel(
                 default : DcacheRdData = 'x;
             endcase
         end
-        2'b0:begin   // 正常访存数据
+        2'b00:begin   // 正常访存数据
             unique case({MEM2_LoadType.sign,MEM2_LoadType.size})
             `LOADTYPE_LW : begin
                 DcacheRdData = cache_rdata;
             end
-            LOADTYPE_LH : begin
+            `LOADTYPE_LH : begin
                 unique case (RdAddr[1]) 
                 1'b0 : DcacheRdData = {{16{cache_rdata[15]}},cache_rdata[15:0]};
                 1'b1 : DcacheRdData = {{16{cache_rdata[31]}},cache_rdata[31:16]}; 
@@ -64,7 +67,7 @@ module DcacheRdataSel(
              `LOADTYPE_LHU: begin
                 unique case (RdAddr[1]) 
                 1'b0 : DcacheRdData = {{16{1'b0}},cache_rdata[15:0]};
-                1'b1 : DcacheRdData = {{16{1'b0},cache_rdata[31:16]}; 
+                1'b1 : DcacheRdData = {{16{1'b0}},cache_rdata[31:16]}; 
                 default : DcacheRdData = 'x;
                 endcase
              end
@@ -72,9 +75,9 @@ module DcacheRdataSel(
                 DcacheRdData = LoadByteData;
             end
             default : DcacheRdData = 'x;
-        end
-            
         endcase
+        end
+    endcase
     end
 
 endmodule
