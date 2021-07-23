@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-23 10:04:45
- * @LastEditTime: 2021-07-23 10:32:08
+ * @LastEditTime: 2021-07-23 14:56:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\Utils\FIFO.sv
@@ -48,7 +48,7 @@ module FIFO #(
       .DOUT_RESET_VALUE("0"),    // String
       .ECC_MODE("no_ecc"),       // String
       .FIFO_MEMORY_TYPE("auto"), // String
-      .FIFO_READ_LATENCY(1),     // DECIMAL
+      .FIFO_READ_LATENCY(LATENCY),     // DECIMAL
       .FIFO_WRITE_DEPTH(SIZE),   // DECIMAL
       .FULL_RESET_VALUE(0),      // DECIMAL
       .PROG_EMPTY_THRESH(10),    // DECIMAL
