@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-20 22:02:15
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-23 11:47:22
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -32,7 +32,8 @@ module TOP_MEM2 (
 
     logic [31:0]                 MEM2_Result_Final;
     logic [31:0]                 MEM2_ALUOut;
-
+    logic [31:0]                 DcacheRdData;
+    
     MEM2_Reg U_MEM2_REG( //TODO:多了很多无用信号
     .clk                    (clk ),
     .rst                    (resetn ),
@@ -78,7 +79,7 @@ module TOP_MEM2 (
     assign MM2Bus.MEM2_ALUOut    = MEM2_ALUOut;
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;
     // output to WB
-    assign M2WBus.MEM2_DMOut     = cpu_dbus.rdata;       //读取结果直接放入DMOut
+    assign M2WBus.MEM2_DMOut     = DcacheRdData;       //读取结果直接放入DMOut
     //-------------------------------用于旁路的多选器-----------------------//
     MUX4to1 #(32) U_MUXINMEM2(
         .d0                  (M2WBus.MEM2_PC + 8),                                     // JAL,JALR等指令将PC+8写回RF
@@ -91,11 +92,19 @@ module TOP_MEM2 (
     
     MUX2to1 #(32) U_MUXINMEM2_Final( 
         .d0                  (MEM2_Result       ),
-        .d1                  (cpu_dbus.rdata    ),
+        .d1                  (DcacheRdData      ),
         .sel2_to_1           (M2WBus.MEM2_WbSel == 2'b11),
         .y                   (MEM2_Result_Final ) 
     );
 
+    DcacheRdataSel U_DcacheRdataSel (
+        .MEM2_LoadType       (MEM2_LoadType),                           
+        .cache_rdata         (cpu_dbus.rdata),                           
+        .reg_rt              (M2WBus.MEM2_OutB ),                   
+        .RdAddr              (MEM2_ALUOut),             
+        /************ output ***************/      
+        .DcacheRdData        (DcacheRdData)                    
+    );
     assign M2WBus.MEM2_Result = MEM2_Result_Final;
 endmodule
 
