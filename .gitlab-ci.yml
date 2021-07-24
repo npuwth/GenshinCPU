@@ -5,23 +5,6 @@ variables:
   PROJECT_NAME: "Genshin"
   TOP_MODULE_NAME: "nscscc_soc_top"
 
-
-# all files in ip dir except *.xci are ignored, so the generated result will be cleaned every build
-# to avoid generating from scratch every time, the dir should be cached
-# cache:
-#   key: "$CI_COMMIT_REF_SLUG"
-#   paths:
-    #最后记得加上IP核的缓存机制，以加快速度
-    # - ${PROJECT_DIR}/${PROJECT_NAME}.srcs/sources_1/bd/bd_soc/ip
-    # - ${PROJECT_DIR}/${PROJECT_NAME}.sim
-    # - ${PROJECT_DIR}/${PROJECT_NAME}.runs
-    # - ${PROJECT_DIR}/${PROJECT_NAME}.cache
-    # - loongson/**/rtl/xilinx_ip
-    # - loongson/**/run_vivado/mycpu_prj1/mycpu.sim
-    # - loongson/**/run_vivado/mycpu_prj1/mycpu.runs
-    # - loongson/**/run_vivado/mycpu_prj1/mycpu.cache
-#AXI测试
-
 stages:
   - Git_PASS
   - SRAM_TEST
@@ -74,16 +57,6 @@ cpu_simulation:
       - /root/Desktop/project_1/project_1.sim/sim_1/behav/xsim/simulate.log
     when: always
 
-    # - export SIMULATION=cpu_test
-    # - export LOG_PATH=${PROJECT_DIR}/NonTrivialMIPS.sim/${SIMULATION}/behav/xsim/simulate.log
-    # - export FLAG='Done'
-  #   - ${VIVADO_PATH} -mode tcl -source scripts/run_simulation.tcl ${PROJECT_DIR}/NonTrivialMIPS.xpr
-  #   - bash scripts/check_simulation.sh
-  # artifacts:
-  #   paths:
-  #     - ${PROJECT_DIR}/NonTrivialMIPS.sim/*/behav/xsim/simulate.log
-  #   when: always
-
 axi_simulation:
   tags:
     - vivado
@@ -107,54 +80,6 @@ axi_simulation:
     paths:
       - /root/project_axi/project_axi.sim/sim_1/behav/xsim/simulate.log
     when: always
-
-
-
-# build_ip_loongson_func:
-#   image: vivado:2018.3
-#   tags:
-#     - vivado
-#   stage: init_loongson_projects
-#   only:
-#     variables:
-#       - $CI_COMMIT_MESSAGE =~ /\[func/i
-#   script:
-#     - ${VIVADO_PATH} -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
-
-
-# build_ip_loongson_perf:
-#   image: vivado:2018.3
-#   tags:
-#     - vivado
-#   stage: init_loongson_projects
-#   only:
-#     variables:
-#       - $CI_COMMIT_MESSAGE =~ /\[perf/i
-#   script:
-#     - ${VIVADO_PATH} -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
-
-
-
-# func_test_simulation:
-#   tags:
-#     - vivado
-#   stage: loongson_tests
-#   # run functional test only when specified, for it is too slow
-#   only:
-#     variables:
-#       - $CI_COMMIT_MESSAGE =~ /\[func test\]/i
-#   script:
-#     - sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
-#     - export SIMULATION=sim_1
-#     - export LOG_PATH=loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log
-#     - export FLAG='\-\-\-\-PASS!!!'
-#     - ${VIVADO_PATH} -mode tcl -source scripts/run_simulation.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
-#     - bash scripts/check_simulation.sh
-#   artifacts:
-#     paths:
-#       - loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/*/behav/xsim/simulate.log
-#     when: always
-#测一下共同跑
   
 perf_test_simulation:
   tags:
@@ -212,7 +137,26 @@ perf_test_bitstream:
       - ./testbit/*/runme.log
     when: always
 
-
+#Cache验证
+Cache_test:
+  tags:
+    - vivado
+  stage: bitstreams
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /\[cache\]/i
+      #test
+  script:
+    - sudo ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
+    - sudo chmod -R 777 /home/gitlab-runner/
+    # - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /tools/project_perf/project_perf.xpr
+    # - sudo cp -r /tools/project_perf/project_perf.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit/
+    # - sudo chmod -R 777 /home/gitlab-runner/
+  # artifacts:
+  #   paths:
+  #     - ./testbit/impl_1/soc_axi_lite_top.bit
+  #     - ./testbit/*/runme.log
+  #   when: always
 # soc_bitstream:
 #   image: vivado:2018.3
 #   tags:

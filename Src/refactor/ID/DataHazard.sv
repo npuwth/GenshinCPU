@@ -1,8 +1,8 @@
 /*
  * @Author: 
  * @Date: 2021-06-16 16:07:56
- * @LastEditTime: 2021-07-19 23:18:54
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-24 16:43:02
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,7 +15,7 @@
 module DataHazard (
     input logic [4:0]  ID_rs,
     input logic [4:0]  ID_rt,
-    input logic [1:0]  ID_rsrtRead,//[1]是rs [0]是rt 1'b1的时候是读
+    input logic [1:0]  ID_rsrtRead,//[1]是rs [0]是rt 1'b1的时候是读//TODO: 实际上 对于非对齐访存 目的寄存器也是需要读的
     input logic [4:0]  EXE_rt,
     input logic        EXE_ReadMEM,  // 在EXE的load指令
     input logic [4:0]  MEM_rt,       // load的目标寄存器
@@ -70,4 +70,25 @@ module DataHazard (
 
     end
 
+
+
+// always_comb begin : ID_EX_DH_Stall_blockName
+//      if ( ( (ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1) )  ) begin
+//         if (EXE_ReadMEM == 1'b1 ||  EXE_Instr[31:21] == 11'b010000_00000) begin
+//             ID_EX_DH_Stall = 1'b1;
+//         end else begin
+//             ID_EX_DH_Stall = 1'b0;
+//         end
+//     end else begin
+//         ID_EX_DH_Stall = 1'b0;
+//     end
+// end
+
+// always_comb begin : ID_MEM1_DH_Stall_blockName
+//     if (MEM_ReadMEM == 1'b1 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) ||  (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin
+//         ID_MEM1_DH_Stall = 1'b1;
+//     end else begin
+//         ID_MEM1_DH_Stall = 1'b0;
+//     end
+// end
 endmodule
