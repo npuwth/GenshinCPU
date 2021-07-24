@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-20 22:02:15
+ * @LastEditTime: 2021-07-24 16:33:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,7 @@ module TOP_MEM2 (
     input logic                  MEM2_Wr,
     MEM_MEM2_Interface           MM2Bus,
     MEM2_WB_Interface            M2WBus,
-    CPU_Bus_Interface            cpu_dbus,
+    CPU_DBus_Interface           cpu_dbus,
     //--------------------output--------------------//
     output logic [31:0]          MEM2_Result,  // 用于旁路数据
     output logic [4:0]           MEM2_Dst,

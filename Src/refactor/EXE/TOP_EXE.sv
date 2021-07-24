@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 10:23:06
+ * @LastEditTime: 2021-07-24 16:17:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -56,6 +56,12 @@ module TOP_EXE (
     logic                     EXE_Final_Finish;
     RegsWrType                EXE_RegsWrType;
     PResult                   EXE_PResult;
+    logic                     EXE_Branch_Success;
+    logic                     EXE_J_Success;
+    logic                     EXE_PC8_Success;    
+    logic [31:0]              EXE_JumpAddr;
+    logic [31:0]              EXE_BranchAddr;
+    logic [31:0]              EXE_PCAdd8;
 
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
@@ -100,6 +106,12 @@ module TOP_EXE (
         .ID_TLBWIorR          (IEBus.ID_TLBWIorR),
         .ID_TrapOp            (IEBus.ID_TrapOp),
         .ID_PResult           (IEBus.ID_PResult),
+        .ID_Branch_Success    (IEBus.ID_Branch_Success),
+        .ID_J_Success         (IEBus.ID_J_Success),
+        .ID_PC8_Success       (IEBus.ID_PC8_Success),    
+        .ID_JumpAddr          (IEBus.ID_JumpAddr),
+        .ID_BranchAddr        (IEBus.ID_BranchAddr),    
+        .ID_PCAdd8            (IEBus.ID_PCAdd8),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -127,7 +139,13 @@ module TOP_EXE (
         .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
         .EXE_TrapOp           (EXE_TrapOp),
-        .EXE_PResult          (EXE_PResult)
+        .EXE_PResult          (EXE_PResult),
+        .EXE_Branch_Success   (EXE_Branch_Success),
+        .EXE_J_Success        (EXE_J_Success),
+        .EXE_PC8_Success      (EXE_PC8_Success),
+        .EXE_JumpAddr         (EXE_JumpAddr),
+        .EXE_BranchAddr       (EXE_BranchAddr), 
+        .EXE_PCAdd8           (EXE_PCAdd8)
     );
 
     BranchSolve U_BranchSolve (
@@ -136,10 +154,14 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA),
         .EXE_OutB             (EXE_BusB),
         .EXE_PC               (EMBus.EXE_PC),
-        .EXE_Instr            (EMBus.EXE_Instr),
-        .EXE_Imm32            (EXE_Imm32),
         .EXE_Wr               (EXE_Wr),
         .EXE_PResult          (EXE_PResult),
+        .EXE_Branch_Success   (EXE_Branch_Success),
+        .EXE_J_Success        (EXE_J_Success),
+        .EXE_PC8_Success      (EXE_PC8_Success),   
+        .EXE_JumpAddr         (EXE_JumpAddr),
+        .EXE_BranchAddr       (EXE_BranchAddr),  
+        .EXE_PCAdd8           (EXE_PCAdd8),   
         //-----------------output----------------------------//
         .EXE_Prediction_Failed(EXE_Prediction_Failed),
         .EXE_Correction_Vector(EXE_Correction_Vector),

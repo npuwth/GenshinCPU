@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-24 12:33:58
+ * @LastEditTime: 2021-07-24 16:29:01
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,7 @@ module TOP_PREIF (
     input logic [31:0]          EXE_Correction_Vector,
     input logic                 EXE_Prediction_Failed,
     PREIF_IF_Interface          PIBus,
-    CPU_Bus_Interface           cpu_ibus,
+    CPU_IBus_Interface          cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
     AXI_UNCACHE_Interface       axi_iubus,
 //---------------------------output----------------------------------//
