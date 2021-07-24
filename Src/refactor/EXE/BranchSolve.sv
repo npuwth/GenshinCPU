@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-24 16:18:43
+ * @LastEditTime: 2021-07-24 19:58:22
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -18,7 +18,7 @@ module BranchSolve (
     input logic [31:0]    EXE_PC,
     input logic           EXE_Wr,
     input PResult         EXE_PResult,    //随流水线流动的预测结果
-    input logic           EXE_Branch_Success,
+    // input logic           EXE_Branch_Success,
     input logic           EXE_J_Success,
     input logic           EXE_PC8_Success,   
     input logic [31:0]    EXE_JumpAddr,
@@ -34,6 +34,7 @@ module BranchSolve (
     logic [31:0]          Branch_Target;  //实际应该跳转的地址 （目标）
     logic [1:0]           Branch_Type;    //实际应该跳转的Type（种类）
     
+    logic                 EXE_Branch_Success;
     logic                 Branch_Success;
     logic                 JR_Success;
     logic                 Prediction_Success;//表示预测成功
@@ -113,6 +114,7 @@ module BranchSolve (
 //---------------------------判断预测是否成功---------------------------//
     assign Branch_Success    = (Branch_IsTaken)?EXE_Branch_Success:EXE_PC8_Success;
     assign JR_Success        = (EXE_PResult.Target == EXE_OutA);
+    assign EXE_Branch_Success= (EXE_PResult.Target == EXE_BranchAddr);
 
     always_comb begin
         if(EXE_BranchType.isBranch) begin

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 16:17:48
+ * @LastEditTime: 2021-07-24 19:57:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -56,7 +56,7 @@ module TOP_EXE (
     logic                     EXE_Final_Finish;
     RegsWrType                EXE_RegsWrType;
     PResult                   EXE_PResult;
-    logic                     EXE_Branch_Success;
+    // logic                     EXE_Branch_Success;
     logic                     EXE_J_Success;
     logic                     EXE_PC8_Success;    
     logic [31:0]              EXE_JumpAddr;
@@ -106,7 +106,7 @@ module TOP_EXE (
         .ID_TLBWIorR          (IEBus.ID_TLBWIorR),
         .ID_TrapOp            (IEBus.ID_TrapOp),
         .ID_PResult           (IEBus.ID_PResult),
-        .ID_Branch_Success    (IEBus.ID_Branch_Success),
+        // .ID_Branch_Success    (IEBus.ID_Branch_Success),
         .ID_J_Success         (IEBus.ID_J_Success),
         .ID_PC8_Success       (IEBus.ID_PC8_Success),    
         .ID_JumpAddr          (IEBus.ID_JumpAddr),
@@ -140,7 +140,7 @@ module TOP_EXE (
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
         .EXE_TrapOp           (EXE_TrapOp),
         .EXE_PResult          (EXE_PResult),
-        .EXE_Branch_Success   (EXE_Branch_Success),
+        // .EXE_Branch_Success   (EXE_Branch_Success),
         .EXE_J_Success        (EXE_J_Success),
         .EXE_PC8_Success      (EXE_PC8_Success),
         .EXE_JumpAddr         (EXE_JumpAddr),
@@ -156,7 +156,7 @@ module TOP_EXE (
         .EXE_PC               (EMBus.EXE_PC),
         .EXE_Wr               (EXE_Wr),
         .EXE_PResult          (EXE_PResult),
-        .EXE_Branch_Success   (EXE_Branch_Success),
+        // .EXE_Branch_Success   (EXE_Branch_Success),
         .EXE_J_Success        (EXE_J_Success),
         .EXE_PC8_Success      (EXE_PC8_Success),   
         .EXE_JumpAddr         (EXE_JumpAddr),

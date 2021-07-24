@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 09:30:54
+ * @LastEditTime: 2021-07-24 20:08:39
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -25,12 +25,9 @@ module TOP_WB (
     output RegsWrType            WB_Final_Wr,
     output RegsWrType            WB_RegsWrType,
     output logic [31:0]          WB_PC
-    // output logic [31:0]          WB_ALUOut
-    // output logic                 WB_store_req
-    // output logic                 WB_Isincache
 );
     logic [31:0]                 WB_DMOut;
-    // logic [31:0]                 WB_ALUOut;
+    logic [31:0]                 WB_Result_L1;
     logic [31:0]                 WB_Instr;
     logic [31:0]                 WB_OutB;
     logic [1:0]                  WB_WbSel;
@@ -42,8 +39,7 @@ module TOP_WB (
         .rst                  (resetn ),
         .WB_Flush             (WB_Flush ),
         .WB_Wr                (WB_Wr ),
-        
-        // .MEM2_ALUOut          (M2WBus.MEM2_ALUOut ),
+
         .MEM2_PC              (M2WBus.MEM2_PC ),
         .MEM2_Instr           (M2WBus.MEM2_Instr ),
         .MEM2_WbSel           (M2WBus.MEM2_WbSel ),
@@ -52,10 +48,7 @@ module TOP_WB (
         .MEM2_OutB            (M2WBus.MEM2_OutB ),
         .MEM2_RegsWrType      (M2WBus.MEM2_RegsWrType ),
         .MEM2_Result          (M2WBus.MEM2_Result),  
-        // .MEM2_store_req       (M2WBus.MEM2_store_req),
-        // .MEM2_Isincache       (M2WBus.MEM2_Isincache),
         //-------------------------out----------------------------//
-        // .WB_ALUOut            (WB_ALUOut ),
         .WB_PC                (WB_PC ),
         .WB_Instr             (WB_Instr ),
         .WB_WbSel             (WB_WbSel ),
@@ -63,19 +56,16 @@ module TOP_WB (
         .WB_DMOut             (WB_DMOut ),
         .WB_OutB              (WB_OutB ),
         .WB_RegsWrType        (WB_RegsWrType ),
-        .WB_Result            (WB_Result)
-        // .WB_store_req         (WB_store_req),
-        // .WB_Isincache         (WB_Isincache)
+        .WB_Result            (WB_Result_L1)
     );
 
   
-    // MUX4to1 #(32) U_MUXINWB(
-    //     .d0                  (WB_PC+8),                                     // JAL,JALR等指令将PC+8写回RF
-    //     .d1                  (WB_ALUOut),                                   // ALU计算结果
-    //     .d2                  (WB_OutB),                                     // MTC0 MTHI LO等指令需要写寄存器
-    //     .d3                  (WB_DMOut),                               
-    //     .sel4_to_1           (WB_WbSel),
-    //     .y                   (WB_Result)                                    
-    // );
+    MUX2to1 #(32) U_MUXINWB ( 
+        .d0                  (WB_Result_L1     ),
+        .d1                  (WB_DMOut         ),
+        .sel2_to_1           (WB_WbSel == 2'b11),
+        .y                   (WB_Result        ) 
+    );
+
 
 endmodule

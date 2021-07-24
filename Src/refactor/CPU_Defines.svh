@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-24 16:38:59
+ * @LastEditTime: 2021-07-24 19:53:46
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -380,7 +380,7 @@ interface ID_EXE_Interface();
 	logic 					ID_IsAJumpCall;
 	BranchType              ID_BranchType;
 	PResult                 ID_PResult;
-	logic                   ID_Branch_Success;
+	// logic                   ID_Branch_Success;
 	logic                   ID_J_Success;
 	logic                   ID_PC8_Success;
 	logic       [31:0]      ID_JumpAddr;
@@ -420,7 +420,7 @@ interface ID_EXE_Interface();
 	output                  ID_IsTLBR,
 	output                  ID_TLBWIorR,
 	output                  ID_PResult,
-	output                  ID_Branch_Success,
+	// output                  ID_Branch_Success,
 	output                  ID_J_Success,
 	output                  ID_PC8_Success,
 	output                  ID_JumpAddr,
@@ -461,7 +461,7 @@ interface ID_EXE_Interface();
 	input                   ID_IsTLBR,
 	input                   ID_TLBWIorR,
 	input                   ID_PResult,
-	input                   ID_Branch_Success,
+	// input                   ID_Branch_Success,
 	input                   ID_J_Success,
 	input                   ID_PC8_Success,
 	input                   ID_JumpAddr,

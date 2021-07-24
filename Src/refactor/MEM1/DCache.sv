@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-24 16:30:30
+ * @LastEditTime: 2021-07-24 17:56:58
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -13,7 +13,7 @@
 //`define DEBUG
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width�?
-    parameter STORE_BUFFER_SIZE = 64,
+    parameter STORE_BUFFER_SIZE = 32,
     parameter DATA_WIDTH        = 32,//cache和cpu 总线数据位宽为data_width
     parameter LINE_WORD_NUM     = 4,//cache line大小 �?块的字数
     parameter ASSOC_NUM         = 4,//assoc_num组相�?
@@ -345,7 +345,7 @@ assign busy_collision1     = (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-O
 assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 assign busy_collision      = busy_collision1 | busy_collision2;
 assign busy_uncache_write  = (cpu_bus.origin_valid & (~cpu_bus.isCache) & cpu_bus.op & fifo_full) ? 1'b1:1'b0;
-assign busy                = busy_cache | busy_uncache_read | busy_collision | busy_uncache_write | busy_uncache_write;
+assign busy                = busy_cache | busy_uncache_read | busy_collision | busy_uncache_write;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 

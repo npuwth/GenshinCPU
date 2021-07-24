@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-24 16:15:14
+ * @LastEditTime: 2021-07-24 19:56:35
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -43,7 +43,7 @@ module EXE_Reg (
     input logic                          ID_TLBWIorR,
     input logic      [2:0]               ID_TrapOp, 
     input PResult                        ID_PResult,
-    input logic                          ID_Branch_Success,
+    // input logic                          ID_Branch_Success,
     input logic                          ID_J_Success,
     input logic                          ID_PC8_Success,
     input logic      [31:0]              ID_JumpAddr,
@@ -77,7 +77,7 @@ module EXE_Reg (
     output logic                         EXE_TLBWIorR,
     output logic     [2:0]               EXE_TrapOp,
     output PResult                       EXE_PResult,
-    output logic                         EXE_Branch_Success,
+    // output logic                         EXE_Branch_Success,
     output logic                         EXE_J_Success,
     output logic                         EXE_PC8_Success,
     output logic     [31:0]              EXE_JumpAddr,
@@ -114,7 +114,7 @@ module EXE_Reg (
       EXE_TLBWIorR                       <= 1'b0;
       EXE_TrapOp                         <= '0;
       EXE_PResult                        <= '0;
-      EXE_Branch_Success                 <= '0;
+      // EXE_Branch_Success                 <= '0;
       EXE_J_Success                      <= '0;
       EXE_PC8_Success                    <= '0;
       EXE_JumpAddr                       <= '0;
@@ -149,7 +149,7 @@ module EXE_Reg (
       EXE_TLBWIorR                       <= ID_TLBWIorR;
       EXE_TrapOp                         <= ID_TrapOp;
       EXE_PResult                        <= ID_PResult;
-      EXE_Branch_Success                 <= ID_Branch_Success;
+      // EXE_Branch_Success                 <= ID_Branch_Success;
       EXE_J_Success                      <= ID_J_Success;
       EXE_PC8_Success                    <= ID_PC8_Success;
       EXE_JumpAddr                       <= ID_JumpAddr;
