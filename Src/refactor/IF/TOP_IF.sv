@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 09:49:40
+ * @LastEditTime: 2021-07-24 16:33:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,7 +22,7 @@ module TOP_IF (
 
     PREIF_IF_Interface          PIBus,
     IF_ID_Interface             IIBus,
-    CPU_Bus_Interface           cpu_ibus
+    CPU_IBus_Interface          cpu_ibus
 );  
     
     IF_REG U_IF_REG (

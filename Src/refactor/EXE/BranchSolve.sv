@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-24 12:22:50
+ * @LastEditTime: 2021-07-24 16:18:43
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -16,10 +16,15 @@ module BranchSolve (
     input logic [31:0]    EXE_OutA,
     input logic [31:0]    EXE_OutB,
     input logic [31:0]    EXE_PC,
-    input logic [31:0]    EXE_Instr,
-    input logic [31:0]    EXE_Imm32,
     input logic           EXE_Wr,
     input PResult         EXE_PResult,    //随流水线流动的预测结果
+    input logic           EXE_Branch_Success,
+    input logic           EXE_J_Success,
+    input logic           EXE_PC8_Success,   
+    input logic [31:0]    EXE_JumpAddr,
+    input logic [31:0]    EXE_BranchAddr, 
+    input logic [31:0]    EXE_PCAdd8,
+    //---------------------output----------------------------------//
     output logic          EXE_Prediction_Failed,//表示预测失败
     output logic [31:0]   EXE_Correction_Vector,//用于校正的地址向量
     output BResult        EXE_BResult     //用于校正BHT查找表的数据
@@ -30,13 +35,8 @@ module BranchSolve (
     logic [1:0]           Branch_Type;    //实际应该跳转的Type（种类）
     
     logic                 Branch_Success;
-    logic                 J_Success;
     logic                 JR_Success;
-    logic                 PC8_Success;
     logic                 Prediction_Success;//表示预测成功
-    logic [31:0]          BranchAddr;        //跳转地址的生成
-    logic [31:0]          JumpAddr;          //跳转地址的生成
-    logic [31:0]          EXE_PCAdd4;        //跳转地址的生成
     //------------------用于Branch判断是否跳转---------------//
     logic                 equal,not_equal;
     logic                 not_equal_to_zero,equal_to_zero;
@@ -49,7 +49,7 @@ module BranchSolve (
     assign equal_to_zero     = ~(|EXE_OutA);
     assign greater_equal_to_zero = ~(EXE_OutA[31]);
     assign less_than_zero    = EXE_OutA[31];
-
+//----------------------生成实际的跳转信号--------------------------------//
     always_comb begin
         if(EXE_BranchType.isBranch) begin
             unique case (EXE_BranchType.branchCode)
@@ -81,7 +81,7 @@ module BranchSolve (
             `BRANCH_CODE_J:begin
                 if(EXE_IsAJumpCall) Branch_Type = `BIsCall;
                 else                Branch_Type = `BIsImme; 
-                Branch_Target                   = JumpAddr;
+                Branch_Target                   = EXE_JumpAddr;
             end 
             `BRANCH_CODE_JR:begin
                 if(EXE_IsAJumpCall) Branch_Type = `BIsCall;
@@ -90,17 +90,17 @@ module BranchSolve (
             end
             default: begin
                 Branch_Type                       = `BIsImme;
-                if(Branch_IsTaken)  Branch_Target = BranchAddr;
-                else                Branch_Target = EXE_PC + 8; 
+                if(Branch_IsTaken)  Branch_Target = EXE_BranchAddr;
+                else                Branch_Target = EXE_PCAdd8; 
             end               
             endcase
         end
         else begin
             Branch_Type   = `BIsNone;
-            Branch_Target = EXE_PC + 8;
+            Branch_Target = EXE_PCAdd8;
         end                       
     end 
-
+//------------------------对传回BPU的校正信息进行赋值-----------------------------//
     assign EXE_BResult.Type         = Branch_Type;
     assign EXE_BResult.IsTaken      = Branch_IsTaken;  
     assign EXE_BResult.Target       = Branch_Target;
@@ -110,34 +110,26 @@ module BranchSolve (
     assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr;
     assign EXE_Correction_Vector    = Branch_Target;
     assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn) && EXE_Wr;
-
-    assign EXE_PCAdd4        =   EXE_PC+4;
-    assign JumpAddr          =   {EXE_PCAdd4[31:28],EXE_Instr[25:0],2'b0};
-    assign BranchAddr        =   EXE_PC+4+{EXE_Imm32[29:0],2'b0};
-
 //---------------------------判断预测是否成功---------------------------//
-    assign Branch_Success    =   (EXE_PResult.Target == BranchAddr);
-    assign J_Success         =   (EXE_PResult.Target == JumpAddr);
-    assign JR_Success        =   (EXE_PResult.Target == EXE_OutA);
-    assign PC8_Success       =   (EXE_PResult.Target == EXE_PC+8);
+    assign Branch_Success    = (Branch_IsTaken)?EXE_Branch_Success:EXE_PC8_Success;
+    assign JR_Success        = (EXE_PResult.Target == EXE_OutA);
 
     always_comb begin
         if(EXE_BranchType.isBranch) begin
             unique case (EXE_BranchType.branchCode)
             `BRANCH_CODE_J:begin
-                Prediction_Success = J_Success;
+                Prediction_Success = EXE_J_Success;
             end 
             `BRANCH_CODE_JR:begin
                 Prediction_Success = JR_Success;
             end
             default: begin
-                if(Branch_IsTaken)  Prediction_Success = Branch_Success;
-                else                Prediction_Success = PC8_Success; 
+                Prediction_Success = Branch_Success;
             end               
             endcase
         end
         else begin
-            Prediction_Success = PC8_Success;
+            Prediction_Success = EXE_PC8_Success;
         end                       
     end 
 

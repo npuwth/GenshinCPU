@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-24 11:19:13
+ * @LastEditTime: 2021-07-24 16:44:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -43,7 +43,7 @@ module Icache #(
 
     AXI_UNCACHE_Interface axi_ubus,
 
-    CPU_Bus_Interface  cpu_bus,//slave
+    CPU_IBus_Interface cpu_bus,//slave
     AXI_Bus_Interface  axi_bus //master
     
     
@@ -101,7 +101,6 @@ typedef enum logic [3:0] {
 
 typedef struct packed {
     logic             valid;
-    logic             op;
     tag_t             tag;
     index_t           index;
     offset_t          offset;
@@ -158,7 +157,7 @@ assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}
 
 
 //连axi_ubus接口
-assign axi_ubus.rd_req   = (state == REQ && req_buffer.op==0) ? 1'b1:1'b0;
+assign axi_ubus.rd_req   = (state == REQ) ? 1'b1:1'b0;
 assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
 
 //generate
@@ -272,7 +271,6 @@ always_ff @(posedge clk) begin : req_buffer_blockName
         req_buffer <='0;
     end else if(req_buffer_en) begin
         req_buffer.valid    <=  cpu_bus.valid;
-        req_buffer.op       <=  cpu_bus.op;
         req_buffer.tag      <=  cpu_bus.tag;
         req_buffer.index    <=  cpu_bus.index;
         req_buffer.offset   <=  cpu_bus.offset;
@@ -346,33 +344,17 @@ always_comb begin : state_next_blockname
             
         end
         REQ:begin
-            if (req_buffer.op == 1'b0) begin//uncache读
-                if (axi_ubus.rd_rdy) begin
-                    state_next = WAIT;
-                end else begin
-                    state_next = REQ;
-                end
-            end else begin//uncache写
-                if (axi_ubus.wr_rdy) begin
-                    state_next = WAIT;
-                end else begin
-                    state_next = REQ;
-                end
+            if (axi_ubus.rd_rdy) begin
+                state_next = WAIT;
+            end else begin
+                state_next = REQ;
             end
         end
         WAIT:begin
-            if (req_buffer.op == 1'b0) begin//uncache读
-                if (axi_ubus.ret_valid) begin
-                    state_next = UNCACHEDONE;
-                end else begin
-                    state_next = WAIT;
-                end
-            end else begin//uncache写
-                if (axi_ubus.wr_valid) begin
-                    state_next = UNCACHEDONE;
-                end else begin
-                    state_next = WAIT;
-                end
+            if (axi_ubus.ret_valid) begin
+                state_next = UNCACHEDONE;
+            end else begin
+                state_next = WAIT;
             end
         end
         UNCACHEDONE:begin

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-23 19:43:23
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-24 16:30:30
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -33,7 +33,7 @@ module Dcache #(
 
     AXI_UNCACHE_Interface axi_ubus,
 
-    CPU_Bus_Interface  cpu_bus,//slave
+    CPU_DBus_Interface cpu_bus,//slave
     AXI_Bus_Interface  axi_bus //master
     
     

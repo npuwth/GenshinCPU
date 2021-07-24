@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-23 14:23:07
+ * @LastEditTime: 2021-07-24 16:15:14
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -43,6 +43,12 @@ module EXE_Reg (
     input logic                          ID_TLBWIorR,
     input logic      [2:0]               ID_TrapOp, 
     input PResult                        ID_PResult,
+    input logic                          ID_Branch_Success,
+    input logic                          ID_J_Success,
+    input logic                          ID_PC8_Success,
+    input logic      [31:0]              ID_JumpAddr,
+    input logic      [31:0]              ID_BranchAddr,
+    input logic      [31:0]              ID_PCAdd8,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -69,9 +75,14 @@ module EXE_Reg (
     output logic                         EXE_IsTLBW,
     output logic                         EXE_IsTLBR,
     output logic                         EXE_TLBWIorR,
-    output logic      [2:0]              EXE_TrapOp,
-    output PResult                       EXE_PResult
-    // output logic                         MDU_flush
+    output logic     [2:0]               EXE_TrapOp,
+    output PResult                       EXE_PResult,
+    output logic                         EXE_Branch_Success,
+    output logic                         EXE_J_Success,
+    output logic                         EXE_PC8_Success,
+    output logic     [31:0]              EXE_JumpAddr,
+    output logic     [31:0]              EXE_BranchAddr,
+    output logic     [31:0]              EXE_PCAdd8   
 );
 
   always_ff @( posedge clk  ) begin
@@ -103,6 +114,12 @@ module EXE_Reg (
       EXE_TLBWIorR                       <= 1'b0;
       EXE_TrapOp                         <= '0;
       EXE_PResult                        <= '0;
+      EXE_Branch_Success                 <= '0;
+      EXE_J_Success                      <= '0;
+      EXE_PC8_Success                    <= '0;
+      EXE_JumpAddr                       <= '0;
+      EXE_BranchAddr                     <= '0;      
+      EXE_PCAdd8                         <= '0;
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -132,6 +149,12 @@ module EXE_Reg (
       EXE_TLBWIorR                       <= ID_TLBWIorR;
       EXE_TrapOp                         <= ID_TrapOp;
       EXE_PResult                        <= ID_PResult;
+      EXE_Branch_Success                 <= ID_Branch_Success;
+      EXE_J_Success                      <= ID_J_Success;
+      EXE_PC8_Success                    <= ID_PC8_Success;
+      EXE_JumpAddr                       <= ID_JumpAddr;
+      EXE_BranchAddr                     <= ID_BranchAddr; 
+      EXE_PCAdd8                         <= ID_PCAdd8;
     end
   end
 

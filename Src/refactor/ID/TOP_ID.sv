@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-23 18:02:34
+ * @LastEditTime: 2021-07-24 16:37:33
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -56,12 +56,28 @@ module TOP_ID (
     StoreType                ID_StoreType;
     RegsWrType               ID_RegsWrType;
 
+    logic [31:0]             ID_PCAdd4;
+    logic [31:0]             ID_PCAdd8;
+    logic [31:0]             JumpAddr;
+    logic [31:0]             BranchAddr;
+
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
     assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
     assign IEBus.ID_StoreType  = (ID_DisWr) ? '0 : ID_StoreType; 
     assign IEBus.ID_RegsWrType = (ID_DisWr) ? '0 : ID_RegsWrType;  
-    
+    //将EXE中BranchSolve的部分任务在这里完成
+    assign ID_PCAdd4      = IEBus.ID_PC + 4;
+    assign ID_PCAdd8      = IEBus.ID_PC + 8;
+    assign JumpAddr       = {ID_PCAdd4[31:28],IEBus.ID_Instr[25:0],2'b0};
+    assign BranchAddr     = ID_PCAdd4 + {IEBus.ID_Imm32[29:0],2'b0};
+    assign IEBus.ID_Branch_Success = (IEBus.ID_PResult.Target == BranchAddr);
+    assign IEBus.ID_J_Success      = (IEBus.ID_PResult.Target == JumpAddr);
+    assign IEBus.ID_PC8_Success    = (IEBus.ID_PResult.Target == ID_PCAdd8);
+    assign IEBus.ID_JumpAddr       = JumpAddr;
+    assign IEBus.ID_BranchAddr     = BranchAddr;
+    assign IEBus.ID_PCAdd8         = ID_PCAdd8;
+
     ID_Reg U_ID_REG ( 
         .clk                 (clk ),
         .rst                 (resetn ),
