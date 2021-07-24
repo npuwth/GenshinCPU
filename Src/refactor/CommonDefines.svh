@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-21 18:04:51
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-24 11:26:28
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -12,13 +12,13 @@
 `ifndef CommonDefines_svh
 `define CommonDefines_svh
 // 取消功能,需要将`define注释掉
-// `define FPU_DETECT_EN         // 定义则打开浮点检测功能
+`define FPU_DETECT_EN         // 定义则打开浮点检测功能
 // `define DEBUG                       
 `define NEW_BRIDGE          
-// `define All_Uncache           // 定义则全走uncache  
+`define All_Uncache           // 定义则全走uncache  
 `define TRAP                   
 `define EN_TLB         
-`define EN_TLBRST
+// `define EN_TLBRST
 `define MUL_Circle          3    //按照乘法IP核中的参数来设置，最大是8
 
 `define ALUOpLen            4:0
