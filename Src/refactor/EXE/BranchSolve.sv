@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-24 09:45:42
+ * @LastEditTime: 2021-07-24 12:22:50
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -29,6 +29,10 @@ module BranchSolve (
     logic [31:0]          Branch_Target;  //实际应该跳转的地址 （目标）
     logic [1:0]           Branch_Type;    //实际应该跳转的Type（种类）
     
+    logic                 Branch_Success;
+    logic                 J_Success;
+    logic                 JR_Success;
+    logic                 PC8_Success;
     logic                 Prediction_Success;//表示预测成功
     logic [31:0]          BranchAddr;        //跳转地址的生成
     logic [31:0]          JumpAddr;          //跳转地址的生成
@@ -112,9 +116,31 @@ module BranchSolve (
     assign BranchAddr        =   EXE_PC+4+{EXE_Imm32[29:0],2'b0};
 
 //---------------------------判断预测是否成功---------------------------//
-    assign Prediction_Success = (EXE_PResult.Type == Branch_Type) && 
-                                (EXE_PResult.IsTaken == Branch_IsTaken) && 
-                                (EXE_PResult.Target == Branch_Target);
+    assign Branch_Success    =   (EXE_PResult.Target == BranchAddr);
+    assign J_Success         =   (EXE_PResult.Target == JumpAddr);
+    assign JR_Success        =   (EXE_PResult.Target == EXE_OutA);
+    assign PC8_Success       =   (EXE_PResult.Target == EXE_PC+8);
+
+    always_comb begin
+        if(EXE_BranchType.isBranch) begin
+            unique case (EXE_BranchType.branchCode)
+            `BRANCH_CODE_J:begin
+                Prediction_Success = J_Success;
+            end 
+            `BRANCH_CODE_JR:begin
+                Prediction_Success = JR_Success;
+            end
+            default: begin
+                if(Branch_IsTaken)  Prediction_Success = Branch_Success;
+                else                Prediction_Success = PC8_Success; 
+            end               
+            endcase
+        end
+        else begin
+            Prediction_Success = PC8_Success;
+        end                       
+    end 
+
     assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid && EXE_Wr;
 
 

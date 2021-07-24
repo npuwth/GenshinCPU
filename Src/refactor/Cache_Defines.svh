@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-21 09:53:57
+ * @LastEditTime: 2021-07-24 12:32:50
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
@@ -30,7 +30,33 @@ typedef logic [31:0]        VirtualAddressType; //虚拟地址
 typedef logic [31:0]        PhysicalAddressType;//物理地址
 typedef logic [31:0]        UInt32Type;         //无符号的32位
 
-interface CPU_Bus_Interface();            // 只需要满足读的请求 icache的读 即使在命中的情况下 也需要两回合才能返回 就是在I回合其实发出读请求 在II回合的末尾才能给出是否命中
+interface CPU_IBus_Interface();            // 只需要满足读的请求 icache的读 即使在命中的情况下 也需要两回合才能返回 就是在I回合其实发出读请求 在II回合的末尾才能给出是否命中
+  logic 		    valid;     // CPU是否发生访存的请求
+  logic [19:0]  tag;       // 
+  logic [11-$clog2(`ICACHE_LINE_WORD*4):0] 	index;     //
+  logic [$clog2(`ICACHE_LINE_WORD*4)-1:0] 	offset;    //  
+
+  logic     		busy;   //  表示访存请求可以接受（空闲
+  logic [31:0]  rdata;     //          
+  logic         stall;   // 如果出现cache数据准备好，但CPU阻塞的清空，需要发送stall信号，cache状态机停滞知道数据被CPU接受
+  logic         isCache;
+
+  modport master ( //cpu的接口
+            output  valid,index,tag,
+            output  offset,stall,isCache,
+            input   busy,rdata
+          );
+
+  modport slave ( //cache的接口
+            input  valid,index,tag,
+            input  offset,stall,isCache,
+            output   busy,rdata
+
+          );
+
+endinterface
+
+interface CPU_DBus_Interface();            // 只需要满足读的请求 icache的读 即使在命中的情况下 也需要两回合才能返回 就是在I回合其实发出读请求 在II回合的末尾才能给出是否命中
   logic 		    valid;     // CPU是否发生访存的请求
   //logic         ready;     // CPU是否可以接收访存结果
   logic 		    op;        // 0 读 1 写

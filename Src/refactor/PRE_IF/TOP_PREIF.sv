@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-24 10:13:19
+ * @LastEditTime: 2021-07-24 12:33:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -98,9 +98,6 @@ module TOP_PREIF (
     //---------------------------------cache--------------------------------// 
     assign cpu_ibus.tag       = Phsy_Iaddr[31:12];
     assign {cpu_ibus.index,cpu_ibus.offset} = PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
-    assign cpu_ibus.op        = 1'b0;
-    assign cpu_ibus.wstrb     = '0;
-    assign cpu_ibus.wdata     = 'x;
     assign cpu_ibus.isCache   = I_IsCached;
     assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0);
     

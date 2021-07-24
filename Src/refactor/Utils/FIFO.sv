@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-23 10:04:45
- * @LastEditTime: 2021-07-23 14:56:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-24 11:34:59
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \refactor\Utils\FIFO.sv
  */
@@ -56,7 +56,7 @@ module FIFO #(
       .RD_DATA_COUNT_WIDTH(1),   // DECIMAL
       .READ_DATA_WIDTH($bits(dtype)),      // DECIMAL
       .READ_MODE("std"),         // String
-      .SIM_ASSERT_CHK(0),        // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+      //.SIM_ASSERT_CHK(0),        // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
       .USE_ADV_FEATURES("1010"), // String
       .WAKEUP_TIME(0),           // DECIMAL
       .WRITE_DATA_WIDTH($bits(dtype)),     // DECIMAL
