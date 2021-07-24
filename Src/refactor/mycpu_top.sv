@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-24 10:12:25
+ * @LastEditTime: 2021-07-24 11:14:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -449,6 +449,70 @@ module mycpu_top (
         .D_TLBEntry                ( D_TLBEntry)
     );
 `endif
+//     logic [31:0] count;
+
+//     logic [31:0] din;
+//     logic  wr_en;
+//     logic  rd_en;
+
+//     logic rd_rst_busy;
+//     logic full;
+//     logic empty;
+//     logic [31:0] dout;
+//     logic data_valid;
+//     logic wr_ack;
+//     logic wr_rst_busy;
+
+//     always_ff @(posedge aclk) begin
+//         if (!aresetn) begin
+//             din<='0;
+//         end else begin
+//             din<=din+1;
+//         end
+//     end
+
+//     always_ff @(posedge aclk) begin
+//         if (!aresetn) begin
+//             count<='0;
+//         end else begin
+//             count<=count+1;
+//         end
+//     end
+
+
+//     assign rd_en = (rd_rst_busy || empty)? 1'b0:1'b1;
+
+//     assign wr_en = (wr_rst_busy || full || count>100)? 1'b0:1'b1;
+//     // always_ff @(posedge aclk) begin
+//     // if (wr_rst_busy || full) begin
+//     //     wr_en=1'b0;
+//     // end else begin
+//     //     wr_en=1'b1;
+//     // end
+//     // end
+
+//   FIFO #(
+//     .LATENCY (1)
+//   )
+//   FIFO_dut (
+//     .clk (aclk ),
+//     .rst (~aresetn ),
+//     .din (din ),
+//     .rd_en (rd_en ),
+//     .wr_en (wr_en ),
+//     //output
+//     .rd_rst_busy (rd_rst_busy ),
+//     .full (full ),
+//     .empty (empty ),
+//     .dout (dout ),
+//     .data_valid (data_valid ),
+//     .wr_ack (wr_ack ),
+//     .wr_rst_busy  ( wr_rst_busy)
+//   );
+
+
+
+
 
 endmodule
 
