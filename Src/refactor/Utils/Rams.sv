@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-21 09:30:42
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-24 23:44:29
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
  */
@@ -112,7 +112,9 @@ module simple_port_ram #(
 
 // xpm_memory_sdpram: Simple Dual Port RAM
    // Xilinx Parameterized Macro, version 2019.2
-
+   // dtype doutb_bypass;
+   // dtype doutb_byram ;
+   // assign doutb = (wea & ena & addra == addrb & enb) ? ;
    xpm_memory_sdpram #(
       .ADDR_WIDTH_A(ADDR_WIDTH),               // DECIMAL
       .ADDR_WIDTH_B(ADDR_WIDTH),               // DECIMAL
