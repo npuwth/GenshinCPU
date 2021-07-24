@@ -8,7 +8,7 @@ module DcacheRdataSel(
     input  logic [31:0]  RdAddr,
     output logic [31:0]  DcacheRdData
 );
-    logic LoadByteData;
+    logic [31:0] LoadByteData;
     always_comb begin : LoadByteData_blockname
         unique case({MEM2_LoadType.sign,MEM2_LoadType.size})
         `LOADTYPE_LB: begin
