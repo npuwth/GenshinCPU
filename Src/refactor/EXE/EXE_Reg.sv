@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-19 15:49:20
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-23 14:23:07
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -35,13 +35,14 @@ module EXE_Reg (
 	  input logic                          ID_ALUSrcA,
 	  input logic                          ID_ALUSrcB,
 	  input logic     [1:0]                ID_RegsReadSel,
-	  input logic 					               ID_IsAImmeJump,
+	  input logic 					               ID_IsAJumpCall,
 	  input BranchType                     ID_BranchType,
     input logic                          ID_IsTLBP,
     input logic                          ID_IsTLBW,
     input logic                          ID_IsTLBR,
     input logic                          ID_TLBWIorR,
     input logic      [2:0]               ID_TrapOp, 
+    input PResult                        ID_PResult,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -61,47 +62,18 @@ module EXE_Reg (
 	  output logic                         EXE_ALUSrcA,
 	  output logic                         EXE_ALUSrcB,
 	  output logic     [1:0]               EXE_RegsReadSel,
-	  output logic 					               EXE_IsAImmeJump,
+	  output logic 					               EXE_IsAJumpCall,
 	  output BranchType                    EXE_BranchType,
     output logic     [4:0]               EXE_Shamt,
     output logic                         EXE_IsTLBP,
     output logic                         EXE_IsTLBW,
     output logic                         EXE_IsTLBR,
     output logic                         EXE_TLBWIorR,
-    output logic      [2:0]              EXE_TrapOp
+    output logic      [2:0]              EXE_TrapOp,
+    output PResult                       EXE_PResult
     // output logic                         MDU_flush
 );
-// typedef enum logic [1:0] {
-//     NORMAL,
-//     EXC_MDU_FLUSH
-// } ExMDUFlush;
-//     ExMDUFlush Exc_state,Exc_state_next;
-//     always_ff @(posedge clk ) begin : FSM_blockname
-//         if (rst == `RstEnable) begin
-//             Exc_state = NORMAL;
-//         end
-//         else begin
-//             Exc_state = Exc_state_next;
-//         end
-//     end
 
-//     always_comb begin : next_state_gen
-//         if (Exc_state == NORMAL &&  EXE_Flush == `FlushEnable) begin
-//             Exc_state_next = EXC_MDU_FLUSH;
-//         end
-//         else begin
-//             Exc_state_next = NORMAL;
-//         end
-//     end
-
-//     always_comb begin
-//         if(Exc_state == EXC_MDU_FLUSH) begin
-//             MDU_flush = 1'b1;
-//         end
-//         else begin  
-//             MDU_flush = 1'b0;
-//         end
-//     end
   always_ff @( posedge clk  ) begin
     if( (rst == `RstEnable) || (EXE_Flush == `FlushEnable) ) begin
       EXE_BusA                           <= 32'b0;
@@ -120,7 +92,7 @@ module EXE_Reg (
       EXE_ExceptType                     <= '0;
       EXE_Shamt                          <= 5'b0;
       EXE_BranchType                     <= '0;
-      EXE_IsAImmeJump                    <= 1'b0;
+      EXE_IsAJumpCall                    <= 1'b0;
       EXE_ALUSrcA                        <= 1'b0;
       EXE_ALUSrcB                        <= 1'b0;
       EXE_Instr                          <= 32'b0;
@@ -130,7 +102,7 @@ module EXE_Reg (
       EXE_IsTLBR                         <= 1'b0;
       EXE_TLBWIorR                       <= 1'b0;
       EXE_TrapOp                         <= '0;
-
+      EXE_PResult                        <= '0;
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -149,7 +121,7 @@ module EXE_Reg (
       EXE_ExceptType                     <= ID_ExceptType;
       EXE_Shamt                          <= ID_Imm32[10:6];
       EXE_BranchType                     <= ID_BranchType;
-      EXE_IsAImmeJump                    <= ID_IsAImmeJump;
+      EXE_IsAJumpCall                    <= ID_IsAJumpCall;
       EXE_ALUSrcA                        <= ID_ALUSrcA;
       EXE_ALUSrcB                        <= ID_ALUSrcB;
       EXE_Instr                          <= ID_Instr;
@@ -159,6 +131,7 @@ module EXE_Reg (
       EXE_IsTLBR                         <= ID_IsTLBR;
       EXE_TLBWIorR                       <= ID_TLBWIorR;
       EXE_TrapOp                         <= ID_TrapOp;
+      EXE_PResult                        <= ID_PResult;
     end
   end
 

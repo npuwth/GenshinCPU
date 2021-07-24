@@ -28,7 +28,7 @@ module MEM2_Reg (
 	  input RegsWrType                    MEM_RegsWrType_final,//经过exception solvement的新写使能
 	  input logic     [4:0]		            MEM_ExcType,
 	  input logic                         MEM_IsABranch,
-	  input logic                         MEM_IsAImmeJump,
+	  input logic                         MEM_IsAJumpCall,
 	  input logic                         MEM_IsInDelaySlot,
     // input logic                         MEM_store_req,
     // input logic                         MEM_Isincache,
@@ -43,7 +43,7 @@ module MEM2_Reg (
     output RegsWrType                   MEM2_RegsWrType,
     output logic    [4:0]		            MEM2_ExcType,
     output logic                        MEM2_IsABranch,
-    output logic                        MEM2_IsAImmeJump,
+    output logic                        MEM2_IsAJumpCall,
     output logic                        MEM2_IsInDelaySlot,
     // output logic                        MEM2_store_req,
     // output logic                        MEM2_Isincache,
@@ -61,7 +61,7 @@ module MEM2_Reg (
       MEM2_RegsWrType                     <= '0;
       MEM2_ExcType                        <= '0;
       MEM2_IsABranch                      <= 1'b0;
-      MEM2_IsAImmeJump                    <= 1'b0;
+      MEM2_IsAJumpCall                    <= 1'b0;
       MEM2_IsInDelaySlot                  <= 1'b0;
       MEM2_LoadType                       <= '0;
       // MEM2_store_req                      <= '0;
@@ -77,7 +77,7 @@ module MEM2_Reg (
       MEM2_RegsWrType                     <= MEM_RegsWrType_final;
       MEM2_ExcType                        <= MEM_ExcType;
       MEM2_IsABranch                      <= MEM_IsABranch;
-      MEM2_IsAImmeJump                    <= MEM_IsAImmeJump;
+      MEM2_IsAJumpCall                    <= MEM_IsAJumpCall;
       MEM2_IsInDelaySlot                  <= MEM_IsInDelaySlot;
       MEM2_LoadType                       <= MEM_LoadType;
       // MEM2_store_req                      <= MEM_store_req;

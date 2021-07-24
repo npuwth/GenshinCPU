@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-22 15:45:11
+ * @LastEditTime: 2021-07-24 10:13:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -33,7 +33,7 @@ module TOP_MEM (
     AXI_Bus_Interface            axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
     output logic                 Flush_Exception,
-    output logic [2:0]           EX_Entry_Sel,
+    output logic [1:0]           EX_Entry_Sel,
     output logic                 MEM_IsTLBP,
     output logic                 MEM_IsTLBW,
     output logic                 MEM_TLBWIorR,
@@ -41,7 +41,6 @@ module TOP_MEM (
     output logic [31:0]          CP0_EPC,
     output LoadType              MEM_LoadType,
     output StoreType             MEM_StoreType,
-    output logic [4:0]           MEM_rt,
     output logic [31:0]          Exception_Vector,
     output logic [31:13]         D_VPN2,
     output logic                 D_IsTLBStall,
@@ -77,7 +76,7 @@ module TOP_MEM (
     logic [31:0]                 MEM_DataToDcache;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
-    assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAImmeJump; 
+    assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAJumpCall; 
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high  
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
@@ -105,7 +104,7 @@ module TOP_MEM (
         .EXE_PC                  (EMBus.EXE_PC ),
         .EXE_Instr               (EMBus.EXE_Instr ),
         .EXE_BranchType          (EMBus.EXE_BranchType ),
-        .EXE_IsAImmeJump         (EMBus.EXE_IsAImmeJump ),
+        .EXE_IsAJumpCall         (EMBus.EXE_IsAJumpCall ),
         .EXE_LoadType            (EMBus.EXE_LoadType ),
         .EXE_StoreType           (EMBus.EXE_StoreType ),
         .EXE_Dst                 (EMBus.EXE_Dst ),
@@ -118,7 +117,6 @@ module TOP_MEM (
         .EXE_TLBWIorR            (EMBus.EXE_TLBWIorR),
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
-        .EXE_rt                  (EMBus.EXE_rt),
         .EXE_Result              (EMBus.EXE_Result),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
@@ -126,7 +124,7 @@ module TOP_MEM (
         .MEM_PC                  (MM2Bus.MEM_PC ),
         .MEM_Instr               (MM2Bus.MEM_Instr ),
         .MEM_IsABranch           (MM2Bus.MEM_IsABranch ),
-        .MEM_IsAImmeJump         (MM2Bus.MEM_IsAImmeJump ),
+        .MEM_IsAJumpCall         (MM2Bus.MEM_IsAJumpCall ),
         .MEM_LoadType            (MEM_LoadType ),
         .MEM_StoreType           (MEM_StoreType),
         .MEM_Dst                 (MM2Bus.MEM_Dst ),
@@ -139,7 +137,6 @@ module TOP_MEM (
         .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
-        .MEM_rt                  (MEM_rt),
         .MEM_Result              (MEM_Result)
     );
 

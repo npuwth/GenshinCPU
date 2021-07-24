@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-21 18:04:51
+ * @LastEditTime: 2021-07-24 10:11:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -44,12 +44,29 @@
 `define FlushEnable         1'b1     // 开启flush
 `define FlushDisable        1'b0     // 关闭flush
 
+//----------------------分支预测宏定义--------------------//
+`define SIZE_OF_RAS 8
+// `define SIZE_OF_TAG 22
+`define SIZE_OF_INDEX 8
+`define SIZE_OF_SET 256
+
+`define BIsNone 2'b00  //不分支
+`define BIsCall 2'b01  //jal,jalr
+`define BIsRetn 2'b10  //jr
+`define BIsImme 2'b11  //branch,j
+
+`define NT      2'b00  //not taken
+`define WNT     2'b01  //weakly not taken
+`define WT      2'b10  //weakly taken
+`define T       2'b11  //taken
+
 //*******************PCSel 的宏定义********************
-`define PCSel_PC4        3'b000
-`define PCSel_ImmeJump   3'b001
-`define PCSel_EPC        3'b010
-`define PCSel_Except     3'b011
-`define PCSel_Branch     3'b100    
+`define PCSel_EPC        3'b000
+`define PCSel_Except     3'b001
+`define PCSel_MEMPC      3'b010
+`define PCSel_Correct    3'b011   
+`define PCSel_PC4        3'b100
+`define PCSel_Target     3'b101
 
 
 //用于选择storeleefine
@@ -74,6 +91,7 @@
 
 //PC复位地址
 `define PCRstAddr           32'hBFC0_0000
+`define PCRstTag            22'b1011_1111_1100_0000_0000_00;
 
 //**************************for the branch slove unit*****************************
 `define BRANCH_CODE_BEQ     3'b000
@@ -82,7 +100,8 @@
 `define BRANCH_CODE_BGT     3'b011
 `define BRANCH_CODE_BLE     3'b100
 `define BRANCH_CODE_BLT     3'b101
-`define BRANCH_CODE_JR      3'b110 
+`define BRANCH_CODE_J       3'b110 
+`define BRANCH_CODE_JR      3'b111    
 
 //**************************for the trap slove unit*****************************
 // 对于trap指令的立即数，都做有符号位的扩展
@@ -121,8 +140,8 @@
 `define RegsReadSel_LO      2'b10 //LO寄存器读出的数据
 `define RegsReadSel_CP0     2'b11 //CP0读出的数据
 
-`define IsAImmeJump         1'b1  //特指 j jal
-`define IsNotAImmeJump      1'b0
+`define IsAJumpCall         1'b1  //特指 j jal
+`define IsNotAJumpCall      1'b0
 
 `define IsABranch           1'b1  //比如bne jr 这种
 `define IsNotABranch        1'b0
@@ -191,10 +210,10 @@
 `define CP0_REG_CONFIG0     5'd16   // 16号 sel 0  只读寄存器
 `define CP0_REG_CONFIG1     5'd16   // 16号 sel 1  只读寄存器
 
-`define IsNone              3'b000
-`define IsRefetch           3'b001
-`define IsEret              3'b010
-`define IsException         3'b011
+`define IsNone              2'b00
+`define IsRefetch           2'b01
+`define IsEret              2'b10
+`define IsException         2'b11
 //***************************  与结构体有关的宏定义  ***************************
 `define ExceptionTypeZero   {1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}   //18个例外
 

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-22 15:57:32
+ * @LastEditTime: 2021-07-24 10:12:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -58,89 +58,71 @@ module mycpu_top (
     output [3:0]               debug_wb_rf_wen,    
     output [4:0]               debug_wb_rf_wnum   
 );
-    logic                      cpu_ibus_valid;
-    logic                      cpu_dbus_valid;
+
     logic [31:0]               WB_PC;                     //来自WB级,用于Debug
-    logic [31:0]               WB_Result;                 //来自WB级,用于Debug
-    logic [4:0]                WB_Dst;                    //来自WB级,用于Debug
+    logic [31:0]               WB_Result;                 //来自WB级,用于Debug和旁路
+    logic [4:0]                WB_Dst;                    //来自WB级,用于Debug和旁路
     logic                      Flush_Exception;           //来自MEM级的异常检测
     logic                      ID_EX_DH_Stall;            //来自DataHazard
     logic                      ID_MEM1_DH_Stall;          //来自DataHazard
     logic                      ID_MEM2_DH_Stall;          //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
-    logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
-    logic [31:0]               Exception_Vector;
-    logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
-    logic                      ID_IsAImmeJump;            //来自ID级，表示是j，jal跳转
-    logic [31:0]               CP0_EPC;                   //来自MEM级的EPC
+    logic                      EXE_Prediction_Failed;     //来自EXE级，分支预测错误
+    logic [31:0]               EXE_Correction_Vector;     //用于校正分支预测
+    logic [1:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
+    logic [31:0]               Exception_Vector;          //传至PREIF，异常入口向量
+    logic [31:0]               CP0_EPC;                   //传至PREIF,用于ERET返回
+    BResult                    EXE_BResult;               //用于校正BPU
     //-----------------------------流水线寄存器的写使能和flush------------------------------//
-    logic                      PREIF_Wr;
-    logic                      IF_Wr;
-    logic                      ID_Wr;                     //来自WRFlushControl
-    logic                      EXE_Wr;                    //来自WRFlushControl  
-    logic                      MEM_Wr;                    //来自WRFlushControl
-    logic                      MEM2_Wr;                   //来自WRFlushControl
-    logic                      WB_Wr;                     //来自WRFlushControl
-    logic                      IF_Flush;                  //来自WRFlushControl
-    logic                      ID_Flush;                  //来自WRFlushControl
-    logic                      EXE_Flush;                 //来自WRFlushControl
-    logic                      MEM_Flush;                 //来自WRFlushControl
-    logic                      MEM2_Flush;                //来自WRFlushControl
-    logic                      WB_Flush;                  //来自WRFlushControl
+    logic                      PREIF_Wr;                  //来自Control
+    logic                      IF_Wr;                     //来自Control
+    logic                      ID_Wr;                     //来自Control
+    logic                      EXE_Wr;                    //来自Control  
+    logic                      MEM_Wr;                    //来自Control
+    logic                      MEM2_Wr;                   //来自Control
+    logic                      WB_Wr;                     //来自Control
+    logic                      IF_Flush;                  //来自Control
+    logic                      ID_Flush;                  //来自Control
+    logic                      EXE_Flush;                 //来自Control
+    logic                      MEM_Flush;                 //来自Control
+    logic                      MEM2_Flush;                //来自Control
+    logic                      WB_Flush;                  //来自Control
     //--------------------------------------------------------------------------------------//
-    logic                      ID_DisWr;
-    logic                      EXE_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
-    logic                      MEM_DisWr;                 //来自WRFLUSHCONTROL，传至MEM级,用于关闭CP0的写使能
-    logic                      WB_DisWr;                  //来自WRFlushControl,传至WB级，用于生成WB_Final_Wr
-
-    logic [31:0]               EXE_BusA_L1;               //来自EXE，用于MT指令写HiLo，也用于生成jr的npc
+    logic                      ID_DisWr;                  //来自Control
+    logic                      EXE_DisWr;                 //来自Control
+    logic                      MEM_DisWr;                 //来自Control
+    logic                      WB_DisWr;                  //来自Control
+    logic                      IReq_valid; 
+    logic                      DReq_valid; 
 
     RegsWrType                 MEM2_RegsWrType;           //MEM2级的写使能
     logic [4:0]                MEM2_Dst;                  //MEM2级目标寄存器（用于旁路）
     logic [31:0]               MEM2_Result;               //MEM2级旁路的结果（用于旁路）
+    LoadType                   MEM2_LoadType;             //用于ID级检测Load类型指令的数据冒险
 
     RegsWrType                 WB_RegsWrType;             //WB级的写使能
     RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
 
-    logic [4:0]                MEM_rt;                    //用于ID级检测load类型指令的数据冒险
-    LoadType                   MEM2_LoadType;             //用于ID级检测Load类型指令的数据冒险
-    BranchType                 EXE_BranchType;            //来自EXE级，传至IF，用于生成NPC
-    
-    logic [31:0]               PREIF_PC;                  //传给IF级
-    ExceptinPipeType           PREIF_ExceptType;          //PreIF级的异常信号
-
-    logic [31:0]               ID_PC;                     //来自ID级， 传至IF，用于生成NPC
-    logic [31:0]               ID_Instr;                  //来自ID级， 传至IF，用于生成NPC
-    logic [31:0]               EXE_PC;                    //来自EXE级，传至IF，用于生成NPC
-    logic [31:0]               EXE_Imm32;                 //来自EXE级，传至IF，用于生成NPC  
-    logic [31:0]               MEM_Instr;
-    logic                      IReq_valid; 
-    logic                      DReq_valid; 
-
-    
-    logic                      MEM2_store_req;
-    logic                      MEM2_Isincache;
-    // logic [31:0]               WB_ALUOut;
-    logic                      WB_store_req;
-    logic                      WB_Isincache; 
+    logic [31:0]               MEM_Instr;                 //用于判断MFC0后的阻塞
+    logic [31:0]               MEM_Result;                // 用于旁路数据
+    logic [4:0]                MEM_Dst;
+    RegsWrType                 MEM_RegsWrType;
+    logic [31:0]               MEM_PC;                    //传至PREIF，用于TLB重取机制
+    LoadType                   MEM_LoadType;              //用于Control & load指令的数据冒险
+    StoreType                  MEM_StoreType;             //用于Control 
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
     logic                      MEM_IsTLBP;                //传至TLBMMU，用于判断是普通访存还是TLBP
     logic                      MEM_IsTLBW;                //传至TLBMMU，用于写TLB
     logic                      MEM_TLBWIorR;              //表示是TLBWI还是TLBWR
-    logic [31:0]               MEM_PC;                    //传至IF，用于TLB重取机制
-    LoadType                   MEM_LoadType;              //用于Control & load指令的数据冒险
-    StoreType                  MEM_StoreType;             //用于Control 
     logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
-    logic                      TLBBuffer_Flush;
-    TLB_Entry                  I_TLBEntry;
-    TLB_Entry                  D_TLBEntry;
-    logic [31:13]              I_VPN2;
-    logic [31:13]              D_VPN2;
+    logic                      TLBBuffer_Flush;           //用于清空TLB Buffer
+    TLB_Entry                  I_TLBEntry;                //从TLB获取ITLBBuffer数据  
+    TLB_Entry                  D_TLBEntry;                //从TLB获取DTLBBuffer数据
+    logic [31:13]              I_VPN2;                    //用于查找TLB
+    logic [31:13]              D_VPN2;                    //用于查找TLB
     
-    logic [31:0]               MEM_Result;  // 用于旁路数据
-    logic [4:0]                MEM_Dst;
-    RegsWrType                 MEM_RegsWrType;
+    
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
@@ -156,7 +138,6 @@ module mycpu_top (
     //     .probe5 (MM2Bus.MEM_ExcType)
     // );
 
-                                        //写回寄存器的地址
     //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_Bus_Interface           cpu_ibus();
     CPU_Bus_Interface           cpu_dbus();
@@ -173,7 +154,6 @@ module mycpu_top (
     CP0_TLB_Interface           CTBus();
     //--------------------------------------------------------------------------------------------------------------//
     Control U_Control (
-        // .EX_Entry_Sel           (EX_Entry_Sel),
         .Flush_Exception        (Flush_Exception ),
         .I_IsTLBStall           (I_IsTLBStall ),
         .D_IsTLBStall           (D_IsTLBStall ),
@@ -182,18 +162,8 @@ module mycpu_top (
         .ID_EX_DH_Stall         (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
-        .ID_IsAImmeJump         (ID_IsAImmeJump),
-        .BranchFailed           (ID_Flush_BranchSolvement),
+        .BranchFailed           (EXE_Prediction_Failed),
         .DIVMULTBusy            (EXE_MULTDIVStall),
-        // .MEM_Addr               (MM2Bus.MEM_ALUOut),        
-        // .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
-        // .MEM_iscached           (MM2Bus.MEM_Isincache),
-        // .MEM2_Addr              (M2WBus.MEM2_ALUOut),                           //MEM2级的地址
-        // .MEM2_store_req         (MEM2_store_req),                               //MEM2级的store信号
-        // .MEM2_iscached          (MEM2_Isincache),
-        // .WB_Addr                (WB_ALUOut),                                    //WB级的地址
-        // .WB_store_req           (WB_store_req),                                 //WB级的请求
-        // .WB_iscached            (WB_Isincache),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
         .IF_Wr                  (IF_Wr),
@@ -215,13 +185,10 @@ module mycpu_top (
         .MEM_DisWr              (MEM_DisWr ),
         .WB_DisWr               (WB_DisWr ),
 
-        // .IcacheFlush            (cpu_ibus.flush),  
-        // .DcacheFlush            (cpu_dbus.flush),
         .IReq_valid             (IReq_valid),
         .DReq_valid             (DReq_valid),
-        .ICacheStall            (cpu_ibus.stall),
-        .DCacheStall            (cpu_dbus.stall)
-        // .HiLo_Not_Flush         (HiLo_Not_Flush)
+        .ICache_Stall           (cpu_ibus.stall),
+        .DCache_Stall           (cpu_dbus.stall)
     );
 
 //------------------------AXI-----------------------//
@@ -326,25 +293,19 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .PREIF_Wr                  (PREIF_Wr ),//也就是PC写使能
         .MEM_CP0Epc                (CP0_EPC ),
-        .EXE_BusA_L1               (EXE_BusA_L1 ),
-        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
-        .ID_IsAImmeJump            (ID_IsAImmeJump ),
         .EX_Entry_Sel              (EX_Entry_Sel ),
-        .EXE_BranchType            (EXE_BranchType ),
-        .ID_PC                     (ID_PC ),
-        .ID_Instr                  (ID_Instr ),
-        .EXE_PC                    (EXE_PC ),
-        .EXE_Imm32                 (EXE_Imm32 ),
         .MEM_PC                    (MEM_PC ),
         .Exception_Vector          (Exception_Vector ),
         .I_TLBEntry                (I_TLBEntry ),
         .s0_found                  (s0_found ),
         .TLBBuffer_Flush           (TLBBuffer_Flush ),
         .IReq_valid                (IReq_valid),
+        .EXE_Correction_Vector     (EXE_Correction_Vector),
+        .EXE_Prediction_Failed     (EXE_Prediction_Failed),
+        .PIBus                     (PIBus.PREIF ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         .axi_iubus                 (axi_iubus),
-        .PIBus                     (PIBus.PREIF ),
         //-----------------------output-------------------------------//
         .I_VPN2                    (I_VPN2 ),
         .I_IsTLBStall              (I_IsTLBStall )
@@ -355,6 +316,7 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .IF_Wr                     (IF_Wr ),
         .IF_Flush                  (IF_Flush ),
+        .EXE_BResult               (EXE_BResult ),
         .PIBus                     (PIBus.IF ),
         .IIBus                     (IIBus.IF ),
         .cpu_ibus                  (cpu_ibus)
@@ -365,7 +327,7 @@ module mycpu_top (
         .resetn                    (aresetn ),
         .ID_Flush                  (ID_Flush ),
         .ID_Wr                     (ID_Wr ),
-        .MEM_rt                    (MEM_rt),   
+        .MEM_rt                    (MEM_Dst),   
         .MEM_ReadMEM               (MEM_LoadType.ReadMem), // load信号用于数据冒险 TODO:连线
         .MEM2_rt                   (MEM2_Dst),
         .MEM2_ReadMEM              (MEM2_LoadType.ReadMem),
@@ -383,12 +345,9 @@ module mycpu_top (
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
-        .ID_IsAImmeJump            (ID_IsAImmeJump),
         .ID_EX_DH_Stall            (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall          (ID_MEM1_DH_Stall),
-        .ID_MEM2_DH_Stall          (ID_MEM2_DH_Stall),
-        .ID_PC                     (ID_PC),
-        .ID_Instr                  (ID_Instr)
+        .ID_MEM2_DH_Stall          (ID_MEM2_DH_Stall)
     );
 
     TOP_EXE U_TOP_EXE ( 
@@ -400,12 +359,10 @@ module mycpu_top (
         .IEBus                     (IEBus.EXE ),
         .EMBus                     (EMBus.EXE ),
         //--------------------------output-------------------------//
-        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
-        .EXE_MULTDIVStall          (EXE_MULTDIVStall),
-        .EXE_BusA                  (EXE_BusA_L1),
-        .EXE_BranchType            (EXE_BranchType),
-        .EXE_PC                    (EXE_PC),
-        .EXE_Imm32                 (EXE_Imm32)
+        .EXE_Prediction_Failed     (EXE_Prediction_Failed),
+        .EXE_Correction_Vector     (EXE_Correction_Vector),
+        .EXE_BResult               (EXE_BResult),
+        .EXE_MULTDIVStall          (EXE_MULTDIVStall)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -435,7 +392,6 @@ module mycpu_top (
         .CP0_EPC                   (CP0_EPC ),
         .MEM_LoadType              (MEM_LoadType ),
         .MEM_StoreType             (MEM_StoreType ),
-        .MEM_rt                    (MEM_rt ),
         .Exception_Vector          (Exception_Vector ),
         .D_VPN2                    (D_VPN2 ),
         .D_IsTLBStall              (D_IsTLBStall ),
@@ -459,8 +415,6 @@ module mycpu_top (
         .MEM2_Dst                  (MEM2_Dst ),
         .MEM2_RegsWrType           (MEM2_RegsWrType),
         .MEM2_LoadType             (MEM2_LoadType)
-        // .MEM2_store_req            (MEM2_store_req),
-        // .MEM2_Isincache            (MEM2_Isincache)
     );
 
 
@@ -477,9 +431,6 @@ module mycpu_top (
         .WB_Final_Wr               (WB_Final_Wr ),
         .WB_RegsWrType             (WB_RegsWrType),
         .WB_PC                     (WB_PC )
-        // .WB_ALUOut                 (WB_ALUOut)
-        // .WB_store_req              (WB_store_req),
-        // .WB_Isincache              (WB_Isincache)
     );
 `ifdef EN_TLB
     TLB U_TLB( 

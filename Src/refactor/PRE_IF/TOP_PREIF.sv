@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-22 15:37:02
+ * @LastEditTime: 2021-07-24 10:13:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -19,21 +19,16 @@ module TOP_PREIF (
     input logic                 PREIF_Wr,
 
     input logic [31:0]          MEM_CP0Epc,
-    input logic [31:0]          EXE_BusA_L1,
-    input logic                 ID_Flush_BranchSolvement,
-    input logic                 ID_IsAImmeJump,
-    input logic [2:0]           EX_Entry_Sel,
+    input logic [1:0]           EX_Entry_Sel,
     input BranchType            EXE_BranchType,
-    input logic [31:0]          ID_PC,
-    input logic [31:0]          ID_Instr,
-    input logic [31:0]          EXE_PC,
-    input logic [31:0]          EXE_Imm32,
     input logic [31:0]          MEM_PC,
     input logic [31:0]          Exception_Vector,
     input TLB_Entry             I_TLBEntry,
     input logic                 s0_found,
     input logic                 TLBBuffer_Flush,
     input logic                 IReq_valid,
+    input logic [31:0]          EXE_Correction_Vector,
+    input logic                 EXE_Prediction_Failed,
     PREIF_IF_Interface          PIBus,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
@@ -44,20 +39,18 @@ module TOP_PREIF (
 );
     logic   [31:0]              PREIF_PC;
     logic   [31:0]              PREIF_NPC;
-    logic   [2:0]               PCSel;
-    logic   [31:0]              ID_PCAdd4;
     logic   [31:0]              PC_4;
-    logic   [31:0]              JumpAddr;
-    logic   [31:0]              BranchAddr;
+    logic   [2:0]               PCSel;
+
     logic   [1:0]               IF_TLBExceptType;
     logic   [31:0]              Phsy_Iaddr;
     logic                       I_IsCached;
     logic                       I_IsTLBBufferValid;
 
     assign PC_4              =   PREIF_PC + 4;
-    assign ID_PCAdd4         =   ID_PC+4;
-    assign JumpAddr          =   {ID_PCAdd4[31:28],ID_Instr[25:0],2'b0};
-    assign BranchAddr        =   EXE_PC+4+{EXE_Imm32[29:0],2'b0};
+    // assign ID_PCAdd4         =   ID_PC+4;
+    // assign JumpAddr          =   {ID_PCAdd4[31:28],ID_Instr[25:0],2'b0};
+    // assign BranchAddr        =   EXE_PC+4+{EXE_Imm32[29:0],2'b0};
 
     assign PIBus.PREIF_PC    = PREIF_PC;
 
@@ -82,24 +75,22 @@ module TOP_PREIF (
         .PREIF_PC       (PREIF_PC)
     );
 
-    MUX7to1 U_PCMUX (
-        .d0             (PC_4),
-        .d1             (JumpAddr),
-        .d2             (MEM_CP0Epc),
-        .d3             (Exception_Vector),    // 异常处理的地址
-        .d4             (BranchAddr),
-        .d5             (EXE_BusA_L1),         // JR
-        .d6             (MEM_PC),
-        .sel7_to_1      (PCSel),
+    MUX6to1 U_PCMUX (
+        .d0             (MEM_CP0Epc),            //Eret
+        .d1             (Exception_Vector),      //异常处理的地址
+        .d2             (MEM_PC),                //用于Refetch
+        .d3             (EXE_Correction_Vector), //来自EXE的校正
+        .d4             (PC_4),                  //PC+4
+        .d5             (PIBus.IF_Target),
+        .sel6_to_1      (PCSel),
         //---------------output----------------//
         .y              (PREIF_NPC)
     );
 
     PCSEL U_PCSEL(
-        .isBranch       (ID_Flush_BranchSolvement),
-        .isImmeJump     (ID_IsAImmeJump),
+        .BPU_Valid      (PIBus.IF_BPUValid),
+        .Prediction_Failed(EXE_Prediction_Failed),
         .EX_Entry_Sel   (EX_Entry_Sel),
-        .EXE_BranchType (EXE_BranchType),
         //---------------output-------------------//
         .PCSel          (PCSel)
     );

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-22 15:53:03
+ * @LastEditTime: 2021-07-24 10:23:06
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,20 +17,20 @@ module TOP_EXE (
     input logic               resetn,
     input logic               EXE_Flush,
     input logic               EXE_Wr,
-    input logic               EXE_DisWr,
-    
+    input logic               EXE_DisWr, 
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
-    output logic              ID_Flush_BranchSolvement,
-    output logic              EXE_MULTDIVStall,
-    output logic [31:0]       EXE_BusA,//给IF
-    output BranchType         EXE_BranchType,
-    output logic [31:0]       EXE_PC,
-    output logic [31:0]       EXE_Imm32
+    output logic              EXE_Prediction_Failed,
+    output logic [31:0]       EXE_Correction_Vector,
+    output BResult            EXE_BResult,
+    output logic              EXE_MULTDIVStall
 );
 
+    logic [31:0]              EXE_BusA;
     logic [31:0]              EXE_BusB;
+    logic [31:0]              EXE_Imm32;
     logic [4:0]               EXE_rs;
+    logic [4:0]               EXE_rt;
     logic [4:0]               EXE_ALUOp;
     logic [1:0]               EXE_DstSel;
     logic                     EXE_ALUSrcA;
@@ -55,10 +55,9 @@ module TOP_EXE (
     StoreType                 EXE_StoreType;
     logic                     EXE_Final_Finish;
     RegsWrType                EXE_RegsWrType;
+    PResult                   EXE_PResult;
 
-    assign EXE_BranchType     = EMBus.EXE_BranchType;
-    assign EXE_PC             = EMBus.EXE_PC;
-    assign IEBus.EXE_rt       = EMBus.EXE_rt;
+    assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
     assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
     assign IEBus.EXE_RegsWrType = EXE_RegsWrType;
@@ -93,13 +92,14 @@ module TOP_EXE (
         .ID_ALUSrcA           (IEBus.ID_ALUSrcA ),
         .ID_ALUSrcB           (IEBus.ID_ALUSrcB ),
         .ID_RegsReadSel       (IEBus.ID_RegsReadSel ),
-        .ID_IsAImmeJump       (IEBus.ID_IsAImmeJump ),
+        .ID_IsAJumpCall       (IEBus.ID_IsAJumpCall ),
         .ID_BranchType        (IEBus.ID_BranchType ),
         .ID_IsTLBP            (IEBus.ID_IsTLBP),
         .ID_IsTLBW            (IEBus.ID_IsTLBW),
         .ID_IsTLBR            (IEBus.ID_IsTLBR),
         .ID_TLBWIorR          (IEBus.ID_TLBWIorR),
         .ID_TrapOp            (IEBus.ID_TrapOp),
+        .ID_PResult           (IEBus.ID_PResult),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -107,7 +107,7 @@ module TOP_EXE (
         .EXE_PC               (EMBus.EXE_PC ),
         .EXE_Instr            (EMBus.EXE_Instr ),
         .EXE_rs               (EXE_rs ),
-        .EXE_rt               (EMBus.EXE_rt ),
+        .EXE_rt               (EXE_rt ),
         .EXE_rd               (EMBus.EXE_rd ),
         .EXE_ALUOp            (EXE_ALUOp ),
         .EXE_LoadType         (EXE_LoadType ),
@@ -119,22 +119,31 @@ module TOP_EXE (
         .EXE_ALUSrcA          (EXE_ALUSrcA ),
         .EXE_ALUSrcB          (EXE_ALUSrcB ),
         .EXE_RegsReadSel      (EMBus.EXE_RegsReadSel ),
-        .EXE_IsAImmeJump      (EMBus.EXE_IsAImmeJump ),
+        .EXE_IsAJumpCall      (EMBus.EXE_IsAJumpCall ),
         .EXE_BranchType       (EMBus.EXE_BranchType ),
         .EXE_Shamt            (EXE_Shamt ),
         .EXE_IsTLBP           (EMBus.EXE_IsTLBP),
         .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
-        .EXE_TrapOp           (EXE_TrapOp)
+        .EXE_TrapOp           (EXE_TrapOp),
+        .EXE_PResult          (EXE_PResult)
     );
 
     BranchSolve U_BranchSolve (
-        .EXE_BranchType       (EMBus.EXE_BranchType),     
+        .EXE_BranchType       (EMBus.EXE_BranchType),    
+        .EXE_IsAJumpCall      (EMBus.EXE_IsAJumpCall), 
         .EXE_OutA             (EXE_BusA),
         .EXE_OutB             (EXE_BusB),
+        .EXE_PC               (EMBus.EXE_PC),
+        .EXE_Instr            (EMBus.EXE_Instr),
+        .EXE_Imm32            (EXE_Imm32),
+        .EXE_Wr               (EXE_Wr),
+        .EXE_PResult          (EXE_PResult),
         //-----------------output----------------------------//
-        .ID_Flush             (ID_Flush_BranchSolvement)   
+        .EXE_Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_Correction_Vector(EXE_Correction_Vector),
+        .EXE_BResult          (EXE_BResult)
     );
 
     MUX2to1 #(32) U_MUXA_L2 (
@@ -171,7 +180,7 @@ module TOP_EXE (
 
     MUX3to1#(5) U_EXEDstSrc(
         .d0                   (EMBus.EXE_rd),
-        .d1                   (EMBus.EXE_rt),
+        .d1                   (EXE_rt),
         .d2                   (5'd31),
         .sel3_to_1            (EXE_DstSel),
         .y                    (EMBus.EXE_Dst)

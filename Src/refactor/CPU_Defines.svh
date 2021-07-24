@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-20 23:10:01
+ * @LastEditTime: 2021-07-24 09:57:00
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -266,21 +266,65 @@ typedef struct packed {  //一个TLB项
 	logic [2:2]     D1;
 	logic [1:1]     V1;
 } TLB_Entry;
+
+typedef struct packed {
+    logic [1:0]                Type;     //表示预测的类型
+    logic                      IsTaken;  //表示预测是否跳转
+    logic [31:0]               Target;   //表示预测的跳转地址
+    logic [1:0]                Count;    //表示预测时的计数器值
+    logic                      Hit;      //表示预测时BHT是否命中
+    logic                      Valid;    //表示预测是否有效
+} PResult;
+
+typedef struct packed {
+    logic [1:0]                Type;     //表示实际的类型
+    logic                      IsTaken;  //表示实际是否跳转
+    logic [31:0]               Target;   //表示实际的跳转地址
+    logic [31:0]               PC;       //需要校准的PC
+    logic [1:0]                Count;    //预测该条指令时的Count
+    logic                      Hit;      //预测该指令时的BHT_hit
+    logic                      Valid;    //预测是否有效
+	logic                      RetnSuccess;//JR预测成功
+} BResult;
+
+typedef struct packed {
+    logic [31:`SIZE_OF_INDEX+2]Tag;   //PC的Tag
+    logic [31:0]               Target;
+    logic [1:0]                Type;  //分支种类
+    logic [1:0]                Count; //二位饱和计数器
+} BHT_Entry;
+
+typedef struct packed {
+    logic [31:`SIZE_OF_INDEX+2]Tag;      //Tag in BHT
+    logic [31:`SIZE_OF_INDEX+2]PCTag;    //Tag of PC
+    logic [31:0]               BHT_Addr; //Target Address in BHT
+    logic [31:0]               RAS_Addr; //Target Address in RAS
+    logic [31:0]               PC_Add8;  //pc+8
+    logic [1:0]                Type;     //Type in BHT
+    logic [1:0]                Count;    //Count in BHT
+	logic                      Valid;
+} BPU_Reg;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
 //-------------------------------------------------------------------------------------------------//
 interface PREIF_IF_Interface();
 	logic       [31:0]      PREIF_PC;
 	ExceptinPipeType        PREIF_ExceptType;
+	logic       [31:0]      IF_Target;
+	logic                   IF_BPUValid;
 
 	modport PREIF ( 
 	output                  PREIF_PC,
-	output                  PREIF_ExceptType
+	output                  PREIF_ExceptType,
+	input                   IF_Target,
+	input                   IF_BPUValid
 	);
 
 	modport IF ( 
 	input                   PREIF_PC,
-	input                   PREIF_ExceptType
+	input                   PREIF_ExceptType,
+	output                  IF_Target,
+	output                  IF_BPUValid
 	);
 
 endinterface
@@ -290,17 +334,20 @@ interface IF_ID_Interface();
 	logic       [31:0]      IF_Instr;
 	logic       [31:0]      IF_PC;
 	ExceptinPipeType        IF_ExceptType;
+	PResult                 IF_PResult;
 
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
-	output                  IF_ExceptType
+	output                  IF_ExceptType,
+	output                  IF_PResult
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
-	input                   IF_ExceptType
+	input                   IF_ExceptType,
+	input                   IF_PResult
 	);
 	
 endinterface
@@ -330,8 +377,9 @@ interface ID_EXE_Interface();
 	logic                   ID_ALUSrcA;
 	logic                   ID_ALUSrcB;
 	logic       [1:0]       ID_RegsReadSel;
-	logic 					ID_IsAImmeJump;
+	logic 					ID_IsAJumpCall;
 	BranchType              ID_BranchType;
+	PResult                 ID_PResult;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic       [31:0]      EXE_Instr;
@@ -348,7 +396,7 @@ interface ID_EXE_Interface();
 	output 	                ID_rs,	
 	output 	                ID_rt,	
 	output 	                ID_rd,	
-	output	                ID_IsAImmeJump,
+	output	                ID_IsAJumpCall,
 	output	                ID_ALUOp,	 		// ALU操作符
   	output	                ID_LoadType,	 	// LoadType信号 
   	output	                ID_StoreType,  	    // StoreType信号
@@ -365,6 +413,7 @@ interface ID_EXE_Interface();
 	output                  ID_IsTLBW,
 	output                  ID_IsTLBR,
 	output                  ID_TLBWIorR,
+	output                  ID_PResult,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_Instr,
@@ -382,7 +431,7 @@ interface ID_EXE_Interface();
 	input 	                ID_rs,	
 	input 	                ID_rt,	
 	input 	                ID_rd,	
-	input	                ID_IsAImmeJump,
+	input	                ID_IsAJumpCall,
 	input	                ID_ALUOp,	 		// ALU操作符
   	input	                ID_LoadType,	 	// LoadType信号 
   	input	                ID_StoreType,  		// StoreType信号
@@ -399,6 +448,7 @@ interface ID_EXE_Interface();
 	input                   ID_IsTLBW,
 	input                   ID_IsTLBR,
 	input                   ID_TLBWIorR,
+	input                   ID_PResult,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_Instr,
@@ -416,7 +466,7 @@ interface EXE_MEM_Interface();
   	logic 		[31:0] 	    EXE_PC; 		    // PC
 	logic 		[31:0]   	EXE_Instr;
 	BranchType              EXE_BranchType;
-	logic 					EXE_IsAImmeJump;
+	logic 					EXE_IsAJumpCall;
   	LoadType        		EXE_LoadType;	 	// LoadType信号 
   	StoreType       		EXE_StoreType;  	// StoreType信号
   	logic 		[4:0]    	EXE_Dst;  		    // 符号扩展之后�?32位立即数
@@ -429,7 +479,6 @@ interface EXE_MEM_Interface();
 	logic                   EXE_TLBWIorR;
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
-	logic       [4:0]       EXE_rt;
 	logic       [31:0]      EXE_Result;
 	logic       [4:0]       MEM_Dst;
 	logic                   MEM_IsTLBR;
@@ -442,7 +491,7 @@ interface EXE_MEM_Interface();
   	output      	        EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	output      	        EXE_PC, 		    // PC
 	output      	        EXE_Instr,
-	output                  EXE_IsAImmeJump,
+	output                  EXE_IsAJumpCall,
   	output      	        EXE_LoadType,	 	// LoadType信号 
   	output      	        EXE_StoreType,  	// StoreType信号
    	output      	        EXE_RegsWrType,		// 寄存器写信号打包
@@ -455,7 +504,6 @@ interface EXE_MEM_Interface();
 	output                  EXE_TLBWIorR,
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
-	output   			  	EXE_rt,
 	output                  EXE_Result,
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
@@ -469,7 +517,7 @@ interface EXE_MEM_Interface();
   	input      	            EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	input      	            EXE_PC, 		    // PC
 	input      	            EXE_Instr,
-	input                   EXE_IsAImmeJump,
+	input                   EXE_IsAJumpCall,
   	input      	            EXE_LoadType,	 	// LoadType信号 
   	input      	            EXE_StoreType,      // StoreType信号
    	input      	            EXE_RegsWrType,		// 寄存器写信号打包
@@ -482,7 +530,6 @@ interface EXE_MEM_Interface();
 	input                   EXE_TLBWIorR,
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
-	input   			  	EXE_rt,
 	input                   EXE_Result,
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
@@ -502,7 +549,7 @@ interface MEM_MEM2_Interface();
 	RegsWrType              MEM_RegsWrType;//经过exception solvement的新写使能
 	logic       [4:0]  		MEM_ExcType;
 	logic                   MEM_IsABranch;
-	logic                   MEM_IsAImmeJump;
+	logic                   MEM_IsAJumpCall;
 	logic                   MEM_IsInDelaySlot;
 	logic 				    MEM_Isincache;
 	LoadType                MEM_LoadType;
@@ -510,7 +557,7 @@ interface MEM_MEM2_Interface();
     logic 		[31:0] 		MEM2_PC;	
 	logic       [4:0]  		MEM2_ExcType;
 	logic                   MEM2_IsABranch;
-	logic                   MEM2_IsAImmeJump;
+	logic                   MEM2_IsAJumpCall;
 	logic                   MEM2_IsInDelaySlot;
 	// logic                   MEM_store_req;
 
@@ -524,7 +571,7 @@ interface MEM_MEM2_Interface();
 		output  			MEM_RegsWrType,
 		output  			MEM_ExcType,
 		output  			MEM_IsABranch,
-		output  			MEM_IsAImmeJump,
+		output  			MEM_IsAJumpCall,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
 		// output              MEM_store_req,
@@ -533,7 +580,7 @@ interface MEM_MEM2_Interface();
 		input               MEM2_PC,
 		input               MEM2_ExcType,
 		input               MEM2_IsABranch,
-		input               MEM2_IsAImmeJump,	
+		input               MEM2_IsAJumpCall,	
 		input               MEM2_IsInDelaySlot
 	);
 
@@ -547,7 +594,7 @@ interface MEM_MEM2_Interface();
 		input  				MEM_RegsWrType,
 		input  				MEM_ExcType,
 		input  				MEM_IsABranch,
-		input  				MEM_IsAImmeJump,
+		input  				MEM_IsAJumpCall,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
 		// input               MEM_store_req,
@@ -556,7 +603,7 @@ interface MEM_MEM2_Interface();
 		output              MEM2_PC,
 		output   			MEM2_ExcType,
 		output   			MEM2_IsABranch,
-		output   			MEM2_IsAImmeJump,
+		output   			MEM2_IsAJumpCall,
 		output   			MEM2_IsInDelaySlot
 	);
 	

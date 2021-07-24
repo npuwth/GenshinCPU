@@ -47,7 +47,7 @@ module TOP_MEM2 (
     .MEM_RegsWrType_final   (MM2Bus.MEM_RegsWrType ),
     .MEM_ExcType            (MM2Bus.MEM_ExcType ),
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
-    .MEM_IsAImmeJump        (MM2Bus.MEM_IsAImmeJump ),
+    .MEM_IsAJumpCall        (MM2Bus.MEM_IsAJumpCall ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
     .MEM_LoadType           (MM2Bus.MEM_LoadType),
     // .MEM_store_req          (MM2Bus.MEM_store_req),
@@ -62,7 +62,7 @@ module TOP_MEM2 (
     .MEM2_RegsWrType        (M2WBus.MEM2_RegsWrType ),
     .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
-    .MEM2_IsAImmeJump       (MM2Bus.MEM2_IsAImmeJump ),
+    .MEM2_IsAJumpCall       (MM2Bus.MEM2_IsAJumpCall ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
     .MEM2_LoadType          (MEM2_LoadType)
     // .MEM2_store_req         (M2WBus.MEM2_store_req)

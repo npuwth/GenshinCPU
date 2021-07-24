@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-20 22:24:02
+ * @LastEditTime: 2021-07-23 18:02:34
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -37,12 +37,9 @@ module TOP_ID (
     IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
-    output logic             ID_IsAImmeJump,  //用于PCSel，表示是j，jal跳转
     output logic             ID_EX_DH_Stall,
     output logic             ID_MEM1_DH_Stall,
-    output logic             ID_MEM2_DH_Stall,
-    output logic [31:0]      ID_PC,
-    output logic [31:0]      ID_Instr
+    output logic             ID_MEM2_DH_Stall
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
@@ -59,9 +56,6 @@ module TOP_ID (
     StoreType                ID_StoreType;
     RegsWrType               ID_RegsWrType;
 
-    assign ID_Instr       = IEBus.ID_Instr;//用于IF级的NPC
-    assign ID_PC          = IEBus.ID_PC;   //用于IF级的NPC
-    assign ID_IsAImmeJump = IEBus.ID_IsAImmeJump;
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
     assign IEBus.ID_LoadType   = (ID_DisWr) ? '0 : ID_LoadType; 
@@ -76,6 +70,7 @@ module TOP_ID (
         .IF_Instr            (IIBus.IF_Instr ),
         .IF_PC               (IIBus.IF_PC ),
         .IF_ExceptType       (IIBus.IF_ExceptType),
+        .IF_PResult          (IIBus.IF_PResult),
     //------------------out----------------------------------------//        
         .ID_Instr            (IEBus.ID_Instr ),
         .ID_Imm16            (ID_Imm16 ),
@@ -83,7 +78,8 @@ module TOP_ID (
         .ID_rt               (IEBus.ID_rt ),
         .ID_rd               (IEBus.ID_rd ),
         .ID_PC               (IEBus.ID_PC ),
-        .ID_ExceptType       (ID_ExceptType)
+        .ID_ExceptType       (ID_ExceptType),
+        .ID_PResult          (IEBus.ID_PResult)
     );
 
     EXT U_EXT ( 
@@ -158,7 +154,7 @@ module TOP_ID (
         .ID_ALUSrcB          (IEBus.ID_ALUSrcB),
         .ID_RegsReadSel      (IEBus.ID_RegsReadSel),
         .ID_EXTOp            (ID_EXTOp),
-        .ID_IsAImmeJump      (IEBus.ID_IsAImmeJump),
+        .ID_IsAJumpCall      (IEBus.ID_IsAJumpCall),
         .ID_BranchType       (IEBus.ID_BranchType),
         .ID_rsrtRead         (ID_rsrtRead),
         .ID_IsTLBP           (IEBus.ID_IsTLBP),

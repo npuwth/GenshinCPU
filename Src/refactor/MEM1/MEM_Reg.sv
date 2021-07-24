@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-21 14:45:24
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-23 17:39:07
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,7 +26,7 @@ module MEM_Reg (
 	input  logic    [31:0]	        EXE_Instr,
     
     input  BranchType               EXE_BranchType,
-	input  logic 					EXE_IsAImmeJump,
+	input  logic 					EXE_IsAJumpCall,
 
   	input  LoadType        		    EXE_LoadType,	 	
   	input  StoreType       		    EXE_StoreType, 
@@ -44,7 +44,6 @@ module MEM_Reg (
     input  logic                    EXE_TLBWIorR,
     input  logic    [1:0]           EXE_RegsReadSel,
     input  logic    [4:0]           EXE_rd,
-    input  logic    [4:0]           EXE_rt,
     input  logic    [31:0]          EXE_Result, 
  //----------------------------------------------------------//   
     output logic	[31:0] 		    MEM_ALUOut,	
@@ -54,7 +53,7 @@ module MEM_Reg (
     output logic    [31:0]          MEM_Instr,
     
     output logic                    MEM_IsABranch,
-	output logic                    MEM_IsAImmeJump,
+	output logic                    MEM_IsAJumpCall,
     
 	output LoadType    			    MEM_LoadType,
 	output StoreType     		    MEM_StoreType,
@@ -70,41 +69,8 @@ module MEM_Reg (
     output logic                    MEM_TLBWIorR,
     output logic    [1:0]           MEM_RegsReadSel,
     output logic    [4:0]           MEM_rd,
-    output logic    [4:0]           MEM_rt,
     output logic    [31:0]          MEM_Result
 );
-
-// typedef enum logic [1:0] {
-//     NORMAL,
-//     EXC_CACHE_FLUSH
-// } Exc_Cache_Flush;
-//     Exc_Cache_Flush Exc_state,Exc_state_next;
-//     always_ff @(posedge clk ) begin : FSM_blockname
-//         if (rst == `RstEnable) begin
-//             Exc_state = NORMAL;
-//         end
-//         else begin
-//             Exc_state = Exc_state_next;
-//         end
-//     end
-
-//     always_comb begin : next_state_gen
-//         if (Exc_state == NORMAL &&  MEM_Flush == `FlushEnable) begin
-//             Exc_state_next = EXC_CACHE_FLUSH;
-//         end
-//         else begin
-//             Exc_state_next = NORMAL;
-//         end
-//     end
-
-//     always_comb begin
-//         if(Exc_state == EXC_CACHE_FLUSH) begin
-//             dcache_flush = 1'b1;
-//         end
-//         else begin  
-            // dcache_flush = 1'b0;
-//         end
-//     end
 
     always_ff @( posedge clk  ) begin
         if( ( rst == `RstEnable )|| ( MEM_Flush == `FlushEnable )) begin
@@ -118,7 +84,7 @@ module MEM_Reg (
             MEM_OutB                <= 32'b0;
             MEM_ExceptType          <= '0;
             MEM_IsABranch           <= 1'b0;
-            MEM_IsAImmeJump         <= 1'b0;
+            MEM_IsAJumpCall         <= 1'b0;
             MEM_Instr               <= 32'b0;
             MEM_IsTLBP              <= 1'b0;
             MEM_IsTLBW              <= 1'b0;
@@ -126,7 +92,6 @@ module MEM_Reg (
             MEM_TLBWIorR            <= 1'b0;
             MEM_RegsReadSel         <= 1'b0;
             MEM_rd                  <= 1'b0;
-            MEM_rt                  <= 1'b0;
             MEM_Result              <= '0;
         end
         else if( MEM_Wr ) begin
@@ -140,7 +105,7 @@ module MEM_Reg (
             MEM_OutB                <= EXE_OutB;
             MEM_ExceptType          <= EXE_ExceptType_final;
             MEM_IsABranch           <= EXE_BranchType.isBranch;
-            MEM_IsAImmeJump         <= EXE_IsAImmeJump;
+            MEM_IsAJumpCall         <= EXE_IsAJumpCall;
             MEM_Instr               <= EXE_Instr;
             MEM_IsTLBP              <= EXE_IsTLBP;
             MEM_IsTLBW              <= EXE_IsTLBW;
@@ -148,7 +113,6 @@ module MEM_Reg (
             MEM_TLBWIorR            <= EXE_TLBWIorR;
             MEM_RegsReadSel         <= EXE_RegsReadSel;
             MEM_rd                  <= EXE_rd;
-            MEM_rt                  <= EXE_rt;
             MEM_Result              <= EXE_Result;
         end
     end

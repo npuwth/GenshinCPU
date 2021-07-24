@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-16 21:36:26
+ * @LastEditTime: 2021-07-24 09:49:40
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,6 +18,8 @@ module TOP_IF (
     input logic                 resetn,
     input logic                 IF_Wr,
     input logic                 IF_Flush,
+    input BResult               EXE_BResult,
+
     PREIF_IF_Interface          PIBus,
     IF_ID_Interface             IIBus,
     CPU_Bus_Interface           cpu_ibus
@@ -36,5 +38,19 @@ module TOP_IF (
     );  
 
     assign IIBus.IF_Instr = cpu_ibus.rdata;
+
+    BPU U_BPU (
+        .clk                        (clk ),
+        .rst                        (resetn ),
+        .IF_Wr                      (IF_Wr ),
+        .IF_Flush                   (IF_Flush ),
+        .PREIF_PC                   (PIBus.PREIF_PC ),
+        .EXE_BResult                (EXE_BResult ),
+        //--------------------output-----------------------------------//
+        .Target                     (PIBus.IF_Target ),
+        .IF_PResult                 (IIBus.IF_PResult ),
+        .BPU_Valid                  (PIBus.IF_BPUValid)
+    );
+
 
 endmodule

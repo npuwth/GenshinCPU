@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-20 15:47:50
+ * @LastEditTime: 2021-07-24 10:12:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -26,7 +26,7 @@
 
     output logic [4:0]         MEM_ExcType,
 
-    output logic [2:0]         EX_Entry_Sel,           //用于生成NPC
+    output logic [1:0]         EX_Entry_Sel,           //用于生成NPC
     output logic [31:0]        Exception_Vector,       // 异常处理的入口地址
     output logic               Flush_Exception
  );

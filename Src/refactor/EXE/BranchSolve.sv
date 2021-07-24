@@ -1,137 +1,121 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-19 13:57:33
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-24 09:45:42
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
  * 
  */
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
+
 module BranchSolve (
     input BranchType      EXE_BranchType,
+    input logic           EXE_IsAJumpCall,
     input logic [31:0]    EXE_OutA,
     input logic [31:0]    EXE_OutB,
-    output logic          ID_Flush
+    input logic [31:0]    EXE_PC,
+    input logic [31:0]    EXE_Instr,
+    input logic [31:0]    EXE_Imm32,
+    input logic           EXE_Wr,
+    input PResult         EXE_PResult,    //随流水线流动的预测结果
+    output logic          EXE_Prediction_Failed,//表示预测失败
+    output logic [31:0]   EXE_Correction_Vector,//用于校正的地址向量
+    output BResult        EXE_BResult     //用于校正BHT查找表的数据
 );
 
-    always_comb begin
-        unique case (EXE_BranchType.branchCode)
-            `BRANCH_CODE_BEQ:
-                if ($signed(EXE_OutA) == $signed(EXE_OutB) && EXE_BranchType.isBranch)  begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            `BRANCH_CODE_BNE:
-                if ($signed(EXE_OutA) != $signed(EXE_OutB) && EXE_BranchType.isBranch) begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            `BRANCH_CODE_BGE:
-                if ($signed(EXE_OutA) >= 0 && EXE_BranchType.isBranch) begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            `BRANCH_CODE_BGT:
-                if ($signed(EXE_OutA) > 0 && EXE_BranchType.isBranch) begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            `BRANCH_CODE_BLE:
-                if ($signed(EXE_OutA) <= 0 && EXE_BranchType.isBranch) begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            `BRANCH_CODE_BLT:
-                if ($signed(EXE_OutA) < 0 && EXE_BranchType.isBranch) begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            `BRANCH_CODE_JR:
-                if ( EXE_BranchType.isBranch) begin
-                    ID_Flush = `FlushEnable;
-                end
-                else begin
-                    ID_Flush = `FlushDisable;
-                end
-            default: begin
-                ID_Flush = `FlushDisable;
-             end
-        endcase
-    end
-
-endmodule
-
-`ifdef NEW_BRANCH
-/*
- * @Author: Seddon Shen
- * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-19 12:33:18
- * @LastEditors: Please set LastEditors
- * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
- * 
- */
-`include "../CommonDefines.svh"
-`include "../CPU_Defines.svh"
-module BranchSolve (
-    input BranchType      EXE_BranchType,
-    input logic [31:0]    EXE_OutA,
-    input logic [31:0]    EXE_OutB,
-    output logic          ID_Flush
-);
-
-    logic equal,not_equal;
-    logic not_equal_to_zero,equal_to_zero;
-    logic greater_than_zero;
-    logic less_than_zero;
+    logic                 Branch_IsTaken; //实际是否应该跳转   （方向）
+    logic [31:0]          Branch_Target;  //实际应该跳转的地址 （目标）
+    logic [1:0]           Branch_Type;    //实际应该跳转的Type（种类）
+    
+    logic                 Prediction_Success;//表示预测成功
+    logic [31:0]          BranchAddr;        //跳转地址的生成
+    logic [31:0]          JumpAddr;          //跳转地址的生成
+    logic [31:0]          EXE_PCAdd4;        //跳转地址的生成
+    //------------------用于Branch判断是否跳转---------------//
+    logic                 equal,not_equal;
+    logic                 not_equal_to_zero,equal_to_zero;
+    logic                 greater_equal_to_zero;
+    logic                 less_than_zero;
 
     assign equal             = ~(|(EXE_OutA ^ EXE_OutB));
     assign not_equal         = |(EXE_OutA ^ EXE_OutB);
     assign not_equal_to_zero = |EXE_OutA;
     assign equal_to_zero     = ~(|EXE_OutA);
-    assign greater_than_zero = ~(EXE_OutA[31]);
+    assign greater_equal_to_zero = ~(EXE_OutA[31]);
     assign less_than_zero    = EXE_OutA[31];
 
     always_comb begin
-        if (~EXE_BranchType.isBranch) begin
-            ID_Flush = `FlushDisable;
-        end else begin
+        if(EXE_BranchType.isBranch) begin
             unique case (EXE_BranchType.branchCode)
             `BRANCH_CODE_BEQ:
-                    ID_Flush = equal;
+                Branch_IsTaken = equal;
             `BRANCH_CODE_BNE:
-                    ID_Flush = not_equal;
+                Branch_IsTaken = not_equal;
             `BRANCH_CODE_BGE:
-                    ID_Flush = equal_to_zero | greater_than_zero;
+                Branch_IsTaken = greater_equal_to_zero;
             `BRANCH_CODE_BGT:
-                    ID_Flush = greater_than_zero;
+                Branch_IsTaken = greater_equal_to_zero & not_equal_to_zero;
             `BRANCH_CODE_BLE:
-                    ID_Flush = equal_to_zero | less_than_zero;
+                Branch_IsTaken = equal_to_zero | less_than_zero;
             `BRANCH_CODE_BLT:
-                    ID_Flush = less_than_zero;
-            `BRANCH_CODE_JR:
-                    ID_Flush = `FlushEnable;
+                Branch_IsTaken = less_than_zero;
             default: begin
-                ID_Flush = `FlushDisable;
+                Branch_IsTaken = 1'b1; //J，JR型
              end
-        endcase
+            endcase
         end
-        
+        else begin
+            Branch_IsTaken = 1'b0;
+        end
     end
 
+    always_comb begin
+        if(EXE_BranchType.isBranch) begin
+            unique case (EXE_BranchType.branchCode)
+            `BRANCH_CODE_J:begin
+                if(EXE_IsAJumpCall) Branch_Type = `BIsCall;
+                else                Branch_Type = `BIsImme; 
+                Branch_Target                   = JumpAddr;
+            end 
+            `BRANCH_CODE_JR:begin
+                if(EXE_IsAJumpCall) Branch_Type = `BIsCall;
+                else                Branch_Type = `BIsRetn;
+                Branch_Target                   = EXE_OutA;
+            end
+            default: begin
+                Branch_Type                       = `BIsImme;
+                if(Branch_IsTaken)  Branch_Target = BranchAddr;
+                else                Branch_Target = EXE_PC + 8; 
+            end               
+            endcase
+        end
+        else begin
+            Branch_Type   = `BIsNone;
+            Branch_Target = EXE_PC + 8;
+        end                       
+    end 
+
+    assign EXE_BResult.Type         = Branch_Type;
+    assign EXE_BResult.IsTaken      = Branch_IsTaken;  
+    assign EXE_BResult.Target       = Branch_Target;
+    assign EXE_BResult.PC           = EXE_PC;
+    assign EXE_BResult.Count        = EXE_PResult.Count;
+    assign EXE_BResult.Hit          = EXE_PResult.Hit;
+    assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr;
+    assign EXE_Correction_Vector    = Branch_Target;
+    assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn) && EXE_Wr;
+
+    assign EXE_PCAdd4        =   EXE_PC+4;
+    assign JumpAddr          =   {EXE_PCAdd4[31:28],EXE_Instr[25:0],2'b0};
+    assign BranchAddr        =   EXE_PC+4+{EXE_Imm32[29:0],2'b0};
+
+//---------------------------判断预测是否成功---------------------------//
+    assign Prediction_Success = (EXE_PResult.Type == Branch_Type) && 
+                                (EXE_PResult.IsTaken == Branch_IsTaken) && 
+                                (EXE_PResult.Target == Branch_Target);
+    assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid && EXE_Wr;
+
+
 endmodule
-`endif 
