@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-24 11:26:28
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-07-25 20:09:46
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -15,7 +15,7 @@
 `define FPU_DETECT_EN         // 定义则打开浮点检测功能
 // `define DEBUG                       
 `define NEW_BRIDGE          
-`define All_Uncache           // 定义则全走uncache  
+// `define All_Uncache           // 定义则全走uncache  
 `define TRAP                   
 `define EN_TLB         
 // `define EN_TLBRST
@@ -108,7 +108,7 @@
 `define DstSel_rd           2'b00
 `define DstSel_rt           2'b01
 `define DstSel_31           2'b10
-
+`define DstSel_nop          2'b11
 
 `define ALUSrcA_Sel_Regs    1'b0
 `define ALUSrcA_Sel_Shamt   1'b1
@@ -132,7 +132,7 @@
 `define EXTOP_ZERO          2'b00
 `define EXTOP_SIGN          2'b01
 `define EXTOP_LUI           2'b10
-
+`define EXTOP_NOP           2'b11
 //***************************  与CP0有关的宏定义  ***************************
 
 `define InterruptNotAssert      1'b0     // 取消中断的声明
@@ -330,46 +330,6 @@
 
 // ALUctr_signal_encoding 
 `define EXE_ALUOp_D         5'b00111//无关项
-//ADD 和 ADDI 共用了Opcode
-`define EXE_ALUOp_ADD       5'b00000
-`define EXE_ALUOp_ADDI      5'b00000
-//ADDIU 和 ADDU 共用了Opcode
-`define EXE_ALUOp_ADDIU     5'b00001
-`define EXE_ALUOp_ADDU      5'b00001
-//AND 和 ANDI 共用了Opcode
-`define EXE_ALUOp_AND       5'b00010
-`define EXE_ALUOp_ANDI      5'b00010
-
-`define EXE_ALUOp_SUB       5'b00011
-
-`define EXE_ALUOp_SUBU      5'b00100
-
-//OR 和 ORI 共用了Opcode
-`define EXE_ALUOp_OR        5'b00101//或
-`define EXE_ALUOp_ORI       5'b00101//或立即数
-
-`define EXE_ALUOp_NOR       5'b00110//或非
-
-`define EXE_ALUOp_SLL       5'b00111//逻辑左移
-`define EXE_ALUOp_SLLV      5'b01000//逻辑可变左移
-
-`define EXE_ALUOp_SRL       5'b01001//逻辑右移
-`define EXE_ALUOp_SRLV      5'b01010//逻辑可变右移
-
-`define EXE_ALUOp_SRA       5'b01011//算数右移
-`define EXE_ALUOp_SRAV      5'b01100//算数可变右移
-
-//SLT 和 SLTI 共用了Opcode
-`define EXE_ALUOp_SLT       5'b01101
-`define EXE_ALUOp_SLTI      5'b01101
-
-//SLTIU 和 SLTU 共用了Opcode
-`define EXE_ALUOp_SLTIU     5'b01110
-`define EXE_ALUOp_SLTU      5'b01110
-
-//XOR 和 XORI 共用了Opcode
-`define EXE_ALUOp_XOR       5'b01111
-`define EXE_ALUOp_XORI      5'b01111//异或立即数
 // ALUctr_signal_encoding 
 //ADD 和 ADDI 共用了Opcode
 `define EXE_ALUOp_ADD       5'b00000
