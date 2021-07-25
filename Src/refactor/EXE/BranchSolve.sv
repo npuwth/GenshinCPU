@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-24 19:58:22
+ * @LastEditTime: 2021-07-24 21:19:30
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -110,7 +110,7 @@ module BranchSolve (
     assign EXE_BResult.Hit          = EXE_PResult.Hit;
     assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr;
     assign EXE_Correction_Vector    = Branch_Target;
-    assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn) && EXE_Wr;
+    assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn);
 //---------------------------判断预测是否成功---------------------------//
     assign Branch_Success    = (Branch_IsTaken)?EXE_Branch_Success:EXE_PC8_Success;
     assign JR_Success        = (EXE_PResult.Target == EXE_OutA);
@@ -135,7 +135,7 @@ module BranchSolve (
         end                       
     end 
 
-    assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid && EXE_Wr;
+    assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid; //阻塞的时候也可以发BranchFail，否则会有组合环
 
 
 endmodule

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 16:29:28
+ * @LastEditTime: 2021-07-25 11:31:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,7 @@ module TOP_MEM (
     MEM_MEM2_Interface           MM2Bus,
     CP0_TLB_Interface            CTBus,
     CPU_DBus_Interface           cpu_dbus,
-    AXI_Bus_Interface            axi_dbus,
+    AXI_DBus_Interface            axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
     output logic                 Flush_Exception,
     output logic [1:0]           EX_Entry_Sel,

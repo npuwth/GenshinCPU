@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-24 12:32:50
+ * @LastEditTime: 2021-07-25 11:29:39
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
@@ -90,7 +90,30 @@ interface CPU_DBus_Interface();            // 只需要满足读的请求 icache
 
 endinterface
 
-interface AXI_Bus_Interface();
+interface AXI_IBus_Interface();
+  //读请求通道
+  logic 					rd_req;    // 未命中发请求
+  // logic[2:0]      rd_type;   //    用不到
+  logic[31:0]     rd_addr;   // 地址
+  logic           rd_rdy;    // 空闲时给ready
+  //读返回通道
+  logic           ret_valid; // 突发读完一次之后（缓冲区满了）
+  // logic[1:0]      ret_last;  //    用不到
+  logic[`ICACHE_LINE_WORD*32-1:0]     ret_data; // 数据
+
+  modport master ( //cache的接口
+            output  rd_req,rd_addr,
+            input rd_rdy,ret_valid,ret_data
+          );
+
+  modport slave ( //axi模块的接口
+            input  rd_req,rd_addr,
+            output rd_rdy,ret_valid,ret_data
+          );
+
+endinterface
+
+interface AXI_DBus_Interface();
   //读请求通道
   logic 					rd_req;    // 未命中发请求
   // logic[2:0]      rd_type;   //    用不到

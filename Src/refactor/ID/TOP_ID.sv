@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 19:52:44
+ * @LastEditTime: 2021-07-25 11:42:31
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -60,6 +60,7 @@ module TOP_ID (
     logic [31:0]             ID_PCAdd8;
     logic [31:0]             JumpAddr;
     logic [31:0]             BranchAddr;
+    logic [31:0]             BranchImme;
 
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
@@ -69,8 +70,9 @@ module TOP_ID (
     //将EXE中BranchSolve的部分任务在这里完成
     assign ID_PCAdd4      = IEBus.ID_PC + 4;
     assign ID_PCAdd8      = IEBus.ID_PC + 8;
+    assign BranchImme     = {{16{ID_Imm16[15]}},ID_Imm16};
     assign JumpAddr       = {ID_PCAdd4[31:28],IEBus.ID_Instr[25:0],2'b0};
-    assign BranchAddr     = ID_PCAdd4 + {IEBus.ID_Imm32[29:0],2'b0};
+    assign BranchAddr     = ID_PCAdd4 + {BranchImme[29:0],2'b0};//TODO:给它单独进行扩展，不过译码Decode，不过EXT
     // assign IEBus.ID_Branch_Success = (IEBus.ID_PResult.Target == BranchAddr);
     assign IEBus.ID_J_Success      = (IEBus.ID_PResult.Target == JumpAddr);
     assign IEBus.ID_PC8_Success    = (IEBus.ID_PResult.Target == ID_PCAdd8);

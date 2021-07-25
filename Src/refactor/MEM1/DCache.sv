@@ -34,7 +34,7 @@ module Dcache #(
     AXI_UNCACHE_Interface axi_ubus,
 
     CPU_DBus_Interface cpu_bus,//slave
-    AXI_Bus_Interface  axi_bus //master
+    AXI_DBus_Interface  axi_bus //master
     
     
 );

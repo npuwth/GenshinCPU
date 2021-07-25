@@ -2,8 +2,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-23 16:35:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-25 11:36:45
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
  */
@@ -18,8 +18,8 @@ module AXIInteract #(
     input logic clk,
     input logic resetn,
     //interface with cache
-    AXI_Bus_Interface ibus,
-    AXI_Bus_Interface dbus,
+    AXI_IBus_Interface ibus,
+    AXI_DBus_Interface dbus,
 
  // AXI_UNCACHE_Interface uibus,
     AXI_UNCACHE_Interface udbus,
@@ -633,7 +633,6 @@ module AXIInteract #(
 
     //空闲信号的输出
     assign ibus.rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
-    assign ibus.wr_rdy  = 1'b0;
     assign dbus.rd_rdy  = (dstate == IDLE ) ? 1'b1 : 1'b0;
     assign dbus.wr_rdy  = (dstate_wb == WB_IDLE )  ? 1'b1 : 1'b0;
     assign udbus.rd_rdy  = (dstate_uncache == UNCACHE_IDLE && udbus.wr_req ==1'b0 ) ? 1'b1 : 1'b0;
@@ -850,8 +849,8 @@ endmodule
 module AXIInteract(
     input logic clk,
     input logic resetn,
-    AXI_Bus_Interface  DcacheAXIBus,  // AXI模块向外输出的接口
-    AXI_Bus_Interface  IcacheAXIBus,  // AXI模块向外输出的接口
+    AXI_IBus_Interface  IcacheAXIBus,  // AXI模块向外输出的接口
+    AXI_DBus_Interface  DcacheAXIBus,  // AXI模块向外输出的接口
     AXI_UNCACHE_Interface UncacheAXIBus,
 
     output logic [ 3: 0] m_axi_arid,
