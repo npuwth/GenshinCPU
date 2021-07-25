@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-25 20:59:51
+ * @LastEditTime: 2021-07-25 22:20:42
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -47,7 +47,7 @@ module BPU (
                 .addra({EXE_BResult.History,EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
                 .dina(W_BHT_Entry),
                 //read port
-                .enb(1'b1),
+                .enb(1'b1), 
                 .addrb({History,PREIF_PC[`SIZE_OF_INDEX+1:2]}),
                 .doutb(R_BHT_Entry)
             );
