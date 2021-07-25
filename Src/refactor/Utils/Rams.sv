@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-07-25 10:29:01
+ * @LastEditTime: 2021-07-24 23:44:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -112,20 +112,9 @@ module simple_port_ram #(
 
 // xpm_memory_sdpram: Simple Dual Port RAM
    // Xilinx Parameterized Macro, version 2019.2
-   logic valid;
-   dtype doutb_bypass;
-   dtype doutb_byram ;
-   always_ff @( posedge clk) begin : doutb_by_pass_blockName
-      if (enb) begin//如果是读端口读使能打开
-         if (wea & ena & addra == addrb) begin//那么检测是否需要写优先
-            valid <= 1'b1;
-            doutb_bypass <= dina;
-         end else begin
-            valid <= 1'b0;
-         end
-      end
-   end
-   assign doutb = (valid) ? doutb_bypass : doutb_byram;
+   // dtype doutb_bypass;
+   // dtype doutb_byram ;
+   // assign doutb = (wea & ena & addra == addrb & enb) ? ;
    xpm_memory_sdpram #(
       .ADDR_WIDTH_A(ADDR_WIDTH),               // DECIMAL
       .ADDR_WIDTH_B(ADDR_WIDTH),               // DECIMAL
@@ -156,7 +145,7 @@ module simple_port_ram #(
       .dbiterrb(),             // 1-bit output: Status signal to indicate double bit error occurrence
                                        // on the data output of port B.
 
-      .doutb(doutb_byram),                   // READ_DATA_WIDTH_B-bit output: Data output for port B read operations.
+      .doutb(doutb),                   // READ_DATA_WIDTH_B-bit output: Data output for port B read operations.
       .sbiterrb(),             // 1-bit output: Status signal to indicate single bit error occurrence
                                        // on the data output of port B.
 
