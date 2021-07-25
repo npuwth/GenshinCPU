@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-25 23:27:37
+ * @LastEditTime: 2021-07-25 23:28:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,7 +28,7 @@ module BPU (
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_Top;     //point to stack top
     BHT_Entry                          W_BHT_Entry; //BHT write data for correction
     BHT_Entry                          R_BHT_Entry; //BHT read data
-    logic [5:0]                        History;
+    logic [6:0]                        History;
     logic [31:0]                       PREIF_PCAdd8;
     assign PREIF_PCAdd8 = PREIF_PC + 8;
 
@@ -36,7 +36,7 @@ module BPU (
 
     simple_port_ram #(
                 .LATENCY(0),
-                .SIZE(`SIZE_OF_SET*64),
+                .SIZE(`SIZE_OF_SET*128),
                 .dtype(BHT_Entry)
             )mem_data(
                 .clk(clk),
@@ -221,6 +221,14 @@ module BPU (
         end
         else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
             History[5] <= History[4];
+        end
+    end
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            History[6] <= '0;
+        end
+        else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
+            History[6] <= History[5];
         end
     end
 endmodule
