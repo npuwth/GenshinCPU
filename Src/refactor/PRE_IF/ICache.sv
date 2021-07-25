@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-25 13:02:49
+ * @LastEditTime: 2021-07-25 15:14:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -146,7 +146,6 @@ logic busy_uncache;
 logic busy;
 
 
-
 //连cpu_bus接口
 assign cpu_bus.busy   = busy;
 assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final:'0;
@@ -186,7 +185,7 @@ generate;
 
             //写端口
             .ena(1'b1),
-            .wea(data_we[i]),//第i路 第j个bank的写使能
+            .wea(data_we[i]),//第i路 的写使能
             .addra(read_addr),
             .dina(data_wdata[j]),//因为要重填 所以还是要有的
 
