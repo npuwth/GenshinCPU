@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-22 15:53:03
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-25 23:07:22
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -128,6 +128,18 @@ module TOP_EXE (
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
         .EXE_TrapOp           (EXE_TrapOp)
     );
+    
+    ALU_ila CP0_ILA(
+        .clk(clk),
+        .probe0 (EMBus.EXE_PC),
+        .probe1 (EXE_BusA_L2),
+        .probe2 (EXE_BusB_L2),
+        .probe3 (EXE_ALUOp), 
+        .probe4 (EMBus.EXE_ALUOut),   // 
+        .probe5 (Overflow_valid )     // 
+
+    );
+
 
     BranchSolve U_BranchSolve (
         .EXE_BranchType       (EMBus.EXE_BranchType),     

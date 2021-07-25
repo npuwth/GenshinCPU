@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-25 20:11:51
+ * @LastEditTime: 2021-07-25 22:55:01
  * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,18 +46,20 @@ module cp0_reg (
     output logic [31:0]     CP0_Ebase
     );
 
-    // cp0_ila CP0_ILA(
-    //     .clk(clk),
-    //     .probe0 (MEM2_PC),
-    //     .probe1 (CP0_EPC),
-    //     .probe2 (CP0_Status_EXL),
-    //     .probe3 (CP0_Status_IE), 
-    //     .probe4 (MEM2_ExcType),       // [4:0]
-    //     .probe5 (CP0.Cause.ExcCode ), // [4:0]
-    //     .probe6 (CP0_Cause_IP7_2),    // [4:0]
-    //     .probe7 (CP0_Cause_IP1_0),     //[1:0]
-    //     .probe8 (CP0_Status_BEV)      // [0:0]
-    // );
+    cp0_ila CP0_ILA(
+        .clk(clk),
+        .probe0 (MEM2_PC),
+        .probe1 (CP0_EPC),
+        .probe2 (CP0_Status_EXL),
+        .probe3 (CP0_Status_IE), 
+        .probe4 (MEM2_ExcType),       // [4:0]
+        .probe5 (CP0.Cause.ExcCode ), // [4:0]
+        .probe6 (CP0_Cause_IP7_2),    // [4:0]
+        .probe7 (CP0_Cause_IP1_0),     //[1:0]
+        .probe8 (CP0_Status_BEV)      // [0:0]
+    );
+
+    
     // 4096/4/8 = 128 ; 128 对应了3'd01
     localparam int IC_SET_PER_WAY = $clog2(`CACHE_WAY_SIZE / `ICACHE_LINE_WORD / 8 / 64 ) - 1;  
     // 8个字 32个字节   ->3'd04
@@ -460,6 +462,12 @@ module cp0_reg (
             end 
         end
     `endif
+// ErrorEPC
+    always_ff @(posedge clk) begin
+        if(rst == `RstEnable) begin
+            CP0.ErrorEPC                      <= 32'h0000_0000;
+        end 
+    end
     //read port
     always_comb begin
         case(CP0_RdAddr)
@@ -485,6 +493,7 @@ module cp0_reg (
                 if(CP0_Sel == 1'b0) CP0_RdData = CP0.Config0;
                 else                CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
             end
+            `CP0_ERROR_EPC:      CP0_RdData = CP0.ErrorEPC;
             default:             CP0_RdData = 'x;
         endcase
     end

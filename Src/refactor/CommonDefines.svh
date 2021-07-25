@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-25 20:09:46
+ * @LastEditTime: 2021-07-25 22:46:16
  * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -190,6 +190,7 @@
 `define CP0_REG_EBASE       5'd15   // 15号 sel 1
 `define CP0_REG_CONFIG0     5'd16   // 16号 sel 0  只读寄存器
 `define CP0_REG_CONFIG1     5'd16   // 16号 sel 1  只读寄存器
+`define CP0_ERROR_EPC       5'd30 
 
 `define IsNone              3'b000
 `define IsRefetch           3'b001

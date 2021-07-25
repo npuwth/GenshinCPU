@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-20 23:10:01
+ * @LastEditTime: 2021-07-25 22:47:36
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -236,6 +236,7 @@ typedef struct packed {
 	logic [31:0]    Ebase;     // 15号 sel 1
 	logic [31:0]    Config0;   // 16号 sel 0  只读寄存器
 	CP1_Config1     Config1;   // 16号 sel 1  只读寄存器
+	logic [31:0]    ErrorEPC;
 } cp0_regs;
 
 typedef struct packed {  
