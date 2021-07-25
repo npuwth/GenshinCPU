@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-24 17:56:58
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-25 15:39:54
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -66,7 +66,7 @@ typedef logic [INDEX_WIDTH-1:0]                   index_t;
 typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
 
 typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使�?
-typedef logic [LINE_WORD_NUM-1:0][DATA_WIDTH-1:0] line_t;//每一路一个cache_line
+typedef logic [DATA_WIDTH-1:0]                    data_t;//每一路一个cache_line
 
 function index_t get_index( input logic [31:0] addr );
     return addr[OFFSET_WIDTH + INDEX_WIDTH - 1 : OFFSET_WIDTH];
@@ -137,9 +137,10 @@ typedef struct packed {
 
 
 typedef struct packed {//store指令在读数的时�?�根据写使能替换
-    logic [ASSOC_NUM-1:0] hit;
-    index_t index;
-    line_t  wdata;
+    logic [ASSOC_NUM-1:0] hit;//命中的路数
+    index_t index;//set号
+    offset_t offset;//偏移
+    data_t  wdata;
 } store_t;
 
 typedef enum logic [2:0]{ 
@@ -158,7 +159,6 @@ typedef enum logic [2:0]{
 
 uncache_state_t uncache_state,uncache_state_next;
 store_t store_buffer; //如果有写冲突 直接阻塞
-line_t store_wdata;
 state_t state,state_next;
 
 wb_state_t wb_state,wb_state_next;
@@ -180,18 +180,19 @@ we_t    dirty_we;
 
 we_t wb_we;//store的写使能
 
-line_t [ASSOC_NUM-1:0] data_rdata;
-logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+data_t data_rdata[ASSOC_NUM-1:0][LINE_WORD_NUM-1:0];
+logic [31:0] data_rdata_sel[ASSOC_NUM-1:0];
+logic [31:0] data_rdata_final_;//经过store的旁路
 logic [31:0] data_rdata_final;//
 logic [31:0] data_rdata_final2;//经过ext2的数�?
-line_t data_wdata;
-we_t  data_we;//数据表的写使�?
+data_t data_wdata[LINE_WORD_NUM-1:0];
+logic [ASSOC_NUM-1:0][LINE_WORD_NUM-1:0] data_we;//数据表的写使�? 因为现在store 是专门给某一个字用的
 logic data_read_en;
 
 request_t req_buffer;
 logic req_buffer_en;
 
-logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
+logic [$clog2(ASSOC_NUM)-1:0] lru[SET_NUM-1:0];
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
 
@@ -201,12 +202,12 @@ logic pipe_wr;
 logic busy_cache;// uncache 直到数据返回
 logic busy_uncache_read;
 logic busy_uncache_write;//这表示store_buffer满了
-logic busy_collision;
-logic busy_collision1;
-logic busy_collision2;
+// logic busy_collision;
+// logic busy_collision1;
+// logic busy_collision2;
 
 
-logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲�?
+// logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲�?
 
 logic busy;
 
@@ -238,8 +239,12 @@ assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
 assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
 assign axi_bus.wr_req  = (state == MISSDIRTY) ? 1'b1:1'b0;
 assign axi_bus.wr_addr = {pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
-assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
-
+// assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
+generate;//
+    for (genvar i=0; i<LINE_WORD_NUM; i++) begin
+        assign  axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+    end
+endgenerate
 //连axi_ubus接口
 assign axi_ubus.rd_req   = (uncache_state == UNCACHE_READ_WAIT_AXI) ? 1'b1:1'b0;
 assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
@@ -281,24 +286,25 @@ generate;
             .dina(tagv_wdata),
             .douta(tagv_rdata[i])
         );
+        for (genvar j=0; j<LINE_WORD_NUM; ++j) begin
         simple_port_ram #(
-            .SIZE(SET_NUM),
-            .dtype(line_t)
+            .SIZE(SET_NUM)
         )mem_data(
             .clk(clk),
             .rst(~resetn),
 
             //写端�?
             .ena(1'b1),
-            .wea(data_we[i]),
+            .wea(data_we[i][j]),
             .addra(write_addr),
-            .dina(data_wdata),
+            .dina(data_wdata[j]),
 
             //读端�?
             .enb(data_read_en),
             .addrb(read_addr),
-            .doutb(data_rdata[i])
+            .doutb(data_rdata[i][j])
         );
+    end
     end
 endgenerate
 
@@ -330,7 +336,7 @@ generate;//根据offset片�?�？
 endgenerate
 //旁路
                             //
-assign data_rdata_final =   (uncache_state == UNCACHE_READ_DONE )? uncache_rdata: data_rdata_sel[clog2(hit)];
+assign data_rdata_final =   (uncache_state == UNCACHE_READ_DONE )? uncache_rdata: data_rdata_final_;
 
 assign cache_hit        = |hit;
 
@@ -341,17 +347,21 @@ assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.in
 
 assign busy_cache          = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache_read   = (uncache_state == UNCACHE_IDLE  || uncache_state == UNCACHE_READ_DONE) ? 1'b0 : 1'b1;
-assign busy_collision1     = (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
-assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
-assign busy_collision      = busy_collision1 | busy_collision2;
-assign busy_uncache_write  = (cpu_bus.origin_valid & (~cpu_bus.isCache) & cpu_bus.op & fifo_full) ? 1'b1:1'b0;
-assign busy                = busy_cache | busy_uncache_read | busy_collision | busy_uncache_write;
+// assign busy_collision1     = (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+// assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+// assign busy_collision      = busy_collision1 | busy_collision2;
+assign busy_uncache_write  = (fifo_full) ? 1'b1:1'b0;
+assign busy                = busy_cache | busy_uncache_read | busy_uncache_write;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
-assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
+generate;//
+    for (genvar i=0; i<LINE_WORD_NUM; i++) begin
+        assign data_wdata[i] = (state == REFILL) ? axi_bus.ret_data[32*(i+1)-1:32*(i)] : store_buffer.wdata;
+    end
+endgenerate
 assign tagv_wdata     = {1'b1,req_buffer.tag};
 assign data_read_en   = (state == REFILLDONE ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
@@ -360,19 +370,19 @@ assign dirty_addr     = req_buffer.index;
 
 
 //if not stall 更新 if stall check if hit & store & cache
-always_ff @( posedge clk ) begin : MEM2_blockName
-    if (  cpu_bus.stall & (~(busy_cache|busy_uncache_read|busy_uncache_write)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
-        MEM2<='0;
-    end else if(~(cpu_bus.stall))begin
-        MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
-    end else begin
-        MEM2<=MEM2;
-    end
-end
+// always_ff @( posedge clk ) begin : MEM2_blockName
+//     if (  cpu_bus.stall & (~(busy_cache|busy_uncache_read|busy_uncache_write)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
+//         MEM2<='0;
+//     end else if(~(cpu_bus.stall))begin
+//         MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
+//     end else begin
+//         MEM2<=MEM2;
+//     end
+// end
 
-always_ff @( posedge clk ) begin : WB_blockName
-    WB<= MEM2;
-end
+// always_ff @( posedge clk ) begin : WB_blockName
+//     WB<= MEM2;
+// end
 
 
 always_comb begin : data_rdata_final2_blockname
@@ -429,10 +439,10 @@ always_comb begin : dirty_we_block
     end
 end
 
-always_comb begin : store_wdata_block//
-      store_wdata                                      = data_rdata[clog2(hit)]; //
-      store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
+always_comb begin : data_rdata_final__blockname
+    data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(hit)];
 end
+
 
 always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
@@ -443,11 +453,11 @@ always_comb begin : tagv_we_blockName
     end
 end
 always_comb begin : data_we_blockName
-    if (state == REFILL) begin
         data_we = '0;
-        data_we[lru[req_buffer.index]] =1'b1;
-    end else  if(wb_state == WB_STORE)begin
-        data_we = store_buffer.hit;
+    if (state == REFILL) begin
+        data_we[lru[req_buffer.index]] ='1;
+    end else if(wb_state == WB_STORE)begin
+        data_we[clog2(store_buffer.hit)][store_buffer.offset[OFFSET_WIDTH-1:2]] = 1'b1;
     end else begin
         data_we = '0;
     end   
@@ -455,10 +465,11 @@ end
 always_ff @( posedge clk ) begin : store_buffer_blockName
     if ((resetn == `RstEnable)) begin
         store_buffer <= '0;
-    end else begin//既是�? 又是有效�?
+    end else if(~cpu_bus.stall)begin//既是�? 又是有效�?
         store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
-        store_buffer.wdata <= store_wdata;
+        store_buffer.offset <= req_buffer.offset;
+        store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
     end
 end
 
@@ -571,7 +582,7 @@ always_comb begin : state_next_blockname
         end
     endcase
 end
-
+//wb_store_state
 always_ff @(posedge clk) begin :wb_state_blockname
     if (resetn == `RstEnable) begin
         wb_state <= WB_IDLE;
