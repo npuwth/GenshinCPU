@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-25 11:47:19
+ * @LastEditTime: 2021-07-25 13:02:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -68,7 +68,7 @@ typedef logic [TAG_WIDTH-1:0]                     tag_t;
 typedef logic [INDEX_WIDTH-1:0]                   index_t;
 typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
 
-typedef logic [ASSOC_NUM-1:0][LINE_WORD_NUM-1:0]  we_t;//每一路 每一个bank的写使能
+typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路 每一个bank的写使能
 typedef logic [DATA_WIDTH-1:0]                    data_t;//
 
 function index_t get_index( input logic [31:0] addr );
@@ -186,7 +186,7 @@ generate;
 
             //写端口
             .ena(1'b1),
-            .wea(data_we[i][j]),//第i路 第j个bank的写使能
+            .wea(data_we[i]),//第i路 第j个bank的写使能
             .addra(read_addr),
             .dina(data_wdata[j]),//因为要重填 所以还是要有的
 
@@ -226,6 +226,11 @@ generate;//根据offset片选？
         assign data_rdata_sel[i] = data_rdata[i][req_buffer.offset[OFFSET_WIDTH-1:2]];
     end
 endgenerate
+generate;//
+    for (genvar i=0; i<LINE_WORD_NUM; i++) begin
+        assign data_wdata[i] = axi_bus.ret_data[32*(i+1)-1:32*(i)];
+    end
+endgenerate
 assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall)? 1'b0:1'b1;
 //旁路
                             //
@@ -244,7 +249,7 @@ assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
-assign data_wdata =  axi_bus.ret_data ;
+// assign data_wdata =  axi_bus.ret_data ;
 assign tagv_wdata =  {1'b1,req_buffer.tag} ;
 
 
