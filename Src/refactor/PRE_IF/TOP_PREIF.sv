@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-24 16:29:01
+ * @LastEditTime: 2021-07-25 11:32:00
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -31,7 +31,7 @@ module TOP_PREIF (
     input logic                 EXE_Prediction_Failed,
     PREIF_IF_Interface          PIBus,
     CPU_IBus_Interface          cpu_ibus,
-    AXI_Bus_Interface           axi_ibus,
+    AXI_IBus_Interface          axi_ibus,
     AXI_UNCACHE_Interface       axi_iubus,
 //---------------------------output----------------------------------//
     output logic [31:13]        I_VPN2,

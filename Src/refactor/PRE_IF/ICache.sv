@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-24 16:44:13
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-25 11:31:43
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -44,7 +44,7 @@ module Icache #(
     AXI_UNCACHE_Interface axi_ubus,
 
     CPU_IBus_Interface cpu_bus,//slave
-    AXI_Bus_Interface  axi_bus //master
+    AXI_IBus_Interface  axi_bus //master
     
     
 );
