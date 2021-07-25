@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 16:33:13
+ * @LastEditTime: 2021-07-25 12:23:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -51,6 +51,5 @@ module TOP_IF (
         .IF_PResult                 (IIBus.IF_PResult ),
         .BPU_Valid                  (PIBus.IF_BPUValid)
     );
-
 
 endmodule

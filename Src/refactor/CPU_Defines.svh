@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-24 19:53:46
+ * @LastEditTime: 2021-07-25 20:26:13
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -274,6 +274,7 @@ typedef struct packed {
     logic [1:0]                Count;    //表示预测时的计数器值
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
+	logic [2:0]                History;  //预测时的历史跳转信息
 } PResult;
 
 typedef struct packed {
@@ -284,7 +285,8 @@ typedef struct packed {
     logic [1:0]                Count;    //预测该条指令时的Count
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
-	logic                      RetnSuccess;//JR预测成功
+	logic [2:0]                History;  //预测时的历史跳转信息
+	// logic                      RetnSuccess;//JR预测成功
 } BResult;
 
 typedef struct packed {

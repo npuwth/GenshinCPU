@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-24 21:19:30
+ * @LastEditTime: 2021-07-25 19:23:29
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -109,8 +109,9 @@ module BranchSolve (
     assign EXE_BResult.Count        = EXE_PResult.Count;
     assign EXE_BResult.Hit          = EXE_PResult.Hit;
     assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr;
+    assign EXE_BResult.History      = EXE_PResult.History;
     assign EXE_Correction_Vector    = Branch_Target;
-    assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn);
+    // assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn);
 //---------------------------判断预测是否成功---------------------------//
     assign Branch_Success    = (Branch_IsTaken)?EXE_Branch_Success:EXE_PC8_Success;
     assign JR_Success        = (EXE_PResult.Target == EXE_OutA);
