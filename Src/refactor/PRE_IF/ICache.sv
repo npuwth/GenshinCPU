@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-24 16:44:13
+ * @LastEditTime: 2021-07-25 11:00:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -68,8 +68,8 @@ typedef logic [TAG_WIDTH-1:0]                     tag_t;
 typedef logic [INDEX_WIDTH-1:0]                   index_t;
 typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
 
-typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使能
-typedef logic [LINE_WORD_NUM-1:0][DATA_WIDTH-1:0] line_t;//每一路一个cache_line
+typedef logic [ASSOC_NUM-1:0][LINE_WORD_NUM-1:0]  we_t;//每一路 每一个bank的写使能
+typedef logic [DATA_WIDTH-1:0]                    data_t;//
 
 function index_t get_index( input logic [31:0] addr );
     return addr[OFFSET_WIDTH + INDEX_WIDTH - 1 : OFFSET_WIDTH];
@@ -118,27 +118,27 @@ logic [31:0] uncache_rdata;
 
 index_t read_addr;//read_addr 既是 查询的地址 又是重填的地址  write_addr是store的地址
 
-tagv_t [ASSOC_NUM-1:0] tagv_rdata;
+tagv_t tagv_rdata[ASSOC_NUM-1:0];
 tagv_t tagv_wdata;
 we_t tagv_we;// 重填的时候写使能
 
 
-line_t [ASSOC_NUM-1:0] data_rdata;
-logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+data_t data_rdata[ASSOC_NUM-1:0][LINE_WORD_NUM-1:0];
+logic [31:0] data_rdata_sel[ASSOC_NUM-1:0];
 logic [31:0] data_rdata_final;//
 
 logic data_read_en;//读使能
-line_t data_wdata;
+data_t data_wdata[LINE_WORD_NUM-1:0];
 we_t  data_we;//数据表的写使能
 
 request_t req_buffer;
 logic req_buffer_en;
 
-logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
+logic [$clog2(ASSOC_NUM)-1:0] lru[SET_NUM-1:0];
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
 
-tagv_t [ASSOC_NUM-1:0] pipe_tagv_rdata;
+tagv_t pipe_tagv_rdata[ASSOC_NUM-1:0];
 logic pipe_wr;
 
 logic busy_cache;// uncache 直到数据返回
@@ -177,24 +177,26 @@ generate;
             .dina(tagv_wdata),
             .douta(tagv_rdata[i])
         );
-        simple_port_ram #(
-            .SIZE(SET_NUM),
-            .dtype(line_t)
+        for (genvar j=0; j<LINE_WORD_NUM; ++j) begin
+            simple_port_ram #(
+            .SIZE(SET_NUM)
         )mem_data(
             .clk(clk),
             .rst(~resetn),
 
             //写端口
             .ena(1'b1),
-            .wea(data_we[i]),
+            .wea(data_we[i][j]),//第i路 第j个bank的写使能
             .addra(read_addr),
-            .dina(data_wdata),
+            .dina(data_wdata[j]),//因为要重填 所以还是要有的
 
             //读端口
             .enb(data_read_en),
             .addrb(read_addr),
-            .doutb(data_rdata[i])
+            .doutb(data_rdata[i][j])//第i路 第j个bank
         );
+        end
+        
     end
 endgenerate
 

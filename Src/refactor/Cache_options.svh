@@ -19,7 +19,7 @@
 `define ICACHE_SIZE          CACHE_WAY_SIZE * ICACHE_SET_ASSOC  // 4KB* ASSOC
   
 
-`define DCACHE_LINE_WORD     8
+`define DCACHE_LINE_WORD     16
 `define DCACHE_SET_ASSOC     2
 `define DCACHE_SIZE          CACHE_WAY_SIZE * DCACHE_SET_ASSOC  // 4KB* ASSOC
 
