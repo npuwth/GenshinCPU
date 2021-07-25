@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-25 15:39:54
+ * @LastEditTime: 2021-07-25 22:57:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -592,7 +592,7 @@ always_ff @(posedge clk) begin :wb_state_blockname
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & cache_hit) begin
+    if (req_buffer.valid & req_buffer.op & cache_hit & ~cpu_bus.stall) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;
