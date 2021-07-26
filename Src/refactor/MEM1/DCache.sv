@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-24 17:56:58
+ * @LastEditTime: 2021-07-26 15:02:46
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -453,13 +453,17 @@ always_comb begin : data_we_blockName
     end   
 end
 always_ff @( posedge clk ) begin : store_buffer_blockName
-    if ((resetn == `RstEnable)) begin
+    if ((resetn == `RstEnable) ) begin
         store_buffer <= '0;
-    end else begin//既是�? 又是有效�?
+    end else if(~cpu_bus.stall && req_buffer.valid==1'b1)begin//既是�? 又是有效�?
         store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
-        store_buffer.wdata <= store_wdata;
+        store_buffer.offset <= req_buffer.offset;
+        store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
+    end else if (~cpu_bus.stall && req_buffer.valid==1'b0) begin//在非停滞状态下需要更新 但是此时访存无效 所以清零
+        store_buffer <= '0;
     end
+
 end
 
 always_ff @(posedge clk) begin : req_buffer_blockName
@@ -575,13 +579,13 @@ end
 always_ff @(posedge clk) begin :wb_state_blockname
     if (resetn == `RstEnable) begin
         wb_state <= WB_IDLE;
-    end else begin
+    end else if(~cpu_bus.stall)begin
         wb_state <= wb_state_next;
     end
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & cache_hit) begin
+    if (req_buffer.valid & req_buffer.op & cache_hit & ~cpu_bus.stall) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;
