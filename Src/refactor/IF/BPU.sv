@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-26 12:34:19
+ * @LastEditTime: 2021-07-26 14:16:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -36,7 +36,7 @@ module BPU (
 
     simple_port_ram #(
                 .LATENCY(0),
-                .SIZE(`SIZE_OF_SET*4),
+                .SIZE(`SIZE_OF_SET*8),
                 .dtype(BHT_Entry)
             )mem_data(
                 .clk(clk),
