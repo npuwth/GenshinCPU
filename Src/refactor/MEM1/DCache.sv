@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-25 22:57:43
+ * @LastEditTime: 2021-07-26 09:42:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -463,14 +463,17 @@ always_comb begin : data_we_blockName
     end   
 end
 always_ff @( posedge clk ) begin : store_buffer_blockName
-    if ((resetn == `RstEnable)) begin
+    if ((resetn == `RstEnable) ) begin
         store_buffer <= '0;
-    end else if(~cpu_bus.stall)begin//既是�? 又是有效�?
+    end else if(~cpu_bus.stall && req_buffer.valid==1'b1)begin//既是�? 又是有效�?
         store_buffer.hit   <= hit;
         store_buffer.index <= req_buffer.index;
         store_buffer.offset <= req_buffer.offset;
         store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
+    end else if (~cpu_bus.stall && req_buffer.valid==1'b0) begin
+        store_buffer <= '0;
     end
+
 end
 
 always_ff @(posedge clk) begin : req_buffer_blockName
