@@ -1,7 +1,7 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-07-24 17:34:41
+ * @LastEditTime: 2021-07-26 16:17:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -28,9 +28,6 @@ module TOP_MEM2 (
     output LoadType              MEM2_LoadType
 );
 
-    logic [31:0]                 MEM2_Result_Final;
-    logic [31:0]                 MEM2_ALUOut;
-
     MEM2_Reg U_MEM2_REG( //TODO:多了很多无用信号
     .clk                    (clk ),
     .rst                    (resetn ),
@@ -49,7 +46,7 @@ module TOP_MEM2 (
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
     .MEM_LoadType           (MM2Bus.MEM_LoadType),
 //-----------------------------output-------------------------------------//
-    .MEM2_ALUOut            (MEM2_ALUOut ),
+    .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
     .MEM2_Instr             (M2WBus.MEM2_Instr ),
     .MEM2_WbSel             (M2WBus.MEM2_WbSel ),
@@ -67,14 +64,14 @@ module TOP_MEM2 (
     assign MEM2_Dst              = M2WBus.MEM2_Dst;
     assign MEM2_RegsWrType       = M2WBus.MEM2_RegsWrType;
     // output to MEM for CP0
-    assign MM2Bus.MEM2_ALUOut    = MEM2_ALUOut;
+    assign MM2Bus.MEM2_ALUOut    = M2WBus.MEM2_ALUOut;
     assign MM2Bus.MEM2_PC        = M2WBus.MEM2_PC;
     // output to WB
     assign M2WBus.MEM2_DMOut     = cpu_dbus.rdata;       //读取结果直接放入DMOut
     //-------------------------------用于旁路的多选器-----------------------//
     MUX4to1 #(32) U_MUXINMEM2(
         .d0                  (M2WBus.MEM2_PC + 8),                                     // JAL,JALR等指令将PC+8写回RF
-        .d1                  (MEM2_ALUOut       ),                                     // ALU计算结果
+        .d1                  (M2WBus.MEM2_ALUOut),                                     // ALU计算结果
         .d2                  (M2WBus.MEM2_OutB  ),                                     // MTC0 MTHI LO等指令需要写寄存器
         .d3                  ('x                ),                               
         .sel4_to_1           (M2WBus.MEM2_WbSel ),
@@ -89,5 +86,6 @@ module TOP_MEM2 (
     // );
 
     assign M2WBus.MEM2_Result = MEM2_Result;
+    assign M2WBus.MEM2_LoadType = MEM2_LoadType;
 endmodule
 
