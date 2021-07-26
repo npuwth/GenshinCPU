@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-19 15:49:20
+ * @LastEditTime: 2021-07-26 14:25:24
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -42,6 +42,7 @@ module EXE_Reg (
     input logic                          ID_IsTLBR,
     input logic                          ID_TLBWIorR,
     input logic      [2:0]               ID_TrapOp, 
+    input logic                          ID_IsBrchLikely,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -68,7 +69,8 @@ module EXE_Reg (
     output logic                         EXE_IsTLBW,
     output logic                         EXE_IsTLBR,
     output logic                         EXE_TLBWIorR,
-    output logic      [2:0]              EXE_TrapOp
+    output logic      [2:0]              EXE_TrapOp,
+    output logic                         EXE_IsBrchLikely
     // output logic                         MDU_flush
 );
 // typedef enum logic [1:0] {
@@ -130,6 +132,7 @@ module EXE_Reg (
       EXE_IsTLBR                         <= 1'b0;
       EXE_TLBWIorR                       <= 1'b0;
       EXE_TrapOp                         <= '0;
+      EXE_IsBrchLikely                   <= '0;
 
     end
     else if( EXE_Wr ) begin
@@ -159,6 +162,7 @@ module EXE_Reg (
       EXE_IsTLBR                         <= ID_IsTLBR;
       EXE_TLBWIorR                       <= ID_TLBWIorR;
       EXE_TrapOp                         <= ID_TrapOp;
+      EXE_IsBrchLikely                   <= ID_IsBrchLikely;
     end
   end
 

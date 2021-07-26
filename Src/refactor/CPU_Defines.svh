@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-25 22:47:36
+ * @LastEditTime: 2021-07-26 14:22:17
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -71,7 +71,7 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	OP_CLZ, OP_CLO,
 	/* branch */
 	OP_BLTZ, OP_BGEZ, OP_BLTZAL, OP_BGEZAL,
-	OP_BEQ, OP_BNE, OP_BLEZ, OP_BGTZ,
+	OP_BEQ, OP_BNE, OP_BLEZ, OP_BGTZ,OP_BEQL,OP_BNEL,
 	/* set */
 	OP_LUI,
 	/* load */
@@ -324,6 +324,7 @@ interface ID_EXE_Interface();
   	LoadType        		ID_LoadType;	 	// LoadType信号 
   	StoreType       		ID_StoreType;  		// StoreType信号
 	logic       [2:0]	    ID_TrapOp;
+	logic        			ID_IsBrchLikely;
   	RegsWrType      		ID_RegsWrType;		// 寄存器写信号打包
   	logic 		[1:0]   	ID_WbSel;        	// 选择写回数据
   	logic 		[1:0]   	ID_DstSel;   		// 选择目标寄存器使能
@@ -354,6 +355,7 @@ interface ID_EXE_Interface();
   	output	                ID_LoadType,	 	// LoadType信号 
   	output	                ID_StoreType,  	    // StoreType信号
 	output   			    ID_TrapOp,          // 自陷异常
+	output 			  	    ID_IsBrchLikely,    // 是否是branchlikely
   	output	                ID_RegsWrType,		// 寄存器写信号打包
   	output	                ID_WbSel,        	// 选择写回数据
   	output	                ID_DstSel,   		// 选择目标寄存器使能
@@ -388,6 +390,7 @@ interface ID_EXE_Interface();
   	input	                ID_LoadType,	 	// LoadType信号 
   	input	                ID_StoreType,  		// StoreType信号
 	input   			    ID_TrapOp,          // 自陷异常
+	input 					ID_IsBrchLikely,    // 是否为branch likely指令
   	input	                ID_RegsWrType,		// 寄存器写信号打包
   	input	                ID_WbSel,        	// 选择写回数据
   	input	                ID_DstSel,   		// 选择目标寄存器使能

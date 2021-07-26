@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-25 22:55:21
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-26 15:45:18
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -70,7 +70,8 @@ module mycpu_top (
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic [2:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;
-    logic                      ID_Flush_BranchSolvement;  //来自EXE级的branchsolvement，清空ID寄存器
+    logic                      Flush_BranchNormal;   //来自EXE级的branchsolvement，清空ID寄存器
+    logic                      Delayslot_Flush;     //来自EXE级的branchsolvement，清空ID寄存器
     logic                      ID_IsAImmeJump;            //来自ID级，表示是j，jal跳转
     logic [31:0]               CP0_EPC;                   //来自MEM级的EPC
     //-----------------------------流水线寄存器的写使能和flush------------------------------//
@@ -147,15 +148,15 @@ module mycpu_top (
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
     
-    ila CPU_TOP_ILA(
-        .clk(aclk),
-        .probe0 (debug_wb_pc),
-        .probe1 (debug_wb_rf_wdata),
-        .probe2 (debug_wb_rf_wen),
-        .probe3 (debug_wb_rf_wnum),
-        .probe4 (M2WBus.MEM2_Instr),
-        .probe5 (MM2Bus.MEM_ExcType)
-    );
+    // ila CPU_TOP_ILA(
+    //     .clk(aclk),
+    //     .probe0 (debug_wb_pc),
+    //     .probe1 (debug_wb_rf_wdata),
+    //     .probe2 (debug_wb_rf_wen),
+    //     .probe3 (debug_wb_rf_wnum),
+    //     .probe4 (M2WBus.MEM2_Instr),
+    //     .probe5 (MM2Bus.MEM_ExcType)
+    // );
 
                                         //写回寄存器的地址
     //---------------------------------------interface实例化-------------------------------------------------------//
@@ -184,7 +185,8 @@ module mycpu_top (
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
         .ID_IsAImmeJump         (ID_IsAImmeJump),
-        .BranchFailed           (ID_Flush_BranchSolvement),
+        .BranchFailed           (Flush_BranchNormal),
+        .Delayslot_Flush        (Delayslot_Flush),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         // .MEM_Addr               (MM2Bus.MEM_ALUOut),        
         // .MEM_loadstore_req      (MEM_LoadType.ReadMem | MEM_StoreType.DMWr),    //MEM级的写使能              
@@ -328,7 +330,7 @@ module mycpu_top (
         .PREIF_Wr                  (PREIF_Wr ),//也就是PC写使能
         .MEM_CP0Epc                (CP0_EPC ),
         .EXE_BusA_L1               (EXE_BusA_L1 ),
-        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
+        .ID_Flush_BranchSolvement  (Flush_BranchNormal ),
         .ID_IsAImmeJump            (ID_IsAImmeJump ),
         .EX_Entry_Sel              (EX_Entry_Sel ),
         .EXE_BranchType            (EXE_BranchType ),
@@ -401,7 +403,8 @@ module mycpu_top (
         .IEBus                     (IEBus.EXE ),
         .EMBus                     (EMBus.EXE ),
         //--------------------------output-------------------------//
-        .ID_Flush_BranchSolvement  (ID_Flush_BranchSolvement ),
+        .Flush_BranchNormal        (Flush_BranchNormal ),
+        .Delayslot_Flush           (Delayslot_Flush),
         .EXE_MULTDIVStall          (EXE_MULTDIVStall),
         .EXE_BusA                  (EXE_BusA_L1),
         .EXE_BranchType            (EXE_BranchType),

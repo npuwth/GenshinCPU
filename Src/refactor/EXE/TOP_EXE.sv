@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-25 23:07:22
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-26 15:33:55
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -21,7 +21,8 @@ module TOP_EXE (
     
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
-    output logic              ID_Flush_BranchSolvement,
+    output logic              Flush_BranchNormal,
+    output logic              Delayslot_Flush,
     output logic              EXE_MULTDIVStall,
     output logic [31:0]       EXE_BusA,//给IF
     output BranchType         EXE_BranchType,
@@ -55,6 +56,7 @@ module TOP_EXE (
     StoreType                 EXE_StoreType;
     logic                     EXE_Final_Finish;
     RegsWrType                EXE_RegsWrType;
+    logic                     EXE_IsBrchLikely;
 
     assign EXE_BranchType     = EMBus.EXE_BranchType;
     assign EXE_PC             = EMBus.EXE_PC;
@@ -100,6 +102,7 @@ module TOP_EXE (
         .ID_IsTLBR            (IEBus.ID_IsTLBR),
         .ID_TLBWIorR          (IEBus.ID_TLBWIorR),
         .ID_TrapOp            (IEBus.ID_TrapOp),
+        .ID_IsBrchLikely      (IEBus.ID_IsBrchLikely),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -126,19 +129,21 @@ module TOP_EXE (
         .EXE_IsTLBW           (EMBus.EXE_IsTLBW),
         .EXE_IsTLBR           (EMBus.EXE_IsTLBR),
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
-        .EXE_TrapOp           (EXE_TrapOp)
-    );
-    
-    ALU_ila CP0_ILA(
-        .clk(clk),
-        .probe0 (EMBus.EXE_PC),
-        .probe1 (EXE_BusA_L2),
-        .probe2 (EXE_BusB_L2),
-        .probe3 (EXE_ALUOp), 
-        .probe4 (EMBus.EXE_ALUOut),   // 
-        .probe5 (Overflow_valid )     // 
+        .EXE_TrapOp           (EXE_TrapOp),
+        .EXE_IsBrchLikely     (EXE_IsBrchLikely)
 
     );
+    
+    // ALU_ila CP0_ILA(
+    //     .clk(clk),
+    //     .probe0 (EMBus.EXE_PC),
+    //     .probe1 (EXE_BusA_L2),
+    //     .probe2 (EXE_BusB_L2),
+    //     .probe3 (EXE_ALUOp), 
+    //     .probe4 (EMBus.EXE_ALUOut),   // 
+    //     .probe5 (Overflow_valid )     // 
+
+    // );
 
 
     BranchSolve U_BranchSolve (
@@ -146,7 +151,8 @@ module TOP_EXE (
         .EXE_OutA             (EXE_BusA),
         .EXE_OutB             (EXE_BusB),
         //-----------------output----------------------------//
-        .ID_Flush             (ID_Flush_BranchSolvement)   
+        .ID_Branch_Flush      (Flush_BranchNormal),
+        .ID_Delayslot_Flush   (Delayslot_Flush)
     );
 
     MUX2to1 #(32) U_MUXA_L2 (

@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-25 20:10:00
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-26 14:56:01
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -41,12 +41,13 @@ module Decode(
     output logic       ID_IsTLBW,
     output logic       ID_IsTLBR,
     output logic       ID_TLBWIorR,
-    output logic [2:0] ID_TrapOp
+    output logic [2:0] ID_TrapOp,
+    output logic       ID_IsBrchLikely
     );
 
-    assign ID_IsTLBP = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
-    assign ID_IsTLBW = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010 || ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
-    assign ID_IsTLBR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000001);
+    assign ID_IsTLBP   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
+    assign ID_IsTLBW   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010 || ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
+    assign ID_IsTLBR   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000001);
     assign ID_TLBWIorR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
 
     logic [5:0]opcode;
@@ -308,6 +309,8 @@ module Decode(
 				        default: instrType = OP_INVALID;
 			          endcase
             end
+            6'b010100:instrType = OP_BEQL;
+            6'b010101:instrType = OP_BNEL;
             6'b011100:begin
               unique case (funct)
                 6'b100001:instrType = OP_CLO;
@@ -621,11 +624,27 @@ module Decode(
         ID_LoadType   = '0;
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
-        ID_DstSel     = `DstSel_rd;//rd,d
+        ID_DstSel     = `DstSel_rd;   //rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
+        ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
+        IsReserved    = 1'b0;        
+      end
+      // Branch Likely decode
+      OP_BEQL:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
+        ID_DstSel     = `DstSel_rd;   //rd,d
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;  //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
@@ -644,6 +663,22 @@ module Decode(
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAImmeJump = `IsNotAImmeJump;
+        ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
+        IsReserved    = 1'b0;
+      end
+      // Branch Likely decode
+      OP_BNEL:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
+        ID_DstSel     = `DstSel_rd;//rd,d
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
+        ID_IsAImmeJump= `IsNotAImmeJump;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
         IsReserved    = 1'b0;
       end
@@ -1771,6 +1806,7 @@ always_comb begin
         };//保留指令例外
   end
 end
+// trap的检测
 `ifdef TRAP
 always_comb begin
   case(instrType) 
@@ -1784,4 +1820,12 @@ always_comb begin
   endcase
 end
 `endif
+// Branch Likely的检测
+always_comb begin
+  unique case (instrType)
+    OP_BEQL,OP_BNEL : ID_IsBrchLikely = 1'b1; 
+    default : ID_IsBrchLikely = 1'b0; 
+    endcase
+end
+
 endmodule

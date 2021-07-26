@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-21 09:53:21
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-26 15:32:36
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,16 +26,9 @@ module Control(
     input logic         ID_MEM2_DH_Stall,                 //DataHazard产生的
     input logic         ID_IsAImmeJump,           // ID级的J, JAL指令,需要flush一拍
     input logic         BranchFailed,             // 分支预测失败时，需要flush两拍
+    input logic         Delayslot_Flush,             // 分支预测失败时，需要flush两拍
     input logic         DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
-    // input logic [31:0]  MEM_Addr,                 // MEM级的访存地址信息
-    // input logic         MEM_loadstore_req,        // MEM级的requset信息
-    // input logic         MEM_iscached,
-    // input logic [31:0]  MEM2_Addr,                // MEM2级的的地址信息
-    // input logic         MEM2_store_req,           // MEM2级的store信息
-    // input logic         MEM2_iscached,
-    // input logic [31:0]  WB_Addr,                  // WB级的的地址信息            
-    // input logic         WB_store_req,             // WB级的store信息
-    // input logic         WB_iscached,
+
 //------------------------------------output----------------------------------------------------//
     output logic        PREIF_Wr,
     output logic        IF_Wr,
@@ -125,10 +118,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b1;
-            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -154,11 +143,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b1;
-            // DReq_valid   = 1'b1;
-
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
         end
@@ -183,11 +167,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b1;
-            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b1;
@@ -213,45 +192,11 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            
-            // IcacheFlush  = 1'b1;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b0;
-
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
 
         end
-        // else if (Load_store_stall) begin
-        //     PREIF_Wr     = 1'b0;
-        //     IF_Wr        = 1'b0;
-        //     ID_Wr        = 1'b0;
-        //     EXE_Wr       = 1'b0;
-        //     MEM_Wr       = 1'b0; 
-        //     MEM2_Wr      = 1'b1;
-        //     WB_Wr        = 1'b1;
-            
-        //     ID_DisWr     = 1'b0;
-        //     // EXE_DisWr    = 1'b0;
-        //     MEM_DisWr    = 1'b1;  //TODO:MEM2模块描述
-        //     WB_DisWr     = 1'b0; 
-                       
-        //     IF_Flush     = 1'b0;
-        //     ID_Flush     = 1'b0;
-        //     EXE_Flush    = 1'b0;
-        //     MEM_Flush    = 1'b0;
-        //     MEM2_Flush   = 1'b0;
-        //     WB_Flush     = 1'b0;
 
-        //     IcacheFlush  = 1'b0;
-
-        //     IReq_valid   = 1'b0;  // 此时Icache  Dcache都不能发起请求
-        //     DReq_valid   = 1'b0;
-
-        //     ICacheStall  = 1'b1;
-        //     DCacheStall  = 1'b0;
-        // end 
         else if (ID_MEM2_DH_Stall == 1'b1) begin
             PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
@@ -331,12 +276,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b1;
-
             ICacheStall  = 1'b1;
             DCacheStall  = 1'b0;
         end
@@ -361,15 +300,34 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b1;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b1;
-
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
         end
         
+        else if (Delayslot_Flush == 1'b1) begin
+            PREIF_Wr     = 1'b1;
+            IF_Wr        = 1'b1;
+            ID_Wr        = 1'b1;
+            EXE_Wr       = 1'b0;
+            MEM_Wr       = 1'b1; 
+            MEM2_Wr      = 1'b1;
+            WB_Wr        = 1'b1;
+            
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
+            MEM_DisWr    = 1'b0;
+            WB_DisWr     = 1'b0; 
+                       
+            IF_Flush     = 1'b0;
+            ID_Flush     = 1'b0;
+            EXE_Flush    = 1'b1;
+            MEM_Flush    = 1'b0;
+            MEM2_Flush   = 1'b0;
+            WB_Flush     = 1'b0;
+
+            ICacheStall  = 1'b0;
+            DCacheStall  = 1'b0;
+        end
 
         else if (ID_IsAImmeJump == 1'b1) begin
             PREIF_Wr     = 1'b1;
@@ -391,12 +349,6 @@ module Control(
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            // IcacheFlush  = 1'b1;
-            // DCacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b1;
 
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
@@ -423,11 +375,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b1;
-            // DReq_valid   = 1'b1;
-
             ICacheStall  = 1'b0;
             DCacheStall  = 1'b0;
         end
@@ -447,10 +394,6 @@ module Control(
             EXE_DisWr    = 1'b0;
         end
     end
-    // // HILO的flush
-    // always_comb begin
-    //     HiLo_Not_Flush =  (EX_Entry_Sel == `IsNone) ? 1'b1:1'b0;
-    // end
-    
+
     
 endmodule
