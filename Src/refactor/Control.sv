@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-07-24 10:12:42
+ * @LastEditTime: 2021-07-26 21:53:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,7 +24,9 @@ module Control(
     input logic         ID_EX_DH_Stall,                 //DataHazard产生的
     input logic         ID_MEM1_DH_Stall,                 //DataHazard产生的
     input logic         ID_MEM2_DH_Stall,                 //DataHazard产生的
-    input logic         BranchFailed,             // 分支预测失败时，需要flush两拍
+    input logic         PredictFailed,             // 分支预测失败时，需要flush两拍
+    input logic         EXE_IsBrchLikely,             // 分支预测失败时，需要flush两拍
+    input logic         EXE_IsTaken,
     input logic         DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
 //------------------------------------output----------------------------------------------------//
     output logic        PREIF_Wr,
@@ -55,7 +57,7 @@ module Control(
                                     // 需要发送stall信号，cache状态机停滞知道数据被CPU接受
     output logic        DCache_Stall
 );
-
+    logic Brchlike_Flush = EXE_IsBrchLikely && EXE_IsTaken;
     // logic Load_store_stall ;
     // localparam int unsigned INDEX_WIDTH = $clog2(`ICACHE_LINE_WORD*4) ;
     
@@ -76,7 +78,7 @@ module Control(
 
 
     always_comb begin : IReq_valid_blockName
-        if(Flush_Exception == `FlushEnable || ID_MEM2_DH_Stall ||ID_MEM1_DH_Stall ||ID_EX_DH_Stall ||BranchFailed == 1'b1)begin
+        if(Flush_Exception == `FlushEnable || ID_MEM2_DH_Stall ||ID_MEM1_DH_Stall ||ID_EX_DH_Stall ||PredictFailed == 1'b1)begin
             IReq_valid   = 1'b0;
         end
         else begin
@@ -115,10 +117,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b1;
-            // DReq_valid   = 1'b1;
 
             ICache_Stall  = 1'b1;
             DCache_Stall  = 1'b1;
@@ -173,11 +171,6 @@ module Control(
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
 
-            // IcacheFlush  = 1'b0;
-            // DCacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b1;
-            // DReq_valid   = 1'b1;
 
             ICache_Stall  = 1'b1;
             DCache_Stall  = 1'b1;
@@ -213,28 +206,6 @@ module Control(
             DCache_Stall  = 1'b0;
 
         end
-        // else if (Load_store_stall) begin
-        //     PREIF_Wr     = 1'b0;
-        //     IF_Wr        = 1'b0;
-        //     ID_Wr        = 1'b0;
-        //     EXE_Wr       = 1'b0;
-        //     MEM_Wr       = 1'b0; 
-        //     MEM2_Wr      = 1'b1;
-        //     WB_Wr        = 1'b1;
-            
-        //     ID_DisWr     = 1'b0;
-        //     // EXE_DisWr    = 1'b0;
-        //     MEM_DisWr    = 1'b1;  //TODO:MEM2模块描述
-        //     WB_DisWr     = 1'b0; 
-                       
-        //     IF_Flush     = 1'b0;
-        //     ID_Flush     = 1'b0;
-        //     EXE_Flush    = 1'b0;
-        //     MEM_Flush    = 1'b0;
-        //     MEM2_Flush   = 1'b0;
-        //     WB_Flush     = 1'b0;
-
-        //     IcacheFlush  = 1'b0;
 
         //     IReq_valid   = 1'b0;  // 此时Icache  Dcache都不能发起请求
         //     DReq_valid   = 1'b0;
@@ -330,7 +301,7 @@ module Control(
             ICache_Stall  = 1'b1;
             DCache_Stall  = 1'b0;
         end
-        else if (BranchFailed == 1'b1) begin
+        else if (PredictFailed == 1'b1) begin
             PREIF_Wr     = 1'b1;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
@@ -346,15 +317,10 @@ module Control(
                        
             IF_Flush     = 1'b1;
             ID_Flush     = 1'b1;
-            EXE_Flush    = 1'b0;
+            EXE_Flush    = Brchlike_Flush;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            // IcacheFlush  = 1'b1;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b1;
 
             ICache_Stall  = 1'b0;
             DCache_Stall  = 1'b0;
@@ -376,7 +342,7 @@ module Control(
                        
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
-            EXE_Flush    = 1'b0;
+            EXE_Flush    = Brchlike_Flush;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;

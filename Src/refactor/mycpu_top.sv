@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-25 11:31:19
+ * @LastEditTime: 2021-07-26 21:55:51
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -69,6 +69,8 @@ module mycpu_top (
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic                      EXE_Prediction_Failed;     //来自EXE级，分支预测错误
     logic [31:0]               EXE_Correction_Vector;     //用于校正分支预测
+    logic                      EXE_IsBrchLikely;
+    logic                      EXE_IsTaken;
     logic [1:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;          //传至PREIF，异常入口向量
     logic [31:0]               CP0_EPC;                   //传至PREIF,用于ERET返回
@@ -128,13 +130,14 @@ module mycpu_top (
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
+    
     // ila CPU_TOP_ILA(
     //     .clk(aclk),
-    //     .probe0(debug_wb_pc),
-    //     .probe1(debug_wb_rf_wdata),
-    //     .probe2(debug_wb_rf_wen),
-    //     .probe3(debug_wb_rf_wnum),
-    //     .probe4(IIBus.IF_Instr),
+    //     .probe0 (debug_wb_pc),
+    //     .probe1 (debug_wb_rf_wdata),
+    //     .probe2 (debug_wb_rf_wen),
+    //     .probe3 (debug_wb_rf_wnum),
+    //     .probe4 (M2WBus.MEM2_Instr),
     //     .probe5 (MM2Bus.MEM_ExcType)
     // );
 
@@ -163,6 +166,8 @@ module mycpu_top (
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
         .BranchFailed           (EXE_Prediction_Failed),
+        .EXE_IsBrchLikely       (EXE_IsBrchLikely),
+        .EXE_IsTaken            (EXE_IsTaken),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
@@ -362,7 +367,9 @@ module mycpu_top (
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_BResult               (EXE_BResult),
-        .EXE_MULTDIVStall          (EXE_MULTDIVStall)
+        .EXE_MULTDIVStall          (EXE_MULTDIVStall),
+        .EXE_IsBrchLikely          (EXE_IsBrchLikely),
+        .EXE_IsTaken               (EXE_IsTaken)
     );
 
     TOP_MEM U_TOP_MEM ( 

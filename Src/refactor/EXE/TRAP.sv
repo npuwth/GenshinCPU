@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-11 19:32:14
- * @LastEditTime: 2021-07-19 19:15:35
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-21 22:12:09
+ * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \refactor\EXE\TRAP.sv
  * 
@@ -24,8 +24,8 @@ module Trap(
             `TRAP_OP_TGE   : begin   // TGE & TGEI
                 if ($signed(EXE_ResultA) >= $signed(EXE_ResultB))     Trap_valid = 1'b1;
                 else Trap_valid = 1'b0;
-            end
-            `TRAP_OP_TGEIU : begin // TGEI & TGEIU 
+            end 
+            `TRAP_OP_TGEIU : begin // TGEU & TGEIU 
                 if ((EXE_ResultA) >= (EXE_ResultB)) Trap_valid = 1'b1;//TODO:spyglass提示 不必使用这个系统函数
                 else Trap_valid = 1'b0;
             end

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 19:57:08
+ * @LastEditTime: 2021-07-26 21:39:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,9 +21,11 @@ module TOP_EXE (
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
     output logic              EXE_Prediction_Failed,
+    output logic              EXE_IsBrchLikely,
     output logic [31:0]       EXE_Correction_Vector,
     output BResult            EXE_BResult,
-    output logic              EXE_MULTDIVStall
+    output logic              EXE_MULTDIVStall,
+    output logic              EXE_IsTaken
 );
 
     logic [31:0]              EXE_BusA;
@@ -112,6 +114,7 @@ module TOP_EXE (
         .ID_JumpAddr          (IEBus.ID_JumpAddr),
         .ID_BranchAddr        (IEBus.ID_BranchAddr),    
         .ID_PCAdd8            (IEBus.ID_PCAdd8),
+        .ID_IsBrchLikely      (IEBus.ID_IsBrchLikely),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -145,8 +148,22 @@ module TOP_EXE (
         .EXE_PC8_Success      (EXE_PC8_Success),
         .EXE_JumpAddr         (EXE_JumpAddr),
         .EXE_BranchAddr       (EXE_BranchAddr), 
-        .EXE_PCAdd8           (EXE_PCAdd8)
+        .EXE_PCAdd8           (EXE_PCAdd8),
+        .EXE_IsBrchLikely     (EXE_IsBrchLikely)
+
     );
+    
+    // ALU_ila CP0_ILA(
+    //     .clk(clk),
+    //     .probe0 (EMBus.EXE_PC),
+    //     .probe1 (EXE_BusA_L2),
+    //     .probe2 (EXE_BusB_L2),
+    //     .probe3 (EXE_ALUOp), 
+    //     .probe4 (EMBus.EXE_ALUOut),   // 
+    //     .probe5 (Overflow_valid )     // 
+
+    // );
+
 
     BranchSolve U_BranchSolve (
         .EXE_BranchType       (EMBus.EXE_BranchType),    
@@ -165,7 +182,8 @@ module TOP_EXE (
         //-----------------output----------------------------//
         .EXE_Prediction_Failed(EXE_Prediction_Failed),
         .EXE_Correction_Vector(EXE_Correction_Vector),
-        .EXE_BResult          (EXE_BResult)
+        .EXE_BResult          (EXE_BResult),
+        .EXE_IsTaken          (EXE_IsTaken)
     );
 
     MUX2to1 #(32) U_MUXA_L2 (

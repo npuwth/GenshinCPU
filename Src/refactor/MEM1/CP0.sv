@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-18 10:42:44
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-26 15:45:27
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -46,6 +46,20 @@ module cp0_reg (
     output logic [31:0]     CP0_Ebase
     );
 
+    // cp0_ila CP0_ILA(
+    //     .clk(clk),
+    //     .probe0 (MEM2_PC),
+    //     .probe1 (CP0_EPC),
+    //     .probe2 (CP0_Status_EXL),
+    //     .probe3 (CP0_Status_IE), 
+    //     .probe4 (MEM2_ExcType),       // [4:0]
+    //     .probe5 (CP0.Cause.ExcCode ), // [4:0]
+    //     .probe6 (CP0_Cause_IP7_2),    // [4:0]
+    //     .probe7 (CP0_Cause_IP1_0),     //[1:0]
+    //     .probe8 (CP0_Status_BEV)      // [0:0]
+    // );
+
+    
     // 4096/4/8 = 128 ; 128 对应了3'd01
     localparam int IC_SET_PER_WAY = $clog2(`CACHE_WAY_SIZE / `ICACHE_LINE_WORD / 8 / 64 ) - 1;  
     // 8个字 32个字节   ->3'd04
@@ -421,16 +435,37 @@ module cp0_reg (
         end 
     end
 // CONFIG1   Read only 
+    `ifdef All_Uncache
+        always_ff @(posedge clk) begin
+            if(rst == `RstEnable) begin
+                CP0.Config1.M                  <= 1'b0;                      // 表示不存在config2寄存器
+                CP0.Config1.MMUSize            <= `TLB_ENTRIES_NUM - 1;      // 实际的TLB项 - 1
+                CP0.Config1.IS                 <= IC_SET_PER_WAY[2:0];       // Icache 一路内的行数
+                CP0.Config1.IL                 <= '0;                        // 没有Icache   
+                CP0.Config1.IA                 <= '0;                        // Icache 直接映射   
+                CP0.Config1.DS                 <= DC_SET_PER_WAY[2:0];       // Dcache 一路内的行数    
+                CP0.Config1.DL                 <= '0;                        // 没有dcache   
+                CP0.Config1.DA                 <= DC_ASSOC[2:0];             // Dcache 相连度   
+            end 
+        end
+    `else //开启cache
+        always_ff @(posedge clk) begin
+            if(rst == `RstEnable) begin
+                CP0.Config1.M                  <= 1'b0;                      // 表示不存在config2寄存器
+                CP0.Config1.MMUSize            <= `TLB_ENTRIES_NUM - 1;      // 实际的TLB项 - 1
+                CP0.Config1.IS                 <= IC_SET_PER_WAY[2:0];       // Icache 一路内的行数
+                CP0.Config1.IL                 <= IC_LINE_SIZE[2:0];         // Icacheline大小   
+                CP0.Config1.IA                 <= IC_ASSOC[2:0];             // Icache 相连度   
+                CP0.Config1.DS                 <= DC_SET_PER_WAY[2:0];       // Dcache 一路内的行数    
+                CP0.Config1.DL                 <= DC_LINE_SIZE[2:0];         // Dcacheline大小   
+                CP0.Config1.DA                 <= DC_ASSOC[2:0];             // Dcache 相连度   
+            end 
+        end
+    `endif
+// ErrorEPC
     always_ff @(posedge clk) begin
         if(rst == `RstEnable) begin
-            CP0.Config1.M                  <= 1'b0;                 // 表示不存在config2寄存器
-            CP0.Config1.MMUSize            <= `TLB_ENTRIES_NUM - 1;  // 实际的TLB项 - 1
-            CP0.Config1.IS                 <= IC_SET_PER_WAY[2:0];       // Icache 一路内的行数
-            CP0.Config1.IL                 <= IC_LINE_SIZE[2:0];         // Icacheline大小   
-            CP0.Config1.IA                 <= IC_ASSOC[2:0];             // Icache 相连度   
-            CP0.Config1.DS                 <= DC_SET_PER_WAY[2:0];       // Dcache 一路内的行数    
-            CP0.Config1.DL                 <= DC_LINE_SIZE[2:0];         // Dcacheline大小   
-            CP0.Config1.DA                 <= DC_ASSOC[2:0];             // Dcache 相连度   
+            CP0.ErrorEPC                      <= 32'h0000_0000;
         end 
     end
     //read port
@@ -458,6 +493,7 @@ module cp0_reg (
                 if(CP0_Sel == 1'b0) CP0_RdData = CP0.Config0;
                 else                CP0_RdData = {CP0.Config1.M , CP0.Config1.MMUSize , CP0.Config1.IS , CP0.Config1.IL , CP0.Config1.IA , CP0.Config1.DS , CP0.Config1.DL , CP0.Config1.DA , 7'b0};
             end
+            `CP0_ERROR_EPC:      CP0_RdData = CP0.ErrorEPC;
             default:             CP0_RdData = 'x;
         endcase
     end

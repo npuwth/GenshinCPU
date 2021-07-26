@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-23 18:14:17
+ * @LastEditTime: 2021-07-26 21:59:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -41,12 +41,13 @@ module Decode(
     output logic       ID_IsTLBW,
     output logic       ID_IsTLBR,
     output logic       ID_TLBWIorR,
-    output logic [2:0] ID_TrapOp
+    output logic [2:0] ID_TrapOp,
+    output logic       ID_IsBrchLikely
     );
 
-    assign ID_IsTLBP = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
-    assign ID_IsTLBW = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010 || ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
-    assign ID_IsTLBR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000001);
+    assign ID_IsTLBP   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
+    assign ID_IsTLBW   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010 || ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
+    assign ID_IsTLBR   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000001);
     assign ID_TLBWIorR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
 
     logic [5:0]opcode;
@@ -308,6 +309,8 @@ module Decode(
 				        default: instrType = OP_INVALID;
 			          endcase
             end
+            6'b010100:instrType = OP_BEQL;
+            6'b010101:instrType = OP_BNEL;
             6'b011100:begin
               unique case (funct)
                 6'b100001:instrType = OP_CLO;
@@ -621,11 +624,27 @@ module Decode(
         ID_LoadType   = '0;
         ID_StoreType  = '0;
         ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
-        ID_DstSel     = `DstSel_rd;//rd,d
+        ID_DstSel     = `DstSel_rd;   //rd,d
         ID_RegsWrType = `RegsWrTypeDisable;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
+        ID_IsAJumpCall = `IsNotAJumpCall;
+        ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
+        IsReserved    = 1'b0;        
+      end
+      // Branch Likely decode
+      OP_BEQL:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
+        ID_DstSel     = `DstSel_rd;   //rd,d
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;  //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
@@ -644,6 +663,22 @@ module Decode(
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
         ID_EXTOp      = 1'b1;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
+        ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
+        IsReserved    = 1'b0;
+      end
+      // Branch Likely decode
+      OP_BNEL:begin
+        ID_ALUOp      = `EXE_ALUOp_D;//ALU操作,d
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;//关于最后写回RF,d
+        ID_DstSel     = `DstSel_rd;//rd,d
+        ID_RegsWrType = `RegsWrTypeDisable;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
+        ID_EXTOp      = 1'b1;          //EXT
+        ID_IsAJumpCall= `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
         IsReserved    = 1'b0;
       end
@@ -1613,13 +1648,28 @@ module Decode(
         ID_BranchType = '0; 
         IsReserved    = 1'b0;        
       end
-      
-      default:begin
-        ID_ALUOp      = '0;    //ALU操作
+      OP_CACHE:begin
+        ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
         ID_StoreType  = '0;    //存储相关
         ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
-        ID_DstSel     = '0;    //Rtype选rd
+        ID_DstSel     = `DstSel_nop;    //Rtype选rd
+        ID_RegsWrType = '0;    //写回哪里
+        ID_ALUSrcA    = '0; //MUXA选择regs
+        ID_ALUSrcB    = '0;  //MUXB选择regs
+        ID_RegsReadSel= '0;        //ID级选择RF读取结果
+        ID_EXTOp      = `EXTOP_NOP;                 //R型无关
+        ID_IsAJumpCall = `IsNotAJumpCall;
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;   
+      end
+      
+      default:begin
+        ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
+        ID_LoadType   = '0;    //访存相关 
+        ID_StoreType  = '0;    //存储相关
+        ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
+        ID_DstSel     =  `DstSel_nop;    //Rtype选rd
         ID_RegsWrType = '0;    //写回哪里
         ID_ALUSrcA    = '0; //MUXA选择regs
         ID_ALUSrcB    = '0;  //MUXB选择regs
@@ -1756,6 +1806,7 @@ always_comb begin
         };//保留指令例外
   end
 end
+// trap的检测
 `ifdef TRAP
 always_comb begin
   case(instrType) 
@@ -1769,4 +1820,12 @@ always_comb begin
   endcase
 end
 `endif
+// Branch Likely的检测
+always_comb begin
+  unique case (instrType)
+    OP_BEQL,OP_BNEL : ID_IsBrchLikely = 1'b1; 
+    default : ID_IsBrchLikely = 1'b0; 
+    endcase
+end
+
 endmodule

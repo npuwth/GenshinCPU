@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-24 19:56:35
+ * @LastEditTime: 2021-07-26 21:57:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,25 +18,25 @@ module EXE_Reg (
     input logic                          EXE_Wr,
 
     input logic     [31:0]               ID_BusA,            //从RF中读出的A数据
-	  input logic     [31:0]               ID_BusB,            //从RF中读出的B数据
-	  input logic     [31:0]               ID_Imm32,           //在ID 被extend的 立即数
-	  input logic 		[31:0]               ID_PC,
-	  input logic     [31:0]               ID_Instr,
-	  input logic 		[4:0]	               ID_rs,	
-	  input logic 		[4:0]	               ID_rt,	
-	  input logic 		[4:0]	               ID_rd,
-	  input logic 		[4:0]                ID_ALUOp,	 		// ALU操作符
+	input logic     [31:0]               ID_BusB,            //从RF中读出的B数据
+	input logic     [31:0]               ID_Imm32,           //在ID 被extend的 立即数
+	input logic 		[31:0]               ID_PC,
+	input logic     [31:0]               ID_Instr,
+	input logic 		[4:0]	               ID_rs,	
+	input logic 		[4:0]	               ID_rt,	
+	input logic 		[4:0]	               ID_rd,
+	input logic 		[4:0]                ID_ALUOp,	 		// ALU操作符
   	input LoadType        		           ID_LoadType,	 	// LoadType信号 
   	input StoreType       		           ID_StoreType,  		// StoreType信号
   	input RegsWrType      		           ID_RegsWrType,		// 寄存器写信号打包
   	input logic 		[1:0]   	           ID_WbSel,        	// 选择写回数据
   	input logic 		[1:0]   	           ID_DstSel,   		// 选择目标寄存器使能
   	input ExceptinPipeType 		           ID_ExceptType,		// 异常类型
-	  input logic                          ID_ALUSrcA,
-	  input logic                          ID_ALUSrcB,
-	  input logic     [1:0]                ID_RegsReadSel,
-	  input logic 					               ID_IsAJumpCall,
-	  input BranchType                     ID_BranchType,
+	input logic                          ID_ALUSrcA,
+	input logic                          ID_ALUSrcB,
+	input logic     [1:0]                ID_RegsReadSel,
+	input logic 					               ID_IsAJumpCall,
+	input BranchType                     ID_BranchType,
     input logic                          ID_IsTLBP,
     input logic                          ID_IsTLBW,
     input logic                          ID_IsTLBR,
@@ -49,27 +49,28 @@ module EXE_Reg (
     input logic      [31:0]              ID_JumpAddr,
     input logic      [31:0]              ID_BranchAddr,
     input logic      [31:0]              ID_PCAdd8,
+    input logic                          ID_IsBrchLikely,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
-	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
-	  output logic     [31:0]              EXE_Imm32,           //在ID 被extend的 立即数
-	  output logic 		 [31:0]              EXE_PC,
-	  output logic     [31:0]              EXE_Instr,
-	  output logic 		 [4:0]	             EXE_rs,	
-	  output logic 		 [4:0]	             EXE_rt,	
-	  output logic 		 [4:0]	             EXE_rd,
-	  output logic 		 [4:0]               EXE_ALUOp,	 		// ALU操作符
-  	output LoadType        		           EXE_LoadType,	 	// LoadType信号 
-  	output StoreType       		           EXE_StoreType,  		// StoreType信号
-  	output RegsWrType      		           EXE_RegsWrType,		// 寄存器写信号打包
-  	output logic 	   [1:0]   	           EXE_WbSel,        	// 选择写回数据
-  	output logic 	   [1:0]   	           EXE_DstSel,   		// 选择目标寄存器使能
-  	output ExceptinPipeType 		         EXE_ExceptType,		// 异常类型
-	  output logic                         EXE_ALUSrcA,
-	  output logic                         EXE_ALUSrcB,
-	  output logic     [1:0]               EXE_RegsReadSel,
-	  output logic 					               EXE_IsAJumpCall,
-	  output BranchType                    EXE_BranchType,
+	output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
+	output logic     [31:0]              EXE_Imm32,           //在ID 被extend的 立即数
+	output logic 		 [31:0]              EXE_PC,
+	output logic     [31:0]              EXE_Instr,
+	output logic 		 [4:0]	             EXE_rs,	
+	output logic 		 [4:0]	             EXE_rt,	
+	output logic 		 [4:0]	             EXE_rd,
+	output logic 		 [4:0]               EXE_ALUOp,	 		// ALU操作符
+  	output LoadType        		         EXE_LoadType,	 	// LoadType信号 
+  	output StoreType       		         EXE_StoreType,  		// StoreType信号
+  	output RegsWrType      		         EXE_RegsWrType,		// 寄存器写信号打包
+  	output logic 	   [1:0]   	         EXE_WbSel,        	// 选择写回数据
+  	output logic 	   [1:0]   	         EXE_DstSel,   		// 选择目标寄存器使能
+  	output ExceptinPipeType 		     EXE_ExceptType,		// 异常类型
+	output logic                         EXE_ALUSrcA,
+	output logic                         EXE_ALUSrcB,
+	output logic     [1:0]               EXE_RegsReadSel,
+	output logic 					               EXE_IsAJumpCall,
+	output BranchType                    EXE_BranchType,
     output logic     [4:0]               EXE_Shamt,
     output logic                         EXE_IsTLBP,
     output logic                         EXE_IsTLBW,
@@ -82,7 +83,9 @@ module EXE_Reg (
     output logic                         EXE_PC8_Success,
     output logic     [31:0]              EXE_JumpAddr,
     output logic     [31:0]              EXE_BranchAddr,
-    output logic     [31:0]              EXE_PCAdd8   
+    output logic     [31:0]              EXE_PCAdd8,
+    output logic                         EXE_IsBrchLikely
+    // output logic                         MDU_flush
 );
 
   always_ff @( posedge clk  ) begin
@@ -120,6 +123,8 @@ module EXE_Reg (
       EXE_JumpAddr                       <= '0;
       EXE_BranchAddr                     <= '0;      
       EXE_PCAdd8                         <= '0;
+      EXE_IsBrchLikely                   <= '0;
+
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -155,6 +160,7 @@ module EXE_Reg (
       EXE_JumpAddr                       <= ID_JumpAddr;
       EXE_BranchAddr                     <= ID_BranchAddr; 
       EXE_PCAdd8                         <= ID_PCAdd8;
+      EXE_IsBrchLikely                   <= ID_IsBrchLikely;
     end
   end
 
