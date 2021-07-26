@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 15:04:04
+ * @LastEditTime: 2021-07-26 15:12:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -184,7 +184,7 @@ data_t data_rdata[ASSOC_NUM-1:0][LINE_WORD_NUM-1:0];
 logic [31:0] data_rdata_sel[ASSOC_NUM-1:0];
 logic [31:0] data_rdata_final_;//经过store的旁路
 logic [31:0] data_rdata_final;//
-logic [31:0] data_rdata_final2;//经过ext2的数�?
+// logic [31:0] data_rdata_final2;//经过ext2的数�?
 data_t data_wdata[LINE_WORD_NUM-1:0];
 logic [ASSOC_NUM-1:0][LINE_WORD_NUM-1:0] data_we;//数据表的写使�? 因为现在store 是专门给某一个字用的
 logic data_read_en;
@@ -232,7 +232,7 @@ assign fifo_rd_en = (axi_ubus.wr_rdy && (!fifo_empty) && (!fifo_rd_rst_busy)) ? 
 
 //连cpu_bus接口
 assign cpu_bus.busy   = busy;
-assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final2:'0;
+assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final:'0;
 
 //连axi_bus接口
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
@@ -385,48 +385,48 @@ assign dirty_addr     = req_buffer.index;
 // end
 
 
-always_comb begin : data_rdata_final2_blockname
-    unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
-          `LOADTYPE_LW: begin
-            data_rdata_final2 = data_rdata_final;  //LW
-          end 
-          `LOADTYPE_LH: begin
-            if(req_buffer.offset[1] == 1'b0) //LH
-              data_rdata_final2 = {{16{data_rdata_final[15]}},data_rdata_final[15:0]};
-            else
-              data_rdata_final2 = {{16{data_rdata_final[31]}},data_rdata_final[31:16]}; 
-          end
-          `LOADTYPE_LHU: begin
-            if(req_buffer.offset[1] == 1'b0) //LHU
-              data_rdata_final2 = {16'b0,data_rdata_final[15:0]};
-            else
-              data_rdata_final2 = {16'b0,data_rdata_final[31:16]};
-          end
-          `LOADTYPE_LB: begin
-            if(req_buffer.offset[1:0] == 2'b00) //LB
-              data_rdata_final2 = {{24{data_rdata_final[7]}},data_rdata_final[7:0]};
-            else if(req_buffer.offset[1:0] == 2'b01)
-              data_rdata_final2 = {{24{data_rdata_final[15]}},data_rdata_final[15:8]};
-            else if(req_buffer.offset[1:0] == 2'b10)
-              data_rdata_final2 = {{24{data_rdata_final[23]}},data_rdata_final[23:16]};
-            else
-              data_rdata_final2 = {{24{data_rdata_final[31]}},data_rdata_final[31:24]};
-          end
-          `LOADTYPE_LBU: begin
-            if(req_buffer.offset[1:0] == 2'b00) //LBU
-              data_rdata_final2 = {24'b0,data_rdata_final[7:0]};
-            else if(req_buffer.offset[1:0] == 2'b01)
-              data_rdata_final2 = {24'b0,data_rdata_final[15:8]};
-            else if(req_buffer.offset[1:0] == 2'b10)
-              data_rdata_final2 = {24'b0,data_rdata_final[23:16]};
-            else
-              data_rdata_final2 = {24'b0,data_rdata_final[31:24]};
-          end
-          default: begin
-            data_rdata_final2 = 32'bx;
-          end
-        endcase
-end
+// always_comb begin : data_rdata_final2_blockname
+//     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
+//           `LOADTYPE_LW: begin
+//             data_rdata_final2 = data_rdata_final;  //LW
+//           end 
+//           `LOADTYPE_LH: begin
+//             if(req_buffer.offset[1] == 1'b0) //LH
+//               data_rdata_final2 = {{16{data_rdata_final[15]}},data_rdata_final[15:0]};
+//             else
+//               data_rdata_final2 = {{16{data_rdata_final[31]}},data_rdata_final[31:16]}; 
+//           end
+//           `LOADTYPE_LHU: begin
+//             if(req_buffer.offset[1] == 1'b0) //LHU
+//               data_rdata_final2 = {16'b0,data_rdata_final[15:0]};
+//             else
+//               data_rdata_final2 = {16'b0,data_rdata_final[31:16]};
+//           end
+//           `LOADTYPE_LB: begin
+//             if(req_buffer.offset[1:0] == 2'b00) //LB
+//               data_rdata_final2 = {{24{data_rdata_final[7]}},data_rdata_final[7:0]};
+//             else if(req_buffer.offset[1:0] == 2'b01)
+//               data_rdata_final2 = {{24{data_rdata_final[15]}},data_rdata_final[15:8]};
+//             else if(req_buffer.offset[1:0] == 2'b10)
+//               data_rdata_final2 = {{24{data_rdata_final[23]}},data_rdata_final[23:16]};
+//             else
+//               data_rdata_final2 = {{24{data_rdata_final[31]}},data_rdata_final[31:24]};
+//           end
+//           `LOADTYPE_LBU: begin
+//             if(req_buffer.offset[1:0] == 2'b00) //LBU
+//               data_rdata_final2 = {24'b0,data_rdata_final[7:0]};
+//             else if(req_buffer.offset[1:0] == 2'b01)
+//               data_rdata_final2 = {24'b0,data_rdata_final[15:8]};
+//             else if(req_buffer.offset[1:0] == 2'b10)
+//               data_rdata_final2 = {24'b0,data_rdata_final[23:16]};
+//             else
+//               data_rdata_final2 = {24'b0,data_rdata_final[31:24]};
+//           end
+//           default: begin
+//             data_rdata_final2 = 32'bx;
+//           end
+//         endcase
+// end
 
 always_comb begin : dirty_we_block
     if (state == REFILL) begin
