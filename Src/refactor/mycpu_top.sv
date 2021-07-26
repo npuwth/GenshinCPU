@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-26 21:55:51
+ * @LastEditTime: 2021-07-26 22:26:40
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -165,7 +165,7 @@ module mycpu_top (
         .ID_EX_DH_Stall         (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
-        .BranchFailed           (EXE_Prediction_Failed),
+        .PredictFailed           (EXE_Prediction_Failed),
         .EXE_IsBrchLikely       (EXE_IsBrchLikely),
         .EXE_IsTaken            (EXE_IsTaken),
         .DIVMULTBusy            (EXE_MULTDIVStall),
