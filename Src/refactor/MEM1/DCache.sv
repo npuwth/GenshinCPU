@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 09:42:43
+ * @LastEditTime: 2021-07-26 10:05:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -470,7 +470,7 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
         store_buffer.index <= req_buffer.index;
         store_buffer.offset <= req_buffer.offset;
         store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
-    end else if (~cpu_bus.stall && req_buffer.valid==1'b0) begin
+    end else if (~cpu_bus.stall && req_buffer.valid==1'b0) begin//在非停滞状态下需要更新 但是此时访存无效 所以清零
         store_buffer <= '0;
     end
 
@@ -589,7 +589,7 @@ end
 always_ff @(posedge clk) begin :wb_state_blockname
     if (resetn == `RstEnable) begin
         wb_state <= WB_IDLE;
-    end else begin
+    end else if(~cpu_bus.stall)begin
         wb_state <= wb_state_next;
     end
 end
