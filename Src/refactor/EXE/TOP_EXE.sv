@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-26 15:33:55
+ * @LastEditTime: 2021-07-26 15:57:09
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -150,6 +150,7 @@ module TOP_EXE (
         .EXE_BranchType       (EMBus.EXE_BranchType),     
         .EXE_OutA             (EXE_BusA),
         .EXE_OutB             (EXE_BusB),
+        .EXE_IsBrchLikely     (EXE_IsBrchLikely),
         //-----------------output----------------------------//
         .ID_Branch_Flush      (Flush_BranchNormal),
         .ID_Delayslot_Flush   (Delayslot_Flush)
