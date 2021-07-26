@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 15:02:46
+ * @LastEditTime: 2021-07-26 15:05:58
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -317,7 +317,7 @@ generate;//PLRU
     end
 endgenerate
 
-generate;//判断命中
+generate;// 判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
         assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0;
     end
