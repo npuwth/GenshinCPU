@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-26 21:20:02
+ * @LastEditTime: 2021-07-27 11:05:27
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -131,6 +131,25 @@ typedef struct packed {
 	logic 		[2:0] 		branchCode;
 	logic 					isBranch;
 } BranchType;
+
+typedef enum logic [2:0] { 
+	I_Index_Invalid,
+	I_Index_Store_Tag,
+	I_Hit_Invalid,
+
+	D_Index_Writeback_Invalid,
+	D_Index_Store_Tag,
+	D_Hit_Invalid,
+	D_Hit_Writeback_Invalid
+
+} CacheCodeType;
+
+
+
+typedef struct packed {
+	CacheCodeType       	cacheCode;
+	logic                   isCache;
+} CacheType;
 
 // CP0 registers
 
