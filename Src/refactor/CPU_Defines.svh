@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-26 14:22:17
+ * @LastEditTime: 2021-07-27 16:03:18
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -80,6 +80,8 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 	OP_SB, OP_SH, OP_SWL, OP_SW, OP_SWR,
 	/* LL/SC */
 	OP_LL, OP_SC,
+	/* SYNC */ 
+	OP_SYNC,
 	/* long jump */
 	OP_JAL,
 	/* privileged instructions */
