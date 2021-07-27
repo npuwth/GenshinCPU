@@ -1,10 +1,10 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-06-29 18:26:53
- * @LastEditTime: 2021-06-29 22:39:00
+ * @LastEditTime: 2021-07-27 11:16:40
  * @LastEditors: Seddon Shen
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \Code\EXE\Countbit.sv
+ * @FilePath: \nontrival-cpu\Src\refactor\EXE\Countbit.sv
  * 
  */
  //part learn from Tsinghua's CPU
@@ -72,7 +72,7 @@ always_comb
 begin
 	if(option)
 	begin
-		casez(option)
+		casez(value)
             //val = 1 数0前面有多少个1，4 * 8 = 32
             //直到遇到0
 			8'b0???????: cnt = 4'd0;
@@ -87,7 +87,7 @@ begin
             default    : cnt = 4'd0;
 		endcase
 	end else begin
-		casez(option)
+		casez(value)
             //val = 0 数1前面有多少个0，4 * 8 = 32
             //直到遇到1
 			8'b1???????: cnt = 4'd0;
