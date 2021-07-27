@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-25 11:32:00
+ * @LastEditTime: 2021-07-27 21:33:18
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,6 +29,8 @@ module TOP_PREIF (
     input logic                 IReq_valid,
     input logic [31:0]          EXE_Correction_Vector,
     input logic                 EXE_Prediction_Failed,
+    input CacheType             MEM_CacheType,
+    input logic [31:0]          MEM_ALUOut,
     PREIF_IF_Interface          PIBus,
     CPU_IBus_Interface          cpu_ibus,
     AXI_IBus_Interface          axi_ibus,
@@ -97,9 +99,9 @@ module TOP_PREIF (
 
     //---------------------------------cache--------------------------------// 
     assign cpu_ibus.tag       = Phsy_Iaddr[31:12];
-    assign {cpu_ibus.index,cpu_ibus.offset} = PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
+    assign {cpu_ibus.index,cpu_ibus.offset} = (MEM_CacheType.isCache)?MEM_ALUOut[11:0]:PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.isCache   = I_IsCached;
-    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0);
+    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isCache == 1'b0);
     
     Icache #(
         .DATA_WIDTH      (32),
@@ -111,8 +113,8 @@ module TOP_PREIF (
         .clk             (clk ),
         .resetn          (resetn ),
         .cpu_bus         (cpu_ibus.slave ),
-        .axi_ubus        (axi_iubus.master),
-        .axi_bus         ( axi_ibus.master)
+        .axi_ubus        (axi_iubus.master ),
+        .axi_bus         ( axi_ibus.master )
     );
 
     ITLB U_ITLB (

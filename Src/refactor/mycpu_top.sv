@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-27 12:13:29
+ * @LastEditTime: 2021-07-27 21:30:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -75,6 +75,8 @@ module mycpu_top (
     logic [31:0]               Exception_Vector;          //传至PREIF，异常入口向量
     logic [31:0]               CP0_EPC;                   //传至PREIF,用于ERET返回
     BResult                    EXE_BResult;               //用于校正BPU
+    CacheType                  MEM_CacheType;             //用于Cache指令
+    logic [31:0]               MEM_ALUOut;                //用于Cache指令
     //-----------------------------流水线寄存器的写使能和flush------------------------------//
     logic                      PREIF_Wr;                  //来自Control
     logic                      IF_Wr;                     //来自Control
@@ -307,6 +309,8 @@ module mycpu_top (
         .IReq_valid                (IReq_valid),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
+        .MEM_CacheType             (MEM_CacheType),
+        .MEM_ALUOut                (MEM_ALUOut),
         .PIBus                     (PIBus.PREIF ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
@@ -406,7 +410,9 @@ module mycpu_top (
         .MEM_Result                (MEM_Result),     
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),
-        .MEM_Instr                 (MEM_Instr)
+        .MEM_Instr                 (MEM_Instr),
+        .MEM_CacheType             (MEM_CacheType),
+        .MEM_ALUOut                (MEM_ALUOut)
     );
     
     TOP_MEM2 U_TOP_MEM2 (
