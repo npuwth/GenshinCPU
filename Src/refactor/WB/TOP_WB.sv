@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-26 16:22:54
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-27 14:37:25
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -70,7 +70,8 @@ module TOP_WB (
         .WB_DMOut             (WB_DMOut ),
         .WB_ALUOut            (WB_ALUOut ),
         .WB_LoadType          (WB_LoadType ),
-        .WB_DMResult          ( WB_DMResult)
+        .reg_rt               (WB_OutB),
+        .WB_CacheRdData       (WB_DMResult)
   );
 
 
