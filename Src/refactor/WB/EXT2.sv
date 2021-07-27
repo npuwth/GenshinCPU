@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 14:36:47
- * @LastEditTime: 2021-07-27 15:15:02
+ * @LastEditTime: 2021-07-27 15:50:59
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -76,7 +76,7 @@ module EXT2 (
             default:WB_DMResult = {24'b0,WB_DMOut[31:24]};
             endcase
         end
-        default:WB_DMResult = 32'bx;
+        default:WB_DMResult = 32'bx; 
         endcase
       end
 
