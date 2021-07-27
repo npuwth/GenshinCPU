@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 14:36:47
- * @LastEditTime: 2021-07-27 14:49:19
+ * @LastEditTime: 2021-07-27 15:04:39
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -19,7 +19,7 @@ module EXT2 (
     input logic  [31:0]    reg_rt,     // rt_reg
     output logic [31:0]    WB_CacheRdData // resu;t after processing
     
-);
+); 
     logic WB_DMResult;
 
     always_comb begin : LoadNotAlign_Data
