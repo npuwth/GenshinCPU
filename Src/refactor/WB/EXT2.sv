@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-29 14:36:47
- * @LastEditTime: 2021-07-27 15:04:39
+ * @LastEditTime: 2021-07-27 15:15:02
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,7 @@ module EXT2 (
     output logic [31:0]    WB_CacheRdData // resu;t after processing
     
 ); 
-    logic WB_DMResult;
+    logic [31:0] WB_DMResult;
 
     always_comb begin : LoadNotAlign_Data
         unique case (WB_LoadType.LeftOrRight)
