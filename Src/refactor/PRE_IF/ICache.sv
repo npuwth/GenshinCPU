@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 22:05:20
- * @LastEditors: npuwth
- * @Description: In User Settings Edit
+ * @LastEditTime: 2021-07-27 20:12:12
+ * @LastEditors: Please set LastEditors
+ * @Description: //TODO: 为了支持cache指令在cache指令写入之后 不应该向cahce发起请求 在id 检测到cache指令之后 直到mem1 都关闭向icache发送读请求 是icache指令时，关闭向icache发送的valid
  * @FilePath: \Src\ICache.sv
  */
 //重写之后的Cache Icache Dcache复用一个设计
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
-//`define Dcache  //如果是DCache就在文件中使用这个宏
+//`define Dcache  //如果是DCache就在文件中使用这个宏 cpu_bus.valid与cache指令无关
 `define CLOG2(x) \
 ((x <= 1) || (x > 512)) ? 0 : \
 (x <= 2) ? 1 : \
@@ -249,7 +249,7 @@ assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 // assign data_wdata =  axi_bus.ret_data ;
-assign tagv_wdata =  {1'b1,req_buffer.tag} ;
+assign tagv_wdata     = (~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag)) ? '0 : {1'b1,req_buffer.tag} ;
 
 
 
@@ -258,6 +258,8 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
+    end else if(~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag))begin
+        tagv_we = (cpu_bus.tag[0])? 2'b10 : 2'b01;
     end else begin
         tagv_we = '0;
     end

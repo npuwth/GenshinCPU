@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 22:01:53
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-27 20:45:46
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -11,6 +11,7 @@
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
 //`define DEBUG
+//dcache只有在不busy的时候才会 处理在mem1的指令 cpu_bus.valid与cache指令无关
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width�?
     parameter STORE_BUFFER_SIZE = 32,
@@ -154,12 +155,18 @@ typedef enum logic [2:0]{
     // UNCACHE_WAIT_RW
 } uncache_state_t;
 
-
+typedef enum logic [1:0] { 
+    CACHE_IDLE,
+    CACHE_LOOKUP,
+    CACHE_WAIT_WRITE,
+    CACHE_WRITEBACK
+ } cache_state_t;//cache指令状态机
 //declartion
 
 uncache_state_t uncache_state,uncache_state_next;
 store_t store_buffer; //如果有写冲突 直接阻塞
 state_t state,state_next;
+cache_state_t cache_state,cache_state_next;
 
 wb_state_t wb_state,wb_state_next;
  
@@ -683,5 +690,35 @@ end
     .wr_rst_busy  (fifo_wr_rst_busy)
   );
 
+always_ff @( posedge clk ) begin : cache_state_blockName
+    if (resetn == `RstEnable) begin
+        cache_state <= CACHE_IDLE;
+    end else begin
+        cache_state <= cache_state_next;
+    end
+end
+
+// always_comb begin : cache_state_next_blockName
+//     case (cache_state)
+//         CACHE_IDLE:begin
+//             if (~cpu_bus.stall && cpu_bus.cacheType.isCache) begin
+//                 case (cpu_bus.cacheType.cacheCode)
+//                     D_Index_Writeback_Invalid:begin
+//                         cache_state_next = CACHE_
+//                     end
+                    
+//                     default: begin
+//                         default_case
+//                     end
+//                 endcase
+//             end else begin
+//                 cache_state_next = CACHE_IDLE;
+//             end
+//         end
+//         default: begin
+//             default_case
+//         end
+//     endcase
+// end
 
 endmodule
