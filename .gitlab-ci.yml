@@ -212,7 +212,23 @@ perf_test_bitstream:
       - ./testbit/*/runme.log
     when: always
 
-
+os_test_bitstream:
+  tags:
+    - vivado
+  stage: bitstreams
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /\[os\]/i
+      #test
+  script:
+    - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /tools/true_os_file/project_os_bit/project_os_bit.xpr
+    - sudo cp -r /tools/true_os_file/project_os_bit/project_os_bit.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit/
+    - sudo chmod -R 777 /home/gitlab-runner/
+  artifacts:
+    paths:
+      - ./testbit/impl_1/soc_axi_lite_top.bit
+      - ./testbit/*/runme.log
+    when: always
 # soc_bitstream:
 #   image: vivado:2018.3
 #   tags:
