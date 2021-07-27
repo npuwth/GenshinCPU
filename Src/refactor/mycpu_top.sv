@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-26 22:26:40
+ * @LastEditTime: 2021-07-27 12:13:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -402,7 +402,7 @@ module mycpu_top (
         .Exception_Vector          (Exception_Vector ),
         .D_VPN2                    (D_VPN2 ),
         .D_IsTLBStall              (D_IsTLBStall ),
-        .TLBBuffer_Flush           (TLBBuffer_Flush),
+        .TLBBuffer_Flush_Final     (TLBBuffer_Flush),
         .MEM_Result                (MEM_Result),     
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),

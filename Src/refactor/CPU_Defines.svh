@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-27 11:05:27
+ * @LastEditTime: 2021-07-27 16:08:06
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -141,7 +141,6 @@ typedef enum logic [2:0] {
 	D_Index_Store_Tag,
 	D_Hit_Invalid,
 	D_Hit_Writeback_Invalid
-
 } CacheCodeType;
 
 
@@ -408,6 +407,7 @@ interface ID_EXE_Interface();
 	logic       [31:0]      ID_JumpAddr;
 	logic       [31:0]      ID_BranchAddr;
 	logic       [31:0]      ID_PCAdd8;
+	CacheType               ID_CacheType;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic       [31:0]      EXE_Instr;
@@ -449,6 +449,7 @@ interface ID_EXE_Interface();
 	output                  ID_JumpAddr,
 	output                  ID_BranchAddr,	
 	output                  ID_PCAdd8,
+	output                  ID_CacheType,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_Instr,
@@ -491,6 +492,7 @@ interface ID_EXE_Interface();
 	input                   ID_JumpAddr,
 	input                   ID_BranchAddr,
 	input                   ID_PCAdd8,
+	input                   ID_CacheType,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_Instr,
@@ -522,10 +524,11 @@ interface EXE_MEM_Interface();
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
 	logic       [31:0]      EXE_Result;
+	CacheType               EXE_CacheType;
 	logic       [4:0]       MEM_Dst;
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
-	logic       [31:0]      MEM_Instr;
+	logic                   MEM_RegsWrTypeCP0Wr;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -547,10 +550,11 @@ interface EXE_MEM_Interface();
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
 	output                  EXE_Result,
+	output                  EXE_CacheType,
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
-	input                   MEM_Instr
+	input                   MEM_RegsWrTypeCP0Wr
 	);
 
 	modport MEM (
@@ -573,10 +577,11 @@ interface EXE_MEM_Interface();
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
 	input                   EXE_Result,
+	input                   EXE_CacheType,
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,
-	output                  MEM_Instr
+	output                  MEM_RegsWrTypeCP0Wr
 	);
 
 endinterface

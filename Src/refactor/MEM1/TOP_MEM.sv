@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-25 11:31:36
+ * @LastEditTime: 2021-07-27 16:03:24
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -44,7 +44,7 @@ module TOP_MEM (
     output logic [31:0]          Exception_Vector,
     output logic [31:13]         D_VPN2,
     output logic                 D_IsTLBStall,
-    output logic                 TLBBuffer_Flush,
+    output logic                 TLBBuffer_Flush_Final,
     output logic [31:0]          MEM_Result,  // 用于旁路数据
     output logic [4:0]           MEM_Dst,
     output RegsWrType            MEM_RegsWrType,
@@ -71,24 +71,27 @@ module TOP_MEM (
     logic [31:0]                 Phsy_Daddr;
     logic                        D_IsCached;
     logic                        D_IsTLBBufferValid;
+    logic                        TLBBuffer_Flush;
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
+    CacheType                    MEM_CacheType;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAJumpCall; 
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high  
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
-    assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
+    assign EMBus.MEM_RegsWrTypeCP0Wr= MEM_RegsWrType.CP0Wr;             // 判断重取判断是否是entry high
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
-    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
+    assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrType.CP0Wr && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     
     assign MEM_Final_Wr             = (MEM_DisWr)? '0: MEM_RegsWrType; //当发生阻塞时，要关掉CP0写使能，防止提前写入软件中断
     assign MM2Bus.MEM_RegsWrType    = MEM_Final_Wr;
     //往后传的是DisWr选择后的Store信号
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
     assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
+    assign TLBBuffer_Flush_Final    = (MEM_DisWr)? '0 : TLBBuffer_Flush;//当一条TLBW发生在MEM级时发生恰好阻塞，他就流不走，就会出现反复清空TLBBuffer，然后就会反复TLBStall
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
     // 用于MFC0型的阻塞
@@ -118,6 +121,7 @@ module TOP_MEM (
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
         .EXE_Result              (EMBus.EXE_Result),
+        .EXE_CacheType           (EMBus.EXE_CacheType),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
@@ -137,7 +141,8 @@ module TOP_MEM (
         .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
-        .MEM_Result              (MEM_Result)
+        .MEM_Result              (MEM_Result),
+        .MEM_CacheType           (MEM_CacheType)
     );
 
     Exception U_Exception(             
@@ -211,11 +216,11 @@ module TOP_MEM (
     assign {cpu_dbus.index,cpu_dbus.offset}               = MM2Bus.MEM_ALUOut[11:0];                 // inst_sram_addr_o 虚拟地址
     assign cpu_dbus.op                                    = (MEM_LoadType.ReadMem)? 1'b0 :
                                                             (MEM_StoreType.DMWr) ? 1'b1  :
-                                                             1'bx;
+                                                             1'bx;//TODO:不要有x
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
-    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType.RdWrongAddressinMEM == 1'b0) && (MEM_ExceptType.WrWrongAddressinMEM == 1'b0);
+    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType == '0) && (MM2Bus.MEM_PC[1:0] == 2'b0);
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     
     Dcache #(
@@ -245,7 +250,7 @@ module TOP_MEM (
         .clk                     (clk ),
         .rst                     (resetn ),
         .Virt_Daddr              (MM2Bus.MEM_ALUOut ),
-        .TLBBuffer_Flush         (TLBBuffer_Flush ),
+        .TLBBuffer_Flush         (TLBBuffer_Flush_Final ),
         .D_TLBEntry              (D_TLBEntry ),
         .s1_found                (s1_found ),
         .MEM_LoadType            (MEM_LoadType ),

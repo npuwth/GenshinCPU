@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-26 21:59:55
+ * @LastEditTime: 2021-07-27 16:08:52
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -42,7 +42,8 @@ module Decode(
     output logic       ID_IsTLBR,
     output logic       ID_TLBWIorR,
     output logic [2:0] ID_TrapOp,
-    output logic       ID_IsBrchLikely
+    output logic       ID_IsBrchLikely,
+    output CacheType   ID_CacheType
     );
 
     assign ID_IsTLBP   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-26 21:39:54
+ * @LastEditTime: 2021-07-27 15:59:59
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -115,6 +115,7 @@ module TOP_EXE (
         .ID_BranchAddr        (IEBus.ID_BranchAddr),    
         .ID_PCAdd8            (IEBus.ID_PCAdd8),
         .ID_IsBrchLikely      (IEBus.ID_IsBrchLikely),
+        .ID_CacheType         (IEBus.ID_CacheType),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -149,8 +150,8 @@ module TOP_EXE (
         .EXE_JumpAddr         (EXE_JumpAddr),
         .EXE_BranchAddr       (EXE_BranchAddr), 
         .EXE_PCAdd8           (EXE_PCAdd8),
-        .EXE_IsBrchLikely     (EXE_IsBrchLikely)
-
+        .EXE_IsBrchLikely     (EXE_IsBrchLikely),
+        .EXE_CacheType        (EMBus.EXE_CacheType)
     );
     
     // ALU_ila CP0_ILA(
@@ -280,10 +281,12 @@ module TOP_EXE (
         .EXE_LoadType          (EMBus.EXE_LoadType         ),
         .MEM_IsTLBR            (EMBus.MEM_IsTLBR           ),
         .MEM_IsTLBW            (EMBus.MEM_IsTLBW           ),
-        .MEM_Instr             (EMBus.MEM_Instr            ),
+        .MEM_RegsWrTypeCP0Wr   (EMBus.MEM_RegsWrTypeCP0Wr  ),
         .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut[1:0]      ),
         .EXE_StoreType         (EMBus.EXE_StoreType        ),
+        .EXE_CacheType         (EMBus.EXE_CacheType        ),
+    //-----------------------------output------------------------//    
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
     );
     
