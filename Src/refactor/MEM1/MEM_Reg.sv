@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-07-26 22:05:32
+ * @LastEditTime: 2021-07-27 16:04:35
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -45,6 +45,7 @@ module MEM_Reg (
     input  logic    [1:0]           EXE_RegsReadSel,
     input  logic    [4:0]           EXE_rd,
     input  logic    [31:0]          EXE_Result, 
+    input  CacheType                EXE_CacheType,
  //----------------------------------------------------------//   
     output logic	[31:0] 		    MEM_ALUOut,	
     output logic    [31:0]          MEM_OutB,	
@@ -69,7 +70,8 @@ module MEM_Reg (
     output logic                    MEM_TLBWIorR,
     output logic    [1:0]           MEM_RegsReadSel,
     output logic    [4:0]           MEM_rd,
-    output logic    [31:0]          MEM_Result
+    output logic    [31:0]          MEM_Result,
+    output CacheType                MEM_CacheType
 );
 
     always_ff @( posedge clk  ) begin
@@ -93,6 +95,7 @@ module MEM_Reg (
             MEM_RegsReadSel         <= 1'b0;
             MEM_rd                  <= 1'b0;
             MEM_Result              <= '0;
+            MEM_CacheType           <= '0;
         end
         else if( MEM_Wr ) begin
             MEM_ALUOut              <= EXE_ALUOut;
@@ -114,6 +117,7 @@ module MEM_Reg (
             MEM_RegsReadSel         <= EXE_RegsReadSel;
             MEM_rd                  <= EXE_rd;
             MEM_Result              <= EXE_Result;
+            MEM_CacheType           <= EXE_CacheType;
         end
     end
 endmodule
