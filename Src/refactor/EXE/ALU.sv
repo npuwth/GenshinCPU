@@ -1,15 +1,15 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-19 19:14:30
- * @LastEditors: Seddon Shen
+ * @LastEditTime: 2021-07-26 17:11:41
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \refactor\EXE\ALU.sv
  * 
  */
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
-`define   TEST 
+// `define   TEST 
 module ALU (
     input  logic  [31:0]       EXE_ResultA,
     input  logic  [31:0]       EXE_ResultB,

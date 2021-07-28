@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 20:08:39
+ * @LastEditTime: 2021-07-26 16:22:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,6 +27,9 @@ module TOP_WB (
     output logic [31:0]          WB_PC
 );
     logic [31:0]                 WB_DMOut;
+    logic [31:0]                 WB_ALUOut;
+    LoadType                     WB_LoadType;
+    logic [31:0]                 WB_DMResult;
     logic [31:0]                 WB_Result_L1;
     logic [31:0]                 WB_Instr;
     logic [31:0]                 WB_OutB;
@@ -40,6 +43,8 @@ module TOP_WB (
         .WB_Flush             (WB_Flush ),
         .WB_Wr                (WB_Wr ),
 
+        .MEM2_ALUOut          (M2WBus.MEM2_ALUOut ),
+        .MEM2_LoadType        (M2WBus.MEM2_LoadType ),
         .MEM2_PC              (M2WBus.MEM2_PC ),
         .MEM2_Instr           (M2WBus.MEM2_Instr ),
         .MEM2_WbSel           (M2WBus.MEM2_WbSel ),
@@ -49,6 +54,8 @@ module TOP_WB (
         .MEM2_RegsWrType      (M2WBus.MEM2_RegsWrType ),
         .MEM2_Result          (M2WBus.MEM2_Result),  
         //-------------------------out----------------------------//
+        .WB_ALUOut            (WB_ALUOut ),
+        .WB_LoadType          (WB_LoadType ),
         .WB_PC                (WB_PC ),
         .WB_Instr             (WB_Instr ),
         .WB_WbSel             (WB_WbSel ),
@@ -59,12 +66,19 @@ module TOP_WB (
         .WB_Result            (WB_Result_L1)
     );
 
-  
+    EXT2 U_EXT2 ( 
+        .WB_DMOut             (WB_DMOut ),
+        .WB_ALUOut            (WB_ALUOut ),
+        .WB_LoadType          (WB_LoadType ),
+        .WB_DMResult          ( WB_DMResult)
+  );
+
+
     MUX2to1 #(32) U_MUXINWB ( 
-        .d0                  (WB_Result_L1     ),
-        .d1                  (WB_DMOut         ),
-        .sel2_to_1           (WB_WbSel == 2'b11),
-        .y                   (WB_Result        ) 
+        .d0                   (WB_Result_L1     ),
+        .d1                   (WB_DMResult      ),
+        .sel2_to_1            (WB_WbSel == 2'b11),
+        .y                    (WB_Result        ) 
     );
 
 

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-26 14:16:24
+ * @LastEditTime: 2021-07-28 14:09:30
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -25,10 +25,12 @@ module BPU (
 );
 
     logic [`SIZE_OF_RAS-1:0] [31:0]    RAS;
+    logic                              RAS_Wr;
+    logic [31:0]                       RAS_Data;    //旁路后的数据
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_Top;     //point to stack top
     BHT_Entry                          W_BHT_Entry; //BHT write data for correction
     BHT_Entry                          R_BHT_Entry; //BHT read data
-    logic [1:0]                        History;
+    // logic [1:0]                        History;
     logic [31:0]                       PREIF_PCAdd8;
     assign PREIF_PCAdd8 = PREIF_PC + 8;
 
@@ -36,7 +38,7 @@ module BPU (
 
     simple_port_ram #(
                 .LATENCY(0),
-                .SIZE(`SIZE_OF_SET*8),
+                .SIZE(`SIZE_OF_SET),
                 .dtype(BHT_Entry)
             )mem_data(
                 .clk(clk),
@@ -44,11 +46,11 @@ module BPU (
                 //write port
                 .ena(1'b1),
                 .wea(EXE_BResult.Valid),
-                .addra({EXE_BResult.History,EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
+                .addra({EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
                 .dina(W_BHT_Entry),
                 //read port
                 .enb(1'b1), 
-                .addrb({History,PREIF_PC[`SIZE_OF_INDEX+1:2]}),
+                .addrb({PREIF_PC[`SIZE_OF_INDEX+1:2]}),
                 .doutb(R_BHT_Entry)
             );
 
@@ -95,8 +97,8 @@ module BPU (
             BPU_Reg.Tag                <= R_BHT_Entry.Tag;
             BPU_Reg.PCTag              <= PREIF_PC[31:`SIZE_OF_INDEX+2];
             BPU_Reg.BHT_Addr           <= R_BHT_Entry.Target;
-            // BPU_Reg.RAS_Addr           <= (RAS_Top == '0)?PREIF_PCAdd8:RAS[RAS_Top - 1];
-            BPU_Reg.RAS_Addr           <= R_BHT_Entry.Target;
+            BPU_Reg.RAS_Addr           <= RAS_Data;
+            // BPU_Reg.RAS_Addr           <= R_BHT_Entry.Target;
             BPU_Reg.PC_Add8            <= PREIF_PCAdd8;
             BPU_Reg.Type               <= R_BHT_Entry.Type;
             BPU_Reg.Count              <= R_BHT_Entry.Count;
@@ -145,49 +147,60 @@ module BPU (
     assign IF_PResult.Count        = BPU_Reg.Count;
     assign IF_PResult.Hit          = BHT_hit;
     assign IF_PResult.Valid        = BPU_Valid;
-    assign IF_PResult.History      = History;
+    // assign IF_PResult.History      = History;
 //-----------------------------RAS------------------------------------------------------//
     //更新RAS与RAS_Top
-    // always_ff @(posedge clk ) begin
-    //     if(rst == `RstEnable) begin
-    //         RAS_Top <= '0;
-    //     end
-    //     else if(EXE_BResult.Valid) begin
-    //         unique case(EXE_BResult.Type)
-    //         `BIsCall: begin
-    //             if(RAS_Top != `SIZE_OF_RAS - 1) begin
-    //                 RAS[RAS_Top]     <= EXE_BResult.PC + 8;
-    //                 RAS_Top          <= RAS_Top + 1;
-    //             end
-    //         end
-    //         `BIsRetn: begin
-    //             if(RAS_Top != '0 && EXE_BResult.RetnSuccess) begin
-    //                 RAS_Top          <= RAS_Top - 1;
-    //             end
-    //         end
-    //         default: begin
-    //             ;
-    //         end
-    //         endcase
-    //     end
-    // end
-//---------------------------------History Branch Table-----------------------------------------//
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
-            History[0] <= '0;
+            RAS_Top <= '0;
         end
-        else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
-            History[0] <= EXE_BResult.IsTaken;
+        else if(EXE_BResult.Valid) begin
+            unique case(EXE_BResult.Type)
+            `BIsCall: begin
+                if(RAS_Top != `SIZE_OF_RAS - 1) begin
+                    RAS[RAS_Top]     <= EXE_BResult.PC + 8;
+                    RAS_Top          <= RAS_Top + 1;
+                end
+            end
+            `BIsRetn: begin
+                if(RAS_Top != '0) begin
+                    RAS_Top          <= RAS_Top - 1;
+                end
+            end
+            default: begin
+                ;
+            end
+            endcase
         end
     end
 
-    always_ff @(posedge clk ) begin
-        if(rst == `RstEnable) begin
-            History[1] <= '0;
+    assign RAS_Wr = EXE_BResult.Valid && (EXE_BResult.Type == `BIsCall);
+
+    always_comb begin
+        if(RAS_Wr) begin
+            RAS_Data = EXE_BResult.PC + 8;
         end
-        else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
-            History[1] <= History[0];
+        else begin
+            RAS_Data = (RAS_Top == '0)?PREIF_PCAdd8:RAS[RAS_Top - 1];
         end
     end
+//---------------------------------History Branch Table-----------------------------------------//
+    // always_ff @(posedge clk ) begin
+    //     if(rst == `RstEnable) begin
+    //         History[0] <= '0;
+    //     end
+    //     else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
+    //         History[0] <= EXE_BResult.IsTaken;
+    //     end
+    // end
+
+    // always_ff @(posedge clk ) begin
+    //     if(rst == `RstEnable) begin
+    //         History[1] <= '0;
+    //     end
+    //     else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
+    //         History[1] <= History[0];
+    //     end
+    // end
 
 endmodule

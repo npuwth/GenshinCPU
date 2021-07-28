@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-26 12:34:46
+ * @LastEditTime: 2021-07-28 11:29:03
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -205,7 +205,6 @@ typedef struct packed {
 	logic [6:2]   ExcCode;
 } CP0_Cause;
 
-
 typedef struct packed {
 	logic [31:31] M;
 	logic [30:25] MMUSize;  // 实际TLB项数-1
@@ -274,7 +273,7 @@ typedef struct packed {
     logic [1:0]                Count;    //表示预测时的计数器值
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
-	logic [1:0]                History;  //预测时的历史跳转信息
+	// logic [1:0]                History;  //预测时的历史跳转信息
 } PResult;
 
 typedef struct packed {
@@ -285,8 +284,8 @@ typedef struct packed {
     logic [1:0]                Count;    //预测该条指令时的Count
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
-	logic [1:0]                History;  //预测时的历史跳转信息
-	// logic                      RetnSuccess;//JR预测成功
+	// logic [1:0]                History;  //预测时的历史跳转信息
+	logic                      RetnSuccess;//JR预测成功
 } BResult;
 
 typedef struct packed {
@@ -579,7 +578,6 @@ interface MEM_MEM2_Interface();
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAJumpCall;
 	logic                   MEM2_IsInDelaySlot;
-	// logic                   MEM_store_req;
 
 	modport MEM(  // top MEM使用
 		output  			MEM_ALUOut,		
@@ -594,7 +592,6 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsAJumpCall,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
-		// output              MEM_store_req,
 		output              MEM_LoadType,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
@@ -617,7 +614,6 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsAJumpCall,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
-		// input               MEM_store_req,
 		input               MEM_LoadType,
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
@@ -632,7 +628,8 @@ endinterface
 
 interface MEM2_WB_Interface();
 
-    // logic		[31:0] 		MEM2_ALUOut;		
+    logic		[31:0] 		MEM2_ALUOut;	
+	LoadType                MEM2_LoadType;	
     logic 		[31:0] 		MEM2_PC;	
 	logic       [31:0]      MEM2_Instr;		
     logic 		[1:0]  		MEM2_WbSel;				
@@ -642,10 +639,10 @@ interface MEM2_WB_Interface();
 	RegsWrType              MEM2_RegsWrType;
 	logic 					MEM2_Isincache;
 	logic       [31:0]      MEM2_Result;
-	// logic                   MEM2_store_req;
   
 	modport MEM2 (  // top MEM2使用
-    	// output				MEM2_ALUOut,		
+    	output				MEM2_ALUOut,	
+		output              MEM2_LoadType,	
     	output				MEM2_PC,		
 		output              MEM2_Instr,	
     	output				MEM2_WbSel,				
@@ -655,12 +652,12 @@ interface MEM2_WB_Interface();
 		output				MEM2_RegsWrType,
 		output 				MEM2_Isincache,
 		output				MEM2_Result
-		// output              MEM2_store_req
 	);
 
 	modport WB ( 
-		// input				MEM2_ALUOut,		
-    	input				MEM2_PC,		
+		input				MEM2_ALUOut,		//TODO:这个地方其实不用32位宽
+    	input               MEM2_LoadType,
+		input				MEM2_PC,		
 		input               MEM2_Instr,	
     	input				MEM2_WbSel,				
     	input				MEM2_Dst,
@@ -669,7 +666,6 @@ interface MEM2_WB_Interface();
 		input				MEM2_RegsWrType,
 		input 				MEM2_Isincache,
 		input				MEM2_Result
-        // input               MEM2_store_req
 	);
 
 endinterface
