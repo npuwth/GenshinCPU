@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-28 12:13:41
+ * @LastEditTime: 2021-07-28 15:19:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -269,32 +269,64 @@ always_comb begin : axi_bus_wraddr_blockName
 end
 // assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
 
-// always_comb begin : axi_bus_wr_data_blockName
-genvar i;
+logic[`DCACHE_LINE_WORD*32-1:0] wr_data1,wr_data2,wr_data3;
+
 generate;
-    if (req_buffer.cacheType.isCache) begin
+    for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
+        assign wr_data1[32*(i+1)-1:32*(i)] = data_rdata[req_buffer.tag[0]][i];
+    end
+endgenerate
+generate;
+    for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
+        assign wr_data2[32*(i+1)-1:32*(i)] = data_rdata[clog2(hit)][i];
+    end
+endgenerate
+generate;
+    for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
+        assign wr_data3[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+    end
+endgenerate
+
+always_comb begin : axi_bus_wr_data_blockName
+    if (req_buffer.cacheType.isCache==1) begin
         case (req_buffer.cacheType.cacheCode)
             D_Index_Writeback_Invalid:begin
-    for (i=0; i<LINE_WORD_NUM; i++) begin
-        assign   axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[req_buffer.tag[0]][i];
-    end
+                axi_bus.wr_data = wr_data1;
             end
             D_Hit_Writeback_Invalid:begin
-    for (i=0; i<LINE_WORD_NUM; i++) begin
-        assign  axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[clog2(hit)][i];
-    end
+                axi_bus.wr_data = wr_data2;
             end
             default: begin
-               assign  axi_bus.wr_data = '0;
+               axi_bus.wr_data = '0;
             end
         endcase
     end else begin
-        for (i=0; i<LINE_WORD_NUM; i++) begin
-          assign    axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+        for (int i=0; i<LINE_WORD_NUM; i++) begin
+                axi_bus.wr_data = wr_data3;
             end
     end    
-endgenerate
-// end
+end
+// genvar i;
+// generate;
+//      for ( i=0; i<LINE_WORD_NUM; i++) begin
+//          if (1) begin
+//             case (req_buffer.cacheType.cacheCode)
+//                 D_Index_Writeback_Invalid:begin
+//                    assign  axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[req_buffer.tag[0]][i];
+//                 end
+//                 D_Hit_Writeback_Invalid:begin
+//                     assign axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[clog2(hit)][i];
+//                 end
+//                 default: begin
+//                     assign axi_bus.wr_data = '0;
+//                 end
+//             endcase
+//          end
+//          else begin
+//             assign axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+//          end
+//     end
+// endgenerate
 
 //连axi_ubus接口
 assign axi_ubus.rd_req   = (uncache_state == UNCACHE_READ_WAIT_AXI) ? 1'b1:1'b0;
