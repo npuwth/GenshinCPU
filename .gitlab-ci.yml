@@ -137,17 +137,17 @@ perf_test_bitstream:
       - ./testbit/*/runme.log
     when: always
 
-#Cache验证
-Cache_test:
+#pre验证
+Pre_test:
   tags:
     - vivado
-  stage: bitstreams
+  stage: PERF_TEST
   only:
     variables:
-      - $CI_COMMIT_MESSAGE =~ /\[cache\]/i
+      - $CI_COMMIT_MESSAGE =~ /\[pre\]/i
       #test
   script:
-    - sudo ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_perf/project_perf.xpr
+    - sudo ${VIVADO_PATH} -mode tcl -source /tools/run_allbench.tcl /tools/project_cache/project_perf.xpr
     - sudo chmod -R 777 /home/gitlab-runner/
     # - sudo ${VIVADO_PATH} -mode tcl -source /tools/generate_bitstream.tcl /tools/project_perf/project_perf.xpr
     # - sudo cp -r /tools/project_perf/project_perf.runs/ /home/gitlab-runner/builds/p9qpxhkY/0/root/nontrival-cpu/testbit/
