@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-28 11:40:22
+ * @LastEditTime: 2021-07-28 17:28:29
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -16,6 +16,7 @@ module BranchSolve (
     input logic [31:0]    EXE_OutA,
     input logic [31:0]    EXE_OutB,
     input logic [4:0]     EXE_rs,
+    input logic [4:0]     EXE_rd,
     input logic [31:0]    EXE_PC,
     input logic           EXE_Wr,
     input PResult         EXE_PResult,    //随流水线流动的预测结果
@@ -86,9 +87,15 @@ module BranchSolve (
                 Branch_Target                   = EXE_JumpAddr;
             end 
             `BRANCH_CODE_JR:begin
-                if(EXE_IsAJumpCall) Branch_Type = `BIsImme;  //JALR
-                else if(EXE_rs == 5'b11111) Branch_Type = `BIsRetn; //JR&&31
-                else                Branch_Type = `BIsImme; //JR
+                if(EXE_IsAJumpCall) begin
+                    if(EXE_rd == 5'b11111)      Branch_Type = `BIsCall;  //JALR&&31
+                    else if(EXE_rs == 5'b11111) Branch_Type = `BIsRetn;
+                    else                        Branch_Type = `BIsImme;  //JALR
+                end
+                else begin
+                    if(EXE_rs == 5'b11111)  Branch_Type = `BIsRetn; //JR&&31
+                    else                    Branch_Type = `BIsImme; //JR
+                end
                 Branch_Target                   = EXE_OutA;
             end
             default: begin
