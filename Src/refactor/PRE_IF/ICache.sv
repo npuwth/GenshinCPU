@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-27 20:12:12
+ * @LastEditTime: 2021-07-27 21:04:59
  * @LastEditors: Please set LastEditors
  * @Description: //TODO: 为了支持cache指令在cache指令写入之后 不应该向cahce发起请求 在id 检测到cache指令之后 直到mem1 都关闭向icache发送读请求 是icache指令时，关闭向icache发送的valid
  * @FilePath: \Src\ICache.sv
@@ -259,7 +259,7 @@ always_comb begin : tagv_we_blockName
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
     end else if(~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag))begin
-        tagv_we = (cpu_bus.tag[0])? 2'b10 : 2'b01;
+        tagv_we = '1;
     end else begin
         tagv_we = '0;
     end
