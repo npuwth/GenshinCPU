@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-27 16:03:24
+ * @LastEditTime: 2021-07-27 21:21:32
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,7 @@ module TOP_MEM (
     MEM_MEM2_Interface           MM2Bus,
     CP0_TLB_Interface            CTBus,
     CPU_DBus_Interface           cpu_dbus,
-    AXI_DBus_Interface            axi_dbus,
+    AXI_DBus_Interface           axi_dbus,
     AXI_UNCACHE_Interface        axi_ubus,
     output logic                 Flush_Exception,
     output logic [1:0]           EX_Entry_Sel,
@@ -48,7 +48,9 @@ module TOP_MEM (
     output logic [31:0]          MEM_Result,  // 用于旁路数据
     output logic [4:0]           MEM_Dst,
     output RegsWrType            MEM_RegsWrType,
-    output logic [31:0]          MEM_Instr
+    output logic [31:0]          MEM_Instr,
+    output CacheType             MEM_CacheType,
+    output logic [31:0]          MEM_ALUOut
 );
     ExceptinPipeType             MEM_ExceptType;
     logic [31:0]                 RFHILO_Bus;
@@ -75,7 +77,6 @@ module TOP_MEM (
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
-    CacheType                    MEM_CacheType;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAJumpCall; 
@@ -96,6 +97,7 @@ module TOP_MEM (
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
     // 用于MFC0型的阻塞
     assign MEM_Instr                = MM2Bus.MEM_Instr;
+    assign MEM_ALUOut               = MM2Bus.MEM_ALUOut;
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
         .rst                     (resetn ),
