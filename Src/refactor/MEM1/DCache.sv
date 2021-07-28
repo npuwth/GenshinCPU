@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-28 15:19:27
+ * @LastEditTime: 2021-07-28 21:16:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -425,7 +425,7 @@ assign cache_hit        = |hit;
 
 assign read_addr      = (state == REFILLDONE || state == REFILL || cpu_bus.stall)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
-assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.index :cpu_bus.index;
+assign tagv_addr      = (state == REFILLDONE || state == REFILL || cache_state == CACHE_LOOKUP ) ? req_buffer.index :cpu_bus.index;
 
 
 assign busy_cache          = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
@@ -453,9 +453,9 @@ always_comb begin : tagv_wdata_blockName
         tagv_wdata = {1'b1,req_buffer.tag};
     end
 end
-assign data_read_en   = (state == REFILLDONE ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
+assign data_read_en   = (state == REFILLDONE || cache_state == CACHE_LOOKUP ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
-assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
+assign dirty_wdata    = (cache_state == CACHE_LOOKUP || state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;
 
 
@@ -517,17 +517,39 @@ assign dirty_addr     = req_buffer.index;
 //           end
 //         endcase
 // end
-
-always_comb begin : dirty_we_block
+always_comb begin : dirty_we_blockName
     if (state == REFILL) begin
         dirty_we = '0;
         dirty_we[lru[req_buffer.index]] =1'b1;
+    end else if(req_buffer.cacheType.isCache && cache_state == CACHE_LOOKUP)begin
+        case (req_buffer.cacheType.cacheCode)
+            D_Index_Writeback_Invalid,D_Index_Store_Tag:begin
+                dirty_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
+            end
+            D_Hit_Invalid,D_Hit_Writeback_Invalid:begin
+                dirty_we = (cache_hit) ? ( (hit[0]) ? 2'b01:2'b10 )  : '0;
+            end
+            default: begin
+                dirty_we = '0;
+            end
+        endcase
     end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
         dirty_we = hit;
     end else begin
         dirty_we = '0;
     end
 end
+
+// always_comb begin : dirty_we_block
+//     if (state == REFILL) begin
+//         dirty_we = '0;
+//         dirty_we[lru[req_buffer.index]] =1'b1;
+//     end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
+//         dirty_we = hit;
+//     end else begin
+//         dirty_we = '0;
+//     end
+// end
 
 always_comb begin : data_rdata_final__blockname
     data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(hit)];
@@ -538,7 +560,7 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
-    end else if(req_buffer.cacheType.isCache)begin
+    end else if(req_buffer.cacheType.isCache && cache_state == CACHE_LOOKUP)begin
         case (req_buffer.cacheType.cacheCode)
             D_Index_Writeback_Invalid,D_Index_Store_Tag:begin
                 tagv_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
@@ -698,7 +720,7 @@ always_ff @(posedge clk) begin :wb_state_blockname
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & cache_hit & ~cpu_bus.stall) begin
+    if (req_buffer.valid & req_buffer.op & cache_hit & ~cpu_bus.stall & req_buffer.isCache) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;

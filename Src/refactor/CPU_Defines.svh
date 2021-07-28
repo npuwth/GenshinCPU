@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-27 16:08:06
+ * @LastEditTime: 2021-07-28 18:46:21
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -148,6 +148,8 @@ typedef enum logic [2:0] {
 typedef struct packed {
 	CacheCodeType       	cacheCode;
 	logic                   isCache;
+	logic 					isIcache;
+	logic 					isDcache;	
 } CacheType;
 
 // CP0 registers
@@ -529,6 +531,7 @@ interface EXE_MEM_Interface();
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
 	logic                   MEM_RegsWrTypeCP0Wr;
+	CacheType               MEM_CacheType;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -554,7 +557,8 @@ interface EXE_MEM_Interface();
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
-	input                   MEM_RegsWrTypeCP0Wr
+	input                   MEM_RegsWrTypeCP0Wr,
+	input                   MEM_CacheType
 	);
 
 	modport MEM (
@@ -581,7 +585,8 @@ interface EXE_MEM_Interface();
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,
-	output                  MEM_RegsWrTypeCP0Wr
+	output                  MEM_RegsWrTypeCP0Wr,
+	output                  MEM_CacheType
 	);
 
 endinterface

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-28 11:53:15
+ * @LastEditTime: 2021-07-28 15:45:29
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -84,6 +84,7 @@ module TOP_MEM (
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
     assign EMBus.MEM_RegsWrTypeCP0Wr= MEM_RegsWrType.CP0Wr;             // 判断重取判断是否是entry high
+    assign EMBus.MEM_CacheType      = MEM_CacheType;
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrType.CP0Wr && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     

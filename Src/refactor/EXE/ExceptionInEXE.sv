@@ -12,7 +12,7 @@ module ExceptionInEXE(
     input  logic [4:0]        MEM_Dst,
     input  logic [1:0]        EXE_ALUOut,    // 地址信息
     input  StoreType          EXE_StoreType,
-    input  CacheType          EXE_CacheType,
+    input  CacheType          MEM_CacheType,
 //-------------------------output----------------------------------//
     output ExceptinPipeType   EXE_ExceptType_final
 );
@@ -20,7 +20,7 @@ module ExceptionInEXE(
     logic  TLB_Refetch;
     logic  ICache_Refetch;
     assign TLB_Refetch = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrTypeCP0Wr && MEM_Dst == `CP0_REG_ENTRYHI));
-    assign ICache_Refetch = EXE_CacheType.isCache && ((EXE_CacheType.cacheCode==I_Index_Invalid)||(EXE_CacheType.cacheCode==I_Index_Store_Tag)||(EXE_CacheType.cacheCode==I_Hit_Invalid));
+    assign ICache_Refetch = MEM_CacheType.isIcache;
 
     logic  LoadAlign_valid;
     logic  StoreAlign_valid;

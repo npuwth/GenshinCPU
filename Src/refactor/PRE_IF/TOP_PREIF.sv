@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-28 11:52:35
+ * @LastEditTime: 2021-07-28 20:35:31
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -99,9 +99,9 @@ module TOP_PREIF (
 
     //---------------------------------cache--------------------------------// 
     assign cpu_ibus.tag       = Phsy_Iaddr[31:12];
-    assign {cpu_ibus.index,cpu_ibus.offset} = (MEM_CacheType.isCache)?MEM_ALUOut[11:0]:PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
+    assign {cpu_ibus.index,cpu_ibus.offset} = (MEM_CacheType.isIcache)?MEM_ALUOut[11:0]:PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.isCache   = I_IsCached;
-    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isCache == 1'b0);
+    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isIcache == 1'b0);
     assign cpu_ibus.cacheType = MEM_CacheType;
     Icache #(
         .DATA_WIDTH      (32),

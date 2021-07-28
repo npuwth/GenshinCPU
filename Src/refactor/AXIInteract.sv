@@ -2,8 +2,8 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-25 11:36:45
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-28 20:59:45
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
  */
@@ -404,7 +404,7 @@ module AXIInteract #(
     always_comb begin : dstate_next_block
         unique case (dstate)
             IDLE:begin
-                if (dbus.rd_req) begin
+                if (dbus.rd_req && udbus.wr_req ==1'b0 && dstate_uncache == UNCACHE_IDLE) begin//TODO:增加了条件
                     dstate_next = REQ;
                 end else begin
                     dstate_next = IDLE;
@@ -516,7 +516,7 @@ module AXIInteract #(
     always_comb begin : dstate_wb_next_block
         unique case (dstate_wb)
             WB_IDLE:begin
-                if (dbus.wr_req) begin
+                if (dbus.wr_req && udbus.wr_req ==1'b0 && dstate_uncache == UNCACHE_IDLE) begin
                     dstate_wb_next = WB_REQ;
                 end else begin
                     dstate_wb_next = WB_IDLE;
@@ -633,8 +633,8 @@ module AXIInteract #(
 
     //空闲信号的输出
     assign ibus.rd_rdy  = (istate == IDLE ) ? 1'b1 : 1'b0;
-    assign dbus.rd_rdy  = (dstate == IDLE ) ? 1'b1 : 1'b0;
-    assign dbus.wr_rdy  = (dstate_wb == WB_IDLE )  ? 1'b1 : 1'b0;
+    assign dbus.rd_rdy  = (dstate == IDLE && udbus.wr_req ==1'b0 && dstate_uncache == UNCACHE_IDLE) ? 1'b1 : 1'b0;//TODO: 如果uncache的写会影响到dcache的读
+    assign dbus.wr_rdy  = (dstate_wb == WB_IDLE && udbus.wr_req ==1'b0 && dstate_uncache == UNCACHE_IDLE)  ? 1'b1 : 1'b0;
     assign udbus.rd_rdy  = (dstate_uncache == UNCACHE_IDLE && udbus.wr_req ==1'b0 ) ? 1'b1 : 1'b0;
     assign udbus.wr_rdy  = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
 

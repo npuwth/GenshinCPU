@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-27 16:17:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-28 18:49:15
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -88,30 +88,44 @@ module Decode(
         case (rt)//instr[20:16]是cache指令的op
           5'b00000:begin
             ID_CacheType.isCache   = 1'b1; 
+            ID_CacheType.isIcache  = 1'b1;
+            ID_CacheType.isDcache  = 1'b0;
             ID_CacheType.cacheCode = I_Index_Invalid; 
           end
           5'b01000:begin
             ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isIcache  = 1'b1;
+            ID_CacheType.isDcache  = 1'b0;
             ID_CacheType.cacheCode = I_Index_Store_Tag; 
           end
           5'b10000:begin
             ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isIcache  = 1'b1;
+            ID_CacheType.isDcache  = 1'b0;
             ID_CacheType.cacheCode = I_Hit_Invalid; 
           end
           5'b00001:begin
             ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1;
             ID_CacheType.cacheCode = D_Index_Writeback_Invalid;
           end
           5'b01001:begin
-            ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isCache = 1'b1;
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1;             
             ID_CacheType.cacheCode = D_Index_Store_Tag;
           end
           5'b10001:begin
-            ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isCache = 1'b1;
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1; 
             ID_CacheType.cacheCode = D_Hit_Invalid; 
           end
           5'b10101:begin
-            ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isCache = 1'b1;
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1; 
             ID_CacheType.cacheCode = D_Hit_Writeback_Invalid; 
           end
           default: begin

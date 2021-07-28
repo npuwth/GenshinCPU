@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-27 15:59:59
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-28 15:43:23
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -285,7 +285,7 @@ module TOP_EXE (
         .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut[1:0]      ),
         .EXE_StoreType         (EMBus.EXE_StoreType        ),
-        .EXE_CacheType         (EMBus.EXE_CacheType        ),
+        .MEM_CacheType         (EMBus.MEM_CacheType        ),
     //-----------------------------output------------------------//    
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
     );
