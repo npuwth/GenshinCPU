@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-27 21:21:32
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-28 11:53:15
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -224,7 +224,7 @@ module TOP_MEM (
     assign cpu_dbus.isCache                               = D_IsCached;
     assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType == '0) && (MM2Bus.MEM_PC[1:0] == 2'b0);
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
-    
+    assign cpu_dbus.cacheType                             = MEM_CacheType;
     Dcache #(
         .DATA_WIDTH              (32 ),
         .LINE_WORD_NUM           (`DCACHE_LINE_WORD ),
