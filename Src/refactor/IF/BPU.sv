@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-28 18:03:54
+ * @LastEditTime: 2021-07-28 19:51:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -168,8 +168,7 @@ module BPU (
                 RAS_Top                <= RAS_Top + 1;
             end
             `BIsRetn: begin
-                if(EXE_BResult.RetnSuccess)
-                    RAS_Top                <= RAS_TopSub1;
+                RAS_Top                <= RAS_TopSub1;
             end
             default: begin
                 ;
