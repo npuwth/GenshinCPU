@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-28 19:52:10
+ * @LastEditTime: 2021-07-28 20:26:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -47,8 +47,8 @@
 //----------------------分支预测宏定义--------------------//
 `define SIZE_OF_RAS 8
 // `define SIZE_OF_TAG 22
-`define SIZE_OF_INDEX 9
-`define SIZE_OF_SET 256*2
+`define SIZE_OF_INDEX 10
+`define SIZE_OF_SET 256*4
 
 `define BIsNone 2'b00  //不分支
 `define BIsCall 2'b01  //jal,jalr
