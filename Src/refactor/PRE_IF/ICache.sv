@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 15:35:37
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-29 16:21:23
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -138,6 +138,9 @@ logic [$clog2(ASSOC_NUM)-1:0] lru[SET_NUM-1:0];
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
 
+logic [ASSOC_NUM-1:0] pipe_hit;
+logic pipe_cache_hit;
+
 tagv_t pipe_tagv_rdata[ASSOC_NUM-1:0];
 logic pipe_wr;
 
@@ -206,7 +209,7 @@ generate;//PLRU
         ) plru_reg(
             .clk(clk),
             .resetn(resetn),
-            .access(hit),
+            .access(pipe_hit),
             .update(req_buffer.valid && i[INDEX_WIDTH-1:0] == req_buffer.index),
 
             .lru(lru[i])
@@ -216,7 +219,7 @@ endgenerate
 
 generate;//判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
-        assign hit[i] = ( pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag) )  ;
+        assign hit[i] = (cpu_bus.stall) ? (tagv_rdata[i].valid & (req_buffer.tag == tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0 : (tagv_rdata[i].valid & (cpu_bus.tag == tagv_rdata[i].tag) & cpu_bus.isCache) ? 1'b1:1'b0;
     end
 endgenerate
 
@@ -233,13 +236,13 @@ endgenerate
 assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall)? 1'b0:1'b1;
 //旁路
                             //
-assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(hit)]: '0;
+assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(pipe_hit)]: '0;
 assign cache_hit = |hit;
 
 assign read_addr      = (state == REFILLDONE || state == REFILL )? req_buffer.index : cpu_bus.index;
 
 
-assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
+assign busy_cache     = (req_buffer.valid & ~pipe_cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
 
 assign busy           = busy_cache | busy_uncache;
@@ -308,6 +311,14 @@ generate;//锁存读出的tag
     end
 endgenerate
 
+always_ff @( posedge clk )begin : pipe_hit_blockname
+    if (pipe_wr) begin
+        pipe_cache_hit <= cache_hit;
+        pipe_hit       <= hit;
+    end
+end
+
+
 always_ff @( posedge clk ) begin : state_blockName
     if (resetn == `RstEnable) begin
         state <= LOOKUP;
@@ -324,7 +335,7 @@ always_comb begin : state_next_blockname
             if (req_buffer.isCache == 1'b0 && req_buffer.valid) begin
                 state_next = REQ;
             end else begin
-            if (~cache_hit & req_buffer.valid) begin
+            if (~pipe_cache_hit & req_buffer.valid) begin
                 state_next = MISSCLEAN;
             end else begin
                 state_next = LOOKUP ;
