@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-26 15:00:26
+ * @LastEditTime: 2021-07-28 19:51:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,8 +24,14 @@ module BPU (
     output logic               BPU_Valid   //给PCSel，当发生flush后，BPU_Reg无效，从PC+4取指
 );
 
-    logic [`SIZE_OF_RAS-1:0] [31:0]    RAS;
+    RAS_Entry [`SIZE_OF_RAS-1:0]       RAS;
+    logic                              RAS_Wr;
+    RAS_Entry                          RAS_Data;    //旁路后的数据
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_Top;     //point to stack top
+    logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_TopSub1;
+
+    assign RAS_TopSub1 = RAS_Top + `SIZE_OF_RAS - 1;
+    
     BHT_Entry                          W_BHT_Entry; //BHT write data for correction
     BHT_Entry                          R_BHT_Entry; //BHT read data
     // logic [1:0]                        History;
@@ -85,7 +91,7 @@ module BPU (
             BPU_Reg.Tag                <= '0;
             BPU_Reg.PCTag              <= '0;
             BPU_Reg.BHT_Addr           <= '0;
-            BPU_Reg.RAS_Addr           <= '0;
+            BPU_Reg.RAS_Entry          <= '0;
             BPU_Reg.PC_Add8            <= '0;
             BPU_Reg.Type               <= '0;
             BPU_Reg.Count              <= '0;
@@ -95,8 +101,9 @@ module BPU (
             BPU_Reg.Tag                <= R_BHT_Entry.Tag;
             BPU_Reg.PCTag              <= PREIF_PC[31:`SIZE_OF_INDEX+2];
             BPU_Reg.BHT_Addr           <= R_BHT_Entry.Target;
-            // BPU_Reg.RAS_Addr           <= (RAS_Top == '0)?PREIF_PCAdd8:RAS[RAS_Top - 1];
-            BPU_Reg.RAS_Addr           <= R_BHT_Entry.Target;
+            BPU_Reg.RAS_Entry          <= RAS_Data;
+            // BPU_Reg.RAS_Addr           <= RAS_Data;
+            // BPU_Reg.RAS_Addr           <= R_BHT_Entry.Target;
             BPU_Reg.PC_Add8            <= PREIF_PCAdd8;
             BPU_Reg.Type               <= R_BHT_Entry.Type;
             BPU_Reg.Count              <= R_BHT_Entry.Count;
@@ -119,7 +126,7 @@ module BPU (
                 IF_PResult.IsTaken = 1'b1;
             end
             `BIsRetn: begin
-                Target = BPU_Reg.RAS_Addr;
+                Target = (BPU_Reg.RAS_Entry.Valid)?(BPU_Reg.RAS_Entry.Addr):BPU_Reg.PC_Add8;
                 IF_PResult.IsTaken = 1'b1;
             end
             `BIsImme: begin //根据饱和计数器判断
@@ -148,29 +155,39 @@ module BPU (
     // assign IF_PResult.History      = History;
 //-----------------------------RAS------------------------------------------------------//
     //更新RAS与RAS_Top
-    // always_ff @(posedge clk ) begin
-    //     if(rst == `RstEnable) begin
-    //         RAS_Top <= '0;
-    //     end
-    //     else if(EXE_BResult.Valid) begin
-    //         unique case(EXE_BResult.Type)
-    //         `BIsCall: begin
-    //             if(RAS_Top != `SIZE_OF_RAS - 1) begin
-    //                 RAS[RAS_Top]     <= EXE_BResult.PC + 8;
-    //                 RAS_Top          <= RAS_Top + 1;
-    //             end
-    //         end
-    //         `BIsRetn: begin
-    //             if(RAS_Top != '0 && EXE_BResult.RetnSuccess) begin
-    //                 RAS_Top          <= RAS_Top - 1;
-    //             end
-    //         end
-    //         default: begin
-    //             ;
-    //         end
-    //         endcase
-    //     end
-    // end
+    always_ff @(posedge clk ) begin
+        if(rst == `RstEnable) begin
+            RAS_Top <= '0;
+            RAS     <= '0;
+        end
+        else if(EXE_BResult.Valid) begin
+            unique case(EXE_BResult.Type)
+            `BIsCall: begin
+                RAS[RAS_Top].Valid     <= 1'b1;
+                RAS[RAS_Top].Addr      <= EXE_BResult.PC + 8;
+                RAS_Top                <= RAS_Top + 1;
+            end
+            `BIsRetn: begin
+                RAS_Top                <= RAS_TopSub1;
+            end
+            default: begin
+                ;
+            end
+            endcase
+        end
+    end
+//--------------------------RAS的旁路------------------------------------------------------------//
+    assign RAS_Wr = EXE_BResult.Valid && (EXE_BResult.Type == `BIsCall);
+
+    always_comb begin
+        if(RAS_Wr) begin
+            RAS_Data.Valid = 1'b1;
+            RAS_Data.Addr  = EXE_BResult.PC + 8;
+        end
+        else begin
+            RAS_Data = RAS[RAS_TopSub1];
+        end
+    end
 //---------------------------------History Branch Table-----------------------------------------//
     // always_ff @(posedge clk ) begin
     //     if(rst == `RstEnable) begin

@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-26 15:00:47
+ * @LastEditTime: 2021-07-28 21:03:24
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -15,6 +15,8 @@ module BranchSolve (
     input logic           EXE_IsAJumpCall,
     input logic [31:0]    EXE_OutA,
     input logic [31:0]    EXE_OutB,
+    input logic [4:0]     EXE_rs,
+    input logic [4:0]     EXE_rd,
     input logic [31:0]    EXE_PC,
     input logic           EXE_Wr,
     input PResult         EXE_PResult,    //随流水线流动的预测结果
@@ -80,13 +82,20 @@ module BranchSolve (
         if(EXE_BranchType.isBranch) begin
             unique case (EXE_BranchType.branchCode)
             `BRANCH_CODE_J:begin
-                if(EXE_IsAJumpCall) Branch_Type = `BIsCall;
-                else                Branch_Type = `BIsImme; 
+                if(EXE_IsAJumpCall) Branch_Type = `BIsCall;  //JAL
+                else                Branch_Type = `BIsImme;  //J
                 Branch_Target                   = EXE_JumpAddr;
             end 
             `BRANCH_CODE_JR:begin
-                if(EXE_IsAJumpCall) Branch_Type = `BIsCall;
-                else                Branch_Type = `BIsRetn;
+                if(EXE_IsAJumpCall) begin
+                    if(EXE_rd == 5'b11111)      Branch_Type = `BIsCall;  //JALR&&31
+                    else if(EXE_rs == 5'b11111) Branch_Type = `BIsRetn;
+                    else                        Branch_Type = `BIsImme;  //JALR
+                end
+                else begin
+                    if(EXE_rs == 5'b11111)  Branch_Type = `BIsRetn; //JR&&31
+                    else                    Branch_Type = `BIsImme; //JR
+                end
                 Branch_Target                   = EXE_OutA;
             end
             default: begin
@@ -108,10 +117,10 @@ module BranchSolve (
     assign EXE_BResult.PC           = EXE_PC;
     assign EXE_BResult.Count        = EXE_PResult.Count;
     assign EXE_BResult.Hit          = EXE_PResult.Hit;
-    assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr;
+    assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr && (Branch_Type != `BIsNone);
     // assign EXE_BResult.History      = EXE_PResult.History;
     assign EXE_Correction_Vector    = Branch_Target;
-    // assign EXE_BResult.RetnSuccess  = Prediction_Success && (EXE_PResult.Type == `BIsRetn);
+    assign EXE_BResult.RetnSuccess  = Prediction_Success;
 //---------------------------判断预测是否成功---------------------------//
     assign Branch_Success    = (Branch_IsTaken)?EXE_Branch_Success:EXE_PC8_Success;
     assign JR_Success        = (EXE_PResult.Target == EXE_OutA);

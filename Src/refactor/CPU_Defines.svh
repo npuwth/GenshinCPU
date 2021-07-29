@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-26 16:15:10
+ * @LastEditTime: 2021-07-28 15:54:52
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -285,7 +285,7 @@ typedef struct packed {
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
-	// logic                      RetnSuccess;//JR预测成功
+	logic                      RetnSuccess;//JR预测成功
 } BResult;
 
 typedef struct packed {
@@ -296,13 +296,18 @@ typedef struct packed {
 } BHT_Entry;
 
 typedef struct packed {
-    logic [31:`SIZE_OF_INDEX+2]Tag;      //Tag in BHT
-    logic [31:`SIZE_OF_INDEX+2]PCTag;    //Tag of PC
-    logic [31:0]               BHT_Addr; //Target Address in BHT
-    logic [31:0]               RAS_Addr; //Target Address in RAS
-    logic [31:0]               PC_Add8;  //pc+8
-    logic [1:0]                Type;     //Type in BHT
-    logic [1:0]                Count;    //Count in BHT
+	logic                      Valid;
+	logic [31:0]               Addr;
+} RAS_Entry;
+
+typedef struct packed {
+    logic [31:`SIZE_OF_INDEX+2]Tag;       //Tag in BHT
+    logic [31:`SIZE_OF_INDEX+2]PCTag;     //Tag of PC
+    logic [31:0]               BHT_Addr;  //Target Address in BHT
+    RAS_Entry                  RAS_Entry; //Target Address in RAS
+    logic [31:0]               PC_Add8;   //pc+8
+    logic [1:0]                Type;      //Type in BHT
+    logic [1:0]                Count;     //Count in BHT
 	logic                      Valid;
 } BPU_Reg;
 //-------------------------------------------------------------------------------------------------//

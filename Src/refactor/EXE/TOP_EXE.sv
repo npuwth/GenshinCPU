@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-24 19:57:08
+ * @LastEditTime: 2021-07-28 15:37:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -153,6 +153,8 @@ module TOP_EXE (
         .EXE_IsAJumpCall      (EMBus.EXE_IsAJumpCall), 
         .EXE_OutA             (EXE_BusA),
         .EXE_OutB             (EXE_BusB),
+        .EXE_rs               (EXE_rs),
+        .EXE_rd               (EMBus.EXE_rd),
         .EXE_PC               (EMBus.EXE_PC),
         .EXE_Wr               (EXE_Wr),
         .EXE_PResult          (EXE_PResult),
