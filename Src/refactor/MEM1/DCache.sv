@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-28 21:21:17
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-29 15:34:50
+ * @LastEditors: Johnson Yang
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -14,7 +14,7 @@
 //dcache只有在不busy的时候才会 处理在mem1的指令 cpu_bus.valid与cache指令无关
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width�?
-    parameter STORE_BUFFER_SIZE = 32,
+    parameter STORE_BUFFER_SIZE = 1,
     parameter DATA_WIDTH        = 32,//cache和cpu 总线数据位宽为data_width
     parameter LINE_WORD_NUM     = 4,//cache line大小 �?块的字数
     parameter ASSOC_NUM         = 4,//assoc_num组相�?
