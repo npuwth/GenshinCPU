@@ -14,7 +14,7 @@
 `define TLB_ENTRIES_NUM      16
 `define CACHE_WAY_SIZE       4 * 1024        // 4KB 
 
-`define ICACHE_LINE_WORD     8
+`define ICACHE_LINE_WORD     16
 `define ICACHE_SET_ASSOC     2
 `define ICACHE_SIZE          CACHE_WAY_SIZE * ICACHE_SET_ASSOC  // 4KB* ASSOC
   

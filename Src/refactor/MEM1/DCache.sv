@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-26 16:32:25
+ * @LastEditTime: 2021-07-29 14:28:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -61,6 +61,7 @@ typedef struct packed {
     logic [3:0] wstrb;
 } uncache_store_t;
 
+typedef logic [ASSOC_NUM-1:0]                     hit_t;
 typedef logic [TAG_WIDTH-1:0]                     tag_t;
 typedef logic [INDEX_WIDTH-1:0]                   index_t;
 typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
@@ -196,6 +197,9 @@ logic [$clog2(ASSOC_NUM)-1:0] lru[SET_NUM-1:0];
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
 
+logic [ASSOC_NUM-1:0] pipe_hit;
+logic pipe_cache_hit;
+
 tagv_t [ASSOC_NUM-1:0] pipe_tagv_rdata;
 logic pipe_wr;
 
@@ -315,7 +319,7 @@ generate;//PLRU
         ) plru_reg(
             .clk(clk),
             .resetn(resetn),
-            .access(hit),
+            .access(pipe_hit),
             .update(req_buffer.valid &&i[INDEX_WIDTH-1:0] == req_buffer.index),
 
             .lru(lru[i])
@@ -325,7 +329,7 @@ endgenerate
 
 generate;// 判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
-        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0;
+        assign hit[i] = (cpu_bus.stall) ? (tagv_rdata[i].valid & (req_buffer.tag == tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0 : (tagv_rdata[i].valid & (cpu_bus.tag == tagv_rdata[i].tag) & cpu_bus.isCache) ? 1'b1:1'b0;
     end
 endgenerate
 
@@ -345,7 +349,7 @@ assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.index :cpu_bus.index;
 
 
-assign busy_cache          = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
+assign busy_cache          = (req_buffer.valid & ~pipe_cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache_read   = (uncache_state == UNCACHE_IDLE  || uncache_state == UNCACHE_READ_DONE) ? 1'b0 : 1'b1;
 // assign busy_collision1     = (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 // assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
@@ -428,19 +432,21 @@ assign dirty_addr     = req_buffer.index;
 //         endcase
 // end
 
+
+
 always_comb begin : dirty_we_block
     if (state == REFILL) begin
         dirty_we = '0;
         dirty_we[lru[req_buffer.index]] =1'b1;
     end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
-        dirty_we = hit;
+        dirty_we = pipe_hit;
     end else begin
         dirty_we = '0;
     end
 end
 
 always_comb begin : data_rdata_final__blockname
-    data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(hit)];
+    data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == pipe_hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(pipe_hit)];
 end
 
 
@@ -466,7 +472,7 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
     if ((resetn == `RstEnable) ) begin
         store_buffer <= '0;
     end else if(~cpu_bus.stall && req_buffer.valid==1'b1)begin//既是�? 又是有效�?
-        store_buffer.hit   <= hit;
+        store_buffer.hit   <= pipe_hit;
         store_buffer.index <= req_buffer.index;
         store_buffer.offset <= req_buffer.offset;
         store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
@@ -508,14 +514,17 @@ generate;//锁存读出的tag
         if (pipe_wr) begin
             pipe_tagv_rdata[i].tag   <= tagv_rdata[i].tag;
             pipe_tagv_rdata[i].valid <= tagv_rdata[i].valid ;
-        end else begin
-            pipe_tagv_rdata[i].tag   <= pipe_tagv_rdata[i].tag;
-            pipe_tagv_rdata[i].valid <= pipe_tagv_rdata[i].valid ;        
-        end
+        end 
     end        
     end
 endgenerate
 
+always_ff @( posedge clk ) begin : pipe_hitblockName
+    if (pipe_wr) begin
+        pipe_cache_hit           <= cache_hit;
+        pipe_hit                 <= hit;
+    end 
+end
 
 always_ff @( posedge clk ) begin : state_blockName
     if (resetn == `RstEnable) begin
@@ -534,7 +543,7 @@ always_comb begin : state_next_blockname
                 if (req_buffer.isCache == 1'b0 ) begin
                     state_next = LOOKUP;
                 end else begin
-                if (cache_hit) begin
+                if (pipe_cache_hit) begin
                     state_next = LOOKUP;
                 end else begin
                     if (dirty_rdata[lru[req_buffer.index]]) begin
@@ -595,7 +604,7 @@ always_ff @(posedge clk) begin :wb_state_blockname
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & cache_hit & ~cpu_bus.stall) begin
+    if (req_buffer.valid & req_buffer.op & pipe_cache_hit & ~cpu_bus.stall) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;
