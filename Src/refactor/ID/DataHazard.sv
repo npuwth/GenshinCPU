@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-06-16 16:07:56
- * @LastEditTime: 2021-07-24 16:43:02
+ * @LastEditTime: 2021-07-29 20:33:36
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,66 +29,78 @@ module DataHazard (
     output logic       ID_MEM1_DH_Stall,   //数据冒险的阻塞
     output logic       ID_MEM2_DH_Stall    //数据冒险的阻塞
 );
-    always_comb begin
-        // RFC0 的数据阻塞
-        if ( EXE_ReadMEM == 1'b1 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
-             (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin
-            ID_EX_DH_Stall   = 1'b1;
-            ID_MEM1_DH_Stall = 1'b0;
-            ID_MEM2_DH_Stall = 1'b0;
-        end
-        else if (MEM_ReadMEM == 1'b1 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) || 
-             (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin
-            ID_EX_DH_Stall   = 1'b0;
-            ID_MEM1_DH_Stall = 1'b1;
-            ID_MEM2_DH_Stall = 1'b0;
-        end
-        else if (MEM2_ReadMEM== 1'b1 && ((ID_rs == MEM2_rt && ID_rsrtRead[1] == 1'b1)||
-             (ID_rt == MEM2_rt && ID_rsrtRead[0] == 1'b1))) begin
-            ID_EX_DH_Stall   = 1'b0;
-            ID_MEM1_DH_Stall = 1'b0;
-            ID_MEM2_DH_Stall = 1'b1;
-        end
-        // MFC0 的数据阻塞
-        else if ( EXE_Instr[31:21] == 11'b010000_00000 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
-             (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin //MFC0后面存在数据依赖的情况
-            ID_EX_DH_Stall   = 1'b1;
-            ID_MEM1_DH_Stall = 1'b0;
-            ID_MEM2_DH_Stall = 1'b0;
-        end 
-        else if ( MEM_Instr[31:21] == 11'b010000_00000 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) || 
-             (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin //MFC0后面存在数据依赖的情况
-            ID_EX_DH_Stall   = 1'b0;
-            ID_MEM1_DH_Stall = 1'b1;
-            ID_MEM2_DH_Stall = 1'b0;
-        end 
-        else begin
-            ID_EX_DH_Stall   = 1'b0;
-            ID_MEM1_DH_Stall = 1'b0;
-            ID_MEM2_DH_Stall = 1'b0;
-        end    
+    // always_comb begin
+    //     // RFC0 的数据阻塞
+    //     if ( EXE_ReadMEM == 1'b1 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
+    //          (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin
+    //         ID_EX_DH_Stall   = 1'b1;
+    //         ID_MEM1_DH_Stall = 1'b0;
+    //         ID_MEM2_DH_Stall = 1'b0;
+    //     end
+    //     else if (MEM_ReadMEM == 1'b1 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) || 
+    //          (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin
+    //         ID_EX_DH_Stall   = 1'b0;
+    //         ID_MEM1_DH_Stall = 1'b1;
+    //         ID_MEM2_DH_Stall = 1'b0;
+    //     end
+    //     else if (MEM2_ReadMEM== 1'b1 && ((ID_rs == MEM2_rt && ID_rsrtRead[1] == 1'b1)||
+    //          (ID_rt == MEM2_rt && ID_rsrtRead[0] == 1'b1))) begin
+    //         ID_EX_DH_Stall   = 1'b0;
+    //         ID_MEM1_DH_Stall = 1'b0;
+    //         ID_MEM2_DH_Stall = 1'b1;
+    //     end
+    //     // MFC0 的数据阻塞
+    //     else if ( EXE_Instr[31:21] == 11'b010000_00000 && ((ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || 
+    //          (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1))) begin //MFC0后面存在数据依赖的情况
+    //         ID_EX_DH_Stall   = 1'b1;
+    //         ID_MEM1_DH_Stall = 1'b0;
+    //         ID_MEM2_DH_Stall = 1'b0;
+    //     end 
+    //     else if ( MEM_Instr[31:21] == 11'b010000_00000 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) || 
+    //          (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin //MFC0后面存在数据依赖的情况
+    //         ID_EX_DH_Stall   = 1'b0;
+    //         ID_MEM1_DH_Stall = 1'b1;
+    //         ID_MEM2_DH_Stall = 1'b0;
+    //     end 
+    //     else begin
+    //         ID_EX_DH_Stall   = 1'b0;
+    //         ID_MEM1_DH_Stall = 1'b0;
+    //         ID_MEM2_DH_Stall = 1'b0;
+    //     end    
 
+    // end
+
+
+
+always_comb begin : ID_EX_DH_Stall_blockName
+     if ( ( (ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1) )  ) begin
+        if (EXE_ReadMEM == 1'b1 ||  EXE_Instr[31:21] == 11'b010000_00000) begin
+            ID_EX_DH_Stall = 1'b1;
+        end else begin
+            ID_EX_DH_Stall = 1'b0;
+        end
+    end else begin
+        ID_EX_DH_Stall = 1'b0;
     end
+end
 
+always_comb begin : ID_MEM1_DH_Stall_blockName
+    if (((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) ||  (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin
+        if (MEM_ReadMEM == 1'b1 || MEM_Instr[31:21] == 11'b010000_00000 ) begin
+            ID_MEM1_DH_Stall = 1'b1;
+        end else begin
+            ID_MEM1_DH_Stall = 1'b0;
+        end
+    end else begin
+        ID_MEM1_DH_Stall = 1'b0;
+    end
+end
 
-
-// always_comb begin : ID_EX_DH_Stall_blockName
-//      if ( ( (ID_rs == EXE_rt && ID_rsrtRead[1] == 1'b1) || (ID_rt == EXE_rt && ID_rsrtRead[0] == 1'b1) )  ) begin
-//         if (EXE_ReadMEM == 1'b1 ||  EXE_Instr[31:21] == 11'b010000_00000) begin
-//             ID_EX_DH_Stall = 1'b1;
-//         end else begin
-//             ID_EX_DH_Stall = 1'b0;
-//         end
-//     end else begin
-//         ID_EX_DH_Stall = 1'b0;
-//     end
-// end
-
-// always_comb begin : ID_MEM1_DH_Stall_blockName
-//     if (MEM_ReadMEM == 1'b1 && ((ID_rs == MEM_rt && ID_rsrtRead[1] == 1'b1) ||  (ID_rt == MEM_rt && ID_rsrtRead[0] == 1'b1))) begin
-//         ID_MEM1_DH_Stall = 1'b1;
-//     end else begin
-//         ID_MEM1_DH_Stall = 1'b0;
-//     end
-// end
+always_comb begin : ID_MEM2_DH_Stall_blockName
+    if (MEM2_ReadMEM== 1'b1 && ((ID_rs == MEM2_rt && ID_rsrtRead[1] == 1'b1)||(ID_rt == MEM2_rt && ID_rsrtRead[0] == 1'b1))) begin
+        ID_MEM2_DH_Stall = 1'b1;
+    end else begin
+        ID_MEM2_DH_Stall = 1'b0;
+    end
+end
 endmodule
