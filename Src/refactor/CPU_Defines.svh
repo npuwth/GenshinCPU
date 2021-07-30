@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-28 15:54:52
+ * @LastEditTime: 2021-07-30 10:39:48
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -267,33 +267,37 @@ typedef struct packed {  //一个TLB项
 } TLB_Entry;
 
 typedef struct packed {
-    logic [1:0]                Type;     //表示预测的类型
+    logic [2:0]                Type;     //表示预测的类型
     logic                      IsTaken;  //表示预测是否跳转
     logic [31:0]               Target;   //表示预测的跳转地址
     logic [1:0]                Count;    //表示预测时的计数器值
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
-	// logic [1:0]                History;  //预测时的历史跳转信息
+	logic [7:0]                Index;    //预测时索引Count的Index
 } PResult;
 
 typedef struct packed {
-    logic [1:0]                Type;     //表示实际的类型
+    logic [2:0]                Type;     //表示实际的类型
     logic                      IsTaken;  //表示实际是否跳转
     logic [31:0]               Target;   //表示实际的跳转地址
     logic [31:0]               PC;       //需要校准的PC
     logic [1:0]                Count;    //预测该条指令时的Count
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
-	// logic [1:0]                History;  //预测时的历史跳转信息
-	logic                      RetnSuccess;//JR预测成功
+	logic [7:0]                Index;    //预测时索引Count的Index
 } BResult;
 
 typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;   //PC的Tag
     logic [31:0]               Target;
-    logic [1:0]                Type;  //分支种类
+    logic [2:0]                Type;  //分支种类
     logic [1:0]                Count; //二位饱和计数器
 } BHT_Entry;
+
+typedef struct packed {
+	logic [31:`SIZE_OF_INDEX+2]Tag;
+	logic [1:0]                Count;
+} Count_Entry;
 
 typedef struct packed {
 	logic                      Valid;
@@ -306,9 +310,10 @@ typedef struct packed {
     logic [31:0]               BHT_Addr;  //Target Address in BHT
     RAS_Entry                  RAS_Entry; //Target Address in RAS
     logic [31:0]               PC_Add8;   //pc+8
-    logic [1:0]                Type;      //Type in BHT
+    logic [2:0]                Type;      //Type in BHT
     logic [1:0]                Count;     //Count in BHT
-	logic                      Valid;
+	logic                      Valid;     //Is BPU_Reg Valid
+	logic [7:0]                Index;     //Index of Count
 } BPU_Reg;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-28 19:51:48
+ * @LastEditTime: 2021-07-30 10:42:25
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,15 +34,19 @@ module BPU (
     
     BHT_Entry                          W_BHT_Entry; //BHT write data for correction
     BHT_Entry                          R_BHT_Entry; //BHT read data
-    // logic [1:0]                        History;
+    logic [1:0]                        R_Count;
+    logic [1:0]                        W_Count;
+    logic [7:0]                        History;
+    logic [7:0]                        Index;
     logic [31:0]                       PREIF_PCAdd8;
+    BPU_Reg                            BPU_Reg;
+    
     assign PREIF_PCAdd8 = PREIF_PC + 8;
 
-    BPU_Reg                            BPU_Reg;
 
     simple_port_ram #(
                 .LATENCY(0),
-                .SIZE(`SIZE_OF_SET),
+                .SIZE(`SIZE_OF_SET*256),
                 .dtype(BHT_Entry)
             )mem_data(
                 .clk(clk),
@@ -50,12 +54,34 @@ module BPU (
                 //write port
                 .ena(1'b1),
                 .wea(EXE_BResult.Valid),
-                .addra({EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
+                .addra({EXE_BResult.Index,EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
                 .dina(W_BHT_Entry),
                 //read port
                 .enb(1'b1), 
-                .addrb({PREIF_PC[`SIZE_OF_INDEX+1:2]}),
+                .addrb({Index,PREIF_PC[`SIZE_OF_INDEX+1:2]}),
                 .doutb(R_BHT_Entry)
+            );
+
+    typedef logic [1:0] CountType;
+    // assign Index = History[7:0]^PREIF_PC[`SIZE_OF_INDEX+1:2];
+    assign Index = History;
+
+    simple_port_ram #(
+                .LATENCY(0),
+                .SIZE(`SIZE_OF_SET*256),
+                .dtype(CountType)
+            )count_data(
+                .clk(clk),
+                .rst(~rst),
+                //write port
+                .ena(1'b1),
+                .wea(EXE_BResult.Valid),
+                .addra({EXE_BResult.Index,EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
+                .dina(W_Count),
+                //read port
+                .enb(1'b1), 
+                .addrb({Index,PREIF_PC[`SIZE_OF_INDEX+1:2]}),
+                .doutb(R_Count)
             );
 
 //----------------------------对W_BHT_Entry进行赋值----------------------//
@@ -96,18 +122,19 @@ module BPU (
             BPU_Reg.Type               <= '0;
             BPU_Reg.Count              <= '0;
             BPU_Reg.Valid              <= '0;
+            BPU_Reg.Index              <= '0;
         end
         else if(IF_Wr == 1'b1 ) begin
             BPU_Reg.Tag                <= R_BHT_Entry.Tag;
             BPU_Reg.PCTag              <= PREIF_PC[31:`SIZE_OF_INDEX+2];
             BPU_Reg.BHT_Addr           <= R_BHT_Entry.Target;
             BPU_Reg.RAS_Entry          <= RAS_Data;
-            // BPU_Reg.RAS_Addr           <= RAS_Data;
-            // BPU_Reg.RAS_Addr           <= R_BHT_Entry.Target;
             BPU_Reg.PC_Add8            <= PREIF_PCAdd8;
             BPU_Reg.Type               <= R_BHT_Entry.Type;
+            // BPU_Reg.Count              <= R_Count;
             BPU_Reg.Count              <= R_BHT_Entry.Count;
             BPU_Reg.Valid              <= ~IF_PResult.IsTaken;
+            BPU_Reg.Index              <= Index;
         end
     end  
 
@@ -129,7 +156,7 @@ module BPU (
                 Target = (BPU_Reg.RAS_Entry.Valid)?(BPU_Reg.RAS_Entry.Addr):BPU_Reg.PC_Add8;
                 IF_PResult.IsTaken = 1'b1;
             end
-            `BIsImme: begin //根据饱和计数器判断
+            `BIsBran: begin //根据饱和计数器判断
                 if(BPU_Reg.Count[1] == 1'b1) begin
                 Target = BPU_Reg.BHT_Addr;
                 IF_PResult.IsTaken = 1'b1;
@@ -139,6 +166,10 @@ module BPU (
                 IF_PResult.IsTaken = 1'b0;
                 end
             end 
+            `BIsJump: begin
+                Target = BPU_Reg.BHT_Addr;
+                IF_PResult.IsTaken = 1'b1;
+            end
             default: begin
                 Target = BPU_Reg.PC_Add8;
                 IF_PResult.IsTaken = 1'b0;
@@ -152,7 +183,7 @@ module BPU (
     assign IF_PResult.Count        = BPU_Reg.Count;
     assign IF_PResult.Hit          = BHT_hit;
     assign IF_PResult.Valid        = BPU_Valid;
-    // assign IF_PResult.History      = History;
+    assign IF_PResult.Index        = Index;
 //-----------------------------RAS------------------------------------------------------//
     //更新RAS与RAS_Top
     always_ff @(posedge clk ) begin
@@ -189,22 +220,12 @@ module BPU (
         end
     end
 //---------------------------------History Branch Table-----------------------------------------//
-    // always_ff @(posedge clk ) begin
-    //     if(rst == `RstEnable) begin
-    //         History[0] <= '0;
-    //     end
-    //     else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
-    //         History[0] <= EXE_BResult.IsTaken;
-    //     end
-    // end
-
-    // always_ff @(posedge clk ) begin
-    //     if(rst == `RstEnable) begin
-    //         History[1] <= '0;
-    //     end
-    //     else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
-    //         History[1] <= History[0];
-    //     end
-    // end
-
+    always_ff @(posedge clk) begin
+        if(rst == `RstEnable) begin
+            History <= '0;
+        end
+        else if(EXE_BResult.Valid && (EXE_BResult.Type == `BIsBran || EXE_BResult.Type == `BIsJump)) begin
+            History <= {History[6:0],EXE_BResult.IsTaken};
+        end
+    end
 endmodule

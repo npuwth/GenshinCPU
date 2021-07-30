@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-28 21:03:24
+ * @LastEditTime: 2021-07-29 20:20:44
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -83,23 +83,23 @@ module BranchSolve (
             unique case (EXE_BranchType.branchCode)
             `BRANCH_CODE_J:begin
                 if(EXE_IsAJumpCall) Branch_Type = `BIsCall;  //JAL
-                else                Branch_Type = `BIsImme;  //J
+                else                Branch_Type = `BIsJump;  //J
                 Branch_Target                   = EXE_JumpAddr;
             end 
             `BRANCH_CODE_JR:begin
                 if(EXE_IsAJumpCall) begin
                     if(EXE_rd == 5'b11111)      Branch_Type = `BIsCall;  //JALR&&31
                     else if(EXE_rs == 5'b11111) Branch_Type = `BIsRetn;
-                    else                        Branch_Type = `BIsImme;  //JALR
+                    else                        Branch_Type = `BIsJump;  //JALR
                 end
                 else begin
                     if(EXE_rs == 5'b11111)  Branch_Type = `BIsRetn; //JR&&31
-                    else                    Branch_Type = `BIsImme; //JR
+                    else                    Branch_Type = `BIsJump; //JR
                 end
                 Branch_Target                   = EXE_OutA;
             end
             default: begin
-                Branch_Type                       = `BIsImme;
+                Branch_Type                       = `BIsBran;
                 if(Branch_IsTaken)  Branch_Target = EXE_BranchAddr;
                 else                Branch_Target = EXE_PCAdd8; 
             end               
@@ -118,9 +118,8 @@ module BranchSolve (
     assign EXE_BResult.Count        = EXE_PResult.Count;
     assign EXE_BResult.Hit          = EXE_PResult.Hit;
     assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr && (Branch_Type != `BIsNone);
-    // assign EXE_BResult.History      = EXE_PResult.History;
+    assign EXE_BResult.Index        = EXE_PResult.Index;
     assign EXE_Correction_Vector    = Branch_Target;
-    assign EXE_BResult.RetnSuccess  = Prediction_Success;
 //---------------------------判断预测是否成功---------------------------//
     assign Branch_Success    = (Branch_IsTaken)?EXE_Branch_Success:EXE_PC8_Success;
     assign JR_Success        = (EXE_PResult.Target == EXE_OutA);

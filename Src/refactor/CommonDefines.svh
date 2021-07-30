@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-07-28 21:01:18
+ * @LastEditTime: 2021-07-29 19:47:57
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -50,10 +50,11 @@
 `define SIZE_OF_INDEX 8
 `define SIZE_OF_SET 256
 
-`define BIsNone 2'b00  //不分支
-`define BIsCall 2'b01  //jal,jalr
-`define BIsRetn 2'b10  //jr
-`define BIsImme 2'b11  //branch,j
+`define BIsNone 3'b000  //不分支
+`define BIsCall 3'b001  //jal,jalr
+`define BIsRetn 3'b010  //jr
+`define BIsBran 3'b011  //branch
+`define BIsJump 3'b100  //jump
 
 `define NT      2'b00  //not taken
 `define WNT     2'b01  //weakly not taken
