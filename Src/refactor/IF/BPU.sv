@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-30 11:31:28
+ * @LastEditTime: 2021-07-30 16:17:45
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,7 +46,7 @@ module BPU (
 
     simple_port_ram #(
                 .LATENCY(0),
-                .SIZE(`SIZE_OF_SET*256),
+                .SIZE(`SIZE_OF_SET),
                 .dtype(BHT_Entry)
             )mem_data(
                 .clk(clk),
@@ -54,17 +54,17 @@ module BPU (
                 //write port
                 .ena(1'b1),
                 .wea(EXE_BResult.Valid),
-                .addra({EXE_BResult.Index,EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
+                .addra(EXE_BResult.Index),
                 .dina(W_BHT_Entry),
                 //read port
                 .enb(1'b1), 
-                .addrb({Index,PREIF_PC[`SIZE_OF_INDEX+1:2]}),
+                .addrb(Index),
                 .doutb(R_BHT_Entry)
             );
 
     typedef logic [1:0] CountType;
-    // assign Index = History[7:0]^PREIF_PC[`SIZE_OF_INDEX+1:2];
-    assign Index = History;
+    assign Index = History[7:0]^PREIF_PC[`SIZE_OF_INDEX+1:2];
+    // assign Index = History;
 
     simple_port_ram #(
                 .LATENCY(0),
@@ -133,7 +133,7 @@ module BPU (
             BPU_Reg.Type               <= R_BHT_Entry.Type;
             // BPU_Reg.Count              <= R_Count;
             BPU_Reg.Count              <= R_BHT_Entry.Count;
-            BPU_Reg.Valid              <= ~IF_PResult.IsTaken;
+            BPU_Reg.Valid              <= 1'b1;
             BPU_Reg.Index              <= Index;
         end
     end  

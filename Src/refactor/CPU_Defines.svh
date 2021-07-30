@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-30 10:39:48
+ * @LastEditTime: 2021-07-30 22:38:25
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -509,10 +509,13 @@ interface EXE_MEM_Interface();
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
 	logic       [31:0]      EXE_Result;
+	logic                   EXE_PredictFailed;
 	logic       [4:0]       MEM_Dst;
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
 	logic       [31:0]      MEM_Instr;
+	logic                   MEM_IsABranch;
+	logic                   MEM_PredictFailed;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -534,10 +537,13 @@ interface EXE_MEM_Interface();
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
 	output                  EXE_Result,
+	output                  EXE_PredictFailed,
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
-	input                   MEM_Instr
+	input                   MEM_Instr,
+	input                   MEM_IsABranch,
+	input                   MEM_PredictFailed
 	);
 
 	modport MEM (
@@ -560,10 +566,13 @@ interface EXE_MEM_Interface();
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
 	input                   EXE_Result,
+	input                   EXE_PredictFailed,
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,
-	output                  MEM_Instr
+	output                  MEM_Instr,
+	output                  MEM_IsABranch,
+	output                  MEM_PredictFailed
 	);
 
 endinterface

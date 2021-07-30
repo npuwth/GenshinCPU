@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-25 11:42:31
+ * @LastEditTime: 2021-07-30 16:08:58
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -39,7 +39,8 @@ module TOP_ID (
     //---------------------------output------------------------------//   
     output logic             ID_EX_DH_Stall,
     output logic             ID_MEM1_DH_Stall,
-    output logic             ID_MEM2_DH_Stall
+    output logic             ID_MEM2_DH_Stall,
+    output logic             ID_IsABranch
 );
     logic [15:0]             ID_Imm16;
     logic [1:0]              ID_EXTOp;
@@ -79,6 +80,7 @@ module TOP_ID (
     assign IEBus.ID_JumpAddr       = JumpAddr;
     assign IEBus.ID_BranchAddr     = BranchAddr;
     assign IEBus.ID_PCAdd8         = ID_PCAdd8;
+    assign ID_IsABranch            = IEBus.ID_BranchType.isBranch;
 
     ID_Reg U_ID_REG ( 
         .clk                 (clk ),

@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-29 20:20:44
+ * @LastEditTime: 2021-07-30 22:44:34
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -26,10 +26,12 @@ module BranchSolve (
     input logic [31:0]    EXE_JumpAddr,
     input logic [31:0]    EXE_BranchAddr, 
     input logic [31:0]    EXE_PCAdd8,
+    input logic           MEM_IsABranch,
+    input logic           MEM_PredictFailed,
     //---------------------output----------------------------------//
     output logic          EXE_Prediction_Failed,//表示预测失败
     output logic [31:0]   EXE_Correction_Vector,//用于校正的地址向量
-    output BResult        EXE_BResult     //用于校正BHT查找表的数据
+    output BResult        EXE_BResult           //用于校正BHT查找表的数据
 );
 
     logic                 Branch_IsTaken; //实际是否应该跳转   （方向）
@@ -144,7 +146,7 @@ module BranchSolve (
         end                       
     end 
 
-    assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid; //阻塞的时候也可以发BranchFail，否则会有组合环
+    assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid && (~MEM_IsABranch) && (~MEM_PredictFailed); //1.阻塞的时候也可以发BranchFail，否则会有组合环 2.文档BUG2
 
 
 endmodule
