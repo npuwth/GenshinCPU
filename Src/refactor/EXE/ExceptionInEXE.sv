@@ -15,7 +15,8 @@ module ExceptionInEXE(
 
     output ExceptinPipeType   EXE_ExceptType_final
 );
-
+    logic  MEM_IsMTC0;
+    assign MEM_IsMTC0 = (MEM_Instr[31:21] == 11'b01000000100);
     logic  LoadAlign_valid;
     logic  StoreAlign_valid;
     assign LoadAlign_valid    = (EXE_LoadType.ReadMem && EXE_LoadType.LeftOrRight != 2'b01  &&  EXE_LoadType.LeftOrRight != 2'b10) ? 1'b1 : 1'b0;
@@ -50,6 +51,6 @@ module ExceptionInEXE(
     assign EXE_ExceptType_final.WrTLBRefillinMEM    =  EXE_ExceptType.WrTLBRefillinMEM; 
     assign EXE_ExceptType_final.WrTLBInvalidinMEM   =  EXE_ExceptType.WrTLBInvalidinMEM;   
     assign EXE_ExceptType_final.TLBModified         =  EXE_ExceptType.TLBModified;
-    assign EXE_ExceptType_final.Refetch             =  (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_Instr[31:21] == 11'b01000000100 && MEM_Dst == `CP0_REG_ENTRYHI));
+    assign EXE_ExceptType_final.Refetch             =  (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_IsMTC0 && MEM_Dst == `CP0_REG_ENTRYHI) || (MEM_IsMTC0 && MEM_Dst == `CP0_REG_CONFIG0));
     assign EXE_ExceptType_final.Trap                =  Trap_valid;
 endmodule

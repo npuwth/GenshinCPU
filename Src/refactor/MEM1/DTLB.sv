@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-30 17:40:17
+ * @LastEditTime: 2021-07-30 20:32:53
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -24,6 +24,7 @@ module DTLB (
     input logic                   s1_found,  //来自TLB
     input LoadType                MEM_LoadType,
     input StoreType               MEM_StoreType,
+    input logic  [2:0]            CP0_Config_K0,
     output logic [31:0]           Phsy_Daddr,
     output logic                  D_IsCached,
     output logic                  D_IsTLBBufferValid,
@@ -105,7 +106,12 @@ module DTLB (
             D_IsCached                               = 1'b0;
         end
         else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
-            D_IsCached                               = 1'b1;
+            if(CP0_Config_K0 == 3'b011) begin
+                D_IsCached                           = 1'b1;
+            end
+            else begin
+                D_IsCached                           = 1'b0;
+            end
         end
         else begin
             if(Virt_Daddr[12] == 1'b0) begin

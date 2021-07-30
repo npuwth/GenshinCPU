@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-22 15:37:02
+ * @LastEditTime: 2021-07-30 20:32:05
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,6 +34,7 @@ module TOP_PREIF (
     input logic                 s0_found,
     input logic                 TLBBuffer_Flush,
     input logic                 IReq_valid,
+    input logic [2:0]           CP0_Config_K0,
     PREIF_IF_Interface          PIBus,
     CPU_Bus_Interface           cpu_ibus,
     AXI_Bus_Interface           axi_ibus,
@@ -134,6 +135,7 @@ module TOP_PREIF (
         .TLBBuffer_Flush (TLBBuffer_Flush ),
         .I_TLBEntry      (I_TLBEntry ),
         .s0_found        (s0_found ),
+        .CP0_Config_K0   (CP0_Config_K0),
     //--------------------output----------------------//    
         .Phsy_Iaddr      (Phsy_Iaddr ),
         .I_IsCached      (I_IsCached ),

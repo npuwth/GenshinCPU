@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-07-30 17:44:00
+ * @LastEditTime: 2021-07-30 20:32:33
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -22,6 +22,7 @@ module ITLB (
     input logic                   TLBBuffer_Flush,
     input TLB_Entry               I_TLBEntry,//来自TLB
     input logic                   s0_found,  //来自TLB
+    input logic  [2:0]            CP0_Config_K0,
     output logic [31:0]           Phsy_Iaddr,
     output logic                  I_IsCached,
     output logic                  I_IsTLBBufferValid,

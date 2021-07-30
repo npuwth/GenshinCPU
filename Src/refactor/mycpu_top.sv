@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-30 18:17:23
+ * @LastEditTime: 2021-07-30 20:25:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -133,11 +133,14 @@ module mycpu_top (
     StoreType                  MEM_StoreType;             //用于Control 
     logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
-    logic                      TLBBuffer_Flush;
-    TLB_Entry                  I_TLBEntry;
-    TLB_Entry                  D_TLBEntry;
-    logic [31:13]              I_VPN2;
-    logic [31:13]              D_VPN2;
+    logic                      TLBBuffer_Flush;           //在修改TLB或ASID后清空buffer
+    TLB_Entry                  I_TLBEntry;                //Buffer与TLB交互
+    TLB_Entry                  D_TLBEntry;                //Buffer与TLB交互
+    logic                      s0_found;                  //Buffer与TLB交互
+    logic                      s1_found;                  //Buffer与TLB交互
+    logic [31:13]              I_VPN2;                    //Buffer与TLB交互
+    logic [31:13]              D_VPN2;                    //Buffer与TLB交互
+    logic [2:0]                CP0_Config_K0;
     
     logic [31:0]               MEM_Result;  // 用于旁路数据
     logic [4:0]                MEM_Dst;
@@ -344,6 +347,7 @@ module mycpu_top (
         .s0_found                  (s0_found ),
         .TLBBuffer_Flush           (TLBBuffer_Flush ),
         .IReq_valid                (IReq_valid),
+        .CP0_Config_K0             (CP0_Config_K0 ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
         .axi_iubus                 (axi_iubus),
@@ -447,7 +451,8 @@ module mycpu_top (
         .MEM_Result                (MEM_Result),     
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),
-        .MEM_Instr                 (MEM_Instr)
+        .MEM_Instr                 (MEM_Instr),
+        .CP0_Config_K0             (CP0_Config_K0)
     );
     
     TOP_MEM2 U_TOP_MEM2 (
