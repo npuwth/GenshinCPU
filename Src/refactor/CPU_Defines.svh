@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-27 16:03:18
+ * @LastEditTime: 2021-07-30 17:26:56
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -254,6 +254,7 @@ typedef struct packed {
 	logic [2:2]     D1;
 	logic [1:1]     V1;
 	logic           IsInTLB;
+	logic           Valid;
 } TLB_Buffer;
 
 typedef struct packed {  //一个TLB项

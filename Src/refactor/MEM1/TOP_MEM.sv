@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-29 23:04:55
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-07-30 17:53:28
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -45,7 +45,7 @@ module TOP_MEM (
     output logic [31:0]          Exception_Vector,
     output logic [31:13]         D_VPN2,
     output logic                 D_IsTLBStall,
-    output logic                 TLBBuffer_Flush,
+    output logic                 TLBBuffer_Flush_Final,
     output logic [31:0]          MEM_Result,  // 用于旁路数据
     output logic [4:0]           MEM_Dst,
     output RegsWrType            MEM_RegsWrType,
@@ -72,6 +72,7 @@ module TOP_MEM (
     logic [31:0]                 Phsy_Daddr;
     logic                        D_IsCached;
     logic                        D_IsTLBBufferValid;
+    logic                        TLBBuffer_Flush;
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
@@ -90,6 +91,7 @@ module TOP_MEM (
     //往后传的是DisWr选择后的Store信号
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
     assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
+    assign TLBBuffer_Flush_Final    = (MEM_DisWr)? '0 : TLBBuffer_Flush;
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
     // 用于MFC0型的阻塞
@@ -264,7 +266,7 @@ module TOP_MEM (
     DTLB_ila DTLB_ILA(
         .clk(clk),
         .probe0 (MM2Bus.MEM_ALUOut),
-        .probe1 (TLBBuffer_Flush),
+        .probe1 (TLBBuffer_Flush_Final),
         .probe2 (D_TLBEntry),
         .probe3 (s1_found), 
         .probe4 (MEM_LoadType),       // [4:0]
