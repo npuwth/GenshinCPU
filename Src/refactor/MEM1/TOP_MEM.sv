@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-22 15:45:11
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-29 23:04:55
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -259,6 +259,23 @@ module TOP_MEM (
         .D_IsTLBStall            (D_IsTLBStall ),
         .MEM_TLBExceptType       (MEM_TLBExceptType ),
         .D_VPN2                  ( D_VPN2)
+    );
+
+    DTLB_ila DTLB_ILA(
+        .clk(clk),
+        .probe0 (MM2Bus.MEM_ALUOut),
+        .probe1 (TLBBuffer_Flush),
+        .probe2 (D_TLBEntry),
+        .probe3 (s1_found), 
+        .probe4 (MEM_LoadType),       // [4:0]
+        .probe5 (MEM_StoreType ), // [4:0]
+        .probe6 (Phsy_Daddr),    // [4:0]
+        .probe7 (D_IsCached),     //[1:0]
+        .probe8 (D_IsTLBBufferValid),      // [0:0]
+        .probe9 (D_IsTLBStall),
+        .probe10(MEM_TLBExceptType),
+        .probe11(MM2Bus.MEM_PC),
+        .probe12(MM2Bus.MEM_Instr )
     );
 
 
