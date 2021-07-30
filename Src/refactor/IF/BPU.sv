@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-30 10:42:25
+ * @LastEditTime: 2021-07-30 11:31:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -183,7 +183,7 @@ module BPU (
     assign IF_PResult.Count        = BPU_Reg.Count;
     assign IF_PResult.Hit          = BHT_hit;
     assign IF_PResult.Valid        = BPU_Valid;
-    assign IF_PResult.Index        = Index;
+    assign IF_PResult.Index        = BPU_Reg.Index;
 //-----------------------------RAS------------------------------------------------------//
     //更新RAS与RAS_Top
     always_ff @(posedge clk ) begin
@@ -224,7 +224,7 @@ module BPU (
         if(rst == `RstEnable) begin
             History <= '0;
         end
-        else if(EXE_BResult.Valid && (EXE_BResult.Type == `BIsBran || EXE_BResult.Type == `BIsJump)) begin
+        else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsBran ) begin
             History <= {History[6:0],EXE_BResult.IsTaken};
         end
     end
