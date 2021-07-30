@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-30 17:53:28
+ * @LastEditTime: 2021-07-30 18:17:40
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -250,7 +250,7 @@ module TOP_MEM (
         .clk                     (clk ),
         .rst                     (resetn ),
         .Virt_Daddr              (MM2Bus.MEM_ALUOut ),
-        .TLBBuffer_Flush         (TLBBuffer_Flush ),
+        .TLBBuffer_Flush         (TLBBuffer_Flush_Final ),
         .D_TLBEntry              (D_TLBEntry ),
         .s1_found                (s1_found ),
         .MEM_LoadType            (MEM_LoadType ),
@@ -263,22 +263,22 @@ module TOP_MEM (
         .D_VPN2                  ( D_VPN2)
     );
 
-    DTLB_ila DTLB_ILA(
-        .clk(clk),
-        .probe0 (MM2Bus.MEM_ALUOut),
-        .probe1 (TLBBuffer_Flush_Final),
-        .probe2 (D_TLBEntry),
-        .probe3 (s1_found), 
-        .probe4 (MEM_LoadType),       // [4:0]
-        .probe5 (MEM_StoreType ), // [4:0]
-        .probe6 (Phsy_Daddr),    // [4:0]
-        .probe7 (D_IsCached),     //[1:0]
-        .probe8 (D_IsTLBBufferValid),      // [0:0]
-        .probe9 (D_IsTLBStall),
-        .probe10(MEM_TLBExceptType),
-        .probe11(MM2Bus.MEM_PC),
-        .probe12(MM2Bus.MEM_Instr )
-    );
+    // DTLB_ila DTLB_ILA(
+    //     .clk(clk),
+    //     .probe0 (MM2Bus.MEM_ALUOut),
+    //     .probe1 (TLBBuffer_Flush_Final),
+    //     .probe2 (D_TLBEntry),
+    //     .probe3 (s1_found), 
+    //     .probe4 (MEM_LoadType),       // [4:0]
+    //     .probe5 (MEM_StoreType ), // [4:0]
+    //     .probe6 (Phsy_Daddr),    // [4:0]
+    //     .probe7 (D_IsCached),     //[1:0]
+    //     .probe8 (D_IsTLBBufferValid),      // [0:0]
+    //     .probe9 (D_IsTLBStall),
+    //     .probe10(MEM_TLBExceptType),
+    //     .probe11(MM2Bus.MEM_PC),
+    //     .probe12(MM2Bus.MEM_Instr )
+    // );
 
 
 endmodule
