@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-07-30 20:32:33
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-31 23:18:03
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -91,25 +91,34 @@ module ITLB (
         end
     end
 //-----------------------------对Cache属性进行判断-----------------------//
-    // always_comb begin //TLBI
-    //     if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
-    //         I_IsCached                               = 1'b0;
-    //     end
-    //     else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
-    //         I_IsCached                               = 1'b1;
-    //     end
-    //     else begin
-    //         if(Virt_Iaddr[12] == 1'b0) begin
-    //             if(I_TLBBuffer.C0 == 3'b011)  I_IsCached           = 1'b1;
-    //             else                          I_IsCached           = 1'b0;
-    //         end
-    //         else begin
-    //             if(I_TLBBuffer.C1 == 3'b011)  I_IsCached           = 1'b1;
-    //             else                          I_IsCached           = 1'b0;
-    //         end
-    //     end
-    // end
-    assign I_IsCached                 = 1'b1;
+`ifdef All_Uncache
+    assign I_IsCached                                = 1'b0;
+`else
+    always_comb begin //TLBI
+        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+            I_IsCached                               = 1'b0;
+        end
+        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+            if(CP0_Config_K0 == 3'b011) begin
+                I_IsCached                           = 1'b1;
+            end
+            else begin
+                I_IsCached                           = 1'b0;
+            end
+        end
+        else begin
+            if(Virt_Iaddr[12] == 1'b0) begin
+                if(I_TLBBuffer.C0 == 3'b011)  I_IsCached           = 1'b1;
+                else                          I_IsCached           = 1'b0;
+            end
+            else begin
+                if(I_TLBBuffer.C1 == 3'b011)  I_IsCached           = 1'b1;
+                else                          I_IsCached           = 1'b0;
+            end
+        end
+    end
+`endif
+    // assign I_IsCached                 = 1'b1;
 
 //-----------------------------对TLB Buffer进行赋值----------------------、、
     always_ff @(posedge clk ) begin //TLBI
@@ -195,7 +204,21 @@ module ITLB (
             Phsy_Iaddr        = Virt_Iaddr;
         end
     end
-    assign I_IsCached         = 1'b1;
+`ifdef All_Uncache
+    assign I_IsCached         = 1'b0;
+`else 
+    always_comb begin
+        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+            I_IsCached                               = 1'b0;
+        end
+        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+            I_IsCached                               = 1'b1;
+        end
+        else begin
+            I_IsCached                               = 1'b1;
+        end
+    end
+`endif
     assign I_IsTLBBufferValid = 1'b1;
     assign IF_TLBExceptType   = `IF_TLBNoneEX;
     assign I_IsTLBStall       = 1'b0;

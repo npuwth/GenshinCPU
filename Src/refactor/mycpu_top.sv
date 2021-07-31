@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-30 20:25:47
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-31 23:12:04
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -243,6 +243,7 @@ module mycpu_top (
         .dbus                   (axi_dbus.slave ),
         .ibus                   (axi_ibus.slave ),
         .udbus                  (axi_ubus.slave) ,
+        .uibus                  (axi_iubus.slave),
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),
