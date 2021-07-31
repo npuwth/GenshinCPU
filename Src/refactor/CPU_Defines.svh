@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-07-30 22:38:25
+ * @LastEditTime: 2021-07-28 15:54:52
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -267,37 +267,33 @@ typedef struct packed {  //一个TLB项
 } TLB_Entry;
 
 typedef struct packed {
-    logic [2:0]                Type;     //表示预测的类型
+    logic [1:0]                Type;     //表示预测的类型
     logic                      IsTaken;  //表示预测是否跳转
     logic [31:0]               Target;   //表示预测的跳转地址
     logic [1:0]                Count;    //表示预测时的计数器值
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
-	logic [7:0]                Index;    //预测时索引Count的Index
+	// logic [1:0]                History;  //预测时的历史跳转信息
 } PResult;
 
 typedef struct packed {
-    logic [2:0]                Type;     //表示实际的类型
+    logic [1:0]                Type;     //表示实际的类型
     logic                      IsTaken;  //表示实际是否跳转
     logic [31:0]               Target;   //表示实际的跳转地址
     logic [31:0]               PC;       //需要校准的PC
     logic [1:0]                Count;    //预测该条指令时的Count
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
-	logic [7:0]                Index;    //预测时索引Count的Index
+	// logic [1:0]                History;  //预测时的历史跳转信息
+	logic                      RetnSuccess;//JR预测成功
 } BResult;
 
 typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;   //PC的Tag
     logic [31:0]               Target;
-    logic [2:0]                Type;  //分支种类
+    logic [1:0]                Type;  //分支种类
     logic [1:0]                Count; //二位饱和计数器
 } BHT_Entry;
-
-typedef struct packed {
-	logic [31:`SIZE_OF_INDEX+2]Tag;
-	logic [1:0]                Count;
-} Count_Entry;
 
 typedef struct packed {
 	logic                      Valid;
@@ -310,10 +306,9 @@ typedef struct packed {
     logic [31:0]               BHT_Addr;  //Target Address in BHT
     RAS_Entry                  RAS_Entry; //Target Address in RAS
     logic [31:0]               PC_Add8;   //pc+8
-    logic [2:0]                Type;      //Type in BHT
+    logic [1:0]                Type;      //Type in BHT
     logic [1:0]                Count;     //Count in BHT
-	logic                      Valid;     //Is BPU_Reg Valid
-	logic [7:0]                Index;     //Index of Count
+	logic                      Valid;
 } BPU_Reg;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
@@ -509,13 +504,10 @@ interface EXE_MEM_Interface();
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
 	logic       [31:0]      EXE_Result;
-	logic                   EXE_PredictFailed;
 	logic       [4:0]       MEM_Dst;
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
 	logic       [31:0]      MEM_Instr;
-	logic                   MEM_IsABranch;
-	logic                   MEM_PredictFailed;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -537,13 +529,10 @@ interface EXE_MEM_Interface();
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
 	output                  EXE_Result,
-	output                  EXE_PredictFailed,
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
-	input                   MEM_Instr,
-	input                   MEM_IsABranch,
-	input                   MEM_PredictFailed
+	input                   MEM_Instr
 	);
 
 	modport MEM (
@@ -566,13 +555,10 @@ interface EXE_MEM_Interface();
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
 	input                   EXE_Result,
-	input                   EXE_PredictFailed,
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,
-	output                  MEM_Instr,
-	output                  MEM_IsABranch,
-	output                  MEM_PredictFailed
+	output                  MEM_Instr
 	);
 
 endinterface

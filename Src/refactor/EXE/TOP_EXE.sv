@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-30 22:40:18
+ * @LastEditTime: 2021-07-28 15:37:20
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -164,14 +164,11 @@ module TOP_EXE (
         .EXE_JumpAddr         (EXE_JumpAddr),
         .EXE_BranchAddr       (EXE_BranchAddr),  
         .EXE_PCAdd8           (EXE_PCAdd8),   
-        .MEM_IsABranch        (EMBus.MEM_IsABranch),
-        .MEM_PredictFailed    (EMBus.MEM_PredictFailed),
         //-----------------output----------------------------//
         .EXE_Prediction_Failed(EXE_Prediction_Failed),
         .EXE_Correction_Vector(EXE_Correction_Vector),
         .EXE_BResult          (EXE_BResult)
     );
-    assign EMBus.EXE_PredictFailed = EXE_Prediction_Failed;
 
     MUX2to1 #(32) U_MUXA_L2 (
         .d0                   (EXE_BusA),

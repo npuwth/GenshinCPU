@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-07-30 16:15:41
+ * @LastEditTime: 2021-07-25 11:32:00
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -29,7 +29,6 @@ module TOP_PREIF (
     input logic                 IReq_valid,
     input logic [31:0]          EXE_Correction_Vector,
     input logic                 EXE_Prediction_Failed,
-    input logic                 ID_IsABranch,
     PREIF_IF_Interface          PIBus,
     CPU_IBus_Interface          cpu_ibus,
     AXI_IBus_Interface          axi_ibus,
@@ -92,7 +91,6 @@ module TOP_PREIF (
         .BPU_Valid      (PIBus.IF_BPUValid),
         .Prediction_Failed(EXE_Prediction_Failed),
         .EX_Entry_Sel   (EX_Entry_Sel),
-        .ID_IsABranch   (ID_IsABranch),
         //---------------output-------------------//
         .PCSel          (PCSel)
     );

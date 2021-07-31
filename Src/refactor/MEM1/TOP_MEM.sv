@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-30 22:41:33
+ * @LastEditTime: 2021-07-25 11:31:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -81,7 +81,6 @@ module TOP_MEM (
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
     assign EMBus.MEM_Instr          = MM2Bus.MEM_Instr;             // 判断重取判断是否是entry high
-    assign EMBus.MEM_IsABranch      = MM2Bus.MEM_IsABranch;
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MM2Bus.MEM_Instr[31:21] == 11'b01000000100 && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     
@@ -119,7 +118,6 @@ module TOP_MEM (
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
         .EXE_Result              (EMBus.EXE_Result),
-        .EXE_PredictFailed       (EMBus.EXE_PredictFailed),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
@@ -139,8 +137,7 @@ module TOP_MEM (
         .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
-        .MEM_Result              (MEM_Result),
-        .MEM_PredictFailed       (EMBus.MEM_PredictFailed)
+        .MEM_Result              (MEM_Result)
     );
 
     Exception U_Exception(             

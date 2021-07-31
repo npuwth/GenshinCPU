@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-30 16:10:58
+ * @LastEditTime: 2021-07-25 11:31:19
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -73,7 +73,6 @@ module mycpu_top (
     logic [31:0]               Exception_Vector;          //传至PREIF，异常入口向量
     logic [31:0]               CP0_EPC;                   //传至PREIF,用于ERET返回
     BResult                    EXE_BResult;               //用于校正BPU
-    logic                      ID_IsABranch;
     //-----------------------------流水线寄存器的写使能和flush------------------------------//
     logic                      PREIF_Wr;                  //来自Control
     logic                      IF_Wr;                     //来自Control
@@ -303,7 +302,6 @@ module mycpu_top (
         .IReq_valid                (IReq_valid),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
-        .ID_IsABranch              (ID_IsABranch),
         .PIBus                     (PIBus.PREIF ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
@@ -349,8 +347,7 @@ module mycpu_top (
         //-------------------------------output-------------------//
         .ID_EX_DH_Stall            (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall          (ID_MEM1_DH_Stall),
-        .ID_MEM2_DH_Stall          (ID_MEM2_DH_Stall),
-        .ID_IsABranch              (ID_IsABranch)
+        .ID_MEM2_DH_Stall          (ID_MEM2_DH_Stall)
     );
 
     TOP_EXE U_TOP_EXE ( 
