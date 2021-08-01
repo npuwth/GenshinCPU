@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-23 11:14:34
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-08-01 11:05:34
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
  */
@@ -13,11 +13,12 @@
 //`define DEBUG
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width�?
-    parameter DATA_WIDTH    = 32,//cache和cpu 总线数据位宽为data_width
-    parameter LINE_WORD_NUM = 4,//cache line大小 �?块的字数
-    parameter ASSOC_NUM     = 4,//assoc_num组相�?
-    parameter WAY_SIZE      = 4*1024*8,//�?路cache 容量大小为way_size bit //4KB
-    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //256
+    parameter STORE_BUFFER_SIZE = 32,
+    parameter DATA_WIDTH        = 32,//cache和cpu 总线数据位宽为data_width
+    parameter LINE_WORD_NUM     = 4,//cache line大小 �?块的字数
+    parameter ASSOC_NUM         = 4,//assoc_num组相�?
+    parameter WAY_SIZE          = 4*1024*8,//�?路cache 容量大小为way_size bit //4KB
+    parameter SET_NUM           = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //256
 
 ) (
     //external signals
@@ -32,7 +33,7 @@ module Dcache #(
 
     AXI_UNCACHE_Interface axi_ubus,
 
-    CPU_Bus_Interface  cpu_bus,//slave
+    CPU_Bus_Interface cpu_bus,//slave
     AXI_Bus_Interface  axi_bus //master
     
     
@@ -53,13 +54,20 @@ typedef struct packed {
 
 typedef  logic dirty_t;
 
+typedef struct packed {
+    // logic valid;
+    logic [31:0] address;
+    logic [31:0] data;
+    logic [3:0] wstrb;
+} uncache_store_t;
 
+typedef logic [ASSOC_NUM-1:0]                     hit_t;
 typedef logic [TAG_WIDTH-1:0]                     tag_t;
 typedef logic [INDEX_WIDTH-1:0]                   index_t;
 typedef logic [OFFSET_WIDTH-1:0]                  offset_t;
 
 typedef logic [ASSOC_NUM-1:0]                     we_t;//每一路的写使�?
-typedef logic [LINE_WORD_NUM-1:0][DATA_WIDTH-1:0] line_t;//每一路一个cache_line
+typedef logic [DATA_WIDTH-1:0]                    data_t;//每一路一个cache_line
 
 function index_t get_index( input logic [31:0] addr );
     return addr[OFFSET_WIDTH + INDEX_WIDTH - 1 : OFFSET_WIDTH];
@@ -130,20 +138,21 @@ typedef struct packed {
 
 
 typedef struct packed {//store指令在读数的时�?�根据写使能替换
-    logic [ASSOC_NUM-1:0] hit;
-    index_t index;
-    line_t  wdata;
+    logic [ASSOC_NUM-1:0] hit;//命中的路数
+    index_t index;//set号
+    offset_t offset;//偏移
+    data_t  wdata;
 } store_t;
 
 typedef enum logic [2:0]{ 
     UNCACHE_IDLE,//空闲态
     UNCACHE_READ_WAIT_AXI,//等待读握手
-    UNCACHE_WRITE_WAIT_AXI,//等待写握手
+    // UNCACHE_WRITE_WAIT_AXI,//等待写握手
     UNCACHE_READ,//等待读数据
-    UNCACHE_READ_DONE,//读完成
-    UNCACHE_WAIT_BVALID,//等待写完成
-    UNCACHE_WAIT_BVALID_RW,//等待写完成同时 有了新的读写访存
-    UNCACHE_WAIT_RW
+    UNCACHE_READ_DONE//读完成
+    // UNCACHE_WAIT_BVALID,//等待写完成
+    // UNCACHE_WAIT_BVALID_RW,//等待写完成同时 有了新的读写访存
+    // UNCACHE_WAIT_RW
 } uncache_state_t;
 
 
@@ -151,7 +160,6 @@ typedef enum logic [2:0]{
 
 uncache_state_t uncache_state,uncache_state_next;
 store_t store_buffer; //如果有写冲突 直接阻塞
-line_t store_wdata;
 state_t state,state_next;
 
 wb_state_t wb_state,wb_state_next;
@@ -173,35 +181,57 @@ we_t    dirty_we;
 
 we_t wb_we;//store的写使能
 
-line_t [ASSOC_NUM-1:0] data_rdata;
-logic [ASSOC_NUM-1:0][31:0] data_rdata_sel;
+data_t data_rdata[ASSOC_NUM-1:0][LINE_WORD_NUM-1:0];
+logic [31:0] data_rdata_sel[ASSOC_NUM-1:0];
+logic [31:0] data_rdata_final_;//经过store的旁路
 logic [31:0] data_rdata_final;//
 // logic [31:0] data_rdata_final2;//经过ext2的数�?
-line_t data_wdata;
-we_t  data_we;//数据表的写使�?
+data_t data_wdata[LINE_WORD_NUM-1:0];
+logic [ASSOC_NUM-1:0][LINE_WORD_NUM-1:0] data_we;//数据表的写使�? 因为现在store 是专门给某一个字用的
 logic data_read_en;
 
 request_t req_buffer;
 logic req_buffer_en;
 
-logic [SET_NUM-1:0][$clog2(ASSOC_NUM)-1:0] lru;
+logic [$clog2(ASSOC_NUM)-1:0] lru[SET_NUM-1:0];
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
+
+logic [ASSOC_NUM-1:0] pipe_hit;
+logic pipe_cache_hit;
 
 tagv_t [ASSOC_NUM-1:0] pipe_tagv_rdata;
 logic pipe_wr;
 
 logic busy_cache;// uncache 直到数据返回
-logic busy_uncache;
-logic busy_collision;
-logic busy_collision1;
-logic busy_collision2;
+logic busy_uncache_read;
+logic busy_uncache_write;//这表示store_buffer满了
+// logic busy_collision;
+// logic busy_collision1;
+// logic busy_collision2;
 
 
-logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲�?
+// logic [32-OFFSET_WIDTH:0] MEM2,WB;//用于判断是否写冲�?
 
 logic busy;
 
+
+uncache_store_t fifo_din;//input
+logic fifo_wr_en;
+logic fifo_rd_en;
+
+logic fifo_rd_rst_busy;// output
+logic fifo_full;
+logic fifo_empty;
+uncache_store_t fifo_dout;
+logic fifo_data_valid;
+logic fifo_wr_ack;
+logic fifo_wr_rst_busy;
+
+//连fifo接口
+assign fifo_din   = {req_buffer.tag,req_buffer.index,req_buffer.offset,req_buffer.wdata,req_buffer.wstrb};
+assign fifo_wr_en = (cpu_bus.stall || fifo_wr_rst_busy || fifo_full || (~(req_buffer.valid & req_buffer.op & (~req_buffer.isCache))) ) ?  1'b0 : 1'b1;//流水线停滞 不能写 fifo满 不是uncache写指令
+assign fifo_rd_en = (axi_ubus.wr_rdy && (!fifo_empty) && (!fifo_rd_rst_busy)) ? 1'b1 :1'b0;//非空 能写 
 
 
 //连cpu_bus接口
@@ -213,15 +243,19 @@ assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
 assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
 assign axi_bus.wr_req  = (state == MISSDIRTY) ? 1'b1:1'b0;
 assign axi_bus.wr_addr = {pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
-assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
-
+// assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
+generate;//
+    for (genvar i=0; i<LINE_WORD_NUM; i++) begin
+        assign  axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+    end
+endgenerate
 //连axi_ubus接口
 assign axi_ubus.rd_req   = (uncache_state == UNCACHE_READ_WAIT_AXI) ? 1'b1:1'b0;
 assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
-assign axi_ubus.wr_req   = (uncache_state == UNCACHE_WRITE_WAIT_AXI) ? 1'b1:1'b0;
-assign axi_ubus.wr_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset}; //TODO:没有抹零
-assign axi_ubus.wr_data  = {req_buffer.wdata};
-assign axi_ubus.wr_wstrb = req_buffer.wstrb;
+assign axi_ubus.wr_req   = (fifo_empty || fifo_rd_rst_busy) ? 1'b0:1'b1;//有隐患 fifo不empty 只是无法出栈 就会导致无法发出写请求那么可能就会让读先了 不过都resetn了 我该就没有读了
+assign axi_ubus.wr_addr  = {fifo_dout.address}; //TODO:没有抹零
+assign axi_ubus.wr_data  = {fifo_dout.data};
+assign axi_ubus.wr_wstrb = fifo_dout.wstrb;
 assign axi_ubus.loadType = req_buffer.loadType;
 
 //generate
@@ -256,24 +290,25 @@ generate;
             .dina(tagv_wdata),
             .douta(tagv_rdata[i])
         );
+        for (genvar j=0; j<LINE_WORD_NUM; ++j) begin
         simple_port_ram #(
-            .SIZE(SET_NUM),
-            .dtype(line_t)
+            .SIZE(SET_NUM)
         )mem_data(
             .clk(clk),
             .rst(~resetn),
 
             //写端�?
             .ena(1'b1),
-            .wea(data_we[i]),
+            .wea(data_we[i][j]),
             .addra(write_addr),
-            .dina(data_wdata),
+            .dina(data_wdata[j]),
 
             //读端�?
             .enb(data_read_en),
             .addrb(read_addr),
-            .doutb(data_rdata[i])
+            .doutb(data_rdata[i][j])
         );
+    end
     end
 endgenerate
 
@@ -284,7 +319,7 @@ generate;//PLRU
         ) plru_reg(
             .clk(clk),
             .resetn(resetn),
-            .access(hit),
+            .access(pipe_hit),
             .update(req_buffer.valid &&i[INDEX_WIDTH-1:0] == req_buffer.index),
 
             .lru(lru[i])
@@ -292,9 +327,9 @@ generate;//PLRU
     end
 endgenerate
 
-generate;//判断命中
+generate;// 判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
-        assign hit[i] = (pipe_tagv_rdata[i].valid & (req_buffer.tag == pipe_tagv_rdata[i].tag)) ? 1'b1:1'b0;
+        assign hit[i] = (cpu_bus.stall) ? (tagv_rdata[i].valid & (req_buffer.tag == tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0 : (tagv_rdata[i].valid & (cpu_bus.tag == tagv_rdata[i].tag) & cpu_bus.isCache) ? 1'b1:1'b0;
     end
 endgenerate
 
@@ -305,7 +340,7 @@ generate;//根据offset片�?�？
 endgenerate
 //旁路
                             //
-assign data_rdata_final =   (uncache_state == UNCACHE_READ_DONE )? uncache_rdata: data_rdata_sel[clog2(hit)];
+assign data_rdata_final =   (uncache_state == UNCACHE_READ_DONE )? uncache_rdata: data_rdata_final_;
 
 assign cache_hit        = |hit;
 
@@ -314,18 +349,23 @@ assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.index :cpu_bus.index;
 
 
-assign busy_cache     = (req_buffer.valid & ~cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
-assign busy_uncache   = (uncache_state == UNCACHE_IDLE  || uncache_state == UNCACHE_WAIT_BVALID || uncache_state == UNCACHE_READ_DONE) ? 1'b0 : 1'b1;
-assign busy_collision1= (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
-assign busy_collision2= (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
-assign busy_collision = busy_collision1 | busy_collision2;
-assign busy           = busy_cache | busy_uncache | busy_collision ;
+assign busy_cache          = (req_buffer.valid & ~pipe_cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
+assign busy_uncache_read   = (uncache_state == UNCACHE_IDLE  || uncache_state == UNCACHE_READ_DONE) ? 1'b0 : 1'b1;
+// assign busy_collision1     = (cpu_bus.origin_valid & cpu_bus.isCache & MEM2[32-OFFSET_WIDTH] & MEM2[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+// assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
+// assign busy_collision      = busy_collision1 | busy_collision2;
+assign busy_uncache_write  = (fifo_full) ? 1'b1:1'b0;
+assign busy                = busy_cache | busy_uncache_read | busy_uncache_write;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
-assign data_wdata     = (state == REFILL)? axi_bus.ret_data : store_buffer.wdata;
+generate;//
+    for (genvar i=0; i<LINE_WORD_NUM; i++) begin
+        assign data_wdata[i] = (state == REFILL) ? axi_bus.ret_data[32*(i+1)-1:32*(i)] : store_buffer.wdata;
+    end
+endgenerate
 assign tagv_wdata     = {1'b1,req_buffer.tag};
 assign data_read_en   = (state == REFILLDONE ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
@@ -333,36 +373,82 @@ assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;
 
 
-//if not stall 更新 if stall check if hit & store & cache
-always_ff @( posedge clk ) begin : MEM2_blockName
-    if (  cpu_bus.stall & (~(busy_cache|busy_uncache)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
-        MEM2<='0;
-    end else if(~(cpu_bus.stall))begin
-        MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
-    end else begin
-        MEM2<=MEM2;
-    end
-end
+//if not stall 更新     if stall check if hit & store & cache
+// always_ff @( posedge clk ) begin : MEM2_blockName
+//     if (  cpu_bus.stall & (~(busy_cache|busy_uncache_read|busy_uncache_write)) ) begin//如果全流水阻塞了 并且不是因为dcache的原因阻塞的
+//         MEM2<='0;
+//     end else if(~(cpu_bus.stall))begin
+//         MEM2<={cpu_bus.valid&cpu_bus.op&cpu_bus.isCache,cpu_bus.tag,cpu_bus.index};
+//     end else begin
+//         MEM2<=MEM2;
+//     end
+// end
 
-always_ff @( posedge clk ) begin : WB_blockName
-    WB<= MEM2;
-end
+// always_ff @( posedge clk ) begin : WB_blockName
+//     WB<= MEM2;
+// end
+
+
+// always_comb begin : data_rdata_final2_blockname
+//     unique case({req_buffer.loadType.sign,req_buffer.loadType.size})
+//           `LOADTYPE_LW: begin
+//             data_rdata_final2 = data_rdata_final;  //LW
+//           end 
+//           `LOADTYPE_LH: begin
+//             if(req_buffer.offset[1] == 1'b0) //LH
+//               data_rdata_final2 = {{16{data_rdata_final[15]}},data_rdata_final[15:0]};
+//             else
+//               data_rdata_final2 = {{16{data_rdata_final[31]}},data_rdata_final[31:16]}; 
+//           end
+//           `LOADTYPE_LHU: begin
+//             if(req_buffer.offset[1] == 1'b0) //LHU
+//               data_rdata_final2 = {16'b0,data_rdata_final[15:0]};
+//             else
+//               data_rdata_final2 = {16'b0,data_rdata_final[31:16]};
+//           end
+//           `LOADTYPE_LB: begin
+//             if(req_buffer.offset[1:0] == 2'b00) //LB
+//               data_rdata_final2 = {{24{data_rdata_final[7]}},data_rdata_final[7:0]};
+//             else if(req_buffer.offset[1:0] == 2'b01)
+//               data_rdata_final2 = {{24{data_rdata_final[15]}},data_rdata_final[15:8]};
+//             else if(req_buffer.offset[1:0] == 2'b10)
+//               data_rdata_final2 = {{24{data_rdata_final[23]}},data_rdata_final[23:16]};
+//             else
+//               data_rdata_final2 = {{24{data_rdata_final[31]}},data_rdata_final[31:24]};
+//           end
+//           `LOADTYPE_LBU: begin
+//             if(req_buffer.offset[1:0] == 2'b00) //LBU
+//               data_rdata_final2 = {24'b0,data_rdata_final[7:0]};
+//             else if(req_buffer.offset[1:0] == 2'b01)
+//               data_rdata_final2 = {24'b0,data_rdata_final[15:8]};
+//             else if(req_buffer.offset[1:0] == 2'b10)
+//               data_rdata_final2 = {24'b0,data_rdata_final[23:16]};
+//             else
+//               data_rdata_final2 = {24'b0,data_rdata_final[31:24]};
+//           end
+//           default: begin
+//             data_rdata_final2 = 32'bx;
+//           end
+//         endcase
+// end
+
+
 
 always_comb begin : dirty_we_block
     if (state == REFILL) begin
         dirty_we = '0;
         dirty_we[lru[req_buffer.index]] =1'b1;
     end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
-        dirty_we = hit;
+        dirty_we = pipe_hit;
     end else begin
         dirty_we = '0;
     end
 end
 
-always_comb begin : store_wdata_block//
-      store_wdata                                      = data_rdata[clog2(hit)]; //
-      store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]] = mux_byteenable(store_wdata[req_buffer.offset[OFFSET_WIDTH-1:2]],req_buffer.wdata,req_buffer.wstrb);                    
+always_comb begin : data_rdata_final__blockname
+    data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == pipe_hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(pipe_hit)];
 end
+
 
 always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
@@ -373,23 +459,27 @@ always_comb begin : tagv_we_blockName
     end
 end
 always_comb begin : data_we_blockName
-    if (state == REFILL) begin
         data_we = '0;
-        data_we[lru[req_buffer.index]] =1'b1;
-    end else  if(wb_state == WB_STORE)begin
-        data_we = store_buffer.hit;
+    if (state == REFILL) begin
+        data_we[lru[req_buffer.index]] ='1;
+    end else if(wb_state == WB_STORE)begin
+        data_we[clog2(store_buffer.hit)][store_buffer.offset[OFFSET_WIDTH-1:2]] = 1'b1;
     end else begin
         data_we = '0;
     end   
 end
 always_ff @( posedge clk ) begin : store_buffer_blockName
-    if ((resetn == `RstEnable)) begin
+    if ((resetn == `RstEnable) ) begin
         store_buffer <= '0;
-    end else begin//既是�? 又是有效�?
-        store_buffer.hit   <= hit;
+    end else if(~cpu_bus.stall && req_buffer.valid==1'b1)begin//既是�? 又是有效�?
+        store_buffer.hit   <= pipe_hit;
         store_buffer.index <= req_buffer.index;
-        store_buffer.wdata <= store_wdata;
+        store_buffer.offset <= req_buffer.offset;
+        store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
+    end else if (~cpu_bus.stall && req_buffer.valid==1'b0) begin//在非停滞状态下需要更新 但是此时访存无效 所以清零
+        store_buffer <= '0;
     end
+
 end
 
 always_ff @(posedge clk) begin : req_buffer_blockName
@@ -424,14 +514,17 @@ generate;//锁存读出的tag
         if (pipe_wr) begin
             pipe_tagv_rdata[i].tag   <= tagv_rdata[i].tag;
             pipe_tagv_rdata[i].valid <= tagv_rdata[i].valid ;
-        end else begin
-            pipe_tagv_rdata[i].tag   <= pipe_tagv_rdata[i].tag;
-            pipe_tagv_rdata[i].valid <= pipe_tagv_rdata[i].valid ;        
-        end
+        end 
     end        
     end
 endgenerate
 
+always_ff @( posedge clk ) begin : pipe_hitblockName
+    if (pipe_wr) begin
+        pipe_cache_hit           <= cache_hit;
+        pipe_hit                 <= hit;
+    end 
+end
 
 always_ff @( posedge clk ) begin : state_blockName
     if (resetn == `RstEnable) begin
@@ -450,7 +543,7 @@ always_comb begin : state_next_blockname
                 if (req_buffer.isCache == 1'b0 ) begin
                     state_next = LOOKUP;
                 end else begin
-                if (cache_hit) begin
+                if (pipe_cache_hit) begin
                     state_next = LOOKUP;
                 end else begin
                     if (dirty_rdata[lru[req_buffer.index]]) begin
@@ -501,17 +594,17 @@ always_comb begin : state_next_blockname
         end
     endcase
 end
-
+//wb_store_state
 always_ff @(posedge clk) begin :wb_state_blockname
     if (resetn == `RstEnable) begin
         wb_state <= WB_IDLE;
-    end else begin
+    end else if(~cpu_bus.stall)begin
         wb_state <= wb_state_next;
     end
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & cache_hit) begin
+    if (req_buffer.valid & req_buffer.op & pipe_cache_hit & ~cpu_bus.stall) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;
@@ -523,7 +616,7 @@ logic victim_num;
 assign victim_num = lru[req_buffer.index];
 `endif 
 
-//uncache 部分
+//uncache 部分 削减为只有uncache读状态机
 
 
 
@@ -542,10 +635,10 @@ always_comb begin : uncache_state_next_blockName
     case (uncache_state)
         UNCACHE_IDLE:begin
             if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin //如果可以接受下一个请求
-                if (cpu_bus.op) begin
-                    uncache_state_next = UNCACHE_WRITE_WAIT_AXI;
-                end else begin
+                if (cpu_bus.op==1'b0) begin
                     uncache_state_next = UNCACHE_READ_WAIT_AXI;
+                end else begin
+                    uncache_state_next = UNCACHE_IDLE;
                 end
             end 
         end
@@ -553,11 +646,6 @@ always_comb begin : uncache_state_next_blockName
             if (axi_ubus.rd_rdy) begin
                 uncache_state_next = UNCACHE_READ;
             end
-        end
-        UNCACHE_WRITE_WAIT_AXI:begin
-           if (axi_ubus.wr_rdy) begin
-                uncache_state_next = UNCACHE_WAIT_BVALID;
-            end            
         end
         UNCACHE_READ:begin
             if (axi_ubus.ret_valid) begin
@@ -569,29 +657,186 @@ always_comb begin : uncache_state_next_blockName
                 uncache_state_next = UNCACHE_READ_DONE;
             end else begin
                 if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin //必然下一拍要发起访存
-                    if (cpu_bus.op) begin
-                        uncache_state_next = UNCACHE_WRITE_WAIT_AXI;
-                    end else begin
+                    if (cpu_bus.op==1'b0) begin
                         uncache_state_next = UNCACHE_READ_WAIT_AXI;
+                    end else begin
+                        uncache_state_next = UNCACHE_IDLE;
                     end
-                end 
-                else begin//流水线流动   且没有新请求
+                end
+                else begin
                     uncache_state_next = UNCACHE_IDLE;
                 end
             end
         end
-        UNCACHE_WAIT_BVALID: begin//等待写完成 可接受下一拍请求
-            if (axi_ubus.wr_valid) begin
-                uncache_state_next = UNCACHE_IDLE;
-            end else if (cpu_bus.valid & (~cpu_bus.isCache) & req_buffer_en) begin
-                    if (cpu_bus.op) begin
-                        uncache_state_next = UNCACHE_WRITE_WAIT_AXI;
-                    end else begin
-                        uncache_state_next = UNCACHE_READ_WAIT_AXI;
-                    end
-            end
-        end
     endcase
 end
+module FIFO #(
+    parameter int unsigned DATA_WIDTH = 32,
+    parameter int unsigned SIZE       = 32,//32项
+    parameter type dtype              = logic [DATA_WIDTH-1:0],
+    parameter int unsigned LATENCY    = 1
+    
+) (
+    input logic clk,
+    input logic rst,
+    input logic [$bits(dtype)-1:0] din,
+    input logic rd_en,
+    input logic wr_en,
+    output logic rd_rst_busy,
+    output logic full,
+    output logic empty,
+    output logic [$bits(dtype)-1:0] dout,
+    output logic data_valid,
+    output logic wr_ack,
+    output logic wr_rst_busy
+);
+
+// xpm_fifo_sync : In order to incorporate this function into the design,
+//    Verilog    : the following instance declaration needs to be placed
+//   instance    : in the body of the design code.  The instance name
+//  declaration  : (xpm_fifo_sync_inst) and/or the port declarations within the
+//     code      : parenthesis may be changed to properly reference and
+//               : connect this function to the design.  All inputs
+//               : and outputs must be connected.
+
+//  Please reference the appropriate libraries guide for additional information on the XPM modules.
+
+//  <-----Cut code below this line---->
+
+   // xpm_fifo_sync: Synchronous FIFO
+   // Xilinx Parameterized Macro, version 2019.2
+
+   xpm_fifo_sync #(
+      .DOUT_RESET_VALUE("0"),    // String
+      .ECC_MODE("no_ecc"),       // String
+      .FIFO_MEMORY_TYPE("auto"), // String
+      .FIFO_READ_LATENCY(LATENCY),     // DECIMAL
+      .FIFO_WRITE_DEPTH(SIZE),   // DECIMAL
+      .FULL_RESET_VALUE(0),      // DECIMAL
+      .PROG_EMPTY_THRESH(10),    // DECIMAL
+      .PROG_FULL_THRESH(10),     // DECIMAL
+      .RD_DATA_COUNT_WIDTH(1),   // DECIMAL
+      .READ_DATA_WIDTH($bits(dtype)),      // DECIMAL
+      .READ_MODE("std"),         // String
+      //.SIM_ASSERT_CHK(0),        // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+      .USE_ADV_FEATURES("1010"), // String
+      .WAKEUP_TIME(0),           // DECIMAL
+      .WRITE_DATA_WIDTH($bits(dtype)),     // DECIMAL
+      .WR_DATA_COUNT_WIDTH(1)    // DECIMAL
+   )
+   xpm_fifo_sync_inst (
+      .almost_empty(),               // 1-bit output: Almost Empty : When asserted, this signal indicates that
+                                     // only one more read can be performed before the FIFO goes to empty.
+
+      .almost_full(),                // 1-bit output: Almost Full: When asserted, this signal indicates that
+                                     // only one more write can be performed before the FIFO is full.
+
+      .data_valid(data_valid),       // 1-bit output: Read Data Valid: When asserted, this signal indicates
+                                     // that valid data is available on the output bus (dout).
+
+      .dbiterr(),                    // 1-bit output: Double Bit Error: Indicates that the ECC decoder detected
+                                     // a double-bit error and data in the FIFO core is corrupted.
+
+      .dout(dout),                   // READ_DATA_WIDTH-bit output: Read Data: The output data bus is driven
+                                     // when reading the FIFO.
+
+      .empty(empty),                 // 1-bit output: Empty Flag: When asserted, this signal indicates that the
+                                     // FIFO is empty. Read requests are ignored when the FIFO is empty,
+                                     // initiating a read while empty is not destructive to the FIFO.
+
+      .full(full),                   // 1-bit output: Full Flag: When asserted, this signal indicates that the
+                                     // FIFO is full. Write requests are ignored when the FIFO is full,
+                                     // initiating a write when the FIFO is full is not destructive to the
+                                     // contents of the FIFO.
+
+      .overflow(),                   // 1-bit output: Overflow: This signal indicates that a write request
+                                     // (wren) during the prior clock cycle was rejected, because the FIFO is
+                                     // full. Overflowing the FIFO is not destructive to the contents of the
+                                     // FIFO.
+
+      .prog_empty(),                 // 1-bit output: Programmable Empty: This signal is asserted when the
+                                     // number of words in the FIFO is less than or equal to the programmable
+                                     // empty threshold value. It is de-asserted when the number of words in
+                                     // the FIFO exceeds the programmable empty threshold value.
+
+      .prog_full(),                  // 1-bit output: Programmable Full: This signal is asserted when the
+                                     // number of words in the FIFO is greater than or equal to the
+                                     // programmable full threshold value. It is de-asserted when the number of
+                                     // words in the FIFO is less than the programmable full threshold value.
+
+      .rd_data_count(),              // RD_DATA_COUNT_WIDTH-bit output: Read Data Count: This bus indicates the
+                                     // number of words read from the FIFO.
+
+      .rd_rst_busy(rd_rst_busy),     // 1-bit output: Read Reset Busy: Active-High indicator that the FIFO read
+                                     // domain is currently in a reset state.
+
+      .sbiterr(),                    // 1-bit output: Single Bit Error: Indicates that the ECC decoder detected
+                                     // and fixed a single-bit error.
+
+      .underflow(),                  // 1-bit output: Underflow: Indicates that the read request (rd_en) during
+                                     // the previous clock cycle was rejected because the FIFO is empty. Under
+                                     // flowing the FIFO is not destructive to the FIFO.
+
+      .wr_ack(wr_ack),               // 1-bit output: Write Acknowledge: This signal indicates that a write
+                                     // request (wr_en) during the prior clock cycle is succeeded.
+
+      .wr_data_count(),              // WR_DATA_COUNT_WIDTH-bit output: Write Data Count: This bus indicates
+                                     // the number of words written into the FIFO.
+
+      .wr_rst_busy(wr_rst_busy),     // 1-bit output: Write Reset Busy: Active-High indicator that the FIFO
+                                     // write domain is currently in a reset state.
+
+      .din(din),                     // WRITE_DATA_WIDTH-bit input: Write Data: The input data bus used when
+                                     // writing the FIFO.
+
+      .injectdbiterr(1'b0),          // 1-bit input: Double Bit Error Injection: Injects a double bit error if
+                                     // the ECC feature is used on block RAMs or UltraRAM macros.
+
+      .injectsbiterr(1'b0),          // 1-bit input: Single Bit Error Injection: Injects a single bit error if
+                                     // the ECC feature is used on block RAMs or UltraRAM macros.
+
+      .rd_en(rd_en),                 // 1-bit input: Read Enable: If the FIFO is not empty, asserting this
+                                     // signal causes data (on dout) to be read from the FIFO. Must be held
+                                     // active-low when rd_rst_busy is active high.
+
+      .rst(rst),                     // 1-bit input: Reset: Must be synchronous to wr_clk. The clock(s) can be
+                                     // unstable at the time of applying reset, but reset must be released only
+                                     // after the clock(s) is/are stable.
+
+      .sleep(1'b0),                 // 1-bit input: Dynamic power saving- If sleep is High, the memory/fifo
+                                     // block is in power saving mode.
+
+      .wr_clk(clk),               // 1-bit input: Write clock: Used for write operation. wr_clk must be a
+                                     // free running clock.
+
+      .wr_en(wr_en)                  // 1-bit input: Write Enable: If the FIFO is not full, asserting this
+                                     // signal causes data (on din) to be written to the FIFO Must be held
+                                     // active-low when rst or wr_rst_busy or rd_rst_busy is active high
+
+   );
+
+	endmodule	
+
+  FIFO #(
+    .SIZE(STORE_BUFFER_SIZE),
+    .dtype(uncache_store_t),
+    .LATENCY (0) //调整为0
+  )
+  FIFO_dut (
+    .clk (clk ),
+    .rst (~resetn),
+    .din (fifo_din ),
+    .rd_en (fifo_rd_en ),
+    .wr_en (fifo_wr_en ),
+    .rd_rst_busy (fifo_rd_rst_busy ),
+    .full (fifo_full ),
+    .empty (fifo_empty ),
+    .dout (fifo_dout ),
+    .data_valid (fifo_data_valid ),
+    .wr_ack (fifo_wr_ack ),
+    .wr_rst_busy  (fifo_wr_rst_busy)
+  );
+
+
 
 endmodule
