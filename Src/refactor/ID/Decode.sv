@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-07-23 18:14:17
+ * @LastEditTime: 2021-08-01 11:21:43
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -67,21 +67,19 @@ module Decode(
     assign shamt = ID_Instr[10:6];
     // the  work before clasification 
 
-    always_comb begin
-      if(rs == 5'b00000)begin
-        ID_rsrtRead[1] = 1'b0;
-      end
-      else ID_rsrtRead[1] = 1'b1;
-    end
+    // always_comb begin
+    //   if(rs == 5'b00000)begin
+    //     ID_rsrtRead[1] = 1'b0;
+    //   end
+    //   else ID_rsrtRead[1] = 1'b1;
+    // end
 
-    always_comb begin
-      if(rt == 5'b00000)begin
-        ID_rsrtRead[0] = 1'b0;
-      end
-      else ID_rsrtRead[0] = 1'b1;
-    end
-
-
+    // always_comb begin
+    //   if(rt == 5'b00000)begin
+    //     ID_rsrtRead[0] = 1'b0;
+    //   end
+    //   else ID_rsrtRead[0] = 1'b1;
+    // end
 
     always_comb begin
         unique casez (opcode)
@@ -406,6 +404,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end 
 
       OP_ADDI:begin
@@ -421,7 +421,9 @@ module Decode(
         ID_EXTOp      = `EXTOP_SIGN;   
         ID_IsAJumpCall = `IsNotAJumpCall;    
         ID_BranchType = '0; 
-        IsReserved    = 1'b0;        
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_ADDU:begin
@@ -438,6 +440,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
       OP_ADDIU:begin
@@ -453,7 +457,9 @@ module Decode(
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0; 
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt     
       end
 
       OP_SUB:begin
@@ -469,7 +475,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt     
       end
 
       OP_SUBU:begin
@@ -485,7 +493,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;    
-        IsReserved    = 1'b0;     
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt   
       end
 
       OP_SLT:begin
@@ -501,7 +511,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt   
       end
 
       OP_SLTI:begin
@@ -517,7 +529,9 @@ module Decode(
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;     
-        IsReserved    = 1'b0;    
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_SLTU:begin
@@ -533,7 +547,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt     
       end
 
       OP_SLTIU:begin
@@ -549,7 +565,9 @@ module Decode(
         ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0; 
-        IsReserved    = 1'b0;        
+        IsReserved    = 1'b0;      
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_DIV:begin
@@ -565,7 +583,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;    
-        IsReserved    = 1'b0;     
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt   
       end
 
       OP_DIVU:begin
@@ -581,7 +601,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;      
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt 
       end
 
       OP_MULT:begin
@@ -597,7 +619,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
-        IsReserved    = 1'b0;         
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt       
       end
 
       OP_MULTU:begin
@@ -613,7 +637,9 @@ module Decode(
         ID_EXTOp      = '0;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt     
       end
 
       OP_BEQ:begin
@@ -626,10 +652,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
-        IsReserved    = 1'b0;        
+        IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt    
       end
 
       OP_BNE:begin
@@ -642,10 +670,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
       OP_BGEZ:begin
@@ -658,10 +688,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_BGTZ:begin
@@ -674,10 +706,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BGT,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_BLEZ:begin
@@ -690,10 +724,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BLE,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_BLTZ:begin
@@ -706,10 +742,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_BGEZAL:begin
@@ -722,10 +760,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BGE,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_BLTZAL:begin
@@ -738,10 +778,12 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BLT,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_J:begin
@@ -758,6 +800,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_J,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_JAL:begin
@@ -774,6 +818,8 @@ module Decode(
         ID_IsAJumpCall = `IsAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_J,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       /******* OP3.4  ******/
@@ -791,6 +837,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
        OP_ANDI:begin
@@ -807,6 +855,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_LUI:begin
@@ -823,6 +873,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_NOR:begin
@@ -839,6 +891,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
       OP_OR:begin
@@ -855,6 +909,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
       OP_ORI:begin
@@ -871,6 +927,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;    
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_XOR:begin
@@ -887,6 +945,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
       OP_XORI:begin
@@ -903,6 +963,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;    
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_SLLV:begin
@@ -919,6 +981,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
       OP_SLL:begin
         ID_ALUOp      = `EXE_ALUOp_SLL;     //ALU操作
@@ -934,6 +998,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
       OP_SRAV:begin
         ID_ALUOp      = `EXE_ALUOp_SRAV;    //ALU操作
@@ -949,6 +1015,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
       OP_SRA:begin
         ID_ALUOp      = `EXE_ALUOp_SRA;    //ALU操作
@@ -964,6 +1032,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
       OP_SRLV:begin
         ID_ALUOp      = `EXE_ALUOp_SRLV;    //ALU操作
@@ -979,6 +1049,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
       OP_SRL:begin
         ID_ALUOp      = `EXE_ALUOp_SRL;    //ALU操作
@@ -994,6 +1066,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt
       end
 
       OP_JR:begin
@@ -1010,6 +1084,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_JALR:begin
@@ -1026,6 +1102,8 @@ module Decode(
         ID_IsAJumpCall = `IsAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_JR,1'b1};
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_MFHI:begin
@@ -1042,6 +1120,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_MFLO:begin
@@ -1058,6 +1138,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_MTHI:begin
@@ -1074,6 +1156,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
     
 
@@ -1091,6 +1175,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
       
       //自陷指令
@@ -1108,6 +1194,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_SYSCALL:begin
@@ -1124,6 +1212,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       //访存指令
@@ -1146,6 +1236,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_LBU:begin
@@ -1167,6 +1259,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_LH:begin
@@ -1188,6 +1282,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_LHU:begin
@@ -1209,6 +1305,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;    
         IsReserved    = 1'b0;  
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_LW:begin
@@ -1230,6 +1328,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
         IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
       OP_LWL:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
@@ -1250,6 +1350,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
         IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
       OP_LWR:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
@@ -1270,6 +1372,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;  
         IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt
       end
 
       OP_SB:begin
@@ -1289,7 +1393,9 @@ module Decode(
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
-        IsReserved    = 1'b0;          
+        IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt      
       end
 
 
@@ -1310,7 +1416,9 @@ module Decode(
         ID_EXTOp      = `EXTOP_SIGN;
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;   
-        IsReserved    = 1'b0;       
+        IsReserved    = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt      
       end
 
       OP_SW:begin
@@ -1330,8 +1438,11 @@ module Decode(
         ID_EXTOp       = `EXTOP_SIGN;
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType  = '0;    
-        IsReserved     = 1'b0;      
+        IsReserved     = 1'b0;    
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt     
       end
+
       OP_SWL:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
@@ -1350,7 +1461,10 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType  = '0;    
         IsReserved     = 1'b0;      
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt   
       end
+
       OP_SWR:begin
         ID_ALUOp      = `EXE_ALUOp_ADDU;
         ID_LoadType   = '0;
@@ -1369,7 +1483,10 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType  = '0;    
         IsReserved     = 1'b0;      
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt   
       end
+
       //特权指令  
       OP_ERET:begin
         ID_ALUOp      = '0;
@@ -1385,7 +1502,10 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt   
       end
+
       OP_MFC0:begin
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_WbSel      = `WBSel_OutB;
@@ -1400,6 +1520,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
     
       OP_MTC0:begin
@@ -1416,6 +1538,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt  
       end
 
       //操作系统译码部分
@@ -1435,6 +1559,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_CLZ:begin
@@ -1452,6 +1578,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_MADD:begin//有符号乘
@@ -1468,6 +1596,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt  
       end
 
       OP_MADDU:begin//有符号乘
@@ -1484,6 +1614,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt  
       end
       
       OP_MSUB:begin//有符号乘
@@ -1500,6 +1632,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt  
       end
       
       OP_MSUBU:begin//有符号乘
@@ -1516,6 +1650,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt  
       end
 
       OP_TLBP:begin//search
@@ -1532,6 +1668,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
       
       OP_TLBWI:begin//search
@@ -1548,6 +1686,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_TLBWR:begin//search
@@ -1564,6 +1704,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 
       OP_TLBR:begin//search
@@ -1580,6 +1722,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
 //**********************   trap类指令   ********************************//
       OP_TEQ , OP_TGE , OP_TGEU , OP_TLT , OP_TLTU , OP_TNE: begin
@@ -1596,6 +1740,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b1; //rt  
       end
 
       OP_TEQI , OP_TGEI , OP_TGEIU , OP_TLTI , OP_TLTIU ,  OP_TNEI : begin
@@ -1612,6 +1758,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;    
         ID_BranchType = '0; 
         IsReserved    = 1'b0;        
+        ID_rsrtRead[1]= 1'b1; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt  
       end
       
       default:begin
@@ -1627,7 +1775,9 @@ module Decode(
         ID_EXTOp      = '0;                 //R型无关
         ID_IsAJumpCall = '0;
         ID_BranchType = '0;
-        IsReserved    = 1'b1;        
+        IsReserved    = 1'b1;      
+        ID_rsrtRead[1]= 1'b0; //rs 
+        ID_rsrtRead[0]= 1'b0; //rt    
       end
 
     endcase

@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-07-21 10:39:45
+ * @LastEditTime: 2021-08-01 10:16:39
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
@@ -289,11 +289,11 @@ end
 
     assign EXE_MULTDIVtoLO = (multi_finish        ) ? mul_result[31:0] : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[63:32]  : 
-                             (Unsigned_div_finish ) ? Unsigned_dout_tdata[63:32]: 31'bx;
+                             (Unsigned_div_finish ) ? Unsigned_dout_tdata[63:32]: 32'bx;
 
     assign EXE_MULTDIVtoHI = (multi_finish        ) ? mul_result[63:32] : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[31:0]   : 
-                             (Unsigned_div_finish ) ? Unsigned_dout_tdata[31:0] : 31'bx;
+                             (Unsigned_div_finish ) ? Unsigned_dout_tdata[31:0] : 32'bx;
                              
     assign EXE_DIVStall = ((EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) && div_finish == 1'b0) ? 1 : 0 ;
     assign EXE_MULTStall= ((EXE_ALUOp == `EXE_ALUOp_MULT|| EXE_ALUOp == `EXE_ALUOp_MULTU)&& multi_finish == 1'b0) ? 1 : 0;

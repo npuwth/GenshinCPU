@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-07-28 19:51:48
+ * @LastEditTime: 2021-08-01 10:15:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -38,7 +38,7 @@ module BPU (
     logic [31:0]                       PREIF_PCAdd8;
     assign PREIF_PCAdd8 = PREIF_PC + 8;
 
-    BPU_Reg                            BPU_Reg;
+    BPU_RegType                        BPU_Reg;
 
     simple_port_ram #(
                 .LATENCY(0),

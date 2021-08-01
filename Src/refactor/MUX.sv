@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-31 14:39:41
- * @LastEditTime: 2021-07-23 14:58:42
+ * @LastEditTime: 2021-08-01 10:14:22
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\EXE\MUX.sv
@@ -15,8 +15,7 @@ module MUX2to1#(parameter WIDTH = 32)(d0,d1,sel2_to_1,y);
     logic           [WIDTH-1:0]       y_r;
     always_comb begin
         if (sel2_to_1 == 1'b1 ) y_r = d1;
-        else if (sel2_to_1 == 1'b0) y_r = d0;
-       
+        else                    y_r = d0;
     end
     assign y=y_r;
 endmodule
