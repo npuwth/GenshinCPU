@@ -2,7 +2,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-07-31 23:02:21
+ * @LastEditTime: 2021-08-01 10:22:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
@@ -760,10 +760,10 @@ module AXIInteract #(
         unique case (dstate_uncache)
             UNCACHE_IDLE:begin
                 if (udbus.rd_req | udbus.wr_req) begin
-                    if (udbus.rd_req) begin
-                        dstate_uncache_next =UNCACHE_RD;
-                    end else begin
+                    if (udbus.wr_req) begin
                         dstate_uncache_next =UNCACHE_WB;
+                    end else begin
+                        dstate_uncache_next =UNCACHE_RD;
                     end
                 end else begin
                     dstate_uncache_next =UNCACHE_IDLE;
