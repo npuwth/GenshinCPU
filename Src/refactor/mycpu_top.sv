@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-31 23:12:04
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-01 22:06:19
+ * @LastEditors: Seddon Shen
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -158,7 +158,8 @@ module mycpu_top (
     //     .probe2 (debug_wb_rf_wen),
     //     .probe3 (debug_wb_rf_wnum),
     //     .probe4 (M2WBus.MEM2_Instr),
-    //     .probe5 (MM2Bus.MEM_ExcType)
+    //     .probe5 (MM2Bus.MEM_ExcType)，
+    //     .probe6 (Exception_Vector)
     // );
 
                                         //写回寄存器的地址
