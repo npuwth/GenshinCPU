@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-08-02 11:17:58
+ * @LastEditTime: 2021-08-02 12:02:19
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -12,7 +12,7 @@
 `ifndef CommonDefines_svh
 `define CommonDefines_svh
 // 取消功能,需要将`define注释掉
-`define FPU_DETECT_EN          // 定义则打开浮点检测功能
+`define FPU_DETECT_EN           // 定义则打开浮点检测功能
 // `define DEBUG                       
 `define NEW_BRIDGE          
 // `define All_Uncache           // 定义则全走uncache  
