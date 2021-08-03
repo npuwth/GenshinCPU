@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-03 19:31:20
+ * @LastEditTime: 2021-08-03 20:56:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -79,7 +79,7 @@ module cp0_reg (
 	                            21'b0,
 	                            3'b001,   // MMU Type ( Standard TLB )
 	                            4'b0,
-	                            3'd2    // Keseg0段走uncache
+	                            3'b011    // Keseg0段走uncache
                             };
     cp0_regs CP0;
     
