@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-03 10:37:23
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-03 16:31:02
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -103,7 +103,7 @@ module mycpu_top (
     RegsWrType                 WB_RegsWrType;             //WB级的写使能
     RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
 
-    logic [31:0]               MEM_IsMFC0;                 //用于判断MFC0后的阻塞
+    logic                      MEM_IsMFC0;                 //用于判断MFC0后的阻塞
     logic [31:0]               MEM_Result;                // 用于旁路数据
     logic [4:0]                MEM_Dst;
     RegsWrType                 MEM_RegsWrType;
@@ -204,6 +204,7 @@ module mycpu_top (
         .dbus                   (axi_dbus.slave ),
         .ibus                   (axi_ibus.slave ),
         .udbus                  (axi_ubus.slave) ,
+        .uibus                  (axi_iubus.slave),
         .m_axi_arid             (arid ),
         .m_axi_araddr           (araddr ),
         .m_axi_arlen            (arlen ),

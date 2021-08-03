@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-07-19 17:28:10
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-03 17:09:12
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -24,6 +24,7 @@ module DTLB (
     input logic                   s1_found,  //来自TLB
     input LoadType                MEM_LoadType,
     input StoreType               MEM_StoreType,
+    input logic  [2:0]            CP0_Config_K0,
     output logic [31:0]           Phsy_Daddr,
     output logic                  D_IsCached,
     output logic                  D_IsTLBBufferValid,
@@ -44,7 +45,7 @@ module DTLB (
                 D_TLBBufferHit = 1'b1; 
         end
         else if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
-            if(Virt_Daddr[31:13] == D_TLBBuffer.VPN2) begin
+            if((Virt_Daddr[31:13] == D_TLBBuffer.VPN2) && D_TLBBuffer.Valid) begin
                 D_TLBBufferHit = 1'b1;
             end
             else begin
@@ -105,7 +106,12 @@ module DTLB (
             D_IsCached                               = 1'b0;
         end
         else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
-            D_IsCached                               = 1'b1;
+            if(CP0_Config_K0 == 3'b011) begin
+                D_IsCached                           = 1'b1;
+            end
+            else begin
+                D_IsCached                           = 1'b0;
+            end
         end
         else begin
             if(Virt_Daddr[12] == 1'b0) begin
@@ -133,6 +139,8 @@ module DTLB (
             D_TLBBuffer.C1            <= '0;
             D_TLBBuffer.D1            <= '0;
             D_TLBBuffer.V1            <= '0;
+            D_TLBBuffer.Valid         <= '0;
+            D_TLBBuffer.IsInTLB       <= '0;
         end
         else if(D_TLBBuffer_Wr ) begin
             D_TLBBuffer.VPN2          <= Virt_Daddr[31:13];
@@ -146,19 +154,12 @@ module DTLB (
             D_TLBBuffer.C1            <= D_TLBEntry.C1;
             D_TLBBuffer.D1            <= D_TLBEntry.D1;
             D_TLBBuffer.V1            <= D_TLBEntry.V1;
+            D_TLBBuffer.Valid         <= 1'b1;
+            D_TLBBuffer.IsInTLB       <= s1_found;
         end
     end
 
     assign D_VPN2                     = Virt_Daddr[31:13];
-
-    always_ff @(posedge clk ) begin //TLBD
-        if(rst == `RstEnable || TLBBuffer_Flush == 1'b1) begin
-            D_TLBBuffer.IsInTLB <= 1'b0;
-        end
-        else begin
-            D_TLBBuffer.IsInTLB <= s1_found;
-        end
-    end
 //------------------------------对异常和Valid信号进行赋值----------------------------------------------//    
     always_comb begin //TLBD
     if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin

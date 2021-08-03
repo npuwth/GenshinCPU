@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-07-29 16:21:23
+ * @LastEditTime: 2021-08-03 16:01:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -10,17 +10,7 @@
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
-`define CLOG2(x) \
-((x <= 1) || (x > 512)) ? 0 : \
-(x <= 2) ? 1 : \
-(x <= 4) ? 2 : \
-(x <= 8) ? 3 : \
-(x <= 16) ? 4 : \
-(x <= 32) ? 5 : \
-(x <= 64) ? 6 : \
-(x <= 128) ? 7: \
-(x <= 256) ? 8: \
-(x <= 512) ? 9 : 0
+
 
 module Icache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width位
@@ -107,7 +97,13 @@ typedef struct packed {
     logic             isCache;
 } request_t;
 
-
+function logic  clog2(//TODO: 配置的时候需要改�?
+    input logic [1:0] hit
+);
+    return{
+        (hit[1])?1'b1:1'b0
+    };
+endfunction
 
 
 
@@ -236,7 +232,7 @@ endgenerate
 assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall)? 1'b0:1'b1;
 //旁路
                             //
-assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[`CLOG2(pipe_hit)]: '0;
+assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[clog2(pipe_hit)]: '0;
 assign cache_hit = |hit;
 
 assign read_addr      = (state == REFILLDONE || state == REFILL )? req_buffer.index : cpu_bus.index;
