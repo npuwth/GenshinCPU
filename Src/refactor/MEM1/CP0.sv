@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-01 10:13:44
+ * @LastEditTime: 2021-08-03 17:20:38
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -228,8 +228,8 @@ module cp0_reg (
 //EntryHi
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
-            CP0.EntryHi.VPN2               <= 'x;
-            CP0.EntryHi.ASID               <= 'x;
+            CP0.EntryHi.VPN2               <= '0;
+            CP0.EntryHi.ASID               <= '0;
         end
         else if(MEM_IsTLBR) begin
             CP0.EntryHi.VPN2               <= CTBus.TLB_vpn2;
