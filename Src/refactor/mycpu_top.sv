@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-03 16:31:02
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-03 19:26:37
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -119,9 +119,11 @@ module mycpu_top (
     logic                      TLBBuffer_Flush;           //用于清空TLB Buffer
     TLB_Entry                  I_TLBEntry;                //从TLB获取ITLBBuffer数据  
     TLB_Entry                  D_TLBEntry;                //从TLB获取DTLBBuffer数据
+    logic                      s0_found;
+    logic                      s1_found;
     logic [31:13]              I_VPN2;                    //用于查找TLB
     logic [31:13]              D_VPN2;                    //用于查找TLB
-    
+    logic [2:0]                CP0_Config_K0;
     
     //--------------------------------------用于golden trace-------------------------------------------------------//
     assign debug_wb_pc = WB_PC;                                                              //写回级的PC
@@ -303,6 +305,7 @@ module mycpu_top (
         .IReq_valid                (IReq_valid),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
+        .CP0_Config_K0             (CP0_Config_K0 ),
         .PIBus                     (PIBus.PREIF ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
@@ -400,7 +403,8 @@ module mycpu_top (
         .MEM_Result                (MEM_Result),     
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),
-        .MEM_IsMFC0                 (MEM_IsMFC0)
+        .MEM_IsMFC0                (MEM_IsMFC0),
+        .CP0_Config_K0             (CP0_Config_K0)
     );
     
     TOP_MEM2 U_TOP_MEM2 (

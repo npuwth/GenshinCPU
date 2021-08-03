@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-03 11:21:22
+ * @LastEditTime: 2021-08-03 19:29:21
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -48,7 +48,8 @@ module TOP_MEM (
     output logic [31:0]          MEM_Result,  // 用于旁路数据
     output logic [4:0]           MEM_Dst,
     output RegsWrType            MEM_RegsWrType,
-    output logic                 MEM_IsMFC0
+    output logic                 MEM_IsMFC0,
+    output logic [2:0]           CP0_Config_K0
 );
     ExceptinPipeType             MEM_ExceptType;
     logic [31:0]                 RFHILO_Bus;
@@ -182,9 +183,10 @@ module TOP_MEM (
         .CP0_Status_EXL         (CP0_Status_EXL ),
         .CP0_Status_IE          (CP0_Status_IE ),
         .CP0_Cause_IP7_2        (CP0_Cause_IP7_2 ),
-        .CP0_Cause_IP1_0        (CP0_Cause_IP1_0),
-        .CP0_Ebase              (CP0_Ebase),
-        .CP0_EPC                (CP0_EPC)
+        .CP0_Cause_IP1_0        (CP0_Cause_IP1_0 ),
+        .CP0_Ebase              (CP0_Ebase ),
+        .CP0_EPC                (CP0_EPC ),
+        .CP0_Config_K0          (CP0_Config_K0 )
     );
 
     //-----------------------------用于准备写往dcache的数据-----------------------//
@@ -249,6 +251,8 @@ module TOP_MEM (
         .s1_found                (s1_found ),
         .MEM_LoadType            (MEM_LoadType ),
         .MEM_StoreType           (MEM_StoreType ),
+        .CP0_Config_K0           (CP0_Config_K0 ),
+        //---------------------------------------output--------------------------//
         .Phsy_Daddr              (Phsy_Daddr ),
         .D_IsCached              (D_IsCached ),
         .D_IsTLBBufferValid      (D_IsTLBBufferValid ),
