@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-03 11:14:37
+ * @LastEditTime: 2021-08-03 11:32:32
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \refactor\EXE\ALU.sv
@@ -45,7 +45,7 @@ module ALU (
     assign ORI_Out = EXE_ResultA | EXE_ResultB;
     assign SLL_Out = EXE_ResultB << EXE_ResultA[4:0];
     assign SRL_Out = EXE_ResultB >> EXE_ResultA[4:0];
-    assign SRA_Out = EXE_ResultB >>> EXE_ResultA[4:0];
+    assign SRA_Out = $signed(EXE_ResultB) >>> EXE_ResultA[4:0];
     assign SLT_Out = ($signed(EXE_ResultA) < $signed(EXE_ResultB))?32'b1:32'b0;
     assign SLTU_Out= ((EXE_ResultA) < (EXE_ResultB))?32'b1:32'b0;
     assign XOR_Out = EXE_ResultA ^ EXE_ResultB;
