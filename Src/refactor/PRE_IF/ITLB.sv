@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-08-03 17:08:44
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-03 17:15:39
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -212,7 +212,12 @@ module ITLB (
             I_IsCached                               = 1'b0;
         end
         else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
-            I_IsCached                               = 1'b1;
+            if(CP0_Config_K0 == 3'b011) begin
+                I_IsCached                           = 1'b1;
+            end
+            else begin
+                I_IsCached                           = 1'b0;
+            end
         end
         else begin
             I_IsCached                               = 1'b1;

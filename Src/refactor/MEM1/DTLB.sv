@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-08-03 17:09:12
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-03 17:17:18
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -250,7 +250,12 @@ module DTLB (
             D_IsCached                               = 1'b0;
         end
         else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
-            D_IsCached                               = 1'b1;
+            if(CP0_Config_K0 == 3'b011) begin
+                D_IsCached                           = 1'b1;
+            end
+            else begin
+                D_IsCached                           = 1'b0;
+            end
         end
         else begin
             D_IsCached                               = 1'b1;
