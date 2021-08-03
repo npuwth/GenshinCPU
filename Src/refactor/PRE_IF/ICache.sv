@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-03 16:01:15
+ * @LastEditTime: 2021-08-03 17:22:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -9,7 +9,7 @@
 //重写之后的Cache Icache Dcache复用一个设计
 `include "../Cache_Defines.svh"
 `include "../CPU_Defines.svh"
-//`define Dcache  //如果是DCache就在文件中使用这个宏
+//`define Dcache  // 如果是DCache就在文件中使用这个宏
 
 
 module Icache #(
