@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-01 10:16:39
+ * @LastEditTime: 2021-08-03 20:37:26
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
@@ -59,7 +59,7 @@ logic           ismulti;
 logic           signflag;
 logic  [63:0]   mul_result;
 assign ismulti = (EXE_ALUOp == `EXE_ALUOp_MULT || EXE_ALUOp == `EXE_ALUOp_MULTU || EXE_ALUOp == `EXE_ALUOp_MADD || EXE_ALUOp == `EXE_ALUOp_MADDU || 
-                EXE_ALUOp == `EXE_ALUOp_MSUB || EXE_ALUOp == `EXE_ALUOp_MSUBU) ? 1 : 0 ;
+                EXE_ALUOp == `EXE_ALUOp_MSUB || EXE_ALUOp == `EXE_ALUOp_MSUBU || EXE_ALUOp == `EXE_ALUOp_MUL) ? 1 : 0 ;
 
 //重构乘法 改为两个周期
 // assign abs_reg1 = (is_signed && reg1[31]) ? -reg1 : reg1;
@@ -216,7 +216,7 @@ end
 //乘法的有无符号生成逻辑
 always_comb begin
     unique case (EXE_ALUOp)
-        `EXE_ALUOp_MULT , `EXE_ALUOp_MADD , `EXE_ALUOp_MSUB:begin
+        `EXE_ALUOp_MULT , `EXE_ALUOp_MADD , `EXE_ALUOp_MSUB , `EXE_ALUOp_MUL:begin
           signflag = 1'b1;
         end
         `EXE_ALUOp_MULTU , `EXE_ALUOp_MADDU , `EXE_ALUOp_MSUBU:begin

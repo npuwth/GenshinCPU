@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-03 11:18:35
+ * @LastEditTime: 2021-08-03 20:33:28
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -214,6 +214,7 @@ module TOP_EXE (
         .EXE_ResultA          (EXE_BusA_L2),
         .EXE_ResultB          (EXE_BusB_L2),
         .EXE_ALUOp            (EXE_ALUOp),
+        .MUL_Out              (EXE_MULTDIVtoLO ),
         //---------------------------output-----------------//
         .EXE_ALUOut           (EMBus.EXE_ALUOut),  
         .Overflow_valid       (Overflow_valid )       

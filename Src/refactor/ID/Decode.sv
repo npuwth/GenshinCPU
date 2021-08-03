@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-03 10:35:58
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-03 20:28:26
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1679,6 +1679,22 @@ module Decode(
         IsReserved    = 1'b0;
         //ID_rsrtRead[1]= 1'b1; //rs 
         //ID_rsrtRead[0]= 1'b1; //rt  
+      end
+
+      OP_MUL:begin
+        ID_ALUOp      = `EXE_ALUOp_MUL;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = `WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = `RegsWrTypeRFEn;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = '0;
+        ID_IsAJumpCall = `IsNotAJumpCall;
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       OP_TLBP:begin//search

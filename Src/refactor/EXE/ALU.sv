@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-03 11:32:32
+ * @LastEditTime: 2021-08-03 20:32:24
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \refactor\EXE\ALU.sv
@@ -14,6 +14,7 @@ module ALU (
     input  logic  [31:0]       EXE_ResultA,
     input  logic  [31:0]       EXE_ResultB,
     input  logic  [4:0]        EXE_ALUOp,
+    input  logic  [31:0]       MUL_Out,
     output logic  [31:0]       EXE_ALUOut,
     output logic               Overflow_valid
 );
@@ -64,6 +65,7 @@ module ALU (
             `EXE_ALUOp_SLTU :                 EXE_ALUOut = SLTU_Out;
             `EXE_ALUOp_XOR  :                 EXE_ALUOut = XOR_Out;
             `EXE_ALUOp_AND  :                 EXE_ALUOut = AND_Out;
+            `EXE_ALUOp_MUL  :                 EXE_ALUOut = MUL_Out;
         `ifdef TEST
             `EXE_ALUOp_CLZ,`EXE_ALUOp_CLO  :  EXE_ALUOut = EXE_Countbit_Out;
         `endif 
