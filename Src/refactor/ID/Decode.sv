@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-02 22:20:26
+ * @LastEditTime: 2021-08-03 10:35:58
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -41,7 +41,8 @@ module Decode(
     output logic       ID_IsTLBW,
     output logic       ID_IsTLBR,
     output logic       ID_TLBWIorR,
-    output logic [2:0] ID_TrapOp
+    output logic [2:0] ID_TrapOp,
+    output logic       ID_IsMFC0
     );
 
     assign ID_IsTLBP = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
@@ -99,6 +100,14 @@ module Decode(
       endcase
     end
 
+
+    always_comb begin : ID_IsMFC0_blockname
+      if (instrType == OP_MFC0) begin
+        ID_IsMFC0 =1'b1;
+      end else begin
+        ID_IsMFC0 = 1'b0;
+      end
+    end
     always_comb begin
         unique casez (opcode)
             6'b000_000:begin// register 
