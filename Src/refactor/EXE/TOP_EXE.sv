@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-03 10:38:29
+ * @LastEditTime: 2021-08-03 11:18:35
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -186,25 +186,23 @@ module TOP_EXE (
         .y                    (EXE_BusB_L2)
     );//EXE级四选一B之后的那个二选一
 
-    MUX4to1 #(32) U_MUX_OutB ( 
+    MUX3to1 #(32) U_MUX_OutB ( 
         .d0                   (EXE_BusB),
         .d1                   (HI_Bus),
         .d2                   (LO_Bus),
-        .d3                   ('x    ),      //这时候CP0还没读出来
-        .sel4_to_1            (EMBus.EXE_RegsReadSel),
+        .sel3_to_1            (EMBus.EXE_RegsReadSel),
         .y                    (EMBus.EXE_OutB)
     );
 
-    MUX4to1 U_MUXINEXE ( //选择用于旁路的数据来自ALUOut还是OutB
+    MUX3to1 #(32) U_MUXINEXE ( //选择用于旁路的数据来自ALUOut还是OutB
         .d0                   (EMBus.EXE_PC + 8),
         .d1                   (EMBus.EXE_ALUOut),
         .d2                   (EMBus.EXE_OutB  ), 
-        .d3                   ('x              ),
-        .sel4_to_1            (EMBus.EXE_WbSel),
+        .sel3_to_1            (EMBus.EXE_WbSel),
         .y                    (EMBus.EXE_Result)
     );
 
-    MUX3to1#(5) U_EXEDstSrc(
+    MUX3to1 #(5) U_EXEDstSrc(
         .d0                   (EMBus.EXE_rd),
         .d1                   (EXE_rt),
         .d2                   (5'd31),

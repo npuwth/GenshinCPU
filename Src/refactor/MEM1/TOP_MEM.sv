@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-03 10:37:50
+ * @LastEditTime: 2021-08-03 11:21:22
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -233,12 +233,10 @@ module TOP_MEM (
         .axi_bus                 ( axi_dbus.master)
     );
 
-    MUX4to1 #(32) U_MUX_OutB2 ( //TODO:这里可以优化一下，换成2选1
+    MUX2to1 #(32) U_MUX_OutB2 ( //TODO:这里可以优化一下，换成2选1
         .d0                      (RFHILO_Bus),
-        .d1                      (RFHILO_Bus),
-        .d2                      (RFHILO_Bus),
-        .d3                      (CP0_Bus),
-        .sel4_to_1               (MEM_RegsReadSel),
+        .d1                      (CP0_Bus),
+        .sel2_to_1               (MEM_RegsReadSel == 2'b11),
         .y                       (MM2Bus.MEM_OutB)
     );
 
