@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-28 15:37:20
+ * @LastEditTime: 2021-08-03 10:38:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -65,7 +65,7 @@ module TOP_EXE (
 
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
-    assign IEBus.EXE_Instr    = EMBus.EXE_Instr;
+    assign IEBus.EXE_IsMFC0   = EMBus.EXE_IsMFC0;
     assign IEBus.EXE_RegsWrType = EXE_RegsWrType;
     assign IEBus.EXE_Dst      = EMBus.EXE_Dst;
     assign IEBus.EXE_Result   = EMBus.EXE_Result;
@@ -106,6 +106,7 @@ module TOP_EXE (
         .ID_TLBWIorR          (IEBus.ID_TLBWIorR),
         .ID_TrapOp            (IEBus.ID_TrapOp),
         .ID_PResult           (IEBus.ID_PResult),
+        .ID_IsMFC0            (IEBus.ID_IsMFC0 ),
         // .ID_Branch_Success    (IEBus.ID_Branch_Success),
         .ID_J_Success         (IEBus.ID_J_Success),
         .ID_PC8_Success       (IEBus.ID_PC8_Success),    
@@ -140,6 +141,7 @@ module TOP_EXE (
         .EXE_TLBWIorR         (EMBus.EXE_TLBWIorR),
         .EXE_TrapOp           (EXE_TrapOp),
         .EXE_PResult          (EXE_PResult),
+        .EXE_IsMFC0           (EMBus.EXE_IsMFC0 ),
         // .EXE_Branch_Success   (EXE_Branch_Success),
         .EXE_J_Success        (EXE_J_Success),
         .EXE_PC8_Success      (EXE_PC8_Success),

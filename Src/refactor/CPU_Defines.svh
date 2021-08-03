@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-01 10:15:10
+ * @LastEditTime: 2021-08-03 10:35:53
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -386,6 +386,7 @@ interface ID_EXE_Interface();
 	logic 					ID_IsAJumpCall;
 	BranchType              ID_BranchType;
 	PResult                 ID_PResult;
+	logic                   ID_IsMFC0;
 	// logic                   ID_Branch_Success;
 	logic                   ID_J_Success;
 	logic                   ID_PC8_Success;
@@ -394,7 +395,7 @@ interface ID_EXE_Interface();
 	logic       [31:0]      ID_PCAdd8;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
-	logic       [31:0]      EXE_Instr;
+	logic                   EXE_IsMFC0;
 	RegsWrType              EXE_RegsWrType;
 	logic       [4:0]       EXE_Dst;
 	logic       [31:0]      EXE_Result;
@@ -426,6 +427,7 @@ interface ID_EXE_Interface();
 	output                  ID_IsTLBR,
 	output                  ID_TLBWIorR,
 	output                  ID_PResult,
+	output                  ID_IsMFC0,
 	// output                  ID_Branch_Success,
 	output                  ID_J_Success,
 	output                  ID_PC8_Success,
@@ -434,7 +436,7 @@ interface ID_EXE_Interface();
 	output                  ID_PCAdd8,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
-	input                   EXE_Instr,
+	input                   EXE_IsMFC0,
 	input                   EXE_RegsWrType,
 	input                   EXE_Dst,
 	input                   EXE_Result
@@ -467,6 +469,7 @@ interface ID_EXE_Interface();
 	input                   ID_IsTLBR,
 	input                   ID_TLBWIorR,
 	input                   ID_PResult,
+	input                   ID_IsMFC0,
 	// input                   ID_Branch_Success,
 	input                   ID_J_Success,
 	input                   ID_PC8_Success,
@@ -475,7 +478,7 @@ interface ID_EXE_Interface();
 	input                   ID_PCAdd8,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
-	output                  EXE_Instr,
+	output                  EXE_IsMFC0,
 	output                  EXE_RegsWrType,
 	output                  EXE_Dst,
 	output                  EXE_Result
@@ -504,6 +507,7 @@ interface EXE_MEM_Interface();
 	logic       [1:0]       EXE_RegsReadSel;
 	logic       [4:0]       EXE_rd;
 	logic       [31:0]      EXE_Result;
+	logic                   EXE_IsMFC0;
 	logic       [4:0]       MEM_Dst;
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
@@ -529,6 +533,7 @@ interface EXE_MEM_Interface();
 	output                  EXE_RegsReadSel,
 	output                  EXE_rd,
 	output                  EXE_Result,
+	output                  EXE_IsMFC0,
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
@@ -555,6 +560,7 @@ interface EXE_MEM_Interface();
 	input                   EXE_RegsReadSel,
 	input                   EXE_rd,
 	input                   EXE_Result,
+	input                   EXE_IsMFC0,
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-25 11:31:36
+ * @LastEditTime: 2021-08-03 10:37:50
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -48,7 +48,7 @@ module TOP_MEM (
     output logic [31:0]          MEM_Result,  // 用于旁路数据
     output logic [4:0]           MEM_Dst,
     output RegsWrType            MEM_RegsWrType,
-    output logic [31:0]          MEM_Instr
+    output logic                 MEM_IsMFC0
 );
     ExceptinPipeType             MEM_ExceptType;
     logic [31:0]                 RFHILO_Bus;
@@ -91,8 +91,7 @@ module TOP_MEM (
     assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
-    // 用于MFC0型的阻塞
-    assign MEM_Instr                = MM2Bus.MEM_Instr;
+    
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),
         .rst                     (resetn ),
@@ -118,6 +117,7 @@ module TOP_MEM (
         .EXE_RegsReadSel         (EMBus.EXE_RegsReadSel),
         .EXE_rd                  (EMBus.EXE_rd),
         .EXE_Result              (EMBus.EXE_Result),
+        .EXE_IsMFC0              (EMBus.EXE_IsMFC0),
     //------------------------out--------------------------------------------------//
         .MEM_ALUOut              (MM2Bus.MEM_ALUOut ),  
         .MEM_OutB                (RFHILO_Bus ),
@@ -137,7 +137,8 @@ module TOP_MEM (
         .MEM_TLBWIorR            (MEM_TLBWIorR),
         .MEM_RegsReadSel         (MEM_RegsReadSel),
         .MEM_rd                  (MEM_rd),
-        .MEM_Result              (MEM_Result)
+        .MEM_Result              (MEM_Result),
+        .MEM_IsMFC0              (MEM_IsMFC0)
     );
 
     Exception U_Exception(             

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-25 11:42:31
+ * @LastEditTime: 2021-08-03 10:41:49
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -33,7 +33,7 @@ module TOP_ID (
     input logic [4:0]        MEM2_rt,
     input logic              MEM2_ReadMEM,
     input logic              ID_DisWr,   
-    input logic [31:0]       MEM_Instr,
+    input logic              MEM_IsMFC0,
     IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
@@ -193,8 +193,8 @@ module TOP_ID (
         .MEM_ReadMEM         (MEM_ReadMEM ),
         .MEM2_rt             (MEM2_rt),
         .MEM2_ReadMEM        (MEM2_ReadMEM),
-        .EXE_Instr           (IEBus.EXE_Instr),
-        .MEM_Instr           (MEM_Instr),
+        .EXE_IsMFC0          (IEBus.EXE_IsMFC0),
+        .MEM_IsMFC0          (MEM_IsMFC0),
         //-----------------------output-----------------------//
         .ID_EX_DH_Stall      (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall    (ID_MEM1_DH_Stall),

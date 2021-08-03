@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-07-25 11:31:19
+ * @LastEditTime: 2021-08-03 10:37:23
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -103,7 +103,7 @@ module mycpu_top (
     RegsWrType                 WB_RegsWrType;             //WB级的写使能
     RegsWrType                 WB_Final_Wr;               //WB级最终的写使能
 
-    logic [31:0]               MEM_Instr;                 //用于判断MFC0后的阻塞
+    logic [31:0]               MEM_IsMFC0;                 //用于判断MFC0后的阻塞
     logic [31:0]               MEM_Result;                // 用于旁路数据
     logic [4:0]                MEM_Dst;
     RegsWrType                 MEM_RegsWrType;
@@ -341,7 +341,7 @@ module mycpu_top (
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_RegsWrType             (WB_RegsWrType ),
-        .MEM_Instr                 (MEM_Instr),
+        .MEM_IsMFC0                 (MEM_IsMFC0),
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
@@ -399,7 +399,7 @@ module mycpu_top (
         .MEM_Result                (MEM_Result),     
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),
-        .MEM_Instr                 (MEM_Instr)
+        .MEM_IsMFC0                 (MEM_IsMFC0)
     );
     
     TOP_MEM2 U_TOP_MEM2 (
