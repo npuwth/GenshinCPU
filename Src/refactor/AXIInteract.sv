@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-08-03 16:25:35
+ * @LastEditTime: 2021-08-07 10:45:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
@@ -363,17 +363,17 @@ module AXIInteract #(
     assign ibus_arsize    = 3'b010;       // 每次传输4字节
     assign ibus_arburst   = 2'b01;
     assign ibus_arlock    = '0;
-    assign ibus_arcache   = '0;
+    assign ibus_arcache   = '1;
     assign ibus_arprot    = '0;
     
 
     // master -> slave
-    assign ibus_awid      = '0;           
+    assign ibus_awid      = 4'h1;           
     assign ibus_awlen     = '0;
     assign ibus_awsize    = '0;
     assign ibus_awburst   = '0;
     assign ibus_awlock    = '0;
-    assign ibus_awcache   = '0;
+    assign ibus_awcache   = '1;
     assign ibus_awprot    = '0;
     assign ibus_awvalid   = '0;
     assign ibus_awaddr    = '0;
@@ -471,21 +471,21 @@ module AXIInteract #(
         end
     end
 /********************* dbus ******************/
-    assign dbus_arid      = 4'b0001;//TODO: 在有写缓冲的情况下 需要考虑id
+    assign dbus_arid      = 4'h2;//TODO: 在有写缓冲的情况下 需要考虑id
     assign dbus_arlen     = DCACHE_LINE_SIZE-1;//一次读两个cache line
     assign dbus_arsize    = 3'b010;
     assign dbus_arburst   = 2'b01;
     assign dbus_arlock    = '0;
-    assign dbus_arcache   = '0;
+    assign dbus_arcache   = '1;
     assign dbus_arprot    = '0;
 
 
-    assign dbus_awid      = 4'b0001;
+    assign dbus_awid      = 4'h3;
     assign dbus_awlen     = DCACHE_LINE_SIZE-1;        // 写的话还是一块一块写
     assign dbus_awsize    = 3'b010;         // 传输32bit 
     assign dbus_awburst   = 2'b01;          // increase模式
     assign dbus_awlock    = '0;
-    assign dbus_awcache   = '0;
+    assign dbus_awcache   = '1;
     assign dbus_awprot    = '0;
 
 
@@ -592,7 +592,7 @@ module AXIInteract #(
         end
     end
 /********************* uibus ******************/
-    assign uibus_arid     = 4'b1001;
+    assign uibus_arid     = 4'h4;
     assign uibus_arlen    = 4'b0000; // 传输事件只有一个
     // assign ubus_arsize   = 3'b010; // 4字节
     assign uibus_arsize   = 3'b010;//lw          // 根据LB LH LW调整Uncache的arsize  
@@ -602,7 +602,7 @@ module AXIInteract #(
     assign uibus_arprot   = '0;
 
 
-    assign uibus_awid     = 4'b1001;
+    assign uibus_awid     = 4'h5;
     assign uibus_awlen    = 4'b0000;        // 传输1次
     assign uibus_awsize   = 3'b010;         // 传输32bit 
     assign uibus_awburst  = 2'b01;          // increase模式
@@ -630,7 +630,7 @@ module AXIInteract #(
     assign uibus.ret_valid= (istate_uncache==UNCACHE_FINISH)?1'b1:1'b0;
     assign uibus.ret_data = uncache_i_line;
 /********************* udbus ******************/
-    assign udbus_arid     = 4'b0011;
+    assign udbus_arid     = 4'h6;
     assign udbus_arlen    = 4'b0000; // 传输事件只有一个
     // assign ubus_arsize   = 3'b010; // 4字节
     assign udbus_arsize   = (udbus.loadType.size == 2'b10) ? 3'b000: // lb
@@ -642,7 +642,7 @@ module AXIInteract #(
     assign udbus_arprot   = '0;
 
 
-    assign udbus_awid     = 4'b0011;
+    assign udbus_awid     = 4'h6;
     assign udbus_awlen    = 4'b0000;        // 传输1次
     assign udbus_awsize   = 3'b010;         // 传输32bit 
     assign udbus_awburst  = 2'b01;          // increase模式
