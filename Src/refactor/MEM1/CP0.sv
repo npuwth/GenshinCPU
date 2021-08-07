@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-07-30 20:34:53
+ * @LastEditTime: 2021-08-07 18:32:23
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -87,7 +87,7 @@ module cp0_reg (
     assign                  CP0_EPC          = CP0.EPC;
     assign                  CP0_Ebase        = CP0.Ebase;
     assign                  CP0_Config_K0    = CP0.Config0[2:0];
-    assign                  Interrupt_final  = Interrupt | {CP0_TimerInterrupt , 5'b0};  // 时钟中断号为IP7，在此标记
+    assign                  Interrupt_final  = Interrupt | {CP0.Cause.TI , 5'b0};  // 时钟中断号为IP7，在此标记
     assign                  config0_default = {
 	                            1'b1,   // M, config1 not implemented
 	                            21'b0,
