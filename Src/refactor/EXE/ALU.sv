@@ -1,10 +1,10 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-03 20:32:24
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-08 22:21:46
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
- * @FilePath: \refactor\EXE\ALU.sv
+ * @FilePath: \nontrival-cpu\Src\refactor\EXE\ALU.sv
  * 
  */
 `include "../CommonDefines.svh"

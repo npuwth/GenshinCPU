@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-03 19:26:37
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-08 22:47:12
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -73,6 +73,7 @@ module mycpu_top (
     logic [31:0]               Exception_Vector;          //传至PREIF，异常入口向量
     logic [31:0]               CP0_EPC;                   //传至PREIF,用于ERET返回
     BResult                    EXE_BResult;               //用于校正BPU
+    logic                      Delayslot_Flush;           //来自EXE级的branchsolvement，清空ID寄存器
     //-----------------------------流水线寄存器的写使能和flush------------------------------//
     logic                      PREIF_Wr;                  //来自Control
     logic                      IF_Wr;                     //来自Control
@@ -116,13 +117,13 @@ module mycpu_top (
     logic                      MEM_TLBWIorR;              //表示是TLBWI还是TLBWR
     logic                      I_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
     logic                      D_IsTLBStall;              //表示是否需要阻塞，然后转为search tlb
-    logic                      TLBBuffer_Flush;           //用于清空TLB Buffer
-    TLB_Entry                  I_TLBEntry;                //从TLB获取ITLBBuffer数据  
-    TLB_Entry                  D_TLBEntry;                //从TLB获取DTLBBuffer数据
-    logic                      s0_found;
-    logic                      s1_found;
-    logic [31:13]              I_VPN2;                    //用于查找TLB
-    logic [31:13]              D_VPN2;                    //用于查找TLB
+    logic                      TLBBuffer_Flush;           //在修改TLB或ASID后清空buffer
+    TLB_Entry                  I_TLBEntry;                //Buffer与TLB交互
+    TLB_Entry                  D_TLBEntry;                //Buffer与TLB交互
+    logic                      s0_found;                  //Buffer与TLB交互
+    logic                      s1_found;                  //Buffer与TLB交互
+    logic [31:13]              I_VPN2;                    //Buffer与TLB交互
+    logic [31:13]              D_VPN2;                    //Buffer与TLB交互
     logic [2:0]                CP0_Config_K0;
     
     //--------------------------------------用于golden trace-------------------------------------------------------//
@@ -130,14 +131,16 @@ module mycpu_top (
     assign debug_wb_rf_wdata = WB_Result;                                                    //写回寄存器的数据
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
+    
     // ila CPU_TOP_ILA(
     //     .clk(aclk),
-    //     .probe0(debug_wb_pc),
-    //     .probe1(debug_wb_rf_wdata),
-    //     .probe2(debug_wb_rf_wen),
-    //     .probe3(debug_wb_rf_wnum),
-    //     .probe4(IIBus.IF_Instr),
-    //     .probe5 (MM2Bus.MEM_ExcType)
+    //     .probe0 (debug_wb_pc),
+    //     .probe1 (debug_wb_rf_wdata),
+    //     .probe2 (debug_wb_rf_wen),
+    //     .probe3 (debug_wb_rf_wnum),
+    //     .probe4 (M2WBus.MEM2_Instr),
+    //     .probe5 (MM2Bus.MEM_ExcType)，
+    //     .probe6 (Exception_Vector)
     // );
 
     //---------------------------------------interface实例化-------------------------------------------------------//
@@ -165,6 +168,7 @@ module mycpu_top (
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
         .BranchFailed           (EXE_Prediction_Failed),
+        .Delayslot_Flush        (Delayslot_Flush),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
@@ -399,7 +403,7 @@ module mycpu_top (
         .Exception_Vector          (Exception_Vector ),
         .D_VPN2                    (D_VPN2 ),
         .D_IsTLBStall              (D_IsTLBStall ),
-        .TLBBuffer_Flush           (TLBBuffer_Flush),
+        .TLBBuffer_Flush_Final     (TLBBuffer_Flush),
         .MEM_Result                (MEM_Result),     
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),

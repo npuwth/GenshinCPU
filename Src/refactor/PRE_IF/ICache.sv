@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-03 17:22:28
+ * @LastEditTime: 2021-08-08 22:25:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -18,7 +18,7 @@ module Icache #(
     parameter LINE_WORD_NUM = 4,//cache line大小 一块的字数
     parameter ASSOC_NUM     = 4,//assoc_num组相连
     parameter WAY_SIZE      = 4*1024*8,//一路cache 容量大小为way_size bit
-    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) //
+    parameter SET_NUM       = WAY_SIZE/(LINE_WORD_NUM*DATA_WIDTH) // 
 
 ) (
     //external signals

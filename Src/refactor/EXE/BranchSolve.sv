@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-07-28 21:03:24
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-08 23:00:34
+ * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
  * 
@@ -26,9 +26,11 @@ module BranchSolve (
     input logic [31:0]    EXE_JumpAddr,
     input logic [31:0]    EXE_BranchAddr, 
     input logic [31:0]    EXE_PCAdd8,
+    input logic           EXE_IsBrchLikely,
     //---------------------output----------------------------------//
     output logic          EXE_Prediction_Failed,//表示预测失败
     output logic [31:0]   EXE_Correction_Vector,//用于校正的地址向量
+    output logic          ID_Delayslot_Flush,
     output BResult        EXE_BResult     //用于校正BHT查找表的数据
 );
 
@@ -146,6 +148,6 @@ module BranchSolve (
     end 
 
     assign EXE_Prediction_Failed = ~Prediction_Success && EXE_PResult.Valid; //阻塞的时候也可以发BranchFail，否则会有组合环
-
+    assign ID_Delayslot_Flush = ((EXE_IsBrchLikely) & ~EXE_Prediction_Failed) ? 1'b1 : 1'b0 ;//TODO:branchlikely
 
 endmodule

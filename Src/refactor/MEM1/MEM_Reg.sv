@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-08-03 10:40:58
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-08 22:24:32
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -37,7 +37,7 @@ module MEM_Reg (
 
   	input  ExceptinPipeType 		EXE_ExceptType_final,	
 	input  logic    [3:0]           EXE_DCache_Wen,
-	input  logic    [31:0]          EXE_DataToDcache,         //DCache的字节写使能
+	// input  logic    [31:0]          EXE_DataToDcache,         //DCache的字节写使能
     input  logic                    EXE_IsTLBP,
     input  logic                    EXE_IsTLBW,
     input  logic                    EXE_IsTLBR, 

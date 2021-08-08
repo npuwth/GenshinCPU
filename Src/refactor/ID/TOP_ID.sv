@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-03 10:46:15
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-08 23:04:18
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -180,7 +180,8 @@ module TOP_ID (
         .ID_IsTLBR           (IEBus.ID_IsTLBR),
         .ID_TLBWIorR         (IEBus.ID_TLBWIorR),
         .ID_TrapOp           (IEBus.ID_TrapOp),
-        .ID_IsMFC0           (IEBus.ID_IsMFC0)
+        .ID_IsMFC0           (IEBus.ID_IsMFC0),
+        .ID_IsBrchLikely     (IEBus.ID_IsBrchLikely)
     );
      
 

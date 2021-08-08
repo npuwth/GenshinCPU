@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-03 20:33:28
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-08 23:05:51
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -23,6 +23,7 @@ module TOP_EXE (
     output logic              EXE_Prediction_Failed,
     output logic [31:0]       EXE_Correction_Vector,
     output BResult            EXE_BResult,
+    output logic              Delayslot_Flush,
     output logic              EXE_MULTDIVStall
 );
 
@@ -62,6 +63,7 @@ module TOP_EXE (
     logic [31:0]              EXE_JumpAddr;
     logic [31:0]              EXE_BranchAddr;
     logic [31:0]              EXE_PCAdd8;
+    logic                     EXE_IsBrchLikely;
 
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
@@ -113,6 +115,7 @@ module TOP_EXE (
         .ID_JumpAddr          (IEBus.ID_JumpAddr),
         .ID_BranchAddr        (IEBus.ID_BranchAddr),    
         .ID_PCAdd8            (IEBus.ID_PCAdd8),
+        .ID_IsBrchLikely      (IEBus.ID_IsBrchLikely),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -147,8 +150,22 @@ module TOP_EXE (
         .EXE_PC8_Success      (EXE_PC8_Success),
         .EXE_JumpAddr         (EXE_JumpAddr),
         .EXE_BranchAddr       (EXE_BranchAddr), 
-        .EXE_PCAdd8           (EXE_PCAdd8)
+        .EXE_PCAdd8           (EXE_PCAdd8),
+        .EXE_IsBrchLikely     (EXE_IsBrchLikely)
+
     );
+    
+    // ALU_ila CP0_ILA(
+    //     .clk(clk),
+    //     .probe0 (EMBus.EXE_PC),
+    //     .probe1 (EXE_BusA_L2),
+    //     .probe2 (EXE_BusB_L2),
+    //     .probe3 (EXE_ALUOp), 
+    //     .probe4 (EMBus.EXE_ALUOut),   // 
+    //     .probe5 (Overflow_valid )     // 
+
+    // );
+
 
     BranchSolve U_BranchSolve (
         .EXE_BranchType       (EMBus.EXE_BranchType),    
@@ -169,7 +186,9 @@ module TOP_EXE (
         //-----------------output----------------------------//
         .EXE_Prediction_Failed(EXE_Prediction_Failed),
         .EXE_Correction_Vector(EXE_Correction_Vector),
-        .EXE_BResult          (EXE_BResult)
+        .EXE_BResult          (EXE_BResult),
+        .EXE_IsBrchLikely     (EXE_IsBrchLikely),
+        .ID_Delayslot_Flush   (Delayslot_Flush)
     );
 
     MUX2to1 #(32) U_MUXA_L2 (
