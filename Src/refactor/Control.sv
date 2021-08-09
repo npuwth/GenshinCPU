@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-09 16:55:19
+ * @LastEditTime: 2021-08-09 17:36:49
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -303,30 +303,6 @@ module Control(
             DCache_Stall  = 1'b0;
         end
         
-        else if (Delayslot_Flush == 1'b1) begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'b1;
-            ID_Wr        = 1'b1;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            // EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
-            IF_Flush     = 1'b0;
-            ID_Flush     = 1'b0;
-            EXE_Flush    = 1'b1;
-            MEM_Flush    = 1'b0;
-            MEM2_Flush   = 1'b0;
-            WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b0;
-            DCache_Stall  = 1'b0;
-        end
        
         else begin
             PREIF_Wr     = 1'b1;

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-09 17:10:37
+ * @LastEditTime: 2021-08-09 17:34:53
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -64,7 +64,7 @@ module TOP_EXE (
     logic [31:0]              EXE_JumpAddr;
     logic [31:0]              EXE_BranchAddr;
     logic [31:0]              EXE_PCAdd8;
-    logic                     EXE_IsBrchLikely;
+
 
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
