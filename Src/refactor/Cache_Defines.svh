@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-05-03 23:00:53
- * @LastEditTime: 2021-07-25 11:29:39
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-07-28 12:03:10
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\Code\Cache_Defines.svh
  */
@@ -40,16 +40,17 @@ interface CPU_IBus_Interface();            // 只需要满足读的请求 icache
   logic [31:0]  rdata;     //          
   logic         stall;   // 如果出现cache数据准备好，但CPU阻塞的清空，需要发送stall信号，cache状态机停滞知道数据被CPU接受
   logic         isCache;
+  CacheType     cacheType;//TODO: 把store tag实现为 填入全零 dcache还是需要判断命中的
 
   modport master ( //cpu的接口
             output  valid,index,tag,
-            output  offset,stall,isCache,
+            output  offset,stall,isCache,cacheType,
             input   busy,rdata
           );
 
   modport slave ( //cache的接口
             input  valid,index,tag,
-            input  offset,stall,isCache,
+            input  offset,stall,isCache,cacheType,
             output   busy,rdata
 
           );
@@ -74,16 +75,18 @@ interface CPU_DBus_Interface();            // 只需要满足读的请求 icache
   logic         origin_valid;
   logic         stall;   // 如果出现cache数据准备好，但CPU阻塞的清空，需要发送stall信号，cache状态机停滞知道数据被CPU接受
   logic         isCache;
+  CacheType     cacheType;
+
 
   modport master ( //cpu的接口
             output  valid,op,index,tag,
-            output  offset,wstrb,wdata,origin_valid,loadType,stall,isCache,
+            output  offset,wstrb,wdata,origin_valid,loadType,stall,isCache,cacheType,
             input   busy,rdata
           );
 
   modport slave ( //cache的接口
             input  valid,op,index,tag,
-            input  offset,wstrb,wdata,origin_valid,loadType,stall,isCache,
+            input  offset,wstrb,wdata,origin_valid,loadType,stall,isCache,cacheType,
             output busy,rdata
 
           );

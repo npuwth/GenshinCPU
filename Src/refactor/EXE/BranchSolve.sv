@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-08-08 23:00:34
+ * @LastEditTime: 2021-08-09 17:05:35
  * @LastEditors: Please set LastEditors
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -30,8 +30,8 @@ module BranchSolve (
     //---------------------output----------------------------------//
     output logic          EXE_Prediction_Failed,//表示预测失败
     output logic [31:0]   EXE_Correction_Vector,//用于校正的地址向量
-    output logic          ID_Delayslot_Flush,
-    output BResult        EXE_BResult     //用于校正BHT查找表的数据
+    output BResult        EXE_BResult,          //用于校正BHT查找表的数据
+    output logic          EXE_IsTaken
 );
 
     logic                 Branch_IsTaken; //实际是否应该跳转   （方向）
@@ -48,6 +48,7 @@ module BranchSolve (
     logic                 greater_equal_to_zero;
     logic                 less_than_zero;
 
+    assign EXE_IsTaken       = Branch_IsTaken;
     assign equal             = ~(|(EXE_OutA ^ EXE_OutB));
     assign not_equal         = |(EXE_OutA ^ EXE_OutB);
     assign not_equal_to_zero = |EXE_OutA;

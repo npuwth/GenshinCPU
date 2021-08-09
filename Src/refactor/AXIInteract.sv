@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-08-08 22:39:41
+ * @LastEditTime: 2021-08-09 16:53:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
@@ -407,7 +407,7 @@ module AXIInteract #(
     always_comb begin : dstate_next_block
         unique case (dstate)
             IDLE:begin
-                if (dbus.rd_req) begin
+                if (dbus.rd_req && udbus.wr_req ==1'b0 && dstate_uncache == UNCACHE_IDLE) begin//TODO:增加了条件
                     dstate_next = REQ;
                 end else begin
                     dstate_next = IDLE;
@@ -519,7 +519,7 @@ module AXIInteract #(
     always_comb begin : dstate_wb_next_block
         unique case (dstate_wb)
             WB_IDLE:begin
-                if (dbus.wr_req) begin
+                if (dbus.wr_req && udbus.wr_req ==1'b0 && dstate_uncache == UNCACHE_IDLE) begin
                     dstate_wb_next = WB_REQ;
                 end else begin
                     dstate_wb_next = WB_IDLE;

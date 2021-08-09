@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-08 22:47:12
+ * @LastEditTime: 2021-08-09 17:26:24
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -69,11 +69,14 @@ module mycpu_top (
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic                      EXE_Prediction_Failed;     //来自EXE级，分支预测错误
     logic [31:0]               EXE_Correction_Vector;     //用于校正分支预测
+    logic                      EXE_IsBrchLikely;
+    logic                      EXE_IsTaken;
     logic [1:0]                EX_Entry_Sel;              //来自MEM级，表示有异常或异常返回
     logic [31:0]               Exception_Vector;          //传至PREIF，异常入口向量
     logic [31:0]               CP0_EPC;                   //传至PREIF,用于ERET返回
     BResult                    EXE_BResult;               //用于校正BPU
-    logic                      Delayslot_Flush;           //来自EXE级的branchsolvement，清空ID寄存器
+    CacheType                  MEM_CacheType;             //用于Cache指令
+    logic [31:0]               MEM_ALUOut;                //用于Cache指令
     //-----------------------------流水线寄存器的写使能和flush------------------------------//
     logic                      PREIF_Wr;                  //来自Control
     logic                      IF_Wr;                     //来自Control
@@ -167,8 +170,9 @@ module mycpu_top (
         .ID_EX_DH_Stall         (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
-        .BranchFailed           (EXE_Prediction_Failed),
-        .Delayslot_Flush        (Delayslot_Flush),
+        .PredictFailed           (EXE_Prediction_Failed),
+        .EXE_IsBrchLikely       (EXE_IsBrchLikely),
+        .EXE_IsTaken            (EXE_IsTaken),
         .DIVMULTBusy            (EXE_MULTDIVStall),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
@@ -310,6 +314,8 @@ module mycpu_top (
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
         .CP0_Config_K0             (CP0_Config_K0 ),
+        .MEM_CacheType             (MEM_CacheType),
+        .MEM_ALUOut                (MEM_ALUOut),
         .PIBus                     (PIBus.PREIF ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
@@ -370,7 +376,9 @@ module mycpu_top (
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_BResult               (EXE_BResult),
-        .EXE_MULTDIVStall          (EXE_MULTDIVStall)
+        .EXE_MULTDIVStall          (EXE_MULTDIVStall),
+        .EXE_IsBrchLikely          (EXE_IsBrchLikely),
+        .EXE_IsTaken               (EXE_IsTaken)
     );
 
     TOP_MEM U_TOP_MEM ( 
@@ -408,7 +416,9 @@ module mycpu_top (
         .MEM_Dst                   (MEM_Dst),     
         .MEM_RegsWrType            (MEM_RegsWrType),
         .MEM_IsMFC0                (MEM_IsMFC0),
-        .CP0_Config_K0             (CP0_Config_K0)
+        .CP0_Config_K0             (CP0_Config_K0),
+        .MEM_CacheType             (MEM_CacheType),
+        .MEM_ALUOut                (MEM_ALUOut)
     );
     
     TOP_MEM2 U_TOP_MEM2 (

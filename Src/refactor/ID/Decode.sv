@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-08 23:05:32
+ * @LastEditTime: 2021-08-09 17:11:36
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -35,6 +35,7 @@ module Decode(
     output logic       ID_IsAJumpCall,
 
     output BranchType  ID_BranchType,
+    output CacheType   ID_CacheType,
 
     output logic [1:0] ID_rsrtRead,
     output logic       ID_IsTLBP,
@@ -101,6 +102,59 @@ module Decode(
       endcase
     end
 
+    always_comb begin : ID_CacheType_blockname
+      if (instrType == OP_CACHE) begin
+        case (rt)//instr[20:16]是cache指令的op
+          5'b00000:begin
+            ID_CacheType.isCache   = 1'b1; 
+            ID_CacheType.isIcache  = 1'b1;
+            ID_CacheType.isDcache  = 1'b0;
+            ID_CacheType.cacheCode = I_Index_Invalid; 
+          end
+          5'b01000:begin
+            ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isIcache  = 1'b1;
+            ID_CacheType.isDcache  = 1'b0;
+            ID_CacheType.cacheCode = I_Index_Store_Tag; 
+          end
+          5'b10000:begin
+            ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isIcache  = 1'b1;
+            ID_CacheType.isDcache  = 1'b0;
+            ID_CacheType.cacheCode = I_Hit_Invalid; 
+          end
+          5'b00001:begin
+            ID_CacheType.isCache = 1'b1; 
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1;
+            ID_CacheType.cacheCode = D_Index_Writeback_Invalid;
+          end
+          5'b01001:begin
+            ID_CacheType.isCache = 1'b1;
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1;             
+            ID_CacheType.cacheCode = D_Index_Store_Tag;
+          end
+          5'b10001:begin
+            ID_CacheType.isCache = 1'b1;
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1; 
+            ID_CacheType.cacheCode = D_Hit_Invalid; 
+          end
+          5'b10101:begin
+            ID_CacheType.isCache = 1'b1;
+            ID_CacheType.isIcache  = 1'b0;
+            ID_CacheType.isDcache  = 1'b1; 
+            ID_CacheType.cacheCode = D_Hit_Writeback_Invalid; 
+          end
+          default: begin
+            ID_CacheType = '0;
+          end
+        endcase
+      end else begin
+        ID_CacheType = '0;
+      end
+    end
 
     always_comb begin : ID_IsMFC0_blockname
       if (instrType == OP_MFC0) begin
@@ -220,6 +274,7 @@ module Decode(
 
                 `EXE_TNE  : instrType =  OP_TNE;
 
+                `EXE_SYNC : instrType =  OP_SYNC;
                 default: begin
                   instrType = OP_INVALID;
                 end
@@ -1841,12 +1896,25 @@ module Decode(
         //ID_rsrtRead[1]= 1'b1; //rs 
         //ID_rsrtRead[0]= 1'b0; //rt  
       end
-      OP_CACHE:begin
+      OP_CACHE:begin//TODO: 修改cache指令的译码
+        // ID_ALUOp      = `EXE_ALUOp_ADDU;    //ALU操作
+        // ID_LoadType   = '0;    //访存相关 
+        // ID_StoreType  = '0;    //存储相关
+        // ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
+        // ID_DstSel     = `DstSel_nop;    //Rtype选rd
+        // ID_RegsWrType = `RegsWrTypeDisable;    //写回哪里
+        // ID_ALUSrcA    = `ALUSrcA_Sel_Regs; //MUXA选择regs
+        // ID_ALUSrcB    = `ALUSrcB_Sel_Imm;  //MUXB选择regs
+        // ID_RegsReadSel= `RegsReadSel_RF;        //ID级选择RF读取结果
+        // ID_EXTOp      = `EXTOP_SIGN;                 //R型无关
+        // ID_IsAJumpCall = `IsNotAJumpCall;
+        // ID_BranchType = '0;
+        // IsReserved    = 1'b0;
         ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
         ID_StoreType  = '0;    //存储相关
         ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
-        ID_DstSel     = `DstSel_nop;    //Rtype选rd
+        ID_DstSel     =  `DstSel_nop;    //Rtype选rd
         ID_RegsWrType = '0;    //写回哪里
         ID_ALUSrcA    = '0; //MUXA选择regs
         ID_ALUSrcB    = '0;  //MUXB选择regs

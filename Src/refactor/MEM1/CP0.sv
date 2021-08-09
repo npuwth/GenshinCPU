@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-08 22:24:06
+ * @LastEditTime: 2021-08-09 17:12:11
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -59,7 +59,7 @@ module cp0_reg (
     //     .probe7 (CP0_Cause_IP1_0),     //[1:0]
     //     .probe8 (CP0_Status_BEV)      // [0:0]
     // );
-
+ 
     
     // 4096/4/8 = 128 ; 128 对应了3'd01
     localparam int IC_SET_PER_WAY = $clog2(`CACHE_WAY_SIZE / `ICACHE_LINE_WORD / 8 / 64 ) - 1;  

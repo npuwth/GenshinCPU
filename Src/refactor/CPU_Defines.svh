@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-08 22:20:57
+ * @LastEditTime: 2021-08-09 16:56:11
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -105,6 +105,8 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 		OP_FPU_CEIL, OP_FPU_FLOOR,
 		OP_FPU_MOV, OP_FPU_CMOV,
 	`endif
+	/*Multi Core(NOP)*/
+	OP_SYNC,
 	/* invalid */
 	OP_INVALID
 } InstrType;//一个枚举变量类型 你可以在译码这个过程中使用，这个我是照抄Tsinghua
@@ -133,6 +135,26 @@ typedef struct packed {
 	logic 		[2:0] 		branchCode;
 	logic 					isBranch;
 } BranchType;
+
+typedef enum logic [2:0] { 
+	I_Index_Invalid,
+	I_Index_Store_Tag,
+	I_Hit_Invalid,
+
+	D_Index_Writeback_Invalid,
+	D_Index_Store_Tag,
+	D_Hit_Invalid,
+	D_Hit_Writeback_Invalid
+} CacheCodeType;
+
+
+
+typedef struct packed {
+	CacheCodeType       	cacheCode;
+	logic                   isCache;
+	logic 					isIcache;
+	logic 					isDcache;	
+} CacheType;
 
 // CP0 registers
 
@@ -398,6 +420,7 @@ interface ID_EXE_Interface();
 	logic       [31:0]      ID_JumpAddr;
 	logic       [31:0]      ID_BranchAddr;
 	logic       [31:0]      ID_PCAdd8;
+	CacheType               ID_CacheType;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic                   EXE_IsMFC0;
@@ -440,6 +463,7 @@ interface ID_EXE_Interface();
 	output                  ID_JumpAddr,
 	output                  ID_BranchAddr,	
 	output                  ID_PCAdd8,
+	output                  ID_CacheType,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_IsMFC0,
@@ -483,6 +507,7 @@ interface ID_EXE_Interface();
 	input                   ID_JumpAddr,
 	input                   ID_BranchAddr,
 	input                   ID_PCAdd8,
+	input                   ID_CacheType,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_IsMFC0,
@@ -515,10 +540,12 @@ interface EXE_MEM_Interface();
 	logic       [4:0]       EXE_rd;
 	logic       [31:0]      EXE_Result;
 	logic                   EXE_IsMFC0;
+	CacheType               EXE_CacheType;
 	logic       [4:0]       MEM_Dst;
 	logic                   MEM_IsTLBR;
 	logic                   MEM_IsTLBW;
-	logic       [31:0]      MEM_Instr;
+	logic                   MEM_RegsWrTypeCP0Wr;
+	CacheType               MEM_CacheType;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -541,10 +568,12 @@ interface EXE_MEM_Interface();
 	output                  EXE_rd,
 	output                  EXE_Result,
 	output                  EXE_IsMFC0,
+	output                  EXE_CacheType,
 	input                   MEM_Dst,
 	input                   MEM_IsTLBR,
 	input                   MEM_IsTLBW,
-	input                   MEM_Instr
+	input                   MEM_RegsWrTypeCP0Wr,
+	input                   MEM_CacheType
 	);
 
 	modport MEM (
@@ -568,10 +597,12 @@ interface EXE_MEM_Interface();
 	input                   EXE_rd,
 	input                   EXE_Result,
 	input                   EXE_IsMFC0,
+	input                   EXE_CacheType,
 	output                  MEM_Dst,
 	output                  MEM_IsTLBR,
 	output                  MEM_IsTLBW,
-	output                  MEM_Instr
+	output                  MEM_RegsWrTypeCP0Wr,
+	output                  MEM_CacheType
 	);
 
 endinterface

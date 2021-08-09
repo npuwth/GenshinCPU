@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-08 23:03:52
+ * @LastEditTime: 2021-08-09 17:17:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -11,9 +11,10 @@
 `include "../CPU_Defines.svh"
 //`define Dcache  //如果是DCache就在文件中使用这个宏
 //`define DEBUG
+//dcache只有在不busy的时候才会 处理在mem1的指令 cpu_bus.valid与cache指令无关
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width�?
-    parameter STORE_BUFFER_SIZE = 32,
+    parameter STORE_BUFFER_SIZE = 1,
     parameter DATA_WIDTH        = 32,//cache和cpu 总线数据位宽为data_width
     parameter LINE_WORD_NUM     = 4,//cache line大小 �?块的字数
     parameter ASSOC_NUM         = 4,//assoc_num组相�?
@@ -134,6 +135,7 @@ typedef struct packed {
     logic[31:0]       wdata; //store数据
     LoadType          loadType;//load类型
     logic             isCache;
+    CacheType         cacheType;
 } request_t;
 
 
@@ -155,12 +157,18 @@ typedef enum logic [2:0]{
     // UNCACHE_WAIT_RW
 } uncache_state_t;
 
-
+typedef enum logic [1:0] { 
+    CACHE_IDLE,
+    CACHE_LOOKUP,
+    CACHE_WAIT_WRITE,
+    CACHE_WRITEBACK
+ } cache_state_t;//cache指令状态机
 //declartion
 
 uncache_state_t uncache_state,uncache_state_next;
 store_t store_buffer; //如果有写冲突 直接阻塞
 state_t state,state_next;
+cache_state_t cache_state,cache_state_next;
 
 wb_state_t wb_state,wb_state_next;
  
@@ -206,6 +214,7 @@ logic pipe_wr;
 logic busy_cache;// uncache 直到数据返回
 logic busy_uncache_read;
 logic busy_uncache_write;//这表示store_buffer满了
+logic busy_cache_instr;
 // logic busy_collision;
 // logic busy_collision1;
 // logic busy_collision2;
@@ -241,14 +250,88 @@ assign cpu_bus.rdata  = (req_buffer.valid)?data_rdata_final:'0;
 //连axi_bus接口
 assign axi_bus.rd_req  = (state == MISSCLEAN) ? 1'b1:1'b0;
 assign axi_bus.rd_addr = {req_buffer.tag , req_buffer.index, {OFFSET_WIDTH{1'b0}}};
-assign axi_bus.wr_req  = (state == MISSDIRTY) ? 1'b1:1'b0;
-assign axi_bus.wr_addr = {pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
+assign axi_bus.wr_req  = (cache_state == CACHE_WAIT_WRITE  ||state == MISSDIRTY) ? 1'b1:1'b0;
+
+
+// assign axi_bus.wr_addr = (){pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
+always_comb begin : axi_bus_wraddr_blockName
+    if (req_buffer.cacheType.isCache) begin
+        case (req_buffer.cacheType.cacheCode)
+            D_Index_Writeback_Invalid:begin
+                axi_bus.wr_addr = {pipe_tagv_rdata[req_buffer.tag[0]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};//tag[0]为1 即指的是第一路
+            end
+            D_Hit_Writeback_Invalid:begin
+                axi_bus.wr_addr = {req_buffer.tag,req_buffer.index,req_buffer.offset};
+            end
+            default: begin
+                axi_bus.wr_addr = '0;
+            end
+        endcase
+    end else begin
+        axi_bus.wr_addr = {pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};//要被替换的地址
+    end
+end
 // assign axi_bus.wr_data = {data_rdata[lru[req_buffer.index]]};
-generate;//
-    for (genvar i=0; i<LINE_WORD_NUM; i++) begin
-        assign  axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+
+logic[`DCACHE_LINE_WORD*32-1:0] wr_data1,wr_data2,wr_data3;
+
+generate;
+    for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
+        assign wr_data1[32*(i+1)-1:32*(i)] = data_rdata[req_buffer.tag[0]][i];
     end
 endgenerate
+generate;
+    for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
+        assign wr_data2[32*(i+1)-1:32*(i)] = data_rdata[clog2(hit)][i];
+    end
+endgenerate
+generate;
+    for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
+        assign wr_data3[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+    end
+endgenerate
+
+always_comb begin : axi_bus_wr_data_blockName
+    if (req_buffer.cacheType.isCache==1) begin
+        case (req_buffer.cacheType.cacheCode)
+            D_Index_Writeback_Invalid:begin
+                axi_bus.wr_data = wr_data1;
+            end
+            D_Hit_Writeback_Invalid:begin
+                axi_bus.wr_data = wr_data2;
+            end
+            default: begin
+               axi_bus.wr_data = '0;
+            end
+        endcase
+    end else begin
+        for (int i=0; i<LINE_WORD_NUM; i++) begin
+                axi_bus.wr_data = wr_data3;
+            end
+    end    
+end
+// genvar i;
+// generate;
+//      for ( i=0; i<LINE_WORD_NUM; i++) begin
+//          if (1) begin
+//             case (req_buffer.cacheType.cacheCode)
+//                 D_Index_Writeback_Invalid:begin
+//                    assign  axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[req_buffer.tag[0]][i];
+//                 end
+//                 D_Hit_Writeback_Invalid:begin
+//                     assign axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[clog2(hit)][i];
+//                 end
+//                 default: begin
+//                     assign axi_bus.wr_data = '0;
+//                 end
+//             endcase
+//          end
+//          else begin
+//             assign axi_bus.wr_data[32*(i+1)-1:32*(i)] = data_rdata[lru[req_buffer.index]][i];
+//          end
+//     end
+// endgenerate
+
 //连axi_ubus接口
 assign axi_ubus.rd_req   = (uncache_state == UNCACHE_READ_WAIT_AXI) ? 1'b1:1'b0;
 assign axi_ubus.rd_addr  = {req_buffer.tag , req_buffer.index, req_buffer.offset};
@@ -327,7 +410,7 @@ generate;//PLRU
     end
 endgenerate
 
-generate;// 判断命中
+generate;//  判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
         assign hit[i] = (cpu_bus.stall) ? (tagv_rdata[i].valid & (req_buffer.tag == tagv_rdata[i].tag) & req_buffer.isCache) ? 1'b1:1'b0 : (tagv_rdata[i].valid & (cpu_bus.tag == tagv_rdata[i].tag) & cpu_bus.isCache) ? 1'b1:1'b0;
     end
@@ -346,7 +429,7 @@ assign cache_hit        = |hit;
 
 assign read_addr      = (state == REFILLDONE || state == REFILL || cpu_bus.stall)? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
-assign tagv_addr      = (state == REFILLDONE || state == REFILL) ? req_buffer.index :cpu_bus.index;
+assign tagv_addr      = (state == REFILLDONE || state == REFILL || cache_state == CACHE_LOOKUP ) ? req_buffer.index :cpu_bus.index;
 
 
 assign busy_cache          = (req_buffer.valid & ~pipe_cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
@@ -355,7 +438,8 @@ assign busy_uncache_read   = (uncache_state == UNCACHE_IDLE  || uncache_state ==
 // assign busy_collision2     = (cpu_bus.origin_valid & cpu_bus.isCache &WB[32-OFFSET_WIDTH] & WB[31-OFFSET_WIDTH:0]=={cpu_bus.tag,cpu_bus.index})?1'b1:1'b0;
 // assign busy_collision      = busy_collision1 | busy_collision2;
 assign busy_uncache_write  = (fifo_full) ? 1'b1:1'b0;
-assign busy                = busy_cache | busy_uncache_read | busy_uncache_write;
+assign busy_cache_instr    = (cache_state == CACHE_IDLE) ? 1'b0:1'b1;
+assign busy                = busy_cache | busy_uncache_read | busy_uncache_write | busy_cache_instr ;
 
 assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
@@ -366,10 +450,16 @@ generate;//
         assign data_wdata[i] = (state == REFILL) ? axi_bus.ret_data[32*(i+1)-1:32*(i)] : store_buffer.wdata;
     end
 endgenerate
-assign tagv_wdata     = {1'b1,req_buffer.tag};
-assign data_read_en   = (state == REFILLDONE ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
+always_comb begin : tagv_wdata_blockName
+    if(req_buffer.cacheType.isCache)begin
+        tagv_wdata = '0;
+    end else begin
+        tagv_wdata = {1'b1,req_buffer.tag};
+    end
+end
+assign data_read_en   = (state == REFILLDONE || cache_state == CACHE_LOOKUP ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
-assign dirty_wdata    = (state == REFILL)? 1'b0 : 1'b1;
+assign dirty_wdata    = (cache_state == CACHE_LOOKUP || state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;
 
 
@@ -438,12 +528,35 @@ always_comb begin : dirty_we_block
     if (state == REFILL) begin
         dirty_we = '0;
         dirty_we[lru[req_buffer.index]] =1'b1;
+    end else if(req_buffer.cacheType.isCache && cache_state == CACHE_LOOKUP)begin
+        case (req_buffer.cacheType.cacheCode)
+            D_Index_Writeback_Invalid,D_Index_Store_Tag:begin
+                dirty_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
+            end
+            D_Hit_Invalid,D_Hit_Writeback_Invalid:begin
+                dirty_we = (cache_hit) ? ( (hit[0]) ? 2'b01:2'b10 )  : '0;
+            end
+            default: begin
+                dirty_we = '0;
+            end
+        endcase
     end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
         dirty_we = pipe_hit;
     end else begin
         dirty_we = '0;
     end
 end
+
+// always_comb begin : dirty_we_block
+//     if (state == REFILL) begin
+//         dirty_we = '0;
+//         dirty_we[lru[req_buffer.index]] =1'b1;
+//     end else if(req_buffer.valid & req_buffer.op & req_buffer.isCache)begin
+//         dirty_we = hit;
+//     end else begin
+//         dirty_we = '0;
+//     end
+// end
 
 always_comb begin : data_rdata_final__blockname
     data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == pipe_hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(pipe_hit)];
@@ -454,6 +567,18 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
+    end else if(req_buffer.cacheType.isCache && cache_state == CACHE_LOOKUP)begin
+        case (req_buffer.cacheType.cacheCode)
+            D_Index_Writeback_Invalid,D_Index_Store_Tag:begin
+                tagv_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
+            end
+            D_Hit_Invalid,D_Hit_Writeback_Invalid:begin
+                tagv_we = (cache_hit) ? ( (hit[0]) ? 2'b01:2'b10 )  : '0;
+            end
+            default: begin
+                tagv_we = '0;
+            end
+        endcase
     end else begin
         tagv_we = '0;
     end
@@ -495,6 +620,7 @@ always_ff @(posedge clk) begin : req_buffer_blockName
         req_buffer.wdata    <=  cpu_bus.wdata;
         req_buffer.loadType <=  cpu_bus.loadType;
         req_buffer.isCache  <=  cpu_bus.isCache;
+        req_buffer.cacheType<=  cpu_bus.cacheType;
     end else begin
         req_buffer <= req_buffer;
     end
@@ -604,7 +730,7 @@ always_ff @(posedge clk) begin :wb_state_blockname
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & pipe_cache_hit & ~cpu_bus.stall) begin
+    if (req_buffer.valid & req_buffer.op & cache_hit & ~cpu_bus.stall & req_buffer.isCache) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;
@@ -837,5 +963,90 @@ module FIFO #(
     .wr_rst_busy  (fifo_wr_rst_busy)
   );
 
+always_ff @( posedge clk ) begin : cache_state_blockName
+    if (resetn == `RstEnable) begin
+        cache_state <= CACHE_IDLE;
+    end else begin
+        cache_state <= cache_state_next;
+    end
+end
+
+always_comb begin : cache_state_next_blockName
+    case (cache_state)
+        CACHE_IDLE:begin
+            if (~cpu_bus.stall && cpu_bus.cacheType.isCache) begin
+                cache_state_next = CACHE_LOOKUP;
+            end else begin
+                cache_state_next = CACHE_IDLE;
+            end
+        end
+        CACHE_LOOKUP:begin//判命中
+            case (req_buffer.cacheType.cacheCode)
+                D_Index_Store_Tag:begin
+                    cache_state_next = CACHE_IDLE;
+                end
+                D_Index_Writeback_Invalid:begin
+                    if (req_buffer.tag[0]) begin//第一路
+                        if (pipe_tagv_rdata[1].valid & dirty_rdata[1]) begin//命中且脏
+                            cache_state_next = CACHE_WAIT_WRITE;
+                        end else begin
+                            cache_state_next = CACHE_IDLE;
+                        end
+                    end else begin
+                        if (pipe_tagv_rdata[0].valid & dirty_rdata[0]) begin
+                            cache_state_next = CACHE_WAIT_WRITE;
+                        end else begin
+                            cache_state_next = CACHE_IDLE;
+                        end
+                    end
+                end
+                D_Hit_Invalid:begin
+                    cache_state_next = CACHE_IDLE;
+                end
+                D_Hit_Writeback_Invalid:begin
+                    case (hit)
+                        2'b01:begin
+                            if (dirty_rdata[0]) begin
+                                cache_state_next = CACHE_WAIT_WRITE;
+                            end else begin
+                                cache_state_next = CACHE_IDLE;
+                            end
+                        end
+                        2'b10:begin
+                            if (dirty_rdata[1]) begin
+                                cache_state_next = CACHE_WAIT_WRITE;
+                            end else begin
+                                cache_state_next = CACHE_IDLE;
+                            end                            
+                        end
+                        default: begin
+                            cache_state_next = CACHE_IDLE;
+                        end
+                    endcase                  
+                end
+                default: begin
+                    cache_state_next = CACHE_IDLE;
+                end
+            endcase
+        end
+        CACHE_WAIT_WRITE:begin
+            if (axi_bus.wr_rdy) begin
+                cache_state_next = CACHE_WRITEBACK;
+            end else begin
+                cache_state_next = CACHE_WAIT_WRITE;
+            end
+        end
+        CACHE_WRITEBACK:begin
+            if (axi_bus.wr_valid) begin
+                cache_state_next = CACHE_IDLE;
+            end else begin
+                cache_state_next = CACHE_WRITEBACK;
+            end            
+        end
+        default: begin
+                cache_state_next = CACHE_IDLE;
+        end
+    endcase
+end
 
 endmodule

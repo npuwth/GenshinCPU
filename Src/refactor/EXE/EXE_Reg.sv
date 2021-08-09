@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-08 22:50:16
+ * @LastEditTime: 2021-08-09 17:08:44
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -51,6 +51,7 @@ module EXE_Reg (
     input logic      [31:0]              ID_BranchAddr,
     input logic      [31:0]              ID_PCAdd8,
     input logic                          ID_IsBrchLikely,
+    input CacheType                      ID_CacheType,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -86,7 +87,8 @@ module EXE_Reg (
     output logic     [31:0]              EXE_BranchAddr,
     output logic     [31:0]              EXE_PCAdd8,
     output logic                         EXE_IsMFC0,
-    output logic                         EXE_IsBrchLikely
+    output logic                         EXE_IsBrchLikely,
+    output CacheType                     EXE_CacheType
     // output logic                         MDU_flush
 );
 
@@ -127,7 +129,7 @@ module EXE_Reg (
       EXE_BranchAddr                     <= '0;      
       EXE_PCAdd8                         <= '0;
       EXE_IsBrchLikely                   <= '0;
-
+      EXE_CacheType                      <= '0;
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -165,6 +167,7 @@ module EXE_Reg (
       EXE_BranchAddr                     <= ID_BranchAddr; 
       EXE_PCAdd8                         <= ID_PCAdd8;
       EXE_IsBrchLikely                   <= ID_IsBrchLikely;
+      EXE_CacheType                      <= ID_CacheType;
     end
   end
 

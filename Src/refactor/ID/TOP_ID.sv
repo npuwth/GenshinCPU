@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-08 23:04:18
+ * @LastEditTime: 2021-08-09 17:12:04
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -181,7 +181,8 @@ module TOP_ID (
         .ID_TLBWIorR         (IEBus.ID_TLBWIorR),
         .ID_TrapOp           (IEBus.ID_TrapOp),
         .ID_IsMFC0           (IEBus.ID_IsMFC0),
-        .ID_IsBrchLikely     (IEBus.ID_IsBrchLikely)
+        .ID_IsBrchLikely     (IEBus.ID_IsBrchLikely),
+        .ID_CacheType        (IEBus.ID_CacheType)
     );
      
 
