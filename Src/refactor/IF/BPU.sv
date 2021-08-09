@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-08-01 10:15:29
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-09 17:49:13
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -24,9 +24,9 @@ module BPU (
     output logic               BPU_Valid   //给PCSel，当发生flush后，BPU_Reg无效，从PC+4取指
 );
 
-    RAS_Entry [`SIZE_OF_RAS-1:0]       RAS;
+    RAS_EntryType [`SIZE_OF_RAS-1:0]       RAS;
     logic                              RAS_Wr;
-    RAS_Entry                          RAS_Data;    //旁路后的数据
+    RAS_EntryType                          RAS_Data;    //旁路后的数据
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_Top;     //point to stack top
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_TopSub1;
 

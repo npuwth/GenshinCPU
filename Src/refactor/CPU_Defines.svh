@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-09 17:30:36
+ * @LastEditTime: 2021-08-09 17:48:33
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -323,13 +323,13 @@ typedef struct packed {
 typedef struct packed {
 	logic                      Valid;
 	logic [31:0]               Addr;
-} RAS_Entry;
+} RAS_EntryType;
 
 typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;       //Tag in BHT
     logic [31:`SIZE_OF_INDEX+2]PCTag;     //Tag of PC
     logic [31:0]               BHT_Addr;  //Target Address in BHT
-    RAS_Entry                  RAS_Entry; //Target Address in RAS
+    RAS_EntryType                  RAS_Entry; //Target Address in RAS
     logic [31:0]               PC_Add8;   //pc+8
     logic [1:0]                Type;      //Type in BHT
     logic [1:0]                Count;     //Count in BHT
