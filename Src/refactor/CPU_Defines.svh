@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-09 16:56:11
+ * @LastEditTime: 2021-08-09 17:30:36
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -106,7 +106,6 @@ typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值�
 		OP_FPU_MOV, OP_FPU_CMOV,
 	`endif
 	/*Multi Core(NOP)*/
-	OP_SYNC,
 	/* invalid */
 	OP_INVALID
 } InstrType;//一个枚举变量类型 你可以在译码这个过程中使用，这个我是照抄Tsinghua
