@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-10 10:41:40
+ * @LastEditTime: 2021-08-10 17:59:05
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -360,7 +360,7 @@ module Decode(
 			        	3'b010:  instrType = OP_SWL;
 			        	3'b011:  instrType = OP_SW;
 			        	3'b110:  instrType = OP_SWR;
-			        	3'b111:  instrType = OP_CACHE;
+			        	3'b111:  instrType = OP_NOP;
 			        	default: instrType = OP_INVALID;
 			        endcase
 		        end
@@ -1924,6 +1924,22 @@ module Decode(
       end
       // 实现为NOP指令
       OP_SYNC:begin
+        ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
+        ID_LoadType   = '0;    //访存相关 
+        ID_StoreType  = '0;    //存储相关
+        ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
+        ID_DstSel     = `DstSel_nop;    //Rtype选rd
+        ID_RegsWrType = '0;    //写回哪里
+        ID_ALUSrcA    = '0; //MUXA选择regs
+        ID_ALUSrcB    = '0;  //MUXB选择regs
+        ID_RegsReadSel= '0;        //ID级选择RF读取结果
+        ID_EXTOp      = `EXTOP_NOP;                 //R型无关
+        ID_IsAJumpCall= '0;
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;   
+      end
+
+      OP_NOP:begin
         ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
         ID_StoreType  = '0;    //存储相关
