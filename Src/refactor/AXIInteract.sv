@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-08-10 14:03:48
+ * @LastEditTime: 2021-08-10 14:36:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
@@ -262,7 +262,7 @@ module AXIInteract #(
 //TODO: 如果要实现预取 这边下面的line_recv*2
 //icache读 使用数据
     logic [31:0] icache_rd_addr;
-    logic [ICACHE_LINE_SIZE-1:0][31:0] icache_line_recv;//读的块大小为两倍的cache line size
+    logic [ICACHE_LINE_SIZE-1:0][31:0] icache_line_recv;// 读的块大小为两倍的cache line size
 //dcache读 使用数据
     logic [31:0] dcache_rd_addr;
     logic [DCACHE_LINE_SIZE-1:0][31:0] dcache_line_recv;
