@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-10 10:00:25
+ * @LastEditTime: 2021-08-10 18:55:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -141,6 +141,7 @@ typedef struct packed {
 
 typedef struct packed {//store指令在读数的时�?�根据写使能替换
     logic [ASSOC_NUM-1:0] hit;//命中的路数
+    tag_t   tag;
     index_t index;//set号
     offset_t offset;//偏移
     data_t  wdata;
@@ -282,7 +283,7 @@ generate;
 endgenerate
 generate;
     for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
-        assign wr_data2[32*(i+1)-1:32*(i)] = data_rdata[clog2(hit)][i];
+        assign wr_data2[32*(i+1)-1:32*(i)] = data_rdata[clog2(pipe_hit)][i];
     end
 endgenerate
 generate;
@@ -534,7 +535,7 @@ always_comb begin : dirty_we_block
                 dirty_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
             end
             D_Hit_Invalid,D_Hit_Writeback_Invalid:begin
-                dirty_we = (cache_hit) ? ( (hit[0]) ? 2'b01:2'b10 )  : '0;
+                dirty_we = (pipe_cache_hit) ? ( (pipe_hit[0]) ? 2'b01:2'b10 )  : '0;
             end
             default: begin
                 dirty_we = '0;
@@ -559,7 +560,7 @@ end
 // end
 
 always_comb begin : data_rdata_final__blockname
-    data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == pipe_hit & {store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(pipe_hit)];
+    data_rdata_final_= (|data_we[clog2(store_buffer.hit)]  & store_buffer.hit == pipe_hit & {store_buffer.tag,store_buffer.index,store_buffer.offset[OFFSET_WIDTH-1:2]} == {req_buffer.tag,req_buffer.index,req_buffer.offset[OFFSET_WIDTH-1:2]}) ?store_buffer.wdata :data_rdata_sel[clog2(pipe_hit)];
 end
 
 
@@ -573,7 +574,7 @@ always_comb begin : tagv_we_blockName
                 tagv_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
             end
             D_Hit_Invalid,D_Hit_Writeback_Invalid:begin
-                tagv_we = (cache_hit) ? ( (hit[0]) ? 2'b01:2'b10 )  : '0;
+                tagv_we = (pipe_cache_hit) ? ( (pipe_hit[0]) ? 2'b01:2'b10 )  : '0;
             end
             default: begin
                 tagv_we = '0;
@@ -598,6 +599,7 @@ always_ff @( posedge clk ) begin : store_buffer_blockName
         store_buffer <= '0;
     end else if(~cpu_bus.stall && req_buffer.valid==1'b1)begin//既是�? 又是有效�?
         store_buffer.hit   <= pipe_hit;
+        store_buffer.tag   <= req_buffer.tag;
         store_buffer.index <= req_buffer.index;
         store_buffer.offset <= req_buffer.offset;
         store_buffer.wdata <= mux_byteenable(data_rdata_final_,req_buffer.wdata,req_buffer.wstrb);  
@@ -838,7 +840,7 @@ always_comb begin : cache_state_next_blockName
                     cache_state_next = CACHE_IDLE;
                 end
                 D_Hit_Writeback_Invalid:begin
-                    case (hit)
+                    case (pipe_hit)
                         2'b01:begin
                             if (dirty_rdata[0]) begin
                                 cache_state_next = CACHE_WAIT_WRITE;
