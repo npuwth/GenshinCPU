@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-27 20:08:23
- * @LastEditTime: 2021-08-10 12:33:06
+ * @LastEditTime: 2021-08-10 12:34:20
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -187,7 +187,7 @@ module TLB
             16'b0010_0000_0000_0000:s0_index = 4'd13;
             16'b0100_0000_0000_0000:s0_index = 4'd14;
             16'b1000_0000_0000_0000:s0_index = 4'd15; 
-            default:s0_index = 'x;
+            default:s0_index = '0;
         endcase
     end
 
@@ -249,7 +249,7 @@ module TLB
             16'b0010_0000_0000_0000:s1_index = 4'd13;
             16'b0100_0000_0000_0000:s1_index = 4'd14;
             16'b1000_0000_0000_0000:s1_index = 4'd15;
-            default:s1_index = 'x;
+            default:s1_index = '0;
         endcase
     end
 //----------------------------------------------------------------------------------------------------------//
