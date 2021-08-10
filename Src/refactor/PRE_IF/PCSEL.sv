@@ -1,12 +1,12 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-03 16:28:13
- * @LastEditTime: 2021-07-24 10:11:40
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-10 10:51:07
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
- * @Description: this is a module to produce the signal to choose which is the next PC
+ * @Description: this is a module to produce the signal to choose which is  the next PC
  */
 `include "../CommonDefines.svh"
 `include "../CPU_Defines.svh"
