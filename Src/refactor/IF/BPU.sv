@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-08-09 17:49:13
+ * @LastEditTime: 2021-08-10 09:59:35
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,7 @@ module BPU (
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_Top;     //point to stack top
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_TopSub1;
 
-    assign RAS_TopSub1 = RAS_Top + `SIZE_OF_RAS - 1;
+    assign RAS_TopSub1 = RAS_Top + 3'b111;
     
     BHT_Entry                          W_BHT_Entry; //BHT write data for correction
     BHT_Entry                          R_BHT_Entry; //BHT read data

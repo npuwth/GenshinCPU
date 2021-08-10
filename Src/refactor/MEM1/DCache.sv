@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-09 20:21:22
+ * @LastEditTime: 2021-08-10 10:00:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -14,7 +14,7 @@
 //dcache只有在不busy的时候才会 处理在mem1的指令 cpu_bus.valid与cache指令无关
 module Dcache #(
     //parameter bus_width = 4,//axi总线的id域有bus_width�?
-    parameter STORE_BUFFER_SIZE = 1,
+    parameter STORE_BUFFER_SIZE = 32,
     parameter DATA_WIDTH        = 32,//cache和cpu 总线数据位宽为data_width
     parameter LINE_WORD_NUM     = 4,//cache line大小 �?块的字数
     parameter ASSOC_NUM         = 4,//assoc_num组相�?
@@ -882,5 +882,43 @@ always_comb begin : cache_state_next_blockName
         end
     endcase
 end
+
+  FIFO #(
+
+    .SIZE(STORE_BUFFER_SIZE),
+
+    .dtype(uncache_store_t),
+
+    .LATENCY (0) //调整为0
+
+  )
+
+  FIFO_dut (
+
+    .clk (clk ),
+
+    .rst (~resetn),
+
+    .din (fifo_din ),
+
+    .rd_en (fifo_rd_en ),
+
+    .wr_en (fifo_wr_en ),
+
+    .rd_rst_busy (fifo_rd_rst_busy ),
+
+    .full (fifo_full ),
+
+    .empty (fifo_empty ),
+
+    .dout (fifo_dout ),
+
+    .data_valid (fifo_data_valid ),
+
+    .wr_ack (fifo_wr_ack ),
+
+    .wr_rst_busy  (fifo_wr_rst_busy)
+
+  );
 
 endmodule

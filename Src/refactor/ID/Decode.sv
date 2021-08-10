@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-09 17:11:36
+ * @LastEditTime: 2021-08-10 10:41:40
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -197,8 +197,6 @@ module Decode(
                 `EXE_OR  :instrType = OP_OR;
 
                 `EXE_XOR :instrType = OP_XOR;
-
-                `EXE_SYNC:instrType = OP_SYNC;
 
 
 
@@ -757,7 +755,7 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;  //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BEQ,1'b1}; 
         IsReserved    = 1'b0;        
@@ -791,7 +789,7 @@ module Decode(
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;//EXE阶段的两个多选器
         ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
         ID_RegsReadSel= `RegsReadSel_RF;      //ID级别的多选器
-        ID_EXTOp      = 1'b1;          //EXT
+        ID_EXTOp      = `EXTOP_SIGN;          //EXT
         ID_IsAJumpCall= `IsNotAJumpCall;
         ID_BranchType = '{`BRANCH_CODE_BNE,1'b1};
         IsReserved    = 1'b0;
