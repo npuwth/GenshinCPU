@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-11 13:14:42
+ * @LastEditTime: 2021-08-11 16:01:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -31,7 +31,8 @@ module Dcache #(
     // input  PhysicalAddressType phsy_addr,现在移到cpu_bus�?
     // input  logic isCache,
 
-
+    logic [31:0] PC,
+    logic [31:0] Instr,
     AXI_UNCACHE_Interface axi_ubus,
 
     CPU_DBus_Interface cpu_bus,//slave
@@ -886,41 +887,39 @@ always_comb begin : cache_state_next_blockName
 end
 
   FIFO #(
-
     .SIZE(STORE_BUFFER_SIZE),
-
     .dtype(uncache_store_t),
-
     .LATENCY (0) //调整为0
-
   )
-
   FIFO_dut (
-
     .clk (clk ),
-
     .rst (~resetn),
-
     .din (fifo_din ),
-
     .rd_en (fifo_rd_en ),
-
     .wr_en (fifo_wr_en ),
-
     .rd_rst_busy (fifo_rd_rst_busy ),
-
     .full (fifo_full ),
-
     .empty (fifo_empty ),
-
     .dout (fifo_dout ),
-
     .data_valid (fifo_data_valid ),
-
     .wr_ack (fifo_wr_ack ),
-
     .wr_rst_busy  (fifo_wr_rst_busy)
-
   );
 
+    cp0_ila dcache_ila(
+        .clk(clk),
+        .probe0 ({cpu_bus.tag,cpu_bus.index,cpu_bus.offset}),//32
+        .probe1 (cpu_bus.cacheType.isCache),//1
+        .probe2 (cpu_bus.cacheType.cacheCode),//3
+        .probe3 (cpu_bus.stall), //1
+        .probe4 (cache_state), //2      // [4:0]
+        .probe5 (cache_state_next ),//2 // [4:0]
+        .probe6 (hit), //2   // [4:0]
+        .probe7 (axi_bus.wr_req),//1     //[1:0]
+        .probe8 (axi_bus.wr_addr),//32      // [0:0]
+        .probe9 (dirty_rdata),//2
+        .probe10(PC),
+        .probe11(Instr)
+        // .probe12(MM2Bus.MEM_Instr )
+    );
 endmodule

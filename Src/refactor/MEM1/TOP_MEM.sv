@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-09 17:25:59
+ * @LastEditTime: 2021-08-11 15:24:19
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -241,7 +241,9 @@ module TOP_MEM (
         .resetn                  (resetn ),
         .axi_ubus                (axi_ubus.master ),
         .cpu_bus                 (cpu_dbus.slave ),
-        .axi_bus                 ( axi_dbus.master)
+        .axi_bus                 ( axi_dbus.master),
+        .PC                       (MM2Bus.MEM_PC),
+        .Instr                    (MM2Bus.MEM_Instr)
     );
 
     MUX2to1 #(32) U_MUX_OutB2 ( //TODO:这里可以优化一下，换成2选1
