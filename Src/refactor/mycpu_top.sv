@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-09 17:26:24
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 18:11:49
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -68,6 +68,7 @@ module mycpu_top (
     logic                      ID_MEM2_DH_Stall;          //来自DataHazard
     logic                      EXE_MULTDIVStall;          //来自EXE级的乘除法,用于阻塞
     logic                      EXE_Prediction_Failed;     //来自EXE级，分支预测错误
+    logic                      EXE_PF_FlushAll;
     logic [31:0]               EXE_Correction_Vector;     //用于校正分支预测
     logic                      EXE_IsBrchLikely;
     logic                      EXE_IsTaken;
@@ -170,7 +171,8 @@ module mycpu_top (
         .ID_EX_DH_Stall         (ID_EX_DH_Stall),
         .ID_MEM1_DH_Stall       (ID_MEM1_DH_Stall),
         .ID_MEM2_DH_Stall       (ID_MEM2_DH_Stall),
-        .PredictFailed           (EXE_Prediction_Failed),
+        .EXE_PredictFailed      (EXE_Prediction_Failed),
+        .EXE_PF_FlushAll        (EXE_PF_FlushAll),
         .EXE_IsBrchLikely       (EXE_IsBrchLikely),
         .EXE_IsTaken            (EXE_IsTaken),
         .DIVMULTBusy            (EXE_MULTDIVStall),
@@ -313,6 +315,7 @@ module mycpu_top (
         .IReq_valid                (IReq_valid),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
+        .EXE_PF_FlushAll           (EXE_PF_FlushAll),
         .CP0_Config_K0             (CP0_Config_K0 ),
         .MEM_CacheType             (MEM_CacheType),
         .MEM_ALUOut                (MEM_ALUOut),
@@ -374,6 +377,7 @@ module mycpu_top (
         .EMBus                     (EMBus.EXE ),
         //--------------------------output-------------------------//
         .EXE_Prediction_Failed     (EXE_Prediction_Failed),
+        .EXE_PF_FlushAll           (EXE_PF_FlushAll),
         .EXE_Correction_Vector     (EXE_Correction_Vector),
         .EXE_BResult               (EXE_BResult),
         .EXE_MULTDIVStall          (EXE_MULTDIVStall),

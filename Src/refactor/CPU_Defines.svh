@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-10 12:56:03
+ * @LastEditTime: 2021-08-11 17:03:15
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -293,17 +293,18 @@ typedef struct packed {  //一个TLB项
 } TLB_Entry;
 
 typedef struct packed {
-    logic [1:0]                Type;     //表示预测的类型
+    logic [2:0]                Type;     //表示预测的类型
     logic                      IsTaken;  //表示预测是否跳转
     logic [31:0]               Target;   //表示预测的跳转地址
     logic [1:0]                Count;    //表示预测时的计数器值
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
+	logic [7:0]                Index;
 } PResult;
 
 typedef struct packed {
-    logic [1:0]                Type;     //表示实际的类型
+    logic [2:0]                Type;     //表示实际的类型
     logic                      IsTaken;  //表示实际是否跳转
     logic [31:0]               Target;   //表示实际的跳转地址
     logic [31:0]               PC;       //需要校准的PC
@@ -311,13 +312,14 @@ typedef struct packed {
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
-	logic                      RetnSuccess;//JR预测成功
+	// logic                      RetnSuccess;//JR预测成功
+	logic [7:0]                Index;
 } BResult;
 
 typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;   //PC的Tag
     logic [31:0]               Target;
-    logic [1:0]                Type;  //分支种类
+    logic [2:0]                Type;  //分支种类
     logic [1:0]                Count; //二位饱和计数器
 } BHT_Entry;
 
@@ -330,11 +332,12 @@ typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;       //Tag in BHT
     logic [31:`SIZE_OF_INDEX+2]PCTag;     //Tag of PC
     logic [31:0]               BHT_Addr;  //Target Address in BHT
-    RAS_EntryType                  RAS_Entry; //Target Address in RAS
+    RAS_EntryType              RAS_Entry; //Target Address in RAS
     logic [31:0]               PC_Add8;   //pc+8
-    logic [1:0]                Type;      //Type in BHT
+    logic [2:0]                Type;      //Type in BHT
     logic [1:0]                Count;     //Count in BHT
 	logic                      Valid;
+	logic [7:0]                Index;
 } BPU_RegType;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
@@ -367,19 +370,22 @@ interface IF_ID_Interface();
 	logic       [31:0]      IF_PC;
 	ExceptinPipeType        IF_ExceptType;
 	PResult                 IF_PResult;
+	logic                   ID_IsBranch;
 
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
 	output                  IF_ExceptType,
-	output                  IF_PResult
+	output                  IF_PResult,
+	input                   ID_IsBranch
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
 	input                   IF_ExceptType,
-	input                   IF_PResult
+	input                   IF_PResult,
+	output                  ID_IsBranch
 	);
 	
 endinterface

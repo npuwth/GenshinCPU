@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-25 12:23:24
+ * @LastEditTime: 2021-08-11 18:06:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -46,6 +46,7 @@ module TOP_IF (
         .IF_Flush                   (IF_Flush ),
         .PREIF_PC                   (PIBus.PREIF_PC ),
         .EXE_BResult                (EXE_BResult ),
+        .ID_IsBranch                (IIBus.ID_IsBranch),
         //--------------------output-----------------------------------//
         .Target                     (PIBus.IF_Target ),
         .IF_PResult                 (IIBus.IF_PResult ),

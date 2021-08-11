@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-09 17:34:53
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 17:49:20
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -21,6 +21,7 @@ module TOP_EXE (
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
     output logic              EXE_Prediction_Failed,
+    output logic              EXE_PF_FlushAll,
     output logic              EXE_IsBrchLikely,
     output logic [31:0]       EXE_Correction_Vector,
     output BResult            EXE_BResult,
@@ -187,6 +188,7 @@ module TOP_EXE (
         .EXE_PCAdd8           (EXE_PCAdd8),   
         //-----------------output----------------------------//
         .EXE_Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_PF_FlushAll      (EXE_PF_FlushAll),
         .EXE_Correction_Vector(EXE_Correction_Vector),
         .EXE_BResult          (EXE_BResult),
         .EXE_IsBrchLikely     (EXE_IsBrchLikely),

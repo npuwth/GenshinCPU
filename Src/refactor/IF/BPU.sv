@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-08-10 09:59:35
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 18:18:18
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -19,14 +19,15 @@ module BPU (
     input logic                IF_Flush,
     input logic [31:0]         PREIF_PC,
     input BResult              EXE_BResult,//来自EXE，用于校准
+    input logic                ID_IsBranch,
     output logic [31:0]        Target,
     output PResult             IF_PResult,
     output logic               BPU_Valid   //给PCSel，当发生flush后，BPU_Reg无效，从PC+4取指
 );
 
-    RAS_EntryType [`SIZE_OF_RAS-1:0]       RAS;
+    RAS_EntryType [`SIZE_OF_RAS-1:0]   RAS;
     logic                              RAS_Wr;
-    RAS_EntryType                          RAS_Data;    //旁路后的数据
+    RAS_EntryType                      RAS_Data;    //旁路后的数据
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_Top;     //point to stack top
     logic [$clog2(`SIZE_OF_RAS)-1:0]   RAS_TopSub1;
 
@@ -34,9 +35,11 @@ module BPU (
     
     BHT_Entry                          W_BHT_Entry; //BHT write data for correction
     BHT_Entry                          R_BHT_Entry; //BHT read data
-    // logic [1:0]                        History;
+    logic [7:0]                        History;
+    logic [7:0]                        Index;
     logic [31:0]                       PREIF_PCAdd8;
     assign PREIF_PCAdd8 = PREIF_PC + 8;
+    assign Index = History^PREIF_PC[`SIZE_OF_INDEX+1:2];
 
     BPU_RegType                        BPU_Reg;
 
@@ -50,11 +53,11 @@ module BPU (
                 //write port
                 .ena(1'b1),
                 .wea(EXE_BResult.Valid),
-                .addra({EXE_BResult.PC[`SIZE_OF_INDEX+1:2]}),
+                .addra(EXE_BResult.Index),
                 .dina(W_BHT_Entry),
                 //read port
                 .enb(1'b1), 
-                .addrb({PREIF_PC[`SIZE_OF_INDEX+1:2]}),
+                .addrb(Index),
                 .doutb(R_BHT_Entry)
             );
 
@@ -96,6 +99,7 @@ module BPU (
             BPU_Reg.Type               <= '0;
             BPU_Reg.Count              <= '0;
             BPU_Reg.Valid              <= '0;
+            BPU_Reg.Index              <= '0;
         end
         else if(IF_Wr == 1'b1 ) begin
             BPU_Reg.Tag                <= R_BHT_Entry.Tag;
@@ -107,11 +111,12 @@ module BPU (
             BPU_Reg.PC_Add8            <= PREIF_PCAdd8;
             BPU_Reg.Type               <= R_BHT_Entry.Type;
             BPU_Reg.Count              <= R_BHT_Entry.Count;
-            BPU_Reg.Valid              <= ~IF_PResult.IsTaken;
+            BPU_Reg.Valid              <= 1'b1;
+            BPU_Reg.Index              <= Index;
         end
     end  
 
-    assign BPU_Valid = BPU_Reg.Valid;               //全0说明flush掉了，告诉PCSel BPU无效，要选择PC+4
+    assign BPU_Valid = BPU_Reg.Valid&&(~ID_IsBranch); //全0说明flush掉了，告诉PCSel BPU无效，要选择PC+4
     assign BHT_hit = (BPU_Reg.Tag == BPU_Reg.PCTag);  //判断BHT是否命中
 //----------------------------Target生成逻辑--------------------------------------------------//
     always_comb begin                 
@@ -129,7 +134,7 @@ module BPU (
                 Target = (BPU_Reg.RAS_Entry.Valid)?(BPU_Reg.RAS_Entry.Addr):BPU_Reg.PC_Add8;
                 IF_PResult.IsTaken = 1'b1;
             end
-            `BIsImme: begin //根据饱和计数器判断
+            `BIsBran: begin //根据饱和计数器判断
                 if(BPU_Reg.Count[1] == 1'b1) begin
                 Target = BPU_Reg.BHT_Addr;
                 IF_PResult.IsTaken = 1'b1;
@@ -139,6 +144,10 @@ module BPU (
                 IF_PResult.IsTaken = 1'b0;
                 end
             end 
+            `BIsJump: begin
+                Target = BPU_Reg.BHT_Addr;
+                IF_PResult.IsTaken = 1'b1;
+            end
             default: begin
                 Target = BPU_Reg.PC_Add8;
                 IF_PResult.IsTaken = 1'b0;
@@ -152,7 +161,7 @@ module BPU (
     assign IF_PResult.Count        = BPU_Reg.Count;
     assign IF_PResult.Hit          = BHT_hit;
     assign IF_PResult.Valid        = BPU_Valid;
-    // assign IF_PResult.History      = History;
+    assign IF_PResult.Index        = BPU_Reg.Index;
 //-----------------------------RAS------------------------------------------------------//
     //更新RAS与RAS_Top
     always_ff @(posedge clk ) begin
@@ -189,22 +198,13 @@ module BPU (
         end
     end
 //---------------------------------History Branch Table-----------------------------------------//
-    // always_ff @(posedge clk ) begin
-    //     if(rst == `RstEnable) begin
-    //         History[0] <= '0;
-    //     end
-    //     else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
-    //         History[0] <= EXE_BResult.IsTaken;
-    //     end
-    // end
-
-    // always_ff @(posedge clk ) begin
-    //     if(rst == `RstEnable) begin
-    //         History[1] <= '0;
-    //     end
-    //     else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsImme) begin
-    //         History[1] <= History[0];
-    //     end
-    // end
+    always_ff @(posedge clk) begin
+        if(rst == `RstEnable) begin
+            History <= '0;
+        end
+        else if(EXE_BResult.Valid && EXE_BResult.Type == `BIsBran )begin
+            History <= {History[6:0],EXE_BResult.IsTaken};
+        end
+    end
 
 endmodule

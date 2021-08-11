@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-08-09 17:26:40
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 18:21:12
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -20,7 +20,7 @@ module TOP_PREIF (
 
     input logic [31:0]          MEM_CP0Epc,
     input logic [1:0]           EX_Entry_Sel,
-    input BranchType            EXE_BranchType,
+    // input BranchType            EXE_BranchType,
     input logic [31:0]          MEM_PC,
     input logic [31:0]          Exception_Vector,
     input TLB_Entry             I_TLBEntry,
@@ -29,6 +29,7 @@ module TOP_PREIF (
     input logic                 IReq_valid,
     input logic [31:0]          EXE_Correction_Vector,
     input logic                 EXE_Prediction_Failed,
+    input logic                 EXE_PF_FlushAll,
     input logic [2:0]           CP0_Config_K0,
     input CacheType             MEM_CacheType,
     input logic [31:0]          MEM_ALUOut,
@@ -92,7 +93,8 @@ module TOP_PREIF (
 
     PCSEL U_PCSEL(
         .BPU_Valid      (PIBus.IF_BPUValid),
-        .Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_PF_FlushAll(EXE_PF_FlushAll),
         .EX_Entry_Sel   (EX_Entry_Sel),
         //---------------output-------------------//
         .PCSel          (PCSel)
