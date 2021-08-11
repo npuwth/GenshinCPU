@@ -11,6 +11,7 @@ module ExceptionInEXE(
     input  logic              MEM_RegsWrTypeCP0Wr,
     input  logic [4:0]        MEM_Dst,
     input  logic [1:0]        EXE_ALUOut,    // 地址信息
+    input  logic [31:0]       EXE_PC,
     input  StoreType          EXE_StoreType,
     input  CacheType          MEM_CacheType,
 //-------------------------output----------------------------------//
@@ -49,6 +50,6 @@ module ExceptionInEXE(
     assign EXE_ExceptType_final.WrTLBRefillinMEM    =  EXE_ExceptType.WrTLBRefillinMEM; 
     assign EXE_ExceptType_final.WrTLBInvalidinMEM   =  EXE_ExceptType.WrTLBInvalidinMEM;   
     assign EXE_ExceptType_final.TLBModified         =  EXE_ExceptType.TLBModified;
-    assign EXE_ExceptType_final.Refetch             =  TLB_Refetch || ICache_Refetch;
+    assign EXE_ExceptType_final.Refetch             =  (TLB_Refetch || ICache_Refetch) && (EXE_PC != '0);
     assign EXE_ExceptType_final.Trap                =  Trap_valid;
 endmodule

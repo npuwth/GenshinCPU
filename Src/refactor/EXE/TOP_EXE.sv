@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-09 17:34:53
+ * @LastEditTime: 2021-08-11 22:34:18
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -289,6 +289,7 @@ module TOP_EXE (
         .MEM_RegsWrTypeCP0Wr   (EMBus.MEM_RegsWrTypeCP0Wr  ),
         .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut[1:0]      ),
+        .EXE_PC                (EMBus.EXE_PC               ),
         .EXE_StoreType         (EMBus.EXE_StoreType        ),
         .MEM_CacheType         (EMBus.MEM_CacheType        ),
     //-----------------------------output------------------------//    
