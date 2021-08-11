@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-09 17:26:24
+ * @LastEditTime: 2021-08-11 18:12:05
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -174,6 +174,8 @@ module mycpu_top (
         .EXE_IsBrchLikely       (EXE_IsBrchLikely),
         .EXE_IsTaken            (EXE_IsTaken),
         .DIVMULTBusy            (EXE_MULTDIVStall),
+        .PC                     (debug_wb_pc),
+        .clk                    (aclk),
         //-------------------------------- output-----------------------------//
         .PREIF_Wr               (PREIF_Wr),
         .IF_Wr                  (IF_Wr),

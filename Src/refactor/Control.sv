@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-09 17:36:49
+ * @LastEditTime: 2021-08-11 18:11:38
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -27,7 +27,9 @@ module Control(
     input logic         PredictFailed,             // 分支预测失败时，需要flush两拍
     input logic         EXE_IsBrchLikely,             // 分支预测失败时，需要flush两拍
     input logic         EXE_IsTaken,
-    input logic         DIVMULTBusy,              // 乘除法状态机空闲  & 注意需要取反后使用
+    input logic         DIVMULTBusy,      
+    input logic [31:0]        PC,     
+    input logic         clk,   // 乘除法状态机空闲  & 注意需要取反后使用
 //------------------------------------output----------------------------------------------------//
     output logic        PREIF_Wr,
     output logic        IF_Wr,
@@ -75,6 +77,7 @@ module Control(
     // end
 
     // assign EXE_DisWr = (Flush_Exception == `FlushEnable) || (DIVMULTBusy == 1'b1);
+
 
 
     always_comb begin : IReq_valid_blockName
@@ -345,4 +348,23 @@ module Control(
         end
     end
     
+        control_ila CONTROL_ILA(
+        .clk(clk),
+        .probe0 (Flush_Exception),
+        .probe1 (I_IsTLBStall),
+        .probe2 (D_IsTLBStall),
+        .probe3 (Icache_busy), 
+        .probe4 (Dcache_busy),       // [4:0]
+        .probe5 (ID_EX_DH_Stall), // [4:0]
+        .probe6 (ID_MEM1_DH_Stall),    // [4:0]
+        .probe7 (ID_MEM2_DH_Stall),     //[1:0]
+        .probe8 (PredictFailed),      // [0:0]
+        .probe9 (EXE_IsBrchLikely),
+        .probe10(EXE_IsTaken),
+        .probe11(DIVMULTBusy),
+        .probe12(PC)
+    );
+
+
+
 endmodule

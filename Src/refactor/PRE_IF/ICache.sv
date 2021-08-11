@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-10 22:22:39
+ * @LastEditTime: 2021-08-11 20:59:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -30,7 +30,7 @@ module Icache #(
     // input  PhysicalAddressType phsy_addr,现在移到cpu_bus中
     // input  logic isCache,
 
-
+    logic [31:0] PC,
     AXI_UNCACHE_Interface axi_ubus,
 
     CPU_IBus_Interface cpu_bus,//slave
@@ -76,14 +76,14 @@ endfunction
 
 
 typedef enum logic [3:0] { 
-        REQ,
-        WAIT,
-        UNCACHEDONE,
+        REQ,        //0
+        WAIT,       //1
+        UNCACHEDONE,//2
 
-        LOOKUP,
-        MISSCLEAN,
-        REFILL,
-        REFILLDONE
+        LOOKUP,     //3
+        MISSCLEAN,  //4
+        REFILL,     //5
+        REFILLDONE  //6
 } state_t;
 
 
@@ -248,7 +248,7 @@ assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 // assign data_wdata =  axi_bus.ret_data ;
-assign tagv_wdata     = ( cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag)) ? '0 : {1'b1,req_buffer.tag} ;
+assign tagv_wdata     = (~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag)) ? '0 : {1'b1,req_buffer.tag} ;
 
 
 
@@ -257,7 +257,7 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
-    end else if( cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag))begin
+    end else if(~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag))begin
         tagv_we = '1;
     end else begin
         tagv_we = '0;
@@ -386,5 +386,20 @@ always_comb begin : state_next_blockname
     endcase
 end
 
-
+    icache_ila ICACHE_ILA(
+        .clk(clk),
+        .probe0 ({cpu_bus.tag,cpu_bus.index,cpu_bus.offset}),//32
+        .probe1 (cpu_bus.cacheType.isCache),//1
+        .probe2 (cpu_bus.cacheType.cacheCode),//3
+        .probe3 (cpu_bus.valid), //1
+        .probe4 (state), //4      // [4:0]
+        .probe5 (state_next),//4 // [4:0]
+        .probe6 ({busy_cache,busy_uncache}), //2   // [4:0]
+        .probe7 (busy),//1     //[1:0]
+        .probe8 (PC),//32      // [0:0]
+        .probe9 (axi_bus.rd_addr),//2
+        .probe10(axi_bus.rd_req),
+        .probe11(axi_ubus.rd_addr),
+        .probe12(axi_ubus.rd_req )
+    );
 endmodule

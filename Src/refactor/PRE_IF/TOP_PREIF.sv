@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-08-09 17:26:40
+ * @LastEditTime: 2021-08-11 17:26:07
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -115,7 +115,8 @@ module TOP_PREIF (
         .resetn          (resetn ),
         .cpu_bus         (cpu_ibus.slave ),
         .axi_ubus        (axi_iubus.master ),
-        .axi_bus         ( axi_ibus.master )
+        .axi_bus         ( axi_ibus.master ),
+        .PC              (PREIF_NPC )
     );
 
     ITLB U_ITLB (
