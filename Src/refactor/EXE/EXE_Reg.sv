@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-09 17:08:44
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 23:19:20
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -52,27 +52,29 @@ module EXE_Reg (
     input logic      [31:0]              ID_PCAdd8,
     input logic                          ID_IsBrchLikely,
     input CacheType                      ID_CacheType,
+    input logic                          ID_IsMOVN,
+    input logic                          ID_IsMOVZ,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
-	output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
-	output logic     [31:0]              EXE_Imm32,           //在ID 被extend的 立即数
-	output logic 		 [31:0]              EXE_PC,
-	output logic     [31:0]              EXE_Instr,
-	output logic 		 [4:0]	             EXE_rs,	
-	output logic 		 [4:0]	             EXE_rt,	
-	output logic 		 [4:0]	             EXE_rd,
-	output logic 		 [4:0]               EXE_ALUOp,	 		// ALU操作符
+	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
+	  output logic     [31:0]              EXE_Imm32,           //在ID 被extend的 立即数
+	  output logic 		 [31:0]              EXE_PC,
+	  output logic     [31:0]              EXE_Instr,
+	  output logic 		 [4:0]	             EXE_rs,	
+	  output logic 		 [4:0]	             EXE_rt,	
+	  output logic 		 [4:0]	             EXE_rd,
+	  output logic 		 [4:0]               EXE_ALUOp,	 		// ALU操作符
   	output LoadType        		           EXE_LoadType,	 	// LoadType信号 
   	output StoreType       		           EXE_StoreType,  		// StoreType信号
   	output RegsWrType      		           EXE_RegsWrType,		// 寄存器写信号打包
   	output logic 	   [1:0]   	           EXE_WbSel,        	// 选择写回数据
   	output logic 	   [1:0]   	           EXE_DstSel,   		// 选择目标寄存器使能
   	output ExceptinPipeType 		         EXE_ExceptType,		// 异常类型
-	output logic                         EXE_ALUSrcA,
-	output logic                         EXE_ALUSrcB,
-	output logic     [1:0]               EXE_RegsReadSel,
-	output logic 					               EXE_IsAJumpCall,
-	output BranchType                    EXE_BranchType,
+	  output logic                         EXE_ALUSrcA,
+	  output logic                         EXE_ALUSrcB,
+	  output logic     [1:0]               EXE_RegsReadSel,
+	  output logic 					               EXE_IsAJumpCall,
+	  output BranchType                    EXE_BranchType,
     output logic     [4:0]               EXE_Shamt,
     output logic                         EXE_IsTLBP,
     output logic                         EXE_IsTLBW,
@@ -88,7 +90,9 @@ module EXE_Reg (
     output logic     [31:0]              EXE_PCAdd8,
     output logic                         EXE_IsMFC0,
     output logic                         EXE_IsBrchLikely,
-    output CacheType                     EXE_CacheType
+    output CacheType                     EXE_CacheType,
+    output logic                         EXE_IsMOVN,
+    output logic                         EXE_IsMOVZ
     // output logic                         MDU_flush
 );
 
@@ -130,6 +134,8 @@ module EXE_Reg (
       EXE_PCAdd8                         <= '0;
       EXE_IsBrchLikely                   <= '0;
       EXE_CacheType                      <= '0;
+      EXE_IsMOVN                         <= '0;
+      EXE_IsMOVZ                         <= '0;
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -168,6 +174,8 @@ module EXE_Reg (
       EXE_PCAdd8                         <= ID_PCAdd8;
       EXE_IsBrchLikely                   <= ID_IsBrchLikely;
       EXE_CacheType                      <= ID_CacheType;
+      EXE_IsMOVN                         <= ID_IsMOVN;
+      EXE_IsMOVZ                         <= ID_IsMOVZ;
     end
   end
 

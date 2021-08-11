@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-08-11 17:04:35
+ * @LastEditTime: 2021-08-11 22:17:27
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -350,7 +350,7 @@
 
 
 // ALUctr_signal_encoding 
-`define EXE_ALUOp_D         5'b00111//无关项
+`define EXE_ALUOp_D         5'b11111//无关项,现在变成了读rs
 // ALUctr_signal_encoding 
 //ADD 和 ADDI 共用了Opcode
 `define EXE_ALUOp_ADD       5'b00000

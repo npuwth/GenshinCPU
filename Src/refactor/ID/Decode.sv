@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-11 19:53:10
+ * @LastEditTime: 2021-08-11 23:24:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -45,13 +45,17 @@ module Decode(
     output logic [2:0] ID_TrapOp,
     output logic       ID_IsMFC0,
     output logic       ID_IsBrchLikely,
-    output logic       ID_IsBranch
+    output logic       ID_IsBranch,
+    output logic       ID_IsMOVN,
+    output logic       ID_IsMOVZ
     );
 
     assign ID_IsTLBP   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_001000);
     assign ID_IsTLBW   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000010 || ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
     assign ID_IsTLBR   = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000001);
     assign ID_TLBWIorR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
+    assign ID_IsMOVN   = (ID_Instr[31:26]=='0 && ID_Instr[5:0]==6'b001011);
+    assign ID_IsMOVZ   = (ID_Instr[31:26]=='0 && ID_Instr[5:0]==6'b001010);
     assign ID_IsBranch = ID_BranchType.isBranch;
 
     logic [5:0]opcode;
@@ -275,6 +279,10 @@ module Decode(
                 `EXE_TNE  : instrType =  OP_TNE;
 
                 `EXE_SYNC : instrType =  OP_NOP; //SYNC实现为NOP
+
+                `EXE_MOVZ : instrType =  OP_MOVZ;
+
+                `EXE_MOVN : instrType =  OP_MOVN;
                 default: begin
                   instrType = OP_INVALID;
                 end
@@ -1955,6 +1963,22 @@ module Decode(
         ID_IsAJumpCall= '0;
         ID_BranchType = '0;
         IsReserved    = 1'b0;   
+      end
+
+      OP_MOVZ,OP_MOVN:begin
+        ID_ALUOp      = `EXE_ALUOp_D;
+        ID_LoadType   = '0;
+        ID_StoreType  = '0;
+        ID_WbSel      = WBSel_ALUOut;
+        ID_DstSel     = `DstSel_rd;
+        ID_RegsWrType = '0;
+        ID_ALUSrcA    = `ALUSrcA_Sel_Regs;
+        ID_ALUSrcB    = `ALUSrcB_Sel_Regs;
+        ID_RegsReadSel= `RegsReadSel_RF;
+        ID_EXTOp      = `EXTOP_NOP;
+        ID_IsAJumpCall= '0;
+        ID_BranchType = '0;
+        IsReserved    = 1'b0;
       end
 
       default:begin

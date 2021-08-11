@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-11 17:03:15
+ * @LastEditTime: 2021-08-11 23:27:09
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -427,6 +427,8 @@ interface ID_EXE_Interface();
 	logic       [31:0]      ID_BranchAddr;
 	logic       [31:0]      ID_PCAdd8;
 	CacheType               ID_CacheType;
+	logic                   ID_IsMOVN;
+	logic                   ID_IsMOVZ;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic                   EXE_IsMFC0;
@@ -470,6 +472,8 @@ interface ID_EXE_Interface();
 	output                  ID_BranchAddr,	
 	output                  ID_PCAdd8,
 	output                  ID_CacheType,
+	output                  ID_IsMOVN,
+	output                  ID_IsMOVZ,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_IsMFC0,
@@ -514,6 +518,8 @@ interface ID_EXE_Interface();
 	input                   ID_BranchAddr,
 	input                   ID_PCAdd8,
 	input                   ID_CacheType,
+	input                   ID_IsMOVN,
+	input                   ID_IsMOVZ,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_IsMFC0,

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 17:51:27
+ * @LastEditTime: 2021-08-11 23:13:46
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -183,7 +183,9 @@ module TOP_ID (
         .ID_IsMFC0           (IEBus.ID_IsMFC0),
         .ID_IsBrchLikely     (IEBus.ID_IsBrchLikely),
         .ID_CacheType        (IEBus.ID_CacheType),
-        .ID_IsBranch         (IIBus.ID_IsBranch)
+        .ID_IsBranch         (IIBus.ID_IsBranch),
+        .ID_IsMOVN           (IEBus.ID_IsMOVN),
+        .ID_IsMOVZ           (IEBus.ID_IsMOVZ)
     );
      
 
