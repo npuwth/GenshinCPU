@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-07-24 10:12:58
+ * @LastEditTime: 2021-08-11 20:40:01
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -23,9 +23,8 @@
     input logic [7:2]          CP0_Cause_IP7_2,
     input logic [1:0]          CP0_Cause_IP1_0,
     input logic [31:0]         CP0_Ebase,
-
+    input logic                MEM_IsInDelaySlot,
     output logic [4:0]         MEM_ExcType,
-
     output logic [1:0]         EX_Entry_Sel,           //用于生成NPC
     output logic [31:0]        Exception_Vector,       // 异常处理的入口地址
     output logic               Flush_Exception
@@ -97,7 +96,7 @@ end
 assign Exception_Vector  = base + offset; //生成异常入口向量
 
 //-----------------------------------------------生成MEM级的最终异常----------------------------------------------------------//
-assign MEM_ExceptType_final.Interrupt           = (MEM_PC != 32'b0) && (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
+assign MEM_ExceptType_final.Interrupt           = (~MEM_IsInDelaySlot) && (MEM_PC != 32'b0) && (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
                                                      (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1);
 assign MEM_ExceptType_final.WrongAddressinIF    = (MEM_PC[1:0] != 2'b00 )?1'b1:1'b0;
 assign MEM_ExceptType_final.ReservedInstruction = MEM_ExceptType.ReservedInstruction;

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-09 17:25:59
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 20:38:36
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -162,6 +162,7 @@ module TOP_MEM (
         .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
         .CP0_Cause_IP1_0         (CP0_Cause_IP1_0), 
         .CP0_Ebase               (CP0_Ebase),     
+        .MEM_IsInDelaySlot       (MM2Bus.MEM_IsInDelaySlot),
     //------------------------------out--------------------------------------------//         
         .Flush_Exception         (Flush_Exception),                         
         .EX_Entry_Sel            (EX_Entry_Sel),            
@@ -227,7 +228,7 @@ module TOP_MEM (
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
-    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType == '0) && (MM2Bus.MEM_PC[1:0] == 2'b0);
+    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MM2Bus.MEM_ExcType == `EX_None);
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     assign cpu_dbus.cacheType                             = MEM_CacheType;
     Dcache #(

@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-11 17:50:13
+ * @LastEditTime: 2021-08-11 19:53:10
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -274,7 +274,7 @@ module Decode(
 
                 `EXE_TNE  : instrType =  OP_TNE;
 
-                `EXE_SYNC : instrType =  OP_SYNC;
+                `EXE_SYNC : instrType =  OP_NOP; //SYNC实现为NOP
                 default: begin
                   instrType = OP_INVALID;
                 end
@@ -393,6 +393,7 @@ module Decode(
             end
             6'b010100:instrType = OP_BEQL;
             6'b010101:instrType = OP_BNEL;
+            6'b110011:instrType = OP_NOP; //PREF实现为NOP
             6'b011100:begin
               unique case (funct)
                 6'b100001:instrType = OP_CLO;
@@ -458,20 +459,20 @@ module Decode(
                 6'b01001? : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_CMOV
                 6'b11???? : CpU1_instr_valid = `ISCOP1_INSTR;  // OP_FPU_COND
                 default   : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 浮点指令的保留指令例外
-            endcase
-          end
-          5'b10110 : begin
-              unique casez(funct)
-                  6'b100000  : CpU1_instr_valid = `ISCOP1_INSTR;  // CVTS.PU
-                  6'b101000  : CpU1_instr_valid = `ISCOP1_INSTR;  // CVTS.PL
-                  default    : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 浮点指令的保留指令例外
               endcase
-          end
-        default : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 保留指令例外
-      endcase 
-      end
-      default : CpU1_instr_valid = `NOTCOP1_INSTR;  //正常指令
-      endcase
+            end
+            5'b10110 : begin
+                unique casez(funct)
+                    6'b100000  : CpU1_instr_valid = `ISCOP1_INSTR;  // CVTS.PU
+                    6'b101000  : CpU1_instr_valid = `ISCOP1_INSTR;  // CVTS.PL
+                    default    : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 浮点指令的保留指令例外
+                endcase
+            end
+            default : CpU1_instr_valid = `FPU_Reserve_INSTR;  // 保留指令例外
+          endcase 
+        end
+        default : CpU1_instr_valid = `NOTCOP1_INSTR;  //正常指令
+      endcase //opcode case
     end
 `endif 
 
@@ -1925,22 +1926,21 @@ module Decode(
         // IsReserved    = 1'b0;   
       end
       // 实现为NOP指令
-      OP_SYNC:begin
-        ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
-        ID_LoadType   = '0;    //访存相关 
-        ID_StoreType  = '0;    //存储相关
-        ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
-        ID_DstSel     = `DstSel_nop;    //Rtype选rd
-        ID_RegsWrType = '0;    //写回哪里
-        ID_ALUSrcA    = '0; //MUXA选择regs
-        ID_ALUSrcB    = '0;  //MUXB选择regs
-        ID_RegsReadSel= '0;        //ID级选择RF读取结果
-        ID_EXTOp      = `EXTOP_NOP;                 //R型无关
-        ID_IsAJumpCall= '0;
-        ID_BranchType = '0;
-        IsReserved    = 1'b0;   
-      end
-
+      // OP_SYNC:begin
+      //   ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
+      //   ID_LoadType   = '0;    //访存相关 
+      //   ID_StoreType  = '0;    //存储相关
+      //   ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
+      //   ID_DstSel     = `DstSel_nop;    //Rtype选rd
+      //   ID_RegsWrType = '0;    //写回哪里
+      //   ID_ALUSrcA    = '0; //MUXA选择regs
+      //   ID_ALUSrcB    = '0;  //MUXB选择regs
+      //   ID_RegsReadSel= '0;        //ID级选择RF读取结果
+      //   ID_EXTOp      = `EXTOP_NOP;                 //R型无关
+      //   ID_IsAJumpCall= '0;
+      //   ID_BranchType = '0;
+      //   IsReserved    = 1'b0;   
+      // end
       OP_NOP:begin
         ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
