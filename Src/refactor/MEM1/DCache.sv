@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-10 18:55:17
+ * @LastEditTime: 2021-08-11 13:14:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -262,7 +262,7 @@ always_comb begin : axi_bus_wraddr_blockName
                 axi_bus.wr_addr = {pipe_tagv_rdata[req_buffer.tag[0]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};//tag[0]为1 即指的是第一路
             end
             D_Hit_Writeback_Invalid:begin
-                axi_bus.wr_addr = {req_buffer.tag,req_buffer.index,req_buffer.offset};
+                axi_bus.wr_addr = {req_buffer.tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
             end
             default: begin
                 axi_bus.wr_addr = '0;

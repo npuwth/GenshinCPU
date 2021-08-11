@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-08-10 22:43:48
+ * @LastEditTime: 2021-08-11 12:59:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
@@ -676,7 +676,7 @@ module AXIInteract #(
     // assign ibus.wr_rdy  = 1'b0;
     assign dbus.rd_rdy  = (dstate == IDLE && ~udbus.wr_req && dstate_uncache == UNCACHE_IDLE) ? 1'b1 : 1'b0;
     assign dbus.wr_rdy  = (dstate_wb == WB_IDLE && ~udbus.wr_req && dstate_uncache == UNCACHE_IDLE )  ? 1'b1 : 1'b0;
-    assign udbus.rd_rdy = (dstate_uncache == UNCACHE_IDLE && udbus.wr_req == 1'b0 ) ? 1'b1 : 1'b0;
+    assign udbus.rd_rdy = (dstate_uncache == UNCACHE_IDLE && udbus.wr_req == 1'b0 && dstate_wb == WB_IDLE ) ? 1'b1 : 1'b0;
     assign udbus.wr_rdy = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
     assign uibus.rd_rdy = (istate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
     assign uibus.wr_rdy = 1'b0;
@@ -761,8 +761,11 @@ module AXIInteract #(
                 if (udbus.rd_req | udbus.wr_req) begin
                     if (udbus.wr_req) begin
                         dstate_uncache_next =UNCACHE_WB;
-                    end else begin
+                    end else if(udbus.rd_rdy)begin
                         dstate_uncache_next =UNCACHE_RD;
+                    end
+                    else begin
+                        dstate_uncache_next =UNCACHE_IDLE;
                     end
                 end else begin
                     dstate_uncache_next =UNCACHE_IDLE;
