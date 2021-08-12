@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 15:24:19
+ * @LastEditTime: 2021-08-12 12:35:08
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -50,7 +50,7 @@ module TOP_MEM (
     output RegsWrType            MEM_RegsWrType,
     output logic                 MEM_IsMFC0,
     output logic [2:0]           CP0_Config_K0,
-    output CacheType             MEM_CacheType,
+    output CacheType             MEM_CacheType_new,
     output logic [31:0]          MEM_ALUOut
 );
     ExceptinPipeType             MEM_ExceptType;
@@ -78,6 +78,7 @@ module TOP_MEM (
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
+    CacheType                    MEM_CacheType;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAJumpCall; 
@@ -95,6 +96,7 @@ module TOP_MEM (
     assign MEM_Final_StoreType      = (MEM_DisWr)? '0 : MEM_StoreType;
     assign MM2Bus.MEM_LoadType      = (MEM_DisWr)? '0 : MEM_LoadType;
     assign TLBBuffer_Flush_Final    = (MEM_DisWr)? '0 : TLBBuffer_Flush;//当一条TLBW发生在MEM级时发生恰好阻塞，他就流不走，就会出现反复清空TLBBuffer，然后就会反复TLBStall
+    assign MEM_CacheType_new        = (MEM_DisWr)? '0 : MEM_CacheType;
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
     // 用于MFC0型的阻塞
@@ -229,7 +231,7 @@ module TOP_MEM (
     assign cpu_dbus.isCache                               = D_IsCached;
     assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType == '0) && (MM2Bus.MEM_PC[1:0] == 2'b0);
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
-    assign cpu_dbus.cacheType                             = MEM_CacheType;
+    assign cpu_dbus.cacheType                             = MEM_CacheType_new;
     Dcache #(
         .DATA_WIDTH              (32 ),
         .LINE_WORD_NUM           (`DCACHE_LINE_WORD ),
@@ -242,7 +244,7 @@ module TOP_MEM (
         .axi_ubus                (axi_ubus.master ),
         .cpu_bus                 (cpu_dbus.slave ),
         .axi_bus                 ( axi_dbus.master),
-        .PC                       (MM2Bus.MEM_PC),
+        .PC                       (EMBus.EXE_PC),
         .Instr                    (MM2Bus.MEM_Instr)
     );
 

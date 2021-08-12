@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-11 18:12:05
+ * @LastEditTime: 2021-08-12 12:32:45
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -419,7 +419,7 @@ module mycpu_top (
         .MEM_RegsWrType            (MEM_RegsWrType),
         .MEM_IsMFC0                (MEM_IsMFC0),
         .CP0_Config_K0             (CP0_Config_K0),
-        .MEM_CacheType             (MEM_CacheType),
+        .MEM_CacheType_new         (MEM_CacheType),
         .MEM_ALUOut                (MEM_ALUOut)
     );
     
