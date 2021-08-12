@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-12 11:15:36
+ * @LastEditTime: 2021-08-12 15:07:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -386,20 +386,20 @@ always_comb begin : state_next_blockname
     endcase
 end
 
-    icache_ila ICACHE_ILA(
-        .clk(clk),
-        .probe0 ({cpu_bus.tag,cpu_bus.index,cpu_bus.offset}),//32
-        .probe1 (cpu_bus.cacheType.isCache),//1
-        .probe2 (cpu_bus.cacheType.cacheCode),//3
-        .probe3 (cpu_bus.valid), //1
-        .probe4 (state), //4      // [4:0]
-        .probe5 (state_next),//4 // [4:0]
-        .probe6 ({busy_cache,busy_uncache}), //2   // [4:0]
-        .probe7 (busy),//1     //[1:0]
-        .probe8 (PC),//32      // [0:0]
-        .probe9 (axi_bus.rd_addr),//2
-        .probe10(axi_bus.rd_req),
-        .probe11(axi_ubus.rd_addr),
-        .probe12(axi_ubus.rd_req )
-    );
+    // icache_ila ICACHE_ILA(
+    //     .clk(clk),
+    //     .probe0 ({cpu_bus.tag,cpu_bus.index,cpu_bus.offset}),//32
+    //     .probe1 (cpu_bus.cacheType.isCache),//1
+    //     .probe2 (cpu_bus.cacheType.cacheCode),//3
+    //     .probe3 (cpu_bus.valid), //1
+    //     .probe4 (state), //4      // [4:0]
+    //     .probe5 (state_next),//4 // [4:0]
+    //     .probe6 ({busy_cache,busy_uncache}), //2   // [4:0]
+    //     .probe7 (busy),//1     //[1:0]
+    //     .probe8 (PC),//32      // [0:0]
+    //     .probe9 (axi_bus.rd_addr),//2
+    //     .probe10(axi_bus.rd_req),
+    //     .probe11(axi_ubus.rd_addr),
+    //     .probe12(axi_ubus.rd_req )
+    // );
 endmodule

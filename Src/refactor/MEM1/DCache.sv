@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-12 14:13:56
+ * @LastEditTime: 2021-08-12 15:06:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -906,20 +906,20 @@ end
     .wr_rst_busy  (fifo_wr_rst_busy)
   );
 
-    cp0_ila dcache_ila(
-        .clk(clk),
-        .probe0 ({cpu_bus.tag,cpu_bus.index,cpu_bus.offset}),//32
-        .probe1 (cpu_bus.cacheType.isCache),//1
-        .probe2 (cpu_bus.cacheType.cacheCode),//3
-        .probe3 (cpu_bus.stall), //1
-        .probe4 (cache_state), //2      // [4:0]
-        .probe5 (cache_state_next ),//2 // [4:0]
-        .probe6 (hit), //2   // [4:0]
-        .probe7 (axi_bus.wr_req),//1     //[1:0]
-        .probe8 (axi_bus.wr_addr),//32      // [0:0]
-        .probe9 (dirty_rdata),//2
-        .probe10(PC),
-        .probe11(Instr)
-        // .probe12(MM2Bus.MEM_Instr )
-    );
+    // cp0_ila dcache_ila(
+    //     .clk(clk),
+    //     .probe0 ({cpu_bus.tag,cpu_bus.index,cpu_bus.offset}),//32
+    //     .probe1 (cpu_bus.cacheType.isCache),//1
+    //     .probe2 (cpu_bus.cacheType.cacheCode),//3
+    //     .probe3 (cpu_bus.stall), //1
+    //     .probe4 (cache_state), //2      // [4:0]
+    //     .probe5 (cache_state_next ),//2 // [4:0]
+    //     .probe6 (hit), //2   // [4:0]
+    //     .probe7 (axi_bus.wr_req),//1     //[1:0]
+    //     .probe8 (axi_bus.wr_addr),//32      // [0:0]
+    //     .probe9 (dirty_rdata),//2
+    //     .probe10(PC),
+    //     .probe11(Instr)
+    //     // .probe12(MM2Bus.MEM_Instr )
+    // );
 endmodule

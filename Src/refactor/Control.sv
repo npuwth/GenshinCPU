@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-12 14:59:40
+ * @LastEditTime: 2021-08-12 15:06:55
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -375,22 +375,22 @@ module Control(
         end
     end
     
-        control_ila CONTROL_ILA(
-        .clk(clk),
-        .probe0 (Flush_Exception),
-        .probe1 (I_IsTLBStall),
-        .probe2 (D_IsTLBStall),
-        .probe3 (Icache_busy), 
-        .probe4 (Dcache_busy),       // [4:0]
-        .probe5 (ID_EX_DH_Stall), // [4:0]
-        .probe6 (ID_MEM1_DH_Stall),    // [4:0]
-        .probe7 (ID_MEM2_DH_Stall),     //[1:0]
-        .probe8 (PredictFailed),      // [0:0]
-        .probe9 (EXE_IsBrchLikely),
-        .probe10(EXE_IsTaken),
-        .probe11(DIVMULTBusy),
-        .probe12(PC)
-    );
+    //     control_ila CONTROL_ILA(
+    //     .clk(clk),
+    //     .probe0 (Flush_Exception),
+    //     .probe1 (I_IsTLBStall),
+    //     .probe2 (D_IsTLBStall),
+    //     .probe3 (Icache_busy), 
+    //     .probe4 (Dcache_busy),       // [4:0]
+    //     .probe5 (ID_EX_DH_Stall), // [4:0]
+    //     .probe6 (ID_MEM1_DH_Stall),    // [4:0]
+    //     .probe7 (ID_MEM2_DH_Stall),     //[1:0]
+    //     .probe8 (PredictFailed),      // [0:0]
+    //     .probe9 (EXE_IsBrchLikely),
+    //     .probe10(EXE_IsTaken),
+    //     .probe11(DIVMULTBusy),
+    //     .probe12(PC)
+    // );
 
 
 
