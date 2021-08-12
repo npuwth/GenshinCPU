@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-12 19:53:22
+ * @LastEditTime: 2021-08-12 21:28:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -428,7 +428,7 @@ assign data_rdata_final =   (uncache_state == UNCACHE_READ_DONE )? uncache_rdata
 
 assign cache_hit        = |hit;
 
-assign read_addr      = (state == REFILLDONE || state == REFILL || cpu_bus.stall)? req_buffer.index : cpu_bus.index;
+assign read_addr      = (state == REFILLDONE || state == REFILL )? req_buffer.index : cpu_bus.index;
 assign write_addr     = (state == REFILL)?req_buffer.index : store_buffer.index;
 assign tagv_addr      = (state == REFILLDONE || state == REFILL || cache_state == CACHE_LOOKUP ) ? req_buffer.index :cpu_bus.index;
 
@@ -529,7 +529,7 @@ always_comb begin : dirty_we_block
     if (state == REFILL) begin
         dirty_we = '0;
         dirty_we[lru[req_buffer.index]] =1'b1;
-    end else if(req_buffer.cacheType.isCache && cache_state == CACHE_LOOKUP)begin
+    end else if(req_buffer.cacheType.isDcache && cache_state == CACHE_LOOKUP)begin
         case (req_buffer.cacheType.cacheCode)
             D_Index_Writeback_Invalid,D_Index_Store_Tag:begin
                 dirty_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
@@ -568,7 +568,7 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
-    end else if(req_buffer.cacheType.isCache && cache_state == CACHE_LOOKUP)begin
+    end else if(req_buffer.cacheType.isDcache && cache_state == CACHE_LOOKUP)begin
         case (req_buffer.cacheType.cacheCode)
             D_Index_Writeback_Invalid,D_Index_Store_Tag:begin
                 tagv_we = (req_buffer.tag[0]) ? 2'b10 : 2'b01;
@@ -732,7 +732,7 @@ always_ff @(posedge clk) begin :wb_state_blockname
 end
 
 always_comb begin : wb_state_next_blockname
-    if (req_buffer.valid & req_buffer.op & pipe_cache_hit & ~cpu_bus.stall & req_buffer.isCache) begin
+    if (req_buffer.valid & req_buffer.op & pipe_cache_hit & ~cpu_bus.stall ) begin
         wb_state_next = WB_STORE;
     end else begin
         wb_state_next = WB_IDLE;
@@ -813,7 +813,7 @@ end
 always_comb begin : cache_state_next_blockName
     case (cache_state)
         CACHE_IDLE:begin
-            if (~cpu_bus.stall && cpu_bus.cacheType.isCache) begin
+            if (~cpu_bus.stall && cpu_bus.cacheType.isDcache) begin
                 cache_state_next = CACHE_LOOKUP;
             end else begin
                 cache_state_next = CACHE_IDLE;
