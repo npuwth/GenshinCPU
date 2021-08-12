@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-07-27 14:37:25
+ * @LastEditTime: 2021-08-12 11:32:08
  * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -35,6 +35,17 @@ module TOP_WB (
     logic [31:0]                 WB_OutB;
     logic [1:0]                  WB_WbSel;
 
+    `ifdef DEBUG
+    logic [3:0]                  WB_DCache_Wen  ;
+    logic [31:0]                 WB_DataToDcache;
+    logic [31:0]                 WB_ALUOut_out /* verilator public_flat */;
+    logic [3:0]                  WB_DCache_Wen_out /* verilator public_flat */;
+    logic [31:0]                 WB_DataToDcache_out /* verilator public_flat */;
+    assign WB_ALUOut_out       = (WB_DisWr)?'0:WB_ALUOut;    
+    assign WB_DCache_Wen_out   = (WB_DisWr)?'0:WB_DCache_Wen;
+    assign WB_DataToDcache_out = (WB_DisWr)?'0:WB_DataToDcache;    
+    `endif 
+
     assign WB_Final_Wr = (WB_DisWr)? '0: WB_RegsWrType ;  // Dcache 停滞流水线时 wb级数据不能写入RF
     
     WB_Reg U_WB_REG ( 
@@ -53,6 +64,10 @@ module TOP_WB (
         .MEM2_OutB            (M2WBus.MEM2_OutB ),
         .MEM2_RegsWrType      (M2WBus.MEM2_RegsWrType ),
         .MEM2_Result          (M2WBus.MEM2_Result),  
+        `ifdef DEBUG
+        .MEM2_DCache_Wen      (M2WBus.MEM2_DCache_Wen   ),
+        .MEM2_DataToDcache    (M2WBus.MEM2_DataToDcache ),
+        `endif
         //-------------------------out----------------------------//
         .WB_ALUOut            (WB_ALUOut ),
         .WB_LoadType          (WB_LoadType ),
@@ -63,6 +78,10 @@ module TOP_WB (
         .WB_DMOut             (WB_DMOut ),
         .WB_OutB              (WB_OutB ),
         .WB_RegsWrType        (WB_RegsWrType ),
+        `ifdef DEBUG
+        .WB_DCache_Wen        (WB_DCache_Wen   ),
+        .WB_DataToDcache      (WB_DataToDcache ),
+        `endif
         .WB_Result            (WB_Result_L1)
     );
 

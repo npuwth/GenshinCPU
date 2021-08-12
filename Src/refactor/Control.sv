@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-12 11:15:22
+ * @LastEditTime: 2021-08-12 14:59:40
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -17,15 +17,16 @@
 
 module Control(    
     input logic         Flush_Exception,          //异常Exception产生的
-    input logic         I_IsTLBStall,             // TLB
+    input logic         I_IsTLBStall,             //TLB
     input logic         D_IsTLBStall,  
-    input logic         Icache_busy,              // Icache信号 表示Icache是否要暂停流水线 
-    input logic         Dcache_busy,              // Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
-    input logic         ID_EX_DH_Stall,                 //DataHazard产生的
-    input logic         ID_MEM1_DH_Stall,                 //DataHazard产生的
-    input logic         ID_MEM2_DH_Stall,                 //DataHazard产生的
-    input logic         PredictFailed,             // 分支预测失败时，需要flush两拍
-    input logic         EXE_IsBrchLikely,             // 分支预测失败时，需要flush两拍
+    input logic         Icache_busy,              //Icache信号 表示Icache是否要暂停流水线 
+    input logic         Dcache_busy,              //Dcache信号 表示Dcache是否要暂停流水线 (miss 前store后load 的情况等)
+    input logic         ID_EX_DH_Stall,           //DataHazard产生的
+    input logic         ID_MEM1_DH_Stall,         //DataHazard产生的
+    input logic         ID_MEM2_DH_Stall,         //DataHazard产生的
+    input logic         EXE_PredictFailed,            //分支预测失败时，需要flush两拍
+    input logic         EXE_PF_FlushAll,          //出现这种分支预测失败时，需要flush三拍
+    input logic         EXE_IsBrchLikely,         //分支预测失败时，需要flush两拍
     input logic         EXE_IsTaken,
     input logic         DIVMULTBusy,      
     input logic [31:0]        PC,     
@@ -81,7 +82,7 @@ module Control(
 
 
     always_comb begin : IReq_valid_blockName
-        if(Flush_Exception == `FlushEnable || ID_MEM2_DH_Stall ||ID_MEM1_DH_Stall ||ID_EX_DH_Stall ||PredictFailed == 1'b1)begin
+        if(Flush_Exception == `FlushEnable || ID_MEM2_DH_Stall ||ID_MEM1_DH_Stall ||ID_EX_DH_Stall ||EXE_PredictFailed || EXE_PF_FlushAll)begin
             IReq_valid   = 1'b0;
         end
         else begin
@@ -198,7 +199,30 @@ module Control(
             DCache_Stall  = 1'b0;
 
         end
+        else if (EXE_PF_FlushAll == 1'b1) begin
+            PREIF_Wr     = 1'b1;
+            IF_Wr        = 1'b0;
+            ID_Wr        = 1'b0;
+            EXE_Wr       = 1'b1;
+            MEM_Wr       = 1'b1; 
+            MEM2_Wr      = 1'b1;
+            WB_Wr        = 1'b1;
+            
+            ID_DisWr     = 1'b0;
+            // EXE_DisWr    = 1'b0;
+            MEM_DisWr    = 1'b0;
+            WB_DisWr     = 1'b0; 
+                       
+            IF_Flush     = 1'b1;
+            ID_Flush     = 1'b1;
+            EXE_Flush    = 1'b1;
+            MEM_Flush    = 1'b0;
+            MEM2_Flush   = 1'b0;
+            WB_Flush     = 1'b0;
 
+            ICache_Stall  = 1'b0;
+            DCache_Stall  = 1'b0;
+        end
         else if (ID_MEM2_DH_Stall == 1'b1) begin
             PREIF_Wr     = 1'b0;
             IF_Wr        = 1'b0;
@@ -281,7 +305,7 @@ module Control(
             ICache_Stall  = 1'b1;
             DCache_Stall  = 1'b0;
         end
-        else if (PredictFailed == 1'b1) begin
+        else if (EXE_PredictFailed == 1'b1) begin
             PREIF_Wr     = 1'b1;
             IF_Wr        = 1'b0;
             ID_Wr        = 1'b0;
@@ -336,6 +360,9 @@ module Control(
     always_comb begin : EXE_DisWrGen
         if (Flush_Exception == `FlushEnable)begin
             EXE_DisWr    = 1'b1;
+        end
+        else if (EXE_PF_FlushAll == 1'b1)begin
+            EXE_DisWr    = 1'b0;
         end
         else if (ID_MEM1_DH_Stall == 1'b1) begin
             EXE_DisWr    = 1'b1;

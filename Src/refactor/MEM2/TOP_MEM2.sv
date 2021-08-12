@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-08-09 17:17:46
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-12 11:30:56
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -45,6 +45,10 @@ module TOP_MEM2 (
     .MEM_IsAJumpCall        (MM2Bus.MEM_IsAJumpCall ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
     .MEM_LoadType           (MM2Bus.MEM_LoadType),
+    `ifdef DEBUG
+    .MEM_DCache_Wen         (MM2Bus.MEM_DCache_Wen    ),    
+    .MEM_DataToDcache       (MM2Bus.MEM_DataToDcache  ),
+    `endif  
 //-----------------------------output-------------------------------------//
     .MEM2_ALUOut            (M2WBus.MEM2_ALUOut ),
     .MEM2_PC                (M2WBus.MEM2_PC ),
@@ -57,6 +61,10 @@ module TOP_MEM2 (
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
     .MEM2_IsAJumpCall       (MM2Bus.MEM2_IsAJumpCall ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
+    `ifdef DEBUG
+    .MEM2_DCache_Wen        (M2WBus.MEM2_DCache_Wen    ),    
+    .MEM2_DataToDcache      (M2WBus.MEM2_DataToDcache  ),
+    `endif 
     .MEM2_LoadType          (MEM2_LoadType)
 
     );

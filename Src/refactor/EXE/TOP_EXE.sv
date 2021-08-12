@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 22:34:18
+ * @LastEditTime: 2021-08-12 15:00:55
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -21,6 +21,7 @@ module TOP_EXE (
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
     output logic              EXE_Prediction_Failed,
+    output logic              EXE_PF_FlushAll,
     output logic              EXE_IsBrchLikely,
     output logic [31:0]       EXE_Correction_Vector,
     output BResult            EXE_BResult,
@@ -57,6 +58,7 @@ module TOP_EXE (
     StoreType                 EXE_StoreType;
     logic                     EXE_Final_Finish;
     RegsWrType                EXE_RegsWrType;
+    RegsWrType                EXE_RegsWrType_new;
     PResult                   EXE_PResult;
     // logic                     EXE_Branch_Success;
     logic                     EXE_J_Success;
@@ -64,19 +66,28 @@ module TOP_EXE (
     logic [31:0]              EXE_JumpAddr;
     logic [31:0]              EXE_BranchAddr;
     logic [31:0]              EXE_PCAdd8;
+    logic                     EXE_IsMOVN;
+    logic                     EXE_IsMOVZ;
+    logic                     EXE_BusB_NZ;
 
 
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
     assign IEBus.EXE_IsMFC0   = EMBus.EXE_IsMFC0;
-    assign IEBus.EXE_RegsWrType = EXE_RegsWrType;
+    assign IEBus.EXE_RegsWrType = EXE_RegsWrType_new;
     assign IEBus.EXE_Dst      = EMBus.EXE_Dst;
     assign IEBus.EXE_Result   = EMBus.EXE_Result;
-    assign EXE_Final_Wr       = (EXE_DisWr) ? '0: EXE_RegsWrType;
+    assign EXE_Final_Wr       = (EXE_DisWr) ? '0: EXE_RegsWrType_new;
     assign EXE_Final_Finish   = (EXE_DisWr) ? '0: EXE_Finish;
     assign EMBus.EXE_LoadType = (EXE_DisWr) ? '0: EXE_LoadType;
     assign EMBus.EXE_StoreType= (EXE_DisWr) ? '0: EXE_StoreType;
     assign EMBus.EXE_RegsWrType = EXE_Final_Wr;
+
+    assign EXE_BusB_NZ = |EXE_BusB; 
+    assign EXE_RegsWrType_new.RFWr = (EXE_RegsWrType.RFWr) || (EXE_IsMOVZ && ~EXE_BusB_NZ) || (EXE_IsMOVN && EXE_BusB_NZ);
+    assign EXE_RegsWrType_new.CP0Wr= EXE_RegsWrType.CP0Wr;
+    assign EXE_RegsWrType_new.HIWr = EXE_RegsWrType.HIWr;
+    assign EXE_RegsWrType_new.LOWr = EXE_RegsWrType.LOWr;
 
     EXE_Reg U_EXE_Reg ( 
         .clk                  (clk ),
@@ -118,6 +129,8 @@ module TOP_EXE (
         .ID_PCAdd8            (IEBus.ID_PCAdd8),
         .ID_IsBrchLikely      (IEBus.ID_IsBrchLikely),
         .ID_CacheType         (IEBus.ID_CacheType),
+        .ID_IsMOVN            (IEBus.ID_IsMOVN),
+        .ID_IsMOVZ            (IEBus.ID_IsMOVZ),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),
@@ -154,7 +167,9 @@ module TOP_EXE (
         .EXE_BranchAddr       (EXE_BranchAddr), 
         .EXE_PCAdd8           (EXE_PCAdd8),
         .EXE_IsBrchLikely     (EXE_IsBrchLikely),
-        .EXE_CacheType        (EMBus.EXE_CacheType)
+        .EXE_CacheType        (EMBus.EXE_CacheType),
+        .EXE_IsMOVN           (EXE_IsMOVN),
+        .EXE_IsMOVZ           (EXE_IsMOVZ)
     );
     
     // ALU_ila CP0_ILA(
@@ -187,6 +202,7 @@ module TOP_EXE (
         .EXE_PCAdd8           (EXE_PCAdd8),   
         //-----------------output----------------------------//
         .EXE_Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_PF_FlushAll      (EXE_PF_FlushAll),
         .EXE_Correction_Vector(EXE_Correction_Vector),
         .EXE_BResult          (EXE_BResult),
         .EXE_IsBrchLikely     (EXE_IsBrchLikely),

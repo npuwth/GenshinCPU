@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-09 17:12:04
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-11 23:13:46
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -182,7 +182,10 @@ module TOP_ID (
         .ID_TrapOp           (IEBus.ID_TrapOp),
         .ID_IsMFC0           (IEBus.ID_IsMFC0),
         .ID_IsBrchLikely     (IEBus.ID_IsBrchLikely),
-        .ID_CacheType        (IEBus.ID_CacheType)
+        .ID_CacheType        (IEBus.ID_CacheType),
+        .ID_IsBranch         (IIBus.ID_IsBranch),
+        .ID_IsMOVN           (IEBus.ID_IsMOVN),
+        .ID_IsMOVZ           (IEBus.ID_IsMOVZ)
     );
      
 

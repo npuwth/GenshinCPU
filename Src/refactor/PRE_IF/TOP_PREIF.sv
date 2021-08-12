@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-08-11 17:26:07
+ * @LastEditTime: 2021-08-12 15:02:57
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -20,7 +20,7 @@ module TOP_PREIF (
 
     input logic [31:0]          MEM_CP0Epc,
     input logic [1:0]           EX_Entry_Sel,
-    input BranchType            EXE_BranchType,
+    // input BranchType            EXE_BranchType,
     input logic [31:0]          MEM_PC,
     input logic [31:0]          Exception_Vector,
     input TLB_Entry             I_TLBEntry,
@@ -29,6 +29,7 @@ module TOP_PREIF (
     input logic                 IReq_valid,
     input logic [31:0]          EXE_Correction_Vector,
     input logic                 EXE_Prediction_Failed,
+    input logic                 EXE_PF_FlushAll,
     input logic [2:0]           CP0_Config_K0,
     input CacheType             MEM_CacheType,
     input logic [31:0]          MEM_ALUOut,
@@ -92,7 +93,8 @@ module TOP_PREIF (
 
     PCSEL U_PCSEL(
         .BPU_Valid      (PIBus.IF_BPUValid),
-        .Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_Prediction_Failed(EXE_Prediction_Failed),
+        .EXE_PF_FlushAll(EXE_PF_FlushAll),
         .EX_Entry_Sel   (EX_Entry_Sel),
         //---------------output-------------------//
         .PCSel          (PCSel)
@@ -104,6 +106,23 @@ module TOP_PREIF (
     assign cpu_ibus.isCache   = I_IsCached;
     assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isIcache == 1'b0);
     assign cpu_ibus.cacheType = MEM_CacheType;
+
+`ifdef DEBUG  // compatible for verilator 
+    Icache #(
+        .DATA_WIDTH      (32),
+        .LINE_WORD_NUM   (`ICACHE_LINE_WORD ),
+        .ASSOC_NUM       (`ICACHE_SET_ASSOC ),
+        .WAY_SIZE        (4*1024*8 )
+    )
+    U_Icache (
+        .clk             (clk ),
+        .resetn          (resetn ),
+        .cpu_bus         (cpu_ibus),
+        .axi_ubus        (axi_iubus),
+        .axi_bus         ( axi_ibus)
+    );
+
+`else   // for vivado 
     Icache #(
         .DATA_WIDTH      (32),
         .LINE_WORD_NUM   (`ICACHE_LINE_WORD ),
@@ -118,6 +137,7 @@ module TOP_PREIF (
         .axi_bus         ( axi_ibus.master ),
         .PC              (PREIF_NPC )
     );
+`endif
 
     ITLB U_ITLB (
         .clk             (clk ),

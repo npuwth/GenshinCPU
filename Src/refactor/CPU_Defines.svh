@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-10 12:56:03
+ * @LastEditTime: 2021-08-12 13:56:25
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -206,8 +206,11 @@ typedef struct packed {
 	// logic [7:0] im;
 	// logic kx, sx, ux, um;
 	// logic r0, erl, exl, ie;
+	logic  [28:28]  CU0;
 	logic  [22:22]  BEV;
 	logic  [7:0]    IM7_0;
+	logic  [4:4]    UM;
+	logic  [3:3]    ERL;
 	logic  [1:1]    EXL;
 	logic  [0:0]    IE;
 } CP0_Status;
@@ -293,17 +296,18 @@ typedef struct packed {  //一个TLB项
 } TLB_Entry;
 
 typedef struct packed {
-    logic [1:0]                Type;     //表示预测的类型
+    logic [2:0]                Type;     //表示预测的类型
     logic                      IsTaken;  //表示预测是否跳转
     logic [31:0]               Target;   //表示预测的跳转地址
     logic [1:0]                Count;    //表示预测时的计数器值
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
+	logic [7:0]                Index;
 } PResult;
 
 typedef struct packed {
-    logic [1:0]                Type;     //表示实际的类型
+    logic [2:0]                Type;     //表示实际的类型
     logic                      IsTaken;  //表示实际是否跳转
     logic [31:0]               Target;   //表示实际的跳转地址
     logic [31:0]               PC;       //需要校准的PC
@@ -311,13 +315,14 @@ typedef struct packed {
     logic                      Hit;      //预测该指令时的BHT_hit
     logic                      Valid;    //预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
-	logic                      RetnSuccess;//JR预测成功
+	// logic                      RetnSuccess;//JR预测成功
+	logic [7:0]                Index;
 } BResult;
 
 typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;   //PC的Tag
     logic [31:0]               Target;
-    logic [1:0]                Type;  //分支种类
+    logic [2:0]                Type;  //分支种类
     logic [1:0]                Count; //二位饱和计数器
 } BHT_Entry;
 
@@ -330,11 +335,12 @@ typedef struct packed {
     logic [31:`SIZE_OF_INDEX+2]Tag;       //Tag in BHT
     logic [31:`SIZE_OF_INDEX+2]PCTag;     //Tag of PC
     logic [31:0]               BHT_Addr;  //Target Address in BHT
-    RAS_EntryType                  RAS_Entry; //Target Address in RAS
+    RAS_EntryType              RAS_Entry; //Target Address in RAS
     logic [31:0]               PC_Add8;   //pc+8
-    logic [1:0]                Type;      //Type in BHT
+    logic [2:0]                Type;      //Type in BHT
     logic [1:0]                Count;     //Count in BHT
 	logic                      Valid;
+	logic [7:0]                Index;
 } BPU_RegType;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//
@@ -367,19 +373,22 @@ interface IF_ID_Interface();
 	logic       [31:0]      IF_PC;
 	ExceptinPipeType        IF_ExceptType;
 	PResult                 IF_PResult;
+	logic                   ID_IsBranch;
 
 	modport IF (
 	output  				IF_Instr,
 	output  			    IF_PC,
 	output                  IF_ExceptType,
-	output                  IF_PResult
+	output                  IF_PResult,
+	input                   ID_IsBranch
     );
 
 	modport ID ( 
 	input                   IF_Instr,
     input                   IF_PC,
 	input                   IF_ExceptType,
-	input                   IF_PResult
+	input                   IF_PResult,
+	output                  ID_IsBranch
 	);
 	
 endinterface
@@ -421,6 +430,8 @@ interface ID_EXE_Interface();
 	logic       [31:0]      ID_BranchAddr;
 	logic       [31:0]      ID_PCAdd8;
 	CacheType               ID_CacheType;
+	logic                   ID_IsMOVN;
+	logic                   ID_IsMOVZ;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic                   EXE_IsMFC0;
@@ -464,6 +475,8 @@ interface ID_EXE_Interface();
 	output                  ID_BranchAddr,	
 	output                  ID_PCAdd8,
 	output                  ID_CacheType,
+	output                  ID_IsMOVN,
+	output                  ID_IsMOVZ,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_IsMFC0,
@@ -508,6 +521,8 @@ interface ID_EXE_Interface();
 	input                   ID_BranchAddr,
 	input                   ID_PCAdd8,
 	input                   ID_CacheType,
+	input                   ID_IsMOVN,
+	input                   ID_IsMOVZ,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_IsMFC0,
@@ -627,6 +642,10 @@ interface MEM_MEM2_Interface();
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAJumpCall;
 	logic                   MEM2_IsInDelaySlot;
+	`ifdef DEBUG
+	logic      [3:0]      	MEM_DCache_Wen;
+	logic  	   [31:0]	    MEM_DataToDcache;
+	`endif
 
 	modport MEM(  // top MEM使用
 		output  			MEM_ALUOut,		
@@ -641,6 +660,10 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsAJumpCall,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
+		`ifdef DEBUG
+		output              MEM_DCache_Wen,
+		output      		MEM_DataToDcache,
+		`endif
 		output              MEM_LoadType,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
@@ -663,6 +686,10 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsAJumpCall,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
+		`ifdef DEBUG
+		input               MEM_DCache_Wen,
+		input       	    MEM_DataToDcache,
+		`endif
 		input               MEM_LoadType,
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
@@ -688,6 +715,11 @@ interface MEM2_WB_Interface();
 	RegsWrType              MEM2_RegsWrType;
 	logic 					MEM2_Isincache;
 	logic       [31:0]      MEM2_Result;
+	`ifdef DEBUG
+    // logic		[31:0] 		MEM2_ALUOut;		
+	logic       [3:0]    	MEM2_DCache_Wen;
+	logic  		[31:0]    	MEM2_DataToDcache;
+	`endif
   
 	modport MEM2 (  // top MEM2使用
     	output				MEM2_ALUOut,	
@@ -700,6 +732,11 @@ interface MEM2_WB_Interface();
 		output              MEM2_OutB,
 		output				MEM2_RegsWrType,
 		output 				MEM2_Isincache,
+		`ifdef DEBUG
+    	// output				MEM2_ALUOut,		
+		input               MEM2_DCache_Wen,
+		input  			    MEM2_DataToDcache,
+		`endif
 		output				MEM2_Result
 	);
 
@@ -714,6 +751,10 @@ interface MEM2_WB_Interface();
 		input               MEM2_OutB,
 		input				MEM2_RegsWrType,
 		input 				MEM2_Isincache,
+		`ifdef DEBUG
+		input               MEM2_DCache_Wen,
+		input  			    MEM2_DataToDcache,
+		`endif
 		input				MEM2_Result
 	);
 

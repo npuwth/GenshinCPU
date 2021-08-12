@@ -50,6 +50,6 @@ module ExceptionInEXE(
     assign EXE_ExceptType_final.WrTLBRefillinMEM    =  EXE_ExceptType.WrTLBRefillinMEM; 
     assign EXE_ExceptType_final.WrTLBInvalidinMEM   =  EXE_ExceptType.WrTLBInvalidinMEM;   
     assign EXE_ExceptType_final.TLBModified         =  EXE_ExceptType.TLBModified;
-    assign EXE_ExceptType_final.Refetch             =  (TLB_Refetch || ICache_Refetch) && (EXE_PC != '0);
+    assign EXE_ExceptType_final.Refetch             =  (TLB_Refetch || ICache_Refetch) && (EXE_PC != '0);//TODO:这种用全零判断空泡的方法不好，最好用valid位判断
     assign EXE_ExceptType_final.Trap                =  Trap_valid;
 endmodule
