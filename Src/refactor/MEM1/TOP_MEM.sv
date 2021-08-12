@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 20:38:36
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-12 11:38:44
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -231,6 +231,25 @@ module TOP_MEM (
     assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MM2Bus.MEM_ExcType == `EX_None);
     assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     assign cpu_dbus.cacheType                             = MEM_CacheType;
+
+`ifdef DEBUG  // compatible for verialtor
+    assign MM2Bus.MEM_DCache_Wen                          = (cpu_dbus.valid && MEM_StoreType.DMWr)? MEM_DCache_Wen:'0;
+    assign MM2Bus.MEM_DataToDcache                        = MEM_DataToDcache;
+
+    Dcache #(
+        .DATA_WIDTH              (32 ),
+        .LINE_WORD_NUM           (`DCACHE_LINE_WORD ),
+        .ASSOC_NUM               (`DCACHE_SET_ASSOC ),
+        .WAY_SIZE                (4*1024*8 )
+    )
+    U_Dcache (
+        .clk                     (clk ),
+        .resetn                  (resetn ),
+        .axi_ubus                (axi_ubus ),
+        .cpu_bus                 (cpu_dbus ),
+        .axi_bus                 ( axi_dbus)
+    );
+`else  // for vivado 
     Dcache #(
         .DATA_WIDTH              (32 ),
         .LINE_WORD_NUM           (`DCACHE_LINE_WORD ),
@@ -244,7 +263,7 @@ module TOP_MEM (
         .cpu_bus                 (cpu_dbus.slave ),
         .axi_bus                 ( axi_dbus.master)
     );
-
+`endif
     MUX2to1 #(32) U_MUX_OutB2 ( //TODO:这里可以优化一下，换成2选1
         .d0                      (RFHILO_Bus),
         .d1                      (CP0_Bus),

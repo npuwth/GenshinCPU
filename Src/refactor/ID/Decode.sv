@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-11 23:24:36
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-12 11:40:46
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1969,7 +1969,7 @@ module Decode(
         ID_ALUOp      = `EXE_ALUOp_D;
         ID_LoadType   = '0;
         ID_StoreType  = '0;
-        ID_WbSel      = WBSel_ALUOut;
+        ID_WbSel      = `WBSel_ALUOut;
         ID_DstSel     = `DstSel_rd;
         ID_RegsWrType = '0;
         ID_ALUSrcA    = `ALUSrcA_Sel_Regs;

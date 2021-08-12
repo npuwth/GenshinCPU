@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-11 23:27:09
+ * @LastEditTime: 2021-08-12 11:28:09
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -639,6 +639,10 @@ interface MEM_MEM2_Interface();
 	logic                   MEM2_IsABranch;
 	logic                   MEM2_IsAJumpCall;
 	logic                   MEM2_IsInDelaySlot;
+	`ifdef DEBUG
+	logic      [3:0]      	MEM_DCache_Wen;
+	logic  	   [31:0]	    MEM_DataToDcache;
+	`endif
 
 	modport MEM(  // top MEM使用
 		output  			MEM_ALUOut,		
@@ -653,6 +657,10 @@ interface MEM_MEM2_Interface();
 		output  			MEM_IsAJumpCall,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
+		`ifdef DEBUG
+		output              MEM_DCache_Wen,
+		output      		MEM_DataToDcache,
+		`endif
 		output              MEM_LoadType,
 		input               MEM2_ALUOut,									
 		input               MEM2_PC,
@@ -675,6 +683,10 @@ interface MEM_MEM2_Interface();
 		input  				MEM_IsAJumpCall,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
+		`ifdef DEBUG
+		input               MEM_DCache_Wen,
+		input       	    MEM_DataToDcache,
+		`endif
 		input               MEM_LoadType,
 		output       	 	MEM2_ALUOut,
 		output              MEM2_PC,
@@ -700,6 +712,11 @@ interface MEM2_WB_Interface();
 	RegsWrType              MEM2_RegsWrType;
 	logic 					MEM2_Isincache;
 	logic       [31:0]      MEM2_Result;
+	`ifdef DEBUG
+    // logic		[31:0] 		MEM2_ALUOut;		
+	logic       [3:0]    	MEM2_DCache_Wen;
+	logic  		[31:0]    	MEM2_DataToDcache;
+	`endif
   
 	modport MEM2 (  // top MEM2使用
     	output				MEM2_ALUOut,	
@@ -712,6 +729,11 @@ interface MEM2_WB_Interface();
 		output              MEM2_OutB,
 		output				MEM2_RegsWrType,
 		output 				MEM2_Isincache,
+		`ifdef DEBUG
+    	// output				MEM2_ALUOut,		
+		input               MEM2_DCache_Wen,
+		input  			    MEM2_DataToDcache,
+		`endif
 		output				MEM2_Result
 	);
 
@@ -726,6 +748,10 @@ interface MEM2_WB_Interface();
 		input               MEM2_OutB,
 		input				MEM2_RegsWrType,
 		input 				MEM2_Isincache,
+		`ifdef DEBUG
+		input               MEM2_DCache_Wen,
+		input  			    MEM2_DataToDcache,
+		`endif
 		input				MEM2_Result
 	);
 

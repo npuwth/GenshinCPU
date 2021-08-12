@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-09 17:12:11
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-12 11:28:30
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -77,6 +77,29 @@ module cp0_reg (
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
     logic  [5:0]            Interrupt_final;
     logic  [31:0]           config0_default;
+        `ifdef DEBUG
+    logic  [31:0]           cp0_cause_debug      /* verilator public_flat */;
+    logic  [31:0]           cp0_status_debug     /* verilator public_flat */;
+    logic  [31:0]           cp0_count_debug      /* verilator public_flat */;
+    logic  [31:0]           cp0_compare_debug    /* verilator public_flat */;
+    logic  [31:0]           cp0_EPC_debug        /* verilator public_flat */; 
+    logic  [31:0]           cp0_badvaddr_debug   /* verilator public_flat */;
+    logic  [31:0]           cp0_entryhi_debug    /* verilator public_flat */;
+    logic  [31:0]           cp0_entrylo0_debug   /* verilator public_flat */;
+    logic  [31:0]           cp0_entrylo1_debug   /* verilator public_flat */;
+
+    assign     cp0_cause_debug     = {CP0.Cause.BD , CP0.Cause.TI , CP0.Cause.CE , 12'b0 , CP0.Cause.IP7_2 , CP0.Cause.IP1_0 , 1'b0 , CP0.Cause.ExcCode , 2'b0};
+    assign     cp0_status_debug    = {9'b0 , CP0.Status.BEV , 6'b0 , CP0.Status.IM7_0 , 6'b0 , CP0.Status.EXL , CP0.Status.IE};
+    assign     cp0_count_debug     = CP0.Count;
+    assign     cp0_compare_debug   = CP0.Compare;
+    assign     cp0_EPC_debug       = CP0.EPC;
+    assign     cp0_badvaddr_debug  = CP0.BadVAddr;
+    assign     cp0_entryhi_debug   = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};
+    assign     cp0_entrylo0_debug  = {6'b0 , CP0.EntryLo0.PFN0 , CP0.EntryLo0.C0 , CP0.EntryLo0.D0 , CP0.EntryLo0.V0 , CP0.EntryLo0.G0};
+    assign     cp0_entrylo1_debug  = {6'b0 , CP0.EntryLo1.PFN1 , CP0.EntryLo1.C1 , CP0.EntryLo1.D1 , CP0.EntryLo1.V1 , CP0.EntryLo1.G1};
+
+
+    `endif
     
     assign                  CP0_Status_BEV   = CP0.Status.BEV;
     assign                  CP0_Status_IM7_0 = CP0.Status.IM7_0;

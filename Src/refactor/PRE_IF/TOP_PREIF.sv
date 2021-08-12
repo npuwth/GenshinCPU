@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-08-11 18:21:12
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-12 11:40:14
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -106,6 +106,23 @@ module TOP_PREIF (
     assign cpu_ibus.isCache   = I_IsCached;
     assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isIcache == 1'b0);
     assign cpu_ibus.cacheType = MEM_CacheType;
+
+`ifdef DEBUG  // compatible for verilator 
+    Icache #(
+        .DATA_WIDTH      (32),
+        .LINE_WORD_NUM   (`ICACHE_LINE_WORD ),
+        .ASSOC_NUM       (`ICACHE_SET_ASSOC ),
+        .WAY_SIZE        (4*1024*8 )
+    )
+    U_Icache (
+        .clk             (clk ),
+        .resetn          (resetn ),
+        .cpu_bus         (cpu_ibus),
+        .axi_ubus        (axi_iubus),
+        .axi_bus         ( axi_ibus)
+    );
+
+`else   // for vivado 
     Icache #(
         .DATA_WIDTH      (32),
         .LINE_WORD_NUM   (`ICACHE_LINE_WORD ),
@@ -119,6 +136,7 @@ module TOP_PREIF (
         .axi_ubus        (axi_iubus.master ),
         .axi_bus         ( axi_ibus.master )
     );
+`endif
 
     ITLB U_ITLB (
         .clk             (clk ),

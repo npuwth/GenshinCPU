@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-08-11 18:18:18
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-12 11:41:44
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -38,6 +38,7 @@ module BPU (
     logic [7:0]                        History;
     logic [7:0]                        Index;
     logic [31:0]                       PREIF_PCAdd8;
+    logic                              BHT_hit;
     assign PREIF_PCAdd8 = PREIF_PC + 8;
     assign Index = History^PREIF_PC[`SIZE_OF_INDEX+1:2];
 

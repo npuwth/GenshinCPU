@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:24:26
- * @LastEditTime: 2021-07-26 16:21:50
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-12 11:32:59
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -29,6 +29,11 @@ module WB_Reg (
     input logic     [31:0]              MEM2_OutB,
 	  input RegsWrType                    MEM2_RegsWrType,//经过exception solvement的新写使能
     input logic     [31:0]              MEM2_Result,//选择器提前的WB_Result
+    `ifdef DEBUG
+    // input logic		  [31:0] 		          MEM2_ALUOut,		
+		input logic     [3:0]               MEM2_DCache_Wen,
+		input logic     [31:0]              MEM2_DataToDcache,
+		`endif
 //---------------------------output---------------------------------//
     output logic		[31:0] 		          WB_ALUOut,		
     output LoadType                     WB_LoadType,
@@ -39,6 +44,11 @@ module WB_Reg (
 	  output logic 		[31:0] 		          WB_DMOut,
     output logic    [31:0]              WB_OutB,
 	  output RegsWrType                   WB_RegsWrType, //经过exception solvement的新写使能
+    `ifdef DEBUG
+    // output logic		[31:0] 		          WB_ALUOut,		
+		output logic     [3:0]              WB_DCache_Wen,
+		output logic     [31:0]             WB_DataToDcache,
+		`endif
     output logic    [31:0]              WB_Result
 );
 
@@ -54,6 +64,11 @@ module WB_Reg (
       WB_OutB                           <= 32'b0;
       WB_RegsWrType                     <= '0;
       WB_Result                         <= '0;
+      `ifdef DEBUG
+      // WB_ALUOut                         <= 32'b0;
+      WB_DCache_Wen                     <='0;
+      WB_DataToDcache                   <='0;
+      `endif
     end
     else if( WB_Wr ) begin
       WB_ALUOut                         <= MEM2_ALUOut;
@@ -66,6 +81,11 @@ module WB_Reg (
       WB_OutB                           <= MEM2_OutB;
       WB_RegsWrType                     <= MEM2_RegsWrType;
       WB_Result                         <= MEM2_Result;
+      `ifdef DEBUG
+      // WB_ALUOut                         <= MEM2_ALUOut;
+      WB_DCache_Wen                     <= MEM2_DCache_Wen  ; 
+      WB_DataToDcache                   <= MEM2_DataToDcache; 
+      `endif
     end
   end
 
