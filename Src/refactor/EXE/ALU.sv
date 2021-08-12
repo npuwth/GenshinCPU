@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-12 11:50:31
+ * @LastEditTime: 2021-08-12 11:52:09
  * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\refactor\EXE\ALU.sv
@@ -18,7 +18,7 @@ module ALU (
     output logic               Overflow_valid
 );
     logic [31:0] Countbit_Out;
-    logic        Countbit_Opt;
+    logic        Countbit_Opt; 
     assign       Countbit_Opt = (EXE_ALUOp == `EXE_ALUOp_CLO);
     
     Countbit U_Countbit (                 //CLO,CLZ
