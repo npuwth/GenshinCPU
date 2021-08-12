@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-11 13:14:42
+ * @LastEditTime: 2021-08-12 19:53:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -795,6 +795,9 @@ always_comb begin : uncache_state_next_blockName
                     uncache_state_next = UNCACHE_IDLE;
                 end
             end
+        end
+        default:begin
+                uncache_state_next = UNCACHE_IDLE;
         end
     endcase
 end

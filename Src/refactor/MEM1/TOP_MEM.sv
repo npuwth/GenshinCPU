@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-12 11:38:44
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-08-12 19:44:43
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -98,7 +98,7 @@ module TOP_MEM (
     // 用于旁路
     assign MEM_Dst                  = MM2Bus.MEM_Dst;
     // 用于MFC0型的阻塞
-    assign MEM_Instr                = MM2Bus.MEM_Instr;
+    // assign MEM_Instr                = MM2Bus.MEM_Instr;
     assign MEM_ALUOut               = MM2Bus.MEM_ALUOut;
     MEM_Reg U_MEM_Reg ( 
         .clk                     (clk ),

@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-08-11 18:22:04
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-12 19:44:35
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -90,12 +90,12 @@ module MEM_Reg (
             MEM_IsABranch           <= 1'b0;
             MEM_IsAJumpCall         <= 1'b0;
             MEM_Instr               <= 32'b0;
-            MEM_IsTLBP              <= 1'b0;
-            MEM_IsTLBW              <= 1'b0;
-            MEM_IsTLBR              <= 1'b0;
-            MEM_TLBWIorR            <= 1'b0;
-            MEM_RegsReadSel         <= 1'b0;
-            MEM_rd                  <= 1'b0;
+            MEM_IsTLBP              <= '0;
+            MEM_IsTLBW              <= '0;
+            MEM_IsTLBR              <= '0;
+            MEM_TLBWIorR            <= '0;
+            MEM_RegsReadSel         <= '0;
+            MEM_rd                  <= '0;
             MEM_Result              <= '0;
             MEM_IsMFC0              <= '0;
             MEM_CacheType           <= '0;

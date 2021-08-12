@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-10 22:22:39
+ * @LastEditTime: 2021-08-12 19:54:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -248,7 +248,7 @@ assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
 // assign data_wdata =  axi_bus.ret_data ;
-assign tagv_wdata     = ( cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag)) ? '0 : {1'b1,req_buffer.tag} ;
+assign tagv_wdata     = (~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag)) ? '0 : {1'b1,req_buffer.tag} ;
 
 
 
@@ -257,7 +257,7 @@ always_comb begin : tagv_we_blockName
     if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
-    end else if( cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag))begin
+    end else if(~cpu_bus.stall && cpu_bus.cacheType.isCache && (cpu_bus.cacheType.cacheCode==I_Index_Invalid || cpu_bus.cacheType.cacheCode==I_Hit_Invalid || cpu_bus.cacheType.cacheCode==I_Index_Store_Tag))begin
         tagv_we = '1;
     end else begin
         tagv_we = '0;
