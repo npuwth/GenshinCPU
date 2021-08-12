@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-12 11:28:09
+ * @LastEditTime: 2021-08-12 13:56:25
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -206,8 +206,11 @@ typedef struct packed {
 	// logic [7:0] im;
 	// logic kx, sx, ux, um;
 	// logic r0, erl, exl, ie;
+	logic  [28:28]  CU0;
 	logic  [22:22]  BEV;
 	logic  [7:0]    IM7_0;
+	logic  [4:4]    UM;
+	logic  [3:3]    ERL;
 	logic  [1:1]    EXL;
 	logic  [0:0]    IE;
 } CP0_Status;
