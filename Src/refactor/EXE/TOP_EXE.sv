@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 19:44:52
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-13 20:24:30
+ * @LastEditors: Johnson Yang
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -277,8 +277,8 @@ module TOP_EXE (
         .EXE_ResultA          (EXE_BusA),
         .EXE_ResultB          (EXE_BusB),
         .ExceptionAssert      (EXE_Flush),  // 如果产生flush信号，需要清除状态机
-    //---------------------output--------------------------//
         .EXE_ALUOp            (EXE_ALUOp),
+    //---------------------output--------------------------//
         .EXE_MULTDIVtoLO      (EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI      (EXE_MULTDIVtoHI),
         .EXE_Finish           (EXE_Finish),
