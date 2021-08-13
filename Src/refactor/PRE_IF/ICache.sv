@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-13 15:49:22
+ * @LastEditTime: 2021-08-13 19:38:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -248,8 +248,8 @@ endgenerate
     .tagvindex_rdata  (victim_tagvindex_rdata)
   );
 
-assign victim_hit = (cpu_bus.stall) ? (victim_tagvindex_rdata[26] & ({req_buffer.tag,req_buffer.index} == victim_data_rdata[25:0]) & req_buffer.isCache ) ? 1'b1 : 1'b0  
-        :(victim_tagvindex_rdata[26]  & ({cpu_bus.tag,cpu_bus.index} == victim_data_rdata[25:0]) & cpu_bus.isCache) ? 1'b1:1'b0;
+// assign victim_hit = (cpu_bus.stall) ? (victim_tagvindex_rdata[TAG_WIDTH+INDEX_WIDTH] & ({req_buffer.tag,req_buffer.index} == victim_data_rdata[TAG_WIDTH+INDEX_WIDTH-1:0]) & req_buffer.isCache ) ? 1'b1 : 1'b0  
+        // :(victim_tagvindex_rdata[TAG_WIDTH+INDEX_WIDTH]  & ({cpu_bus.tag,cpu_bus.index} == victim_data_rdata[TAG_WIDTH+INDEX_WIDTH-1:0]) & cpu_bus.isCache) ? 1'b1:1'b0;
 
 
 generate;//判断命中
@@ -274,7 +274,7 @@ assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall)? 1'b0:1
 assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_rdata:data_rdata_sel[clog2(pipe_hit)]: '0;
 assign cache_hit = |hit;
 
-assign read_addr      = (state == REFILLDONE || state == REFILL )? req_buffer.index : cpu_bus.index;
+assign read_addr      = (state == MISSCLEAN || state == REFILLDONE || state == REFILL || state == HITVICTIM)? req_buffer.index : cpu_bus.index;//
 
 
 assign busy_cache     = (req_buffer.valid & ~pipe_cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
@@ -374,11 +374,11 @@ always_comb begin : state_next_blockname
                 state_next = REQ;
             end else begin
             if (~pipe_cache_hit & req_buffer.valid) begin
-                // if (pipe_victim_hit) begin
-                    // state_next = HITVICTIM;
-                // end else begin
+                if (pipe_victim_hit) begin
+                    state_next = HITVICTIM;
+                end else begin
                     state_next = MISSCLEAN;
-                // end
+                end
             end else begin
                 state_next = LOOKUP ;
             end

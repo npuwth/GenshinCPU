@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-13 15:53:39
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-13 17:44:22
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -370,7 +370,7 @@ module Decode(
 			        	3'b010:  instrType = OP_SWL;
 			        	3'b011:  instrType = OP_SW;
 			        	3'b110:  instrType = OP_SWR;
-			        	3'b111:  instrType = OP_CACHE;
+			        	3'b111:  instrType = OP_NOP;
 			        	default: instrType = OP_INVALID;
 			        endcase
 		        end

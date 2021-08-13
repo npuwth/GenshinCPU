@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 11:06:31
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-13 19:02:47
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -69,6 +69,7 @@ module TOP_EXE (
     logic                     EXE_IsMOVN;
     logic                     EXE_IsMOVZ;
     logic                     EXE_BusB_NZ;
+    logic [31:0]              EXE_IsAJumpCall;
 
 
     assign IEBus.EXE_rt       = EXE_rt;
@@ -150,7 +151,7 @@ module TOP_EXE (
         .EXE_ALUSrcA          (EXE_ALUSrcA ),
         .EXE_ALUSrcB          (EXE_ALUSrcB ),
         .EXE_RegsReadSel      (EMBus.EXE_RegsReadSel ),
-        .EXE_IsAJumpCall      (EMBus.EXE_IsAJumpCall ),
+        .EXE_IsAJumpCall      (EXE_IsAJumpCall ),
         .EXE_BranchType       (EMBus.EXE_BranchType ),
         .EXE_Shamt            (EXE_Shamt ),
         .EXE_IsTLBP           (EMBus.EXE_IsTLBP),
@@ -186,7 +187,7 @@ module TOP_EXE (
 
     BranchSolve U_BranchSolve (
         .EXE_BranchType       (EMBus.EXE_BranchType),    
-        .EXE_IsAJumpCall      (EMBus.EXE_IsAJumpCall), 
+        .EXE_IsAJumpCall      (EXE_IsAJumpCall), 
         .EXE_OutA             (EXE_BusA),
         .EXE_OutB             (EXE_BusB),
         .EXE_rs               (EXE_rs),
