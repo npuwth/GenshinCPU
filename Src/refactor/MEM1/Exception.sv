@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-08-13 15:30:33
+ * @LastEditTime: 2021-08-13 16:35:09
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -115,8 +115,8 @@ assign MEM_ExceptType_final.RdTLBInvalidinMEM   = (MEM_TLBExceptType == `MEM_RdT
 assign MEM_ExceptType_final.WrTLBRefillinMEM    = (MEM_TLBExceptType == `MEM_WrTLBRefill);
 assign MEM_ExceptType_final.WrTLBInvalidinMEM   = (MEM_TLBExceptType == `MEM_WrTLBInvalid);  
 assign MEM_ExceptType_final.TLBModified         = (MEM_TLBExceptType == `MEM_TLBModified);
-assign MEM_ExceptType_final.Refetch             = MEM_ExceptType.Refetch;
 assign MEM_ExceptType_final.Trap                = MEM_ExceptType.Trap;
+assign MEM_ExceptType_final.Refetch             = MEM_ExceptType.Refetch;
 
 endmodule
 

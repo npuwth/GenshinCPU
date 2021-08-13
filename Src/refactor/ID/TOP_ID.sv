@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 23:13:46
+ * @LastEditTime: 2021-08-13 19:42:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -34,6 +34,7 @@ module TOP_ID (
     input logic              MEM2_ReadMEM,
     input logic              ID_DisWr,   
     input logic              MEM_IsMFC0,
+    input logic              MEM_Refetch,
     IF_ID_Interface          IIBus,
     ID_EXE_Interface         IEBus,
     //---------------------------output------------------------------//   
@@ -61,6 +62,10 @@ module TOP_ID (
     logic [31:0]             JumpAddr;
     logic [31:0]             BranchAddr;
     logic [31:0]             BranchImme;
+    logic                    ID_Refetch;
+    logic                    ID_Valid;
+
+    assign ID_Refetch = MEM_Refetch && ID_Valid;
 
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
@@ -97,7 +102,8 @@ module TOP_ID (
         .ID_rd               (IEBus.ID_rd ),
         .ID_PC               (IEBus.ID_PC ),
         .ID_ExceptType       (ID_ExceptType),
-        .ID_PResult          (IEBus.ID_PResult)
+        .ID_PResult          (IEBus.ID_PResult),
+        .ID_Valid            (ID_Valid)
     );
 
     EXT U_EXT ( 
@@ -160,6 +166,7 @@ module TOP_ID (
     Decode U_Decode (
         .ID_Instr            (IEBus.ID_Instr),
         .ID_ExceptType       (ID_ExceptType),
+        .ID_Refetch          (ID_Refetch),
 //--------------------------out-------------------------------------//
         .ID_ALUOp            (IEBus.ID_ALUOp),
         .ID_LoadType         (ID_LoadType),

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 18:06:46
+ * @LastEditTime: 2021-08-13 19:41:07
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -19,12 +19,15 @@ module TOP_IF (
     input logic                 IF_Wr,
     input logic                 IF_Flush,
     input BResult               EXE_BResult,
-
+    input logic                 MEM_Refetch,
     PREIF_IF_Interface          PIBus,
     IF_ID_Interface             IIBus,
     CPU_IBus_Interface          cpu_ibus
 );  
     
+    ExceptinPipeType IF_ExceptType;
+    logic            IF_Valid;
+
     IF_REG U_IF_REG (
         .clk                    (clk ),
         .rst                    (resetn ),
@@ -34,10 +37,33 @@ module TOP_IF (
         .PREIF_ExceptType       (PIBus.PREIF_ExceptType ),
 //-----------------------------output-------------------------------------//
         .IF_PC                  (IIBus.IF_PC ),
-        .IF_ExceptType          (IIBus.IF_ExceptType)
+        .IF_ExceptType          (IF_ExceptType),
+        .IF_Valid               (IF_Valid)
     );  
 
     assign IIBus.IF_Instr = cpu_ibus.rdata;
+    assign IF_Refetch = MEM_Refetch && IF_Valid;
+    assign IIBus.IF_ExceptType = '{
+                            Interrupt:IF_ExceptType.Interrupt,
+                            Break:IF_ExceptType.Break,
+                            WrongAddressinIF:IF_ExceptType.WrongAddressinIF,
+                            ReservedInstruction:IF_ExceptType.ReservedInstruction,
+                            CoprocessorUnusable:IF_ExceptType.CoprocessorUnusable,
+                            Overflow:IF_ExceptType.Overflow,
+                            Syscall:IF_ExceptType.Syscall,
+                            Eret:IF_ExceptType.Eret,
+                            WrWrongAddressinMEM:IF_ExceptType.WrWrongAddressinMEM,
+                            RdWrongAddressinMEM:IF_ExceptType.RdWrongAddressinMEM,
+                            TLBRefillinIF:IF_ExceptType.TLBRefillinIF,
+                            TLBInvalidinIF:IF_ExceptType.TLBInvalidinIF,
+                            RdTLBRefillinMEM:IF_ExceptType.RdTLBRefillinMEM,
+                            RdTLBInvalidinMEM:IF_ExceptType.RdTLBInvalidinMEM,
+                            WrTLBRefillinMEM:IF_ExceptType.WrTLBRefillinMEM,
+                            WrTLBInvalidinMEM:IF_ExceptType.WrTLBInvalidinMEM,
+                            TLBModified:IF_ExceptType.TLBModified,
+                            Trap:IF_ExceptType.Trap,
+                            Refetch:(IF_ExceptType.Refetch || IF_Refetch)
+        };
 
     BPU U_BPU (
         .clk                        (clk ),

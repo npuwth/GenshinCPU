@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 19:02:47
+ * @LastEditTime: 2021-08-13 19:55:09
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -18,6 +18,7 @@ module TOP_EXE (
     input logic               EXE_Flush,
     input logic               EXE_Wr,
     input logic               EXE_DisWr, 
+    input logic               MEM_Refetch,
     ID_EXE_Interface          IEBus,
     EXE_MEM_Interface         EMBus,
     output logic              EXE_Prediction_Failed,
@@ -65,12 +66,15 @@ module TOP_EXE (
     logic                     EXE_PC8_Success;    
     logic [31:0]              EXE_JumpAddr;
     logic [31:0]              EXE_BranchAddr;
+    logic                     EXE_IsAJumpCall;
     logic [31:0]              EXE_PCAdd8;
     logic                     EXE_IsMOVN;
     logic                     EXE_IsMOVZ;
     logic                     EXE_BusB_NZ;
-    logic [31:0]              EXE_IsAJumpCall;
+    logic                     EXE_Refetch;
+    logic                     EXE_Valid;
 
+    assign EXE_Refetch = MEM_Refetch && EXE_Valid;
 
     assign IEBus.EXE_rt       = EXE_rt;
     assign IEBus.EXE_LoadType = EXE_LoadType; 
@@ -170,7 +174,8 @@ module TOP_EXE (
         .EXE_IsBrchLikely     (EXE_IsBrchLikely),
         .EXE_CacheType        (EMBus.EXE_CacheType),
         .EXE_IsMOVN           (EXE_IsMOVN),
-        .EXE_IsMOVZ           (EXE_IsMOVZ)
+        .EXE_IsMOVZ           (EXE_IsMOVZ),
+        .EXE_Valid            (EXE_Valid)
     );
     
     // ALU_ila CP0_ILA(
@@ -300,14 +305,15 @@ module TOP_EXE (
         .Trap_valid            (Trap_valid                 ),
         .EXE_ExceptType        (EXE_ExceptType             ),
         .EXE_LoadType          (EMBus.EXE_LoadType         ),
-        .MEM_IsTLBR            (EMBus.MEM_IsTLBR           ),
-        .MEM_IsTLBW            (EMBus.MEM_IsTLBW           ),
-        .MEM_RegsWrTypeCP0Wr   (EMBus.MEM_RegsWrTypeCP0Wr  ),
-        .MEM_Dst               (EMBus.MEM_Dst              ),
+        // .MEM_IsTLBR            (EMBus.MEM_IsTLBR           ),
+        // .MEM_IsTLBW            (EMBus.MEM_IsTLBW           ),
+        // .MEM_RegsWrTypeCP0Wr   (EMBus.MEM_RegsWrTypeCP0Wr  ),
+        // .MEM_Dst               (EMBus.MEM_Dst              ),
         .EXE_ALUOut            (EMBus.EXE_ALUOut[1:0]      ),
         .EXE_PC                (EMBus.EXE_PC),
         .EXE_StoreType         (EMBus.EXE_StoreType        ),
-        .MEM_CacheType         (EMBus.MEM_CacheType        ),
+        // .MEM_CacheType         (EMBus.MEM_CacheType        ),
+        .EXE_Refetch           (EXE_Refetch ),
     //-----------------------------output------------------------//    
         .EXE_ExceptType_final  (EMBus.EXE_ExceptType_final )
     );

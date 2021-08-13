@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-08-12 11:40:14
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-08-13 17:36:02
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -33,6 +33,7 @@ module TOP_PREIF (
     input logic [2:0]           CP0_Config_K0,
     input CacheType             MEM_CacheType,
     input logic [31:0]          MEM_ALUOut,
+    input logic                 MEM_Refetch,
     PREIF_IF_Interface          PIBus,
     CPU_IBus_Interface          cpu_ibus,
     AXI_IBus_Interface          axi_ibus,
@@ -60,13 +61,13 @@ module TOP_PREIF (
 
     always_comb begin
         if(IF_TLBExceptType == `IF_TLBRefill) begin
-            PIBus.PREIF_ExceptType = {10'b0,1'b1,8'b0};
+            PIBus.PREIF_ExceptType = {10'b0,1'b1,7'b0,MEM_Refetch};
         end
         else if(IF_TLBExceptType == `IF_TLBInvalid) begin
-            PIBus.PREIF_ExceptType = {11'b0,1'b1,7'b0};
+            PIBus.PREIF_ExceptType = {11'b0,1'b1,6'b0,MEM_Refetch};
         end
         else begin
-            PIBus.PREIF_ExceptType = '0;
+            PIBus.PREIF_ExceptType = {18'b0,MEM_Refetch};
         end
     end
 
@@ -104,7 +105,7 @@ module TOP_PREIF (
     assign cpu_ibus.tag       = Phsy_Iaddr[31:12];
     assign {cpu_ibus.index,cpu_ibus.offset} = (MEM_CacheType.isIcache)?MEM_ALUOut[11:0]:PREIF_PC[11:0];    // 如果D$ busy 则将PC送给I$ ,否则送NPC
     assign cpu_ibus.isCache   = I_IsCached;
-    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isIcache == 1'b0);
+    assign cpu_ibus.valid     = IReq_valid && I_IsTLBBufferValid && (PREIF_PC[1:0] == 2'b0) && (MEM_CacheType.isIcache == 1'b0);//TODO:
     assign cpu_ibus.cacheType = MEM_CacheType;
 
 `ifdef DEBUG  // compatible for verilator 

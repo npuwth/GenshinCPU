@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 19:58:31
- * @LastEditTime: 2021-08-13 11:11:29
+ * @LastEditTime: 2021-08-13 16:56:58
  * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \refactor\AXIInteract.sv
@@ -676,7 +676,7 @@ module AXIInteract #(
     // assign ibus.wr_rdy  = 1'b0;
     assign dbus.rd_rdy  = (dstate == IDLE) ? 1'b1 : 1'b0;
     assign dbus.wr_rdy  = (dstate_wb == WB_IDLE) ? 1'b1 : 1'b0;
-    assign udbus.rd_rdy = (dstate_uncache == UNCACHE_IDLE && dstate_wb == WB_IDLE ) ? 1'b1 : 1'b0;
+    assign udbus.rd_rdy = (dstate_uncache == UNCACHE_IDLE && udbus.wr_req == 1'b0 ) ? 1'b1 : 1'b0;
     assign udbus.wr_rdy = (dstate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
     assign uibus.rd_rdy = (istate_uncache == UNCACHE_IDLE ) ? 1'b1 : 1'b0;
     assign uibus.wr_rdy = 1'b0;
