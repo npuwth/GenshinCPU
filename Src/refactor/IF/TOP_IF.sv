@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 19:41:07
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-13 21:41:48
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -27,6 +27,8 @@ module TOP_IF (
     
     ExceptinPipeType IF_ExceptType;
     logic            IF_Valid;
+    logic            IF_Refetch;
+
 
     IF_REG U_IF_REG (
         .clk                    (clk ),
