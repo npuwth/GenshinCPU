@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-13 16:22:15
+ * @LastEditTime: 2021-08-13 20:27:38
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -427,7 +427,8 @@ module mycpu_top (
         .MEM_IsMFC0                (MEM_IsMFC0),
         .CP0_Config_K0             (CP0_Config_K0),
         .MEM_CacheType             (MEM_CacheType),
-        .MEM_ALUOut                (MEM_ALUOut)
+        .MEM_ALUOut                (MEM_ALUOut),
+        .MEM_Refetch               (MEM_Refetch)
     );
     
     TOP_MEM2 U_TOP_MEM2 (
