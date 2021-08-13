@@ -1,7 +1,7 @@
  /*
  * @Author: Johnson Yang
  * @Date: 2021-03-31 15:22:23
- * @LastEditTime: 2021-08-11 20:40:01
+ * @LastEditTime: 2021-08-13 15:30:33
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -15,15 +15,17 @@
  module Exception(
     input ExceptinPipeType     MEM_ExceptType,        //译码执行阶段收集到的异常信息
     input logic [2:0]          MEM_TLBExceptType,
-    input logic [31:0]         MEM_PC,                //用于判断取指令地址错例外
+    input logic                MEM_Interrupt,
+    // input logic [31:0]         MEM_PC,                //用于判断取指令地址错例外
     input logic [22:22]        CP0_Status_BEV,
-    input logic [7:0]          CP0_Status_IM7_0,
+    // input logic [7:0]          CP0_Status_IM7_0,
     input logic                CP0_Status_EXL,
-    input logic                CP0_Status_IE,
-    input logic [7:2]          CP0_Cause_IP7_2,
-    input logic [1:0]          CP0_Cause_IP1_0,
+    // input logic                CP0_Status_IE,
+    // input logic [7:2]          CP0_Cause_IP7_2,
+    // input logic [1:0]          CP0_Cause_IP1_0,
     input logic [31:0]         CP0_Ebase,
-    input logic                MEM_IsInDelaySlot,
+    // input logic                MEM_IsInDelaySlot,
+    //-------------------------------------output--------------------------//
     output logic [4:0]         MEM_ExcType,
     output logic [1:0]         EX_Entry_Sel,           //用于生成NPC
     output logic [31:0]        Exception_Vector,       // 异常处理的入口地址
@@ -96,9 +98,8 @@ end
 assign Exception_Vector  = base + offset; //生成异常入口向量
 
 //-----------------------------------------------生成MEM级的最终异常----------------------------------------------------------//
-assign MEM_ExceptType_final.Interrupt           = (~MEM_IsInDelaySlot) && (MEM_PC != 32'b0) && (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
-                                                     (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1);
-assign MEM_ExceptType_final.WrongAddressinIF    = (MEM_PC[1:0] != 2'b00 )?1'b1:1'b0;
+assign MEM_ExceptType_final.Interrupt           = MEM_Interrupt;
+assign MEM_ExceptType_final.WrongAddressinIF    = MEM_ExceptType.WrongAddressinIF;
 assign MEM_ExceptType_final.ReservedInstruction = MEM_ExceptType.ReservedInstruction;
 assign MEM_ExceptType_final.CoprocessorUnusable = MEM_ExceptType.CoprocessorUnusable;
 assign MEM_ExceptType_final.Syscall             = MEM_ExceptType.Syscall;

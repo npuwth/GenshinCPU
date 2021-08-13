@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-11 18:11:49
+ * @LastEditTime: 2021-08-12 21:50:14
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -150,8 +150,8 @@ module mycpu_top (
     //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_IBus_Interface          cpu_ibus();
     CPU_DBus_Interface          cpu_dbus();
-    AXI_IBus_Interface           axi_ibus();
-    AXI_DBus_Interface           axi_dbus();
+    AXI_IBus_Interface          axi_ibus();
+    AXI_DBus_Interface          axi_dbus();
     AXI_UNCACHE_Interface       axi_ubus();
     AXI_UNCACHE_Interface       axi_iubus();
     PREIF_IF_Interface          PIBus();

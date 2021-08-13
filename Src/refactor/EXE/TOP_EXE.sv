@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-11 23:37:15
+ * @LastEditTime: 2021-08-13 11:06:31
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -205,7 +205,6 @@ module TOP_EXE (
         .EXE_PF_FlushAll      (EXE_PF_FlushAll),
         .EXE_Correction_Vector(EXE_Correction_Vector),
         .EXE_BResult          (EXE_BResult),
-        .EXE_IsBrchLikely     (EXE_IsBrchLikely),
         .EXE_IsTaken          (EXE_IsTaken)
     );
 

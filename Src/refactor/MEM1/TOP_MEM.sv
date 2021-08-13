@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-12 19:44:43
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-13 15:34:08
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -78,9 +78,13 @@ module TOP_MEM (
     //用于Dcache
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
+    logic                        MEM_Interrupt;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
-    assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch || MM2Bus.MEM2_IsAJumpCall; 
+    assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch; 
+    assign MEM_Interrupt = (~MM2Bus.MEM_IsInDelaySlot) && (MM2Bus.MEM_PC != 32'b0) && (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
+                           (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1);
+
     assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high  
     assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
@@ -111,7 +115,6 @@ module TOP_MEM (
         .EXE_PC                  (EMBus.EXE_PC ),
         .EXE_Instr               (EMBus.EXE_Instr ),
         .EXE_BranchType          (EMBus.EXE_BranchType ),
-        .EXE_IsAJumpCall         (EMBus.EXE_IsAJumpCall ),
         .EXE_LoadType            (EMBus.EXE_LoadType ),
         .EXE_StoreType           (EMBus.EXE_StoreType ),
         .EXE_Dst                 (EMBus.EXE_Dst ),
@@ -133,7 +136,6 @@ module TOP_MEM (
         .MEM_PC                  (MM2Bus.MEM_PC ),
         .MEM_Instr               (MM2Bus.MEM_Instr ),
         .MEM_IsABranch           (MM2Bus.MEM_IsABranch ),
-        .MEM_IsAJumpCall         (MM2Bus.MEM_IsAJumpCall ),
         .MEM_LoadType            (MEM_LoadType ),
         .MEM_StoreType           (MEM_StoreType),
         .MEM_Dst                 (MM2Bus.MEM_Dst ),
@@ -154,15 +156,16 @@ module TOP_MEM (
     Exception U_Exception(             
         .MEM_ExceptType          (MEM_ExceptType),        
         .MEM_TLBExceptType       (MEM_TLBExceptType),
-        .MEM_PC                  (MM2Bus.MEM_PC),   
+        .MEM_Interrupt           (MEM_Interrupt),
+        // .MEM_PC                  (MM2Bus.MEM_PC),   
         .CP0_Status_BEV          (CP0_Status_BEV),                  
-        .CP0_Status_IM7_0        (CP0_Status_IM7_0 ),
+        // .CP0_Status_IM7_0        (CP0_Status_IM7_0 ),
         .CP0_Status_EXL          (CP0_Status_EXL ),
-        .CP0_Status_IE           (CP0_Status_IE ),
-        .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
-        .CP0_Cause_IP1_0         (CP0_Cause_IP1_0), 
+        // .CP0_Status_IE           (CP0_Status_IE ),
+        // .CP0_Cause_IP7_2         (CP0_Cause_IP7_2 ),
+        // .CP0_Cause_IP1_0         (CP0_Cause_IP1_0), 
         .CP0_Ebase               (CP0_Ebase),     
-        .MEM_IsInDelaySlot       (MM2Bus.MEM_IsInDelaySlot),
+        // .MEM_IsInDelaySlot       (MM2Bus.MEM_IsInDelaySlot),
     //------------------------------out--------------------------------------------//         
         .Flush_Exception         (Flush_Exception),                         
         .EX_Entry_Sel            (EX_Entry_Sel),            
@@ -228,8 +231,9 @@ module TOP_MEM (
     assign cpu_dbus.wstrb                                 = MEM_DCache_Wen;
     assign cpu_dbus.loadType                              = MEM_LoadType;
     assign cpu_dbus.isCache                               = D_IsCached;
-    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MM2Bus.MEM_ExcType == `EX_None);
-    assign cpu_dbus.origin_valid                          = DReq_valid & (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
+    // assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MM2Bus.MEM_ExcType == `EX_None);
+    assign cpu_dbus.valid                                 = DReq_valid && D_IsTLBBufferValid && (MEM_ExceptType == '0) && (~MEM_Interrupt);
+    assign cpu_dbus.origin_valid                          = DReq_valid && (MEM_LoadType.ReadMem || MEM_StoreType.DMWr);
     assign cpu_dbus.cacheType                             = MEM_CacheType;
 
 `ifdef DEBUG  // compatible for verialtor

@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-12 11:52:09
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-08-12 20:18:53
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\refactor\EXE\ALU.sv
  * 
@@ -63,9 +63,7 @@ module ALU (
             `EXE_ALUOp_XOR  :                 EXE_ALUOut = XOR_Out;
             `EXE_ALUOp_AND  :                 EXE_ALUOut = AND_Out;
             `EXE_ALUOp_MUL  :                 EXE_ALUOut = MUL_Out;
-        `ifdef TEST
-            `EXE_ALUOp_CLZ,`EXE_ALUOp_CLO  :  EXE_ALUOut = EXE_Countbit_Out;
-        `endif 
+            `EXE_ALUOp_CLZ,`EXE_ALUOp_CLO  :  EXE_ALUOut = Countbit_Out;
             default :                         EXE_ALUOut = EXE_ResultA;//用于MOVZ，MOVN指令
         endcase
     end 
