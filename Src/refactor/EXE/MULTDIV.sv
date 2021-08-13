@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-03-27 15:31:34
- * @LastEditTime: 2021-08-03 20:37:26
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-13 20:22:26
+ * @LastEditors: Johnson Yang
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \undefinedd:\nontrival-cpu\Src\refactor\EXE\MULTDIV.sv
  * 
@@ -30,6 +30,7 @@ module MULTDIV(
 parameter T = 2'b00;  //空闲
 parameter S = 2'b01;  //等待握手
 parameter Q = 2'b10;  //等待结果
+parameter W = 2'b11;  //结束
 // div -->  dividend_tdata / divisor_tdata 
 // 除号后面的叫做除数（divisor_tdata）
 logic  [31:0]   divisor_tdata;      // 除数
@@ -58,6 +59,9 @@ logic           EXE_DIVStall;
 logic           ismulti;
 logic           signflag;
 logic  [63:0]   mul_result;
+logic           multi_save;
+logic  [31:0]   MulHiSave;
+logic  [31:0]   MulLoSave;
 assign ismulti = (EXE_ALUOp == `EXE_ALUOp_MULT || EXE_ALUOp == `EXE_ALUOp_MULTU || EXE_ALUOp == `EXE_ALUOp_MADD || EXE_ALUOp == `EXE_ALUOp_MADDU || 
                 EXE_ALUOp == `EXE_ALUOp_MSUB || EXE_ALUOp == `EXE_ALUOp_MSUBU || EXE_ALUOp == `EXE_ALUOp_MUL) ? 1 : 0 ;
 
@@ -208,7 +212,7 @@ always_comb begin
             EXE_MultiExtendOp = 2'b10;
         end
         default:begin
-            EXE_MultiExtendOp = 2'b00;
+            EXE_MultiExtendOp = 2'b11;
         end
     endcase
     
@@ -261,8 +265,11 @@ always_comb begin
             else        nextstate_mul = T;
         end
         S:begin
-            if(Count == `MUL_Circle - 1) nextstate_mul = Q;
+            if(Count == `MUL_Circle - 1) nextstate_mul = W;  // 暂存结果
             else                         nextstate_mul = S;
+        end
+        W:begin
+            nextstate_mul = Q;  // 返回数据
         end
         Q:begin
             nextstate_mul = T;
@@ -282,20 +289,36 @@ always_comb begin
             multi_finish = 1'b0;
         end
 end
+// 乘法状态机赞数数据
+always_comb begin
+    if (prestate_mul == W)begin
+        multi_save = 1'b1;
+    end
+    else begin
+        multi_save = 1'b0;
+    end
+end
+always_ff @(posedge  clk ) begin
+    if (multi_save)begin
+        MulHiSave = mul_result[63:32];
+        MulLoSave = mul_result[31:0];
+    end
+end
 
     assign div_finish   = Signed_div_finish | Unsigned_div_finish;                                  //除法完成信号
     //assign multi_finish = (EXE_ALUOp == `EXE_ALUOp_MULT || EXE_ALUOp == `EXE_ALUOp_MULTU) ? 1 : 0;  //乘法完成信号
     assign EXE_Finish   = multi_finish | div_finish;                                                //总完成信号
 
-    assign EXE_MULTDIVtoLO = (multi_finish        ) ? mul_result[31:0] : 
+    assign EXE_MULTDIVtoLO = (multi_finish        ) ? MulLoSave          : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[63:32]  : 
                              (Unsigned_div_finish ) ? Unsigned_dout_tdata[63:32]: 32'bx;
 
-    assign EXE_MULTDIVtoHI = (multi_finish        ) ? mul_result[63:32] : 
+    assign EXE_MULTDIVtoHI = (multi_finish        ) ? MulHiSave          : 
                              (Signed_div_finish   ) ? Signed_dout_tdata[31:0]   : 
                              (Unsigned_div_finish ) ? Unsigned_dout_tdata[31:0] : 32'bx;
                              
     assign EXE_DIVStall = ((EXE_ALUOp == `EXE_ALUOp_DIV || EXE_ALUOp == `EXE_ALUOp_DIVU) && div_finish == 1'b0) ? 1 : 0 ;
-    assign EXE_MULTStall= ((EXE_ALUOp == `EXE_ALUOp_MULT|| EXE_ALUOp == `EXE_ALUOp_MULTU)&& multi_finish == 1'b0) ? 1 : 0;
+    // assign EXE_MULTStall= ((EXE_ALUOp == `EXE_ALUOp_MULT|| EXE_ALUOp == `EXE_ALUOp_MULTU)&& multi_finish == 1'b0) ? 1 : 0;
+    assign EXE_MULTStall= (ismulti&& multi_finish == 1'b0) ? 1 : 0;
     assign EXE_MULTDIVStall = EXE_MULTStall || EXE_DIVStall;
 endmodule
