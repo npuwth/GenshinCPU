@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-12 19:51:17
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-13 15:53:39
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -1905,6 +1905,7 @@ module Decode(
         //ID_rsrtRead[1]= 1'b1; //rs 
         //ID_rsrtRead[0]= 1'b0; //rt  
       end
+      
       OP_CACHE:begin//TODO: 修改cache指令的译码
         ID_ALUOp      = `EXE_ALUOp_ADDU;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
@@ -1919,36 +1920,8 @@ module Decode(
         ID_IsAJumpCall = `IsNotAJumpCall;
         ID_BranchType = '0;
         IsReserved    = 1'b0;
-        // ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
-        // ID_LoadType   = '0;    //访存相关 
-        // ID_StoreType  = '0;    //存储相关
-        // ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
-        // ID_DstSel     =  `DstSel_nop;    //Rtype选rd
-        // ID_RegsWrType = '0;    //写回哪里
-        // ID_ALUSrcA    = '0; //MUXA选择regs
-        // ID_ALUSrcB    = '0;  //MUXB选择regs
-        // ID_RegsReadSel= '0;        //ID级选择RF读取结果
-        // ID_EXTOp      = `EXTOP_NOP;                 //R型无关
-        // ID_IsAJumpCall = '0;
-        // ID_BranchType = '0;
-        // IsReserved    = 1'b0;   
       end
-      // 实现为NOP指令
-      // OP_SYNC:begin
-      //   ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
-      //   ID_LoadType   = '0;    //访存相关 
-      //   ID_StoreType  = '0;    //存储相关
-      //   ID_WbSel      = '0;    //关于最后写回的是PC & ALU & RF ..
-      //   ID_DstSel     = `DstSel_nop;    //Rtype选rd
-      //   ID_RegsWrType = '0;    //写回哪里
-      //   ID_ALUSrcA    = '0; //MUXA选择regs
-      //   ID_ALUSrcB    = '0;  //MUXB选择regs
-      //   ID_RegsReadSel= '0;        //ID级选择RF读取结果
-      //   ID_EXTOp      = `EXTOP_NOP;                 //R型无关
-      //   ID_IsAJumpCall= '0;
-      //   ID_BranchType = '0;
-      //   IsReserved    = 1'b0;   
-      // end
+
       OP_NOP:begin
         ID_ALUOp      = `EXE_ALUOp_D;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
