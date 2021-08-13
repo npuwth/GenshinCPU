@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-13 16:35:17
+ * @LastEditTime: 2021-08-13 19:57:33
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -555,11 +555,11 @@ interface EXE_MEM_Interface();
 	logic       [31:0]      EXE_Result;
 	logic                   EXE_IsMFC0;
 	CacheType               EXE_CacheType;
-	logic       [4:0]       MEM_Dst;
-	logic                   MEM_IsTLBR;
-	logic                   MEM_IsTLBW;
-	logic                   MEM_RegsWrTypeCP0Wr;
-	CacheType               MEM_CacheType;
+	// logic       [4:0]       MEM_Dst;
+	// logic                   MEM_IsTLBR;
+	// logic                   MEM_IsTLBW;
+	// logic                   MEM_RegsWrTypeCP0Wr;
+	// CacheType               MEM_CacheType;
 
 	modport EXE (
 	output      	        EXE_ALUOut,   		// RF 中读取到的数据A
@@ -581,12 +581,12 @@ interface EXE_MEM_Interface();
 	output                  EXE_rd,
 	output                  EXE_Result,
 	output                  EXE_IsMFC0,
-	output                  EXE_CacheType,
-	input                   MEM_Dst,
-	input                   MEM_IsTLBR,
-	input                   MEM_IsTLBW,
-	input                   MEM_RegsWrTypeCP0Wr,
-	input                   MEM_CacheType
+	output                  EXE_CacheType
+	// input                   MEM_Dst,
+	// input                   MEM_IsTLBR,
+	// input                   MEM_IsTLBW,
+	// input                   MEM_RegsWrTypeCP0Wr,
+	// input                   MEM_CacheType
 	);
 
 	modport MEM (
@@ -609,12 +609,12 @@ interface EXE_MEM_Interface();
 	input                   EXE_rd,
 	input                   EXE_Result,
 	input                   EXE_IsMFC0,
-	input                   EXE_CacheType,
-	output                  MEM_Dst,
-	output                  MEM_IsTLBR,
-	output                  MEM_IsTLBW,
-	output                  MEM_RegsWrTypeCP0Wr,
-	output                  MEM_CacheType
+	input                   EXE_CacheType
+	// output                  MEM_Dst,
+	// output                  MEM_IsTLBR,
+	// output                  MEM_IsTLBW,
+	// output                  MEM_RegsWrTypeCP0Wr,
+	// output                  MEM_CacheType
 	);
 
 endinterface

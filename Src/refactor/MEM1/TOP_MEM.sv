@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 16:10:55
+ * @LastEditTime: 2021-08-13 19:58:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -88,11 +88,6 @@ module TOP_MEM (
     assign MEM_Interrupt = (~MM2Bus.MEM_IsInDelaySlot) && (MM2Bus.MEM_PC != 32'b0) && (({CP0_Cause_IP7_2,CP0_Cause_IP1_0} & CP0_Status_IM7_0) != 8'b0) &&
                            (CP0_Status_EXL == 1'b0) && (CP0_Status_IE == 1'b1);
 
-    assign EMBus.MEM_Dst            = MM2Bus.MEM_Dst;               // 用于旁路且判断重取判断是否是entry high  
-    assign EMBus.MEM_IsTLBR         = MEM_IsTLBR;                   // 判断重取
-    assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
-    assign EMBus.MEM_RegsWrTypeCP0Wr= MEM_RegsWrType.CP0Wr;             // 判断重取判断是否是entry high
-    assign EMBus.MEM_CacheType      = MEM_CacheType;
     //用于重取机制
     assign TLB_Refetch = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrType.CP0Wr && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     assign ICache_Refetch = MEM_CacheType.isIcache;
