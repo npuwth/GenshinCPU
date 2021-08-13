@@ -1,8 +1,8 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-06-29 18:26:53
- * @LastEditTime: 2021-08-09 17:06:25
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-13 17:19:25
+ * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \nontrival-cpu\Src\refactor\EXE\Countbit.sv
  * 
@@ -17,25 +17,25 @@ module Countbit(
 logic [3:0] count3, count2, count1, count0;
 
 Countbyte bit_count3(
-	.option,
+	.option(option),
 	.value(value[31:24]),
 	.count(count3)
 );
 
 Countbyte bit_count2(
-	.option,
+	.option(option),
 	.value(value[23:16]),
 	.count(count2)
 );
 
 Countbyte bit_count1(
-	.option,
+	.option(option),
 	.value(value[15:8]),
 	.count(count1)
 );
 
 Countbyte bit_count0(
-	.option,
+	.option(option),
 	.value(value[7:0]),
 	.count(count0)
 );

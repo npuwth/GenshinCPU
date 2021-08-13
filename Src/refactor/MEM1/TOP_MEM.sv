@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 15:34:08
+ * @LastEditTime: 2021-08-13 16:10:55
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -51,7 +51,8 @@ module TOP_MEM (
     output logic                 MEM_IsMFC0,
     output logic [2:0]           CP0_Config_K0,
     output CacheType             MEM_CacheType,
-    output logic [31:0]          MEM_ALUOut
+    output logic [31:0]          MEM_ALUOut,
+    output logic                 MEM_Refetch
 );
     ExceptinPipeType             MEM_ExceptType;
     logic [31:0]                 RFHILO_Bus;
@@ -79,6 +80,8 @@ module TOP_MEM (
     logic [3:0]                  MEM_DCache_Wen;
     logic [31:0]                 MEM_DataToDcache;
     logic                        MEM_Interrupt;
+    logic                        TLB_Refetch;
+    logic                        ICache_Refetch;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch; 
@@ -90,6 +93,10 @@ module TOP_MEM (
     assign EMBus.MEM_IsTLBW         = MEM_IsTLBW;                   // 判断重取
     assign EMBus.MEM_RegsWrTypeCP0Wr= MEM_RegsWrType.CP0Wr;             // 判断重取判断是否是entry high
     assign EMBus.MEM_CacheType      = MEM_CacheType;
+    //用于重取机制
+    assign TLB_Refetch = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrType.CP0Wr && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
+    assign ICache_Refetch = MEM_CacheType.isIcache;
+    assign MEM_Refetch = TLB_Refetch || ICache_Refetch;
     assign MEM_PC                   = MM2Bus.MEM_PC;                // MEM_PC要输出用于重取机制
     assign TLBBuffer_Flush          = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrType.CP0Wr && MM2Bus.MEM_Dst == `CP0_REG_ENTRYHI));
     

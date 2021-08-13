@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-02 14:09:14
- * @LastEditTime: 2021-07-23 14:20:35
+ * @LastEditTime: 2021-08-13 19:42:08
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -30,7 +30,8 @@ module ID_Reg (
     output logic  [4:0]                ID_rd,
     output logic  [31:0]               ID_PC,
     output ExceptinPipeType            ID_ExceptType,      
-    output PResult                     ID_PResult
+    output PResult                     ID_PResult,
+    output logic                       ID_Valid
 );
 
   always_ff @( posedge clk  ) begin
@@ -43,6 +44,7 @@ module ID_Reg (
       ID_PC                            <= 32'b0;
       ID_ExceptType                    <= '0;
       ID_PResult                       <= '0;
+      ID_Valid                         <= '0;
     end
     else if( ID_Wr ) begin
       ID_Instr                         <= IF_Instr;
@@ -53,6 +55,7 @@ module ID_Reg (
       ID_PC                            <= IF_PC;
       ID_ExceptType                    <= IF_ExceptType;
       ID_PResult                       <= IF_PResult;
+      ID_Valid                         <= 1'b1;
     end
   end
   

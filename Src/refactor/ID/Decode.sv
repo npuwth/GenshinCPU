@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-13 15:53:39
+ * @LastEditTime: 2021-08-13 19:32:54
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -16,7 +16,7 @@
 module Decode(
     input  logic[31:0] ID_Instr,
     input  ExceptinPipeType ID_ExceptType,
-
+    input  logic       ID_Refetch,
     output logic [4:0] ID_ALUOp,	 		// ALUOp ALU符号
     output LoadType    ID_LoadType,	 		// Load信号 （用于判断是sw sh sb还是lb lbu lh lhu lw ）
     output StoreType   ID_StoreType,  		        // Store信号（用于判断是sw sh sb还是sb sbu sh shu sw ）
@@ -1905,7 +1905,7 @@ module Decode(
         //ID_rsrtRead[1]= 1'b1; //rs 
         //ID_rsrtRead[0]= 1'b0; //rt  
       end
-      
+
       OP_CACHE:begin//TODO: 修改cache指令的译码
         ID_ALUOp      = `EXE_ALUOp_ADDU;    //ALU操作
         ID_LoadType   = '0;    //访存相关 
@@ -1995,8 +1995,8 @@ always_comb begin
                             WrTLBRefillinMEM:1'b0,
                             WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
-                            Refetch:1'b0,
-                            Trap:1'b0
+                            Trap:1'b0,
+                            Refetch:(ID_ExceptType.Refetch || ID_Refetch)
         };//关于Break异常
   end
   else if(instrType == OP_SYSCALL) begin
@@ -2018,8 +2018,8 @@ always_comb begin
                             WrTLBRefillinMEM:1'b0,
                             WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
-                            Refetch:1'b0,
-                            Trap:1'b0
+                            Trap:1'b0,
+                            Refetch:(ID_ExceptType.Refetch || ID_Refetch)
         };//关于SYSCALL
   end
   else if(instrType == OP_ERET) begin
@@ -2041,8 +2041,8 @@ always_comb begin
                             WrTLBRefillinMEM:1'b0,
                             WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
-                            Refetch:1'b0,
-                            Trap:1'b0
+                            Trap:1'b0,
+                            Refetch:(ID_ExceptType.Refetch || ID_Refetch)
         };//关于ERET
   end
   `ifdef FPU_DETECT_EN
@@ -2065,8 +2065,8 @@ always_comb begin
                             WrTLBRefillinMEM:1'b0,
                             WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
-                            Refetch:1'b0,
-                            Trap:1'b0
+                            Trap:1'b0,
+                            Refetch:(ID_ExceptType.Refetch || ID_Refetch)
         };//关于ERET
   end
   `endif 
@@ -2093,8 +2093,8 @@ always_comb begin
                             WrTLBRefillinMEM:1'b0,
                             WrTLBInvalidinMEM:1'b0,
                             TLBModified:1'b0,
-                            Refetch:1'b0,
-                            Trap:1'b0
+                            Trap:1'b0,
+                            Refetch:(ID_ExceptType.Refetch || ID_Refetch)
         };//保留指令例外
   end
 end

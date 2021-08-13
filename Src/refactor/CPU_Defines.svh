@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-13 15:37:40
+ * @LastEditTime: 2021-08-13 16:35:17
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -40,8 +40,8 @@ typedef struct packed {
 	logic WrTLBRefillinMEM;     // 写数TLB重填例外     
 	logic WrTLBInvalidinMEM;    // 写数TLB无效例外
 	logic TLBModified;          // TLB 修改例外
-	logic Refetch;              // 重取（自己定义的，用于TLBR，TLBW，MTC0的EntryHi）
 	logic Trap;                 // Trap 例外
+	logic Refetch;              // 重取（自己定义的，用于TLBR，TLBW，MTC0的EntryHi）
 } ExceptinPipeType;    //在流水线寄存器之间流动的异常信号
 
 typedef enum logic [6:0] {//之所以把OP_SLL的op都大写是因为enum的值某种意义上算是一种常量

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-13 15:52:50
+ * @LastEditTime: 2021-08-13 16:22:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -113,6 +113,7 @@ module mycpu_top (
     logic [4:0]                MEM_Dst;
     RegsWrType                 MEM_RegsWrType;
     logic [31:0]               MEM_PC;                    //传至PREIF，用于TLB重取机制
+    logic                      MEM_Refetch;               //用于TLB和Cache重取
     LoadType                   MEM_LoadType;              //用于Control & load指令的数据冒险
     StoreType                  MEM_StoreType;             //用于Control 
     //----------------------------------------------关于TLBMMU-----------------------------------------------------//
@@ -136,16 +137,16 @@ module mycpu_top (
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
     
-    ila CPU_TOP_ILA(
-        .clk(aclk),
-        .probe0 (debug_wb_pc),
-        .probe1 (debug_wb_rf_wdata),
-        .probe2 (debug_wb_rf_wen),
-        .probe3 (debug_wb_rf_wnum),
-        .probe4 (M2WBus.MEM2_Instr),
-        .probe5 (MM2Bus.MEM_ExcType),
-        .probe6 (Exception_Vector)
-    );
+    // ila CPU_TOP_ILA(
+    //     .clk(aclk),
+    //     .probe0 (debug_wb_pc),
+    //     .probe1 (debug_wb_rf_wdata),
+    //     .probe2 (debug_wb_rf_wen),
+    //     .probe3 (debug_wb_rf_wnum),
+    //     .probe4 (M2WBus.MEM2_Instr),
+    //     .probe5 (MM2Bus.MEM_ExcType),
+    //     .probe6 (Exception_Vector)
+    // );
 
     //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_IBus_Interface          cpu_ibus();
@@ -319,6 +320,7 @@ module mycpu_top (
         .CP0_Config_K0             (CP0_Config_K0 ),
         .MEM_CacheType             (MEM_CacheType),
         .MEM_ALUOut                (MEM_ALUOut),
+        .MEM_Refetch               (MEM_Refetch),
         .PIBus                     (PIBus.PREIF ),
         .cpu_ibus                  (cpu_ibus ),
         .axi_ibus                  (axi_ibus ),
@@ -334,6 +336,7 @@ module mycpu_top (
         .IF_Wr                     (IF_Wr ),
         .IF_Flush                  (IF_Flush ),
         .EXE_BResult               (EXE_BResult ),
+        .MEM_Refetch               (MEM_Refetch),     
         .PIBus                     (PIBus.IF ),
         .IIBus                     (IIBus.IF ),
         .cpu_ibus                  (cpu_ibus)
@@ -358,7 +361,8 @@ module mycpu_top (
         .WB_Result                 (WB_Result ),
         .WB_Dst                    (WB_Dst ),
         .WB_RegsWrType             (WB_RegsWrType ),
-        .MEM_IsMFC0                 (MEM_IsMFC0),
+        .MEM_IsMFC0                (MEM_IsMFC0),
+        .MEM_Refetch               (MEM_Refetch),
         .IIBus                     (IIBus.ID ),
         .IEBus                     (IEBus.ID ),
         //-------------------------------output-------------------//
@@ -373,6 +377,7 @@ module mycpu_top (
         .EXE_Flush                 (EXE_Flush ),
         .EXE_Wr                    (EXE_Wr ),
         .EXE_DisWr                 (EXE_DisWr),
+        .MEM_Refetch               (MEM_Refetch),
         .IEBus                     (IEBus.EXE ),
         .EMBus                     (EMBus.EXE ),
         //--------------------------output-------------------------//

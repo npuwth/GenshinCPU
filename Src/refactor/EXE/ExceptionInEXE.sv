@@ -6,24 +6,18 @@ module ExceptionInEXE(
     input  ExceptinPipeType   EXE_ExceptType,
     // 用于产生TLB refetch & 取指令地址错例外
     input  LoadType           EXE_LoadType,
-    input  logic              MEM_IsTLBR,
-    input  logic              MEM_IsTLBW,
-    input  logic              MEM_RegsWrTypeCP0Wr,
-    input  logic [4:0]        MEM_Dst,
+    // input  logic              MEM_IsTLBR,
+    // input  logic              MEM_IsTLBW,
+    // input  logic              MEM_RegsWrTypeCP0Wr,
+    // input  logic [4:0]        MEM_Dst,
     input  logic [1:0]        EXE_ALUOut,    // 地址信息
     input  logic [31:0]       EXE_PC,
     input  StoreType          EXE_StoreType,
-    input  CacheType          MEM_CacheType,
+    // input  CacheType          MEM_CacheType,
+    input  logic              EXE_Refetch,
 //-------------------------output----------------------------------//
-    output ExceptinPipeType   EXE_ExceptType_final,
-    output logic              EXE_Refetch
+    output ExceptinPipeType   EXE_ExceptType_final
 );
-
-    logic  TLB_Refetch;
-    logic  ICache_Refetch;
-    assign TLB_Refetch = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrTypeCP0Wr && MEM_Dst == `CP0_REG_ENTRYHI));
-    assign ICache_Refetch = MEM_CacheType.isIcache;
-    assign EXE_Refetch = (TLB_Refetch || ICache_Refetch) && (EXE_PC != '0);
 
     logic  LoadAlign_valid;
     logic  StoreAlign_valid;
@@ -52,6 +46,6 @@ module ExceptionInEXE(
     assign EXE_ExceptType_final.WrTLBRefillinMEM    =  EXE_ExceptType.WrTLBRefillinMEM; 
     assign EXE_ExceptType_final.WrTLBInvalidinMEM   =  EXE_ExceptType.WrTLBInvalidinMEM;   
     assign EXE_ExceptType_final.TLBModified         =  EXE_ExceptType.TLBModified;
-    assign EXE_ExceptType_final.Refetch             =  (TLB_Refetch || ICache_Refetch) && (EXE_PC != '0);//TODO:这种用全零判断空泡的方法不好，最好用valid位判断
     assign EXE_ExceptType_final.Trap                =  Trap_valid;
+    assign EXE_ExceptType_final.Refetch             =  (EXE_ExceptType.Refetch || EXE_Refetch);//TODO:这种用全零判断空泡的方法不好，最好用valid位判断
 endmodule

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-11 23:19:20
+ * @LastEditTime: 2021-08-13 19:43:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -92,7 +92,8 @@ module EXE_Reg (
     output logic                         EXE_IsBrchLikely,
     output CacheType                     EXE_CacheType,
     output logic                         EXE_IsMOVN,
-    output logic                         EXE_IsMOVZ
+    output logic                         EXE_IsMOVZ,
+    output logic                         EXE_Valid
     // output logic                         MDU_flush
 );
 
@@ -136,6 +137,7 @@ module EXE_Reg (
       EXE_CacheType                      <= '0;
       EXE_IsMOVN                         <= '0;
       EXE_IsMOVZ                         <= '0;
+      EXE_Valid                          <= '0;
     end
     else if( EXE_Wr ) begin
       EXE_BusA                           <= ID_BusA;
@@ -176,6 +178,7 @@ module EXE_Reg (
       EXE_CacheType                      <= ID_CacheType;
       EXE_IsMOVN                         <= ID_IsMOVN;
       EXE_IsMOVZ                         <= ID_IsMOVZ;
+      EXE_Valid                          <= 1'b1;
     end
   end
 
