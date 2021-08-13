@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 11:23:21
- * @LastEditTime: 2021-08-13 14:00:05
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-13 20:08:20
+ * @LastEditors: npuwth
  * @Description: In User Settings Edit
  * @FilePath: \gitlab\Src\refactor\Utils\Victim_Cache.sv
  */ 
@@ -57,7 +57,7 @@ for (genvar  i=0; i<LINE_WORD_NUM; ++i) begin
         .ena(1'b1),
         .wea(we),
         .addra(index[$clog2(SIZE)-1:0]),
-        .dina(data_wdata[j]),
+        .dina(data_wdata[i]),
 
         //读端�?
         .enb(data_read_en),
