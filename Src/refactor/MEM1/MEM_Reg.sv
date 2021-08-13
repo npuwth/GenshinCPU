@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-04-03 10:01:30
- * @LastEditTime: 2021-08-12 19:44:35
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-13 15:35:54
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,8 +26,6 @@ module MEM_Reg (
 	input  logic    [31:0]	        EXE_Instr,
     
     input  BranchType               EXE_BranchType,
-	input  logic 					EXE_IsAJumpCall,
-
   	input  LoadType        		    EXE_LoadType,	 	
   	input  StoreType       		    EXE_StoreType, 
 
@@ -55,8 +53,6 @@ module MEM_Reg (
     output logic    [31:0]          MEM_Instr,
     
     output logic                    MEM_IsABranch,
-	output logic                    MEM_IsAJumpCall,
-    
 	output LoadType    			    MEM_LoadType,
 	output StoreType     		    MEM_StoreType,
 
@@ -88,7 +84,6 @@ module MEM_Reg (
             MEM_OutB                <= 32'b0;
             MEM_ExceptType          <= '0;
             MEM_IsABranch           <= 1'b0;
-            MEM_IsAJumpCall         <= 1'b0;
             MEM_Instr               <= 32'b0;
             MEM_IsTLBP              <= '0;
             MEM_IsTLBW              <= '0;
@@ -111,7 +106,6 @@ module MEM_Reg (
             MEM_OutB                <= EXE_OutB;
             MEM_ExceptType          <= EXE_ExceptType_final;
             MEM_IsABranch           <= EXE_BranchType.isBranch;
-            MEM_IsAJumpCall         <= EXE_IsAJumpCall;
             MEM_Instr               <= EXE_Instr;
             MEM_IsTLBP              <= EXE_IsTLBP;
             MEM_IsTLBW              <= EXE_IsTLBW;

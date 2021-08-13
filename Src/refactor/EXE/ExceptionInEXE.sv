@@ -15,13 +15,15 @@ module ExceptionInEXE(
     input  StoreType          EXE_StoreType,
     input  CacheType          MEM_CacheType,
 //-------------------------output----------------------------------//
-    output ExceptinPipeType   EXE_ExceptType_final
+    output ExceptinPipeType   EXE_ExceptType_final,
+    output logic              EXE_Refetch
 );
 
     logic  TLB_Refetch;
     logic  ICache_Refetch;
     assign TLB_Refetch = (MEM_IsTLBR == 1'b1 || MEM_IsTLBW == 1'b1 || (MEM_RegsWrTypeCP0Wr && MEM_Dst == `CP0_REG_ENTRYHI));
     assign ICache_Refetch = MEM_CacheType.isIcache;
+    assign EXE_Refetch = (TLB_Refetch || ICache_Refetch) && (EXE_PC != '0);
 
     logic  LoadAlign_valid;
     logic  StoreAlign_valid;
@@ -30,7 +32,7 @@ module ExceptionInEXE(
 
 // EXE级一共产生5种例外，溢出，trap ，TLBrefetch ， 数据访问地址错误
     assign EXE_ExceptType_final.Interrupt           =  EXE_ExceptType.Interrupt;
-    assign EXE_ExceptType_final.WrongAddressinIF    =  EXE_ExceptType.WrongAddressinIF;
+    assign EXE_ExceptType_final.WrongAddressinIF    =  (EXE_PC[1:0] != 2'b00 )?1'b1:1'b0;
     assign EXE_ExceptType_final.ReservedInstruction =  EXE_ExceptType.ReservedInstruction;
     assign EXE_ExceptType_final.CoprocessorUnusable =  EXE_ExceptType.CoprocessorUnusable;
     assign EXE_ExceptType_final.Syscall             =  EXE_ExceptType.Syscall;

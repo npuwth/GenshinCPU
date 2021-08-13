@@ -1,8 +1,8 @@
 /*
  * @Author: Yang
  * @Date: 2021-07-12 22:32:30
- * @LastEditTime: 2021-08-12 11:30:56
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-08-13 15:33:34
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -42,7 +42,6 @@ module TOP_MEM2 (
     .MEM_RegsWrType_final   (MM2Bus.MEM_RegsWrType ),
     .MEM_ExcType            (MM2Bus.MEM_ExcType ),
     .MEM_IsABranch          (MM2Bus.MEM_IsABranch ),
-    .MEM_IsAJumpCall        (MM2Bus.MEM_IsAJumpCall ),
     .MEM_IsInDelaySlot      (MM2Bus.MEM_IsInDelaySlot ),
     .MEM_LoadType           (MM2Bus.MEM_LoadType),
     `ifdef DEBUG
@@ -59,7 +58,6 @@ module TOP_MEM2 (
     .MEM2_RegsWrType        (M2WBus.MEM2_RegsWrType ),
     .MEM2_ExcType           (MM2Bus.MEM2_ExcType ),
     .MEM2_IsABranch         (MM2Bus.MEM2_IsABranch ),
-    .MEM2_IsAJumpCall       (MM2Bus.MEM2_IsAJumpCall ),
     .MEM2_IsInDelaySlot     (MM2Bus.MEM2_IsInDelaySlot),
     `ifdef DEBUG
     .MEM2_DCache_Wen        (M2WBus.MEM2_DCache_Wen    ),    

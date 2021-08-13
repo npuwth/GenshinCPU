@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-12 13:56:25
+ * @LastEditTime: 2021-08-13 15:37:40
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -540,7 +540,6 @@ interface EXE_MEM_Interface();
   	logic 		[31:0] 	    EXE_PC; 		    // PC
 	logic 		[31:0]   	EXE_Instr;
 	BranchType              EXE_BranchType;
-	logic 					EXE_IsAJumpCall;
   	LoadType        		EXE_LoadType;	 	// LoadType信号 
   	StoreType       		EXE_StoreType;  	// StoreType信号
   	logic 		[4:0]    	EXE_Dst;  		    // 符号扩展之后�?32位立即数
@@ -568,7 +567,6 @@ interface EXE_MEM_Interface();
   	output      	        EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	output      	        EXE_PC, 		    // PC
 	output      	        EXE_Instr,
-	output                  EXE_IsAJumpCall,
   	output      	        EXE_LoadType,	 	// LoadType信号 
   	output      	        EXE_StoreType,  	// StoreType信号
    	output      	        EXE_RegsWrType,		// 寄存器写信号打包
@@ -597,7 +595,6 @@ interface EXE_MEM_Interface();
   	input      	            EXE_Dst, 		    // 符号扩展之后�?32位立即数
   	input      	            EXE_PC, 		    // PC
 	input      	            EXE_Instr,
-	input                   EXE_IsAJumpCall,
   	input      	            EXE_LoadType,	 	// LoadType信号 
   	input      	            EXE_StoreType,      // StoreType信号
    	input      	            EXE_RegsWrType,		// 寄存器写信号打包
@@ -632,7 +629,6 @@ interface MEM_MEM2_Interface();
 	RegsWrType              MEM_RegsWrType;//经过exception solvement的新写使能
 	logic       [4:0]  		MEM_ExcType;
 	logic                   MEM_IsABranch;
-	logic                   MEM_IsAJumpCall;
 	logic                   MEM_IsInDelaySlot;
 	logic 				    MEM_Isincache;
 	LoadType                MEM_LoadType;
@@ -640,7 +636,6 @@ interface MEM_MEM2_Interface();
     logic 		[31:0] 		MEM2_PC;	
 	logic       [4:0]  		MEM2_ExcType;
 	logic                   MEM2_IsABranch;
-	logic                   MEM2_IsAJumpCall;
 	logic                   MEM2_IsInDelaySlot;
 	`ifdef DEBUG
 	logic      [3:0]      	MEM_DCache_Wen;
@@ -657,7 +652,6 @@ interface MEM_MEM2_Interface();
 		output  			MEM_RegsWrType,
 		output  			MEM_ExcType,
 		output  			MEM_IsABranch,
-		output  			MEM_IsAJumpCall,
 		output  			MEM_IsInDelaySlot,
 		output              MEM_Isincache,
 		`ifdef DEBUG
@@ -669,7 +663,6 @@ interface MEM_MEM2_Interface();
 		input               MEM2_PC,
 		input               MEM2_ExcType,
 		input               MEM2_IsABranch,
-		input               MEM2_IsAJumpCall,	
 		input               MEM2_IsInDelaySlot
 	);
 
@@ -683,7 +676,6 @@ interface MEM_MEM2_Interface();
 		input  				MEM_RegsWrType,
 		input  				MEM_ExcType,
 		input  				MEM_IsABranch,
-		input  				MEM_IsAJumpCall,
 		input  				MEM_IsInDelaySlot,
 		input               MEM_Isincache,
 		`ifdef DEBUG
@@ -695,7 +687,6 @@ interface MEM_MEM2_Interface();
 		output              MEM2_PC,
 		output   			MEM2_ExcType,
 		output   			MEM2_IsABranch,
-		output   			MEM2_IsAJumpCall,
 		output   			MEM2_IsInDelaySlot
 	);
 	
