@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-12 21:16:01
+ * @LastEditTime: 2021-08-13 15:49:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -83,7 +83,8 @@ typedef enum logic [3:0] {
         LOOKUP,
         MISSCLEAN,
         REFILL,
-        REFILLDONE
+        REFILLDONE,
+        HITVICTIM
 } state_t;
 
 
@@ -96,6 +97,13 @@ typedef struct packed {
     offset_t          offset;
     logic             isCache;
 } request_t;
+
+// typedef struct packed {
+//     logic valid;
+//     tag_t tag;  
+//     index_t index;
+// } tagvindex_t; //每一路 一个tag_t变量
+
 
 function logic  clog2(//TODO: 配置的时候需要改�?
     input logic [1:0] hit
@@ -127,13 +135,20 @@ logic data_read_en;//读使能
 data_t data_wdata[LINE_WORD_NUM-1:0];
 we_t  data_we;//数据表的写使能
 
+logic victim_we;
+logic [LINE_WORD_NUM-1:0][31:0] victim_data_rdata,victim_data_wdata;
+logic[TAG_WIDTH+INDEX_WIDTH+1-1:0] victim_tagvindex_wdata,victim_tagvindex_rdata;
+
+
 request_t req_buffer;
 logic req_buffer_en;
 
 logic [$clog2(ASSOC_NUM)-1:0] lru[SET_NUM-1:0];
 logic [ASSOC_NUM-1:0] hit;
 logic cache_hit;
+logic victim_hit;
 
+logic pipe_victim_hit;
 logic [ASSOC_NUM-1:0] pipe_hit;
 logic pipe_cache_hit;
 
@@ -212,6 +227,30 @@ generate;//PLRU
         );
     end
 endgenerate
+
+  Victim_Cache #(
+    .SIZE(8),
+    .INDEX_WIDTH(INDEX_WIDTH ),
+    .TAG_WIDTH(TAG_WIDTH ),
+    .ASSOC_NUM(ASSOC_NUM ),
+    .LINE_WORD_NUM (
+        LINE_WORD_NUM )
+  )
+  Victim_Cache_dut (
+    .clk (clk ),
+    .resetn (resetn ),
+    .index (read_addr ),
+    .data_read_en (data_read_en ),
+    .we (victim_we ),
+    .tagvindex_wdata (victim_tagvindex_wdata ),
+    .data_wdata (victim_data_wdata ),
+    .data_rdata (victim_data_rdata ),
+    .tagvindex_rdata  (victim_tagvindex_rdata)
+  );
+
+assign victim_hit = (cpu_bus.stall) ? (victim_tagvindex_rdata[26] & ({req_buffer.tag,req_buffer.index} == victim_data_rdata[25:0]) & req_buffer.isCache ) ? 1'b1 : 1'b0  
+        :(victim_tagvindex_rdata[26]  & ({cpu_bus.tag,cpu_bus.index} == victim_data_rdata[25:0]) & cpu_bus.isCache) ? 1'b1:1'b0;
+
 
 generate;//判断命中
     for (genvar i=0; i<ASSOC_NUM; i++) begin
@@ -313,6 +352,7 @@ always_ff @( posedge clk )begin : pipe_hit_blockname
     if (pipe_wr) begin
         pipe_cache_hit <= cache_hit;
         pipe_hit       <= hit;
+        pipe_victim_hit<= victim_hit;
     end
 end
 
@@ -334,7 +374,11 @@ always_comb begin : state_next_blockname
                 state_next = REQ;
             end else begin
             if (~pipe_cache_hit & req_buffer.valid) begin
-                state_next = MISSCLEAN;
+                // if (pipe_victim_hit) begin
+                    // state_next = HITVICTIM;
+                // end else begin
+                    state_next = MISSCLEAN;
+                // end
             end else begin
                 state_next = LOOKUP ;
             end
@@ -353,6 +397,9 @@ always_comb begin : state_next_blockname
             end else begin
                 state_next = REFILL;
             end
+        end
+        HITVICTIM:begin
+            state_next = REFILLDONE;
         end
         REFILLDONE:begin
                 state_next = LOOKUP;
