@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-14 23:14:17
+ * @LastEditTime: 2021-08-14 23:37:48
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -208,45 +208,45 @@ module mycpu_top (
 
 
 
-    control_ila control_ILA(
-        .clk(aclk),
-        .probe0 (Flush_Exception),
-        .probe1 (I_IsTLBStall),
-        .probe2 (D_IsTLBStall),
-        .probe3 (cpu_ibus.busy),
-        .probe4 (cpu_dbus.busy ),
-        .probe5 (ID_EX_DH_Stall),
-        .probe6 (ID_MEM1_DH_Stall),
-        .probe7 (ID_MEM2_DH_Stall),
-        .probe8 (EXE_Prediction_Failed),
-        .probe9 (EXE_PF_FlushAll),
-        .probe10(EXE_IsBrchLikely),
-        .probe11(EXE_IsTaken),
-        .probe12(EXE_MULTDIVStall),
-        .probe13(MM2Bus.MEM_ExcType),
-        .probe14(debug_wb_pc),
-        .probe15(M2WBus.MEM2_Instr) 
-    );
+    // control_ila control_ILA(
+    //     .clk(aclk),
+    //     .probe0 (Flush_Exception),
+    //     .probe1 (I_IsTLBStall),
+    //     .probe2 (D_IsTLBStall),
+    //     .probe3 (cpu_ibus.busy),
+    //     .probe4 (cpu_dbus.busy ),
+    //     .probe5 (ID_EX_DH_Stall),
+    //     .probe6 (ID_MEM1_DH_Stall),
+    //     .probe7 (ID_MEM2_DH_Stall),
+    //     .probe8 (EXE_Prediction_Failed),
+    //     .probe9 (EXE_PF_FlushAll),
+    //     .probe10(EXE_IsBrchLikely),
+    //     .probe11(EXE_IsTaken),
+    //     .probe12(EXE_MULTDIVStall),
+    //     .probe13(MM2Bus.MEM_ExcType),
+    //     .probe14(debug_wb_pc),
+    //     .probe15(M2WBus.MEM2_Instr) 
+    // );
 
 
-    pc_instr_ila PC_INSTR_ILA(
-        .clk(aclk),
-        .probe0 (PIBus.PREIF_PC),
-        .probe1 (IIBus.IF_PC),
-        .probe2 (IIBus.IF_Instr),
-        .probe3 (IEBus.ID_PC),
-        .probe4 (IEBus.ID_Instr ),
-        .probe5 (EMBus.EXE_PC),
-        .probe6 (EMBus.EXE_Instr),
-        .probe7 (MM2Bus.MEM_PC),
-        .probe8 (MM2Bus.MEM_Instr),
-        .probe9 (M2WBus.MEM2_PC),
-        .probe10(M2WBus.MEM2_Instr),
-        .probe11(MM2Bus.MEM_ExcType),
-        .probe12(debug_wb_pc),
-        .probe13(M2WBus.MEM2_Instr) 
+    // pc_instr_ila PC_INSTR_ILA(
+    //     .clk(aclk),
+    //     .probe0 (PIBus.PREIF_PC),
+    //     .probe1 (IIBus.IF_PC),
+    //     .probe2 (IIBus.IF_Instr),
+    //     .probe3 (IEBus.ID_PC),
+    //     .probe4 (IEBus.ID_Instr ),
+    //     .probe5 (EMBus.EXE_PC),
+    //     .probe6 (EMBus.EXE_Instr),
+    //     .probe7 (MM2Bus.MEM_PC),
+    //     .probe8 (MM2Bus.MEM_Instr),
+    //     .probe9 (M2WBus.MEM2_PC),
+    //     .probe10(M2WBus.MEM2_Instr),
+    //     .probe11(MM2Bus.MEM_ExcType),
+    //     .probe12(debug_wb_pc),
+    //     .probe13(M2WBus.MEM2_Instr) 
 
-    );
+    // );
 
 //------------------------AXI-----------------------//
     `ifdef NEW_BRIDGE
