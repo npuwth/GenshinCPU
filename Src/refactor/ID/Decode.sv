@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-14 18:14:21
+ * @LastEditTime: 2021-08-14 23:09:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -95,8 +95,8 @@ module Decode(
           else                       ID_IsBranch = 1'b0;
         end
         6'b000_001:begin
-          if(rt[5:2] == 4'b0000 || rt[5:2] == 4'b1000) ID_IsBranch = 1'b1;
-          else                                         ID_IsBranch = 1'b0;
+          if(rt[4:2] == 3'b000 || rt[4:2] == 3'b100) ID_IsBranch = 1'b1;
+          else                                       ID_IsBranch = 1'b0;
         end
         6'b000_01?:begin
           ID_IsBranch = 1'b1;

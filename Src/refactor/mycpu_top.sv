@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-14 15:09:45
+ * @LastEditTime: 2021-08-14 23:14:17
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -522,6 +522,26 @@ module mycpu_top (
         .D_TLBEntry                ( D_TLBEntry)
     );
 `endif
+
+    // dcache_ila DCACHE_ILA(
+    //     .clk(aclk),
+    //     .probe0(cpu_dbus.valid),
+    //     .probe1(cpu_dbus.op),
+    //     .probe2({cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}),
+    //     .probe3(cpu_dbus.wstrb),
+    //     .probe4(cpu_dbus.loadType),
+    //     .probe5(cpu_dbus.wdata),
+    //     .probe6(cpu_dbus.busy),
+    //     .probe7(cpu_dbus.rdata),
+    //     .probe8(cpu_dbus.stall),
+    //     .probe9(cpu_dbus.origin_valid),
+    //     .probe10(cpu_dbus.isCache),
+    //     .probe11(cpu_dbus.cacheType),
+    //     .probe12(MM2Bus.MEM_ExcType),
+    //     .probe13(debug_wb_pc)
+
+    // );
+
 //     logic [31:0] count;
 
 //     logic [31:0] din;

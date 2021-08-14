@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-14 22:02:28
+ * @LastEditTime: 2021-08-14 22:55:56
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -373,6 +373,7 @@ interface IF_ID_Interface();
 	logic       [31:0]      IF_PC;
 	ExceptinPipeType        IF_ExceptType;
 	PResult                 IF_PResult;
+	logic                   IF_Valid;
 	logic                   ID_IsBranch;
 
 	modport IF (
@@ -380,6 +381,7 @@ interface IF_ID_Interface();
 	output  			    IF_PC,
 	output                  IF_ExceptType,
 	output                  IF_PResult,
+	output                  IF_Valid,
 	input                   ID_IsBranch
     );
 
@@ -388,6 +390,7 @@ interface IF_ID_Interface();
     input                   IF_PC,
 	input                   IF_ExceptType,
 	input                   IF_PResult,
+	input                   IF_Valid,
 	output                  ID_IsBranch
 	);
 	
@@ -432,6 +435,7 @@ interface ID_EXE_Interface();
 	CacheType               ID_CacheType;
 	logic                   ID_IsMOVN;
 	logic                   ID_IsMOVZ;
+	logic                   ID_Valid;
 	logic       [4:0]       EXE_rt;
 	LoadType                EXE_LoadType;
 	logic                   EXE_IsMFC0;
@@ -468,7 +472,6 @@ interface ID_EXE_Interface();
 	output                  ID_TLBWIorR,
 	output                  ID_PResult,
 	output                  ID_IsMFC0,
-	// output                  ID_Branch_Success,
 	output                  ID_J_Success,
 	output                  ID_PC8_Success,
 	output                  ID_JumpAddr,
@@ -477,6 +480,7 @@ interface ID_EXE_Interface();
 	output                  ID_CacheType,
 	output                  ID_IsMOVN,
 	output                  ID_IsMOVZ,
+	output                  ID_Valid,
 	input                   EXE_rt,
 	input                   EXE_LoadType,
 	input                   EXE_IsMFC0,
@@ -514,7 +518,6 @@ interface ID_EXE_Interface();
 	input                   ID_TLBWIorR,
 	input                   ID_PResult,
 	input                   ID_IsMFC0,
-	// input                   ID_Branch_Success,
 	input                   ID_J_Success,
 	input                   ID_PC8_Success,
 	input                   ID_JumpAddr,
@@ -523,6 +526,7 @@ interface ID_EXE_Interface();
 	input                   ID_CacheType,
 	input                   ID_IsMOVN,
 	input                   ID_IsMOVZ,
+	input                   ID_Valid,
 	output                  EXE_rt,
 	output                  EXE_LoadType,
 	output                  EXE_IsMFC0,

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-14 00:21:06
+ * @LastEditTime: 2021-08-14 23:00:44
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -143,6 +143,7 @@ module TOP_EXE (
         .ID_CacheType         (IEBus.ID_CacheType),
         .ID_IsMOVN            (IEBus.ID_IsMOVN),
         .ID_IsMOVZ            (IEBus.ID_IsMOVZ),
+        .ID_Valid             (IEBus.ID_Valid),
         //------------------------output--------------------------//
         .EXE_BusA             (EXE_BusA ),
         .EXE_BusB             (EXE_BusB ),

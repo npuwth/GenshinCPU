@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-13 19:43:47
+ * @LastEditTime: 2021-08-14 23:03:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -44,7 +44,6 @@ module EXE_Reg (
     input logic      [2:0]               ID_TrapOp, 
     input PResult                        ID_PResult,
     input logic                          ID_IsMFC0,
-    // input logic                          ID_Branch_Success,
     input logic                          ID_J_Success,
     input logic                          ID_PC8_Success,
     input logic      [31:0]              ID_JumpAddr,
@@ -54,6 +53,7 @@ module EXE_Reg (
     input CacheType                      ID_CacheType,
     input logic                          ID_IsMOVN,
     input logic                          ID_IsMOVZ,
+    input logic                          ID_Valid,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -82,7 +82,6 @@ module EXE_Reg (
     output logic                         EXE_TLBWIorR,
     output logic     [2:0]               EXE_TrapOp,
     output PResult                       EXE_PResult,
-    // output logic                         EXE_Branch_Success,
     output logic                         EXE_J_Success,
     output logic                         EXE_PC8_Success,
     output logic     [31:0]              EXE_JumpAddr,
@@ -94,7 +93,6 @@ module EXE_Reg (
     output logic                         EXE_IsMOVN,
     output logic                         EXE_IsMOVZ,
     output logic                         EXE_Valid
-    // output logic                         MDU_flush
 );
 
   always_ff @( posedge clk  ) begin
@@ -127,7 +125,6 @@ module EXE_Reg (
       EXE_TrapOp                         <= '0;
       EXE_PResult                        <= '0;
       EXE_IsMFC0                         <= '0;
-      // EXE_Branch_Success                 <= '0;
       EXE_J_Success                      <= '0;
       EXE_PC8_Success                    <= '0;
       EXE_JumpAddr                       <= '0;
@@ -168,7 +165,6 @@ module EXE_Reg (
       EXE_TrapOp                         <= ID_TrapOp;
       EXE_PResult                        <= ID_PResult;
       EXE_IsMFC0                         <= ID_IsMFC0;
-      // EXE_Branch_Success                 <= ID_Branch_Success;
       EXE_J_Success                      <= ID_J_Success;
       EXE_PC8_Success                    <= ID_PC8_Success;
       EXE_JumpAddr                       <= ID_JumpAddr;
@@ -178,7 +174,7 @@ module EXE_Reg (
       EXE_CacheType                      <= ID_CacheType;
       EXE_IsMOVN                         <= ID_IsMOVN;
       EXE_IsMOVZ                         <= ID_IsMOVZ;
-      EXE_Valid                          <= 1'b1;
+      EXE_Valid                          <= ID_Valid;
     end
   end
 
