@@ -1,7 +1,7 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-14 23:09:13
+ * @LastEditTime: 2021-08-15 00:26:04
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -104,7 +104,7 @@ module Decode(
         6'b000_1??:begin
           ID_IsBranch = 1'b1;
         end
-        6'b001110,6'b001111,6'b010000,6'b010001:begin
+        6'b010100,6'b010101,6'b010110,6'b010111:begin
           ID_IsBranch = 1'b1;
         end
         default: begin
