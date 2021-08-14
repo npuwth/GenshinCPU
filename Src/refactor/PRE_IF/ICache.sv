@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-14 10:01:43
+ * @LastEditTime: 2021-08-13 19:38:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -248,8 +248,8 @@ endgenerate
     .tagvindex_rdata  (victim_tagvindex_rdata)
   );
 
-assign victim_hit = (cpu_bus.stall) ? (victim_tagvindex_rdata[TAG_WIDTH+INDEX_WIDTH] & ({req_buffer.tag,req_buffer.index} == victim_data_rdata[TAG_WIDTH+INDEX_WIDTH-1:0]) & req_buffer.isCache ) ? 1'b1 : 1'b0  
-        :(victim_tagvindex_rdata[TAG_WIDTH+INDEX_WIDTH]  & ({cpu_bus.tag,cpu_bus.index} == victim_data_rdata[TAG_WIDTH+INDEX_WIDTH-1:0]) & cpu_bus.isCache) ? 1'b1:1'b0;
+// assign victim_hit = (cpu_bus.stall) ? (victim_tagvindex_rdata[TAG_WIDTH+INDEX_WIDTH] & ({req_buffer.tag,req_buffer.index} == victim_data_rdata[TAG_WIDTH+INDEX_WIDTH-1:0]) & req_buffer.isCache ) ? 1'b1 : 1'b0  
+        // :(victim_tagvindex_rdata[TAG_WIDTH+INDEX_WIDTH]  & ({cpu_bus.tag,cpu_bus.index} == victim_data_rdata[TAG_WIDTH+INDEX_WIDTH-1:0]) & cpu_bus.isCache) ? 1'b1:1'b0;
 
 
 generate;//判断命中
@@ -265,13 +265,7 @@ generate;//根据offset片选？
 endgenerate
 generate;//
     for (genvar i=0; i<LINE_WORD_NUM; i++) begin
-        assign data_wdata[i] = (state == HITVICTIM ) ? victim_data_rdata[i] :axi_bus.ret_data[32*(i+1)-1:32*(i)];
-    end
-endgenerate
-
-generate;
-    for (genvar i=0; i<LINE_WORD_NUM; ++i) begin
-        assign victim_data_wdata =  data_rdata[lru[req_buffer.index]][i];
+        assign data_wdata[i] = axi_bus.ret_data[32*(i+1)-1:32*(i)];
     end
 endgenerate
 assign data_read_en     = (state == REFILLDONE) ? 1'b1 : (cpu_bus.stall)? 1'b0:1'b1;
@@ -281,7 +275,7 @@ assign data_rdata_final = (req_buffer.valid)?  (state == UNCACHEDONE )? uncache_
 assign cache_hit = |hit;
 
 assign read_addr      = (state == MISSCLEAN || state == REFILLDONE || state == REFILL || state == HITVICTIM)? req_buffer.index : cpu_bus.index;//
-assign victim_we      = (state == MISSCLEAN || state == HITVICTIM) ? 1'b1 :1'b0;
+
 
 assign busy_cache     = (req_buffer.valid & ~pipe_cache_hit & req_buffer.isCache) ? 1'b1:1'b0;
 assign busy_uncache   = (req_buffer.valid & (~req_buffer.isCache) & (state != UNCACHEDONE) ) ?1'b1 :1'b0;
@@ -299,7 +293,7 @@ assign tagv_wdata     = (~cpu_bus.stall && cpu_bus.cacheType.isIcache ) ? '0 : {
 
 
 always_comb begin : tagv_we_blockName
-    if (state == REFILL|| state == HITVICTIM) begin
+    if (state == REFILL) begin
         tagv_we = '0;
         tagv_we[lru[req_buffer.index]] =1'b1;
     end else if(~cpu_bus.stall && cpu_bus.cacheType.isIcache )begin
@@ -309,7 +303,7 @@ always_comb begin : tagv_we_blockName
     end
 end
 always_comb begin : data_we_blockName
-    if (state == REFILL|| state == HITVICTIM) begin
+    if (state == REFILL) begin
         data_we = '0;
         data_we[lru[req_buffer.index]] =1'b1;
     end else begin
