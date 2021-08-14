@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-14 23:13:14
+ * @LastEditTime: 2021-08-14 23:20:51
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -62,15 +62,15 @@ module cp0_reg (
  
     
     // 4096/4/8 = 128 ; 128 对应了3'd01
-    localparam int IC_SET_PER_WAY = $clog2(`CACHE_WAY_SIZE / `ICACHE_LINE_WORD / 8 / 64 ) - 1;  
+    localparam int IC_SET_PER_WAY = 0;  
     // 8个字 32个字节   ->3'd04
-    localparam int IC_LINE_SIZE   = $clog2(`ICACHE_LINE_WORD) + 1;
+    localparam int IC_LINE_SIZE   = 5;
     // I$ 组数 -> 减一
-    localparam int IC_ASSOC       = `ICACHE_SET_ASSOC - 1;
+    localparam int IC_ASSOC       = 1;
     //D$ 同理
-    localparam int DC_SET_PER_WAY = $clog2(`CACHE_WAY_SIZE / `DCACHE_LINE_WORD / 8 / 64 ) - 1;  
-    localparam int DC_LINE_SIZE   = $clog2(`DCACHE_LINE_WORD) + 1;
-    localparam int DC_ASSOC       = `DCACHE_SET_ASSOC - 1;
+    localparam int DC_SET_PER_WAY = 0;  
+    localparam int DC_LINE_SIZE   = 5;
+    localparam int DC_ASSOC       = 1;
 
 
     logic                   Count2;
