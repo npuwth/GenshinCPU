@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-13 23:49:55
+ * @LastEditTime: 2021-08-13 15:56:41
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -112,7 +112,7 @@ module cp0_reg (
     assign                  CP0_Config_K0    = CP0.Config0[2:0];
     assign                  Interrupt_final  = Interrupt | {CP0.Cause.TI , 5'b0};  // 时钟中断号为IP7，在此标记
     assign                  config0_default = {
-	                            1'b1,   // M, config1 implemented
+	                            1'b1,   // M, config1 not implemented
 	                            21'b0,
 	                            3'b001,   // MMU Type ( Standard TLB )
 	                            4'b0,

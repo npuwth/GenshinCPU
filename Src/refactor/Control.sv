@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-13 23:33:44
+ * @LastEditTime: 2021-08-11 17:27:00
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -107,7 +107,7 @@ module Control(
             WB_Wr        = 1'b0;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
@@ -132,7 +132,7 @@ module Control(
             WB_Wr        = 1'b0;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
@@ -156,7 +156,7 @@ module Control(
             WB_Wr        = 1'b0;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
+            // EXE_DisWr    = 1'b1;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b1; 
                        
@@ -181,7 +181,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
+            // EXE_DisWr    = 1'b1;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b0;
 
@@ -206,7 +206,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -230,7 +230,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b1;
             WB_DisWr     = 1'b0; 
                        
@@ -259,7 +259,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -288,7 +288,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b1;  //TODO:模块内描述
-            EXE_DisWr    = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -312,7 +312,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -338,7 +338,7 @@ module Control(
             WB_Wr        = 1'b1;
             
             ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
+            // EXE_DisWr    = 1'b0;
             MEM_DisWr    = 1'b0;
             WB_DisWr     = 1'b0; 
                        
@@ -354,22 +354,22 @@ module Control(
         end
     end
 
-    // always_comb begin : EXE_DisWrGen
-    //     if (Flush_Exception == `FlushEnable)begin
-    //         EXE_DisWr    = 1'b1;
-    //     end
-    //     else if (EXE_PF_FlushAll == 1'b1)begin
-    //         EXE_DisWr    = 1'b0;
-    //     end
-    //     else if (ID_MEM1_DH_Stall == 1'b1) begin
-    //         EXE_DisWr    = 1'b1;
-    //     end
-    //     else if (DIVMULTBusy == 1'b1) begin
-    //         EXE_DisWr    = 1'b1;
-    //     end
-    //     else begin
-    //         EXE_DisWr    = 1'b0;
-    //     end
-    // end
+    always_comb begin : EXE_DisWrGen
+        if (Flush_Exception == `FlushEnable)begin
+            EXE_DisWr    = 1'b1;
+        end
+        else if (EXE_PF_FlushAll == 1'b1)begin
+            EXE_DisWr    = 1'b0;
+        end
+        else if (ID_MEM1_DH_Stall == 1'b1) begin
+            EXE_DisWr    = 1'b1;
+        end
+        else if (DIVMULTBusy == 1'b1) begin
+            EXE_DisWr    = 1'b1;
+        end
+        else begin
+            EXE_DisWr    = 1'b0;
+        end
+    end
     
 endmodule
