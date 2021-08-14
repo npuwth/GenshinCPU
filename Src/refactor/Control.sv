@@ -1,8 +1,8 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-14 22:25:13
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 22:12:43
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -371,5 +371,5 @@ module Control(
     //         EXE_DisWr    = 1'b0;
     //     end
     // end
-    
+
 endmodule

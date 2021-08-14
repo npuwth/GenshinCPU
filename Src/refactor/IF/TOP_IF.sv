@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-14 00:27:37
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 15:20:25
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -26,7 +26,7 @@ module TOP_IF (
 );  
     
     ExceptinPipeType IF_ExceptType;
-    logic            IF_Valid;
+    // logic            IF_Valid;
     logic            IF_Refetch;
 
     IF_REG U_IF_REG (
@@ -39,11 +39,11 @@ module TOP_IF (
 //-----------------------------output-------------------------------------//
         .IF_PC                  (IIBus.IF_PC ),
         .IF_ExceptType          (IF_ExceptType),
-        .IF_Valid               (IF_Valid)
+        .IF_Valid               (IIBus.IF_Valid)
     );  
 
     assign IIBus.IF_Instr = cpu_ibus.rdata;
-    assign IF_Refetch = MEM_Refetch && IF_Valid;
+    assign IF_Refetch = MEM_Refetch && IIBus.IF_Valid;
     assign IIBus.IF_ExceptType = '{
                             Interrupt:IF_ExceptType.Interrupt,
                             Break:IF_ExceptType.Break,

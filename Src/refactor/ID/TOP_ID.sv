@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 19:42:47
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 15:20:05
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -63,9 +63,9 @@ module TOP_ID (
     logic [31:0]             BranchAddr;
     logic [31:0]             BranchImme;
     logic                    ID_Refetch;
-    logic                    ID_Valid;
+    // logic                    ID_Valid;
 
-    assign ID_Refetch = MEM_Refetch && ID_Valid;
+    assign ID_Refetch = MEM_Refetch && IEBus.ID_Valid;
 
     assign ID_rs          = IEBus.ID_rs;
     assign ID_rt          = IEBus.ID_rt;
@@ -94,6 +94,7 @@ module TOP_ID (
         .IF_PC               (IIBus.IF_PC ),
         .IF_ExceptType       (IIBus.IF_ExceptType),
         .IF_PResult          (IIBus.IF_PResult),
+        .IF_Valid            (IIBus.IF_Valid),
     //------------------out----------------------------------------//        
         .ID_Instr            (IEBus.ID_Instr ),
         .ID_Imm16            (ID_Imm16 ),
@@ -103,7 +104,7 @@ module TOP_ID (
         .ID_PC               (IEBus.ID_PC ),
         .ID_ExceptType       (ID_ExceptType),
         .ID_PResult          (IEBus.ID_PResult),
-        .ID_Valid            (ID_Valid)
+        .ID_Valid            (IEBus.ID_Valid)
     );
 
     EXT U_EXT ( 

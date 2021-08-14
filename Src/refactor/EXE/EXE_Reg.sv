@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-13 19:43:47
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 15:15:25
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -54,6 +54,7 @@ module EXE_Reg (
     input CacheType                      ID_CacheType,
     input logic                          ID_IsMOVN,
     input logic                          ID_IsMOVZ,
+    input logic                          ID_Valid,
 //-------------------------------------------------------------------------------//
     output logic     [31:0]              EXE_BusA,            //从RF中读出的A数据
 	  output logic     [31:0]              EXE_BusB,            //从RF中读出的B数据
@@ -178,7 +179,7 @@ module EXE_Reg (
       EXE_CacheType                      <= ID_CacheType;
       EXE_IsMOVN                         <= ID_IsMOVN;
       EXE_IsMOVZ                         <= ID_IsMOVZ;
-      EXE_Valid                          <= 1'b1;
+      EXE_Valid                          <= ID_Valid;
     end
   end
 

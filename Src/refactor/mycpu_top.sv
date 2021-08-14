@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-14 15:09:45
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 18:21:10
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -137,16 +137,16 @@ module mycpu_top (
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
     
-    // ila CPU_TOP_ILA(
-    //     .clk(aclk),
-    //     .probe0 (debug_wb_pc),
-    //     .probe1 (debug_wb_rf_wdata),
-    //     .probe2 (debug_wb_rf_wen),
-    //     .probe3 (debug_wb_rf_wnum),
-    //     .probe4 (M2WBus.MEM2_Instr),
-    //     .probe5 (MM2Bus.MEM_ExcType),
-    //     .probe6 (Exception_Vector)
-    // );
+    ila CPU_TOP_ILA(
+        .clk(aclk),
+        .probe0 (debug_wb_pc),
+        .probe1 (debug_wb_rf_wdata),
+        .probe2 (debug_wb_rf_wen),
+        .probe3 (debug_wb_rf_wnum),
+        .probe4 (M2WBus.MEM2_Instr),
+        .probe5 (MM2Bus.MEM_ExcType),
+        .probe6 (Exception_Vector)
+    );
 
     //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_IBus_Interface          cpu_ibus();
@@ -163,6 +163,27 @@ module mycpu_top (
     MEM2_WB_Interface           M2WBus();
     CP0_TLB_Interface           CTBus();
     //--------------------------------------------------------------------------------------------------------------//
+    
+
+    dcache_ila DCACHE_ILA(
+        .clk(aclk),
+        .probe0(cpu_dbus.valid),
+        .probe1(cpu_dbus.op),
+        .probe2({cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}),
+        .probe3(cpu_dbus.wstrb),
+        .probe4(cpu_dbus.loadType),
+        .probe5(cpu_dbus.wdata),
+        .probe6(cpu_dbus.busy),
+        .probe7(cpu_dbus.rdata),
+        .probe8(cpu_dbus.stall),
+        .probe9(cpu_dbus.origin_valid),
+        .probe10(cpu_dbus.isCache),
+        .probe11(cpu_dbus.cacheType),
+        .probe12(MM2Bus.MEM_ExcType),
+        .probe13(debug_wb_pc)
+
+    );
+    
     Control U_Control (
         .Flush_Exception        (Flush_Exception ),
         .I_IsTLBStall           (I_IsTLBStall ),
@@ -205,10 +226,8 @@ module mycpu_top (
     );
 
 
-
-
-
-    control_ila control_ILA(
+ 
+        control_ila control_ILA(
         .clk(aclk),
         .probe0 (Flush_Exception),
         .probe1 (I_IsTLBStall),
@@ -247,6 +266,7 @@ module mycpu_top (
         .probe13(M2WBus.MEM2_Instr) 
 
     );
+
 
 //------------------------AXI-----------------------//
     `ifdef NEW_BRIDGE

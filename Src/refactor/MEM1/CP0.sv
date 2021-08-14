@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-13 23:49:55
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 18:21:22
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -47,18 +47,18 @@ module cp0_reg (
     output logic [2:0]      CP0_Config_K0
     );
 
-    // cp0_ila CP0_ILA(
-    //     .clk(clk),
-    //     .probe0 (MEM2_PC),
-    //     .probe1 (CP0_EPC),
-    //     .probe2 (CP0_Status_EXL),
-    //     .probe3 (CP0_Status_IE), 
-    //     .probe4 (MEM2_ExcType),       // [4:0]
-    //     .probe5 (CP0.Cause.ExcCode ), // [4:0]
-    //     .probe6 (CP0_Cause_IP7_2),    // [4:0]
-    //     .probe7 (CP0_Cause_IP1_0),     //[1:0]
-    //     .probe8 (CP0_Status_BEV)      // [0:0]
-    // );
+    cp0_ila CP0_ILA(
+        .clk(clk),
+        .probe0 (MEM2_PC),
+        .probe1 (CP0_EPC),
+        .probe2 (CP0_Status_EXL),
+        .probe3 (CP0_Status_IE), 
+        .probe4 (MEM2_ExcType),       // [4:0]
+        .probe5 (CP0.Cause.ExcCode ), // [4:0]
+        .probe6 (CP0_Cause_IP7_2),    // [4:0]
+        .probe7 (CP0_Cause_IP1_0),     //[1:0]
+        .probe8 (CP0_Status_BEV)      // [0:0]
+    );
  
     
     // 4096/4/8 = 128 ; 128 对应了3'd01

@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-24 14:40:35
- * @LastEditTime: 2021-08-14 14:50:26
+ * @LastEditTime: 2021-08-11 22:17:27
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -182,12 +182,12 @@
 `define EX_Overflow             5'b01000
 `define EX_WrWrongAddressinMEM  5'b01001
 `define EX_RdWrongAddressinMEM  5'b01010
-`define EX_TLBRefillinIF        5'b01011  //0b
-`define EX_TLBInvalidinIF       5'b01100  //0c
-`define EX_RdTLBRefillinMEM     5'b01101  //0d
-`define EX_RdTLBInvalidinMEM    5'b01110  //0e
-`define EX_WrTLBRefillinMEM     5'b01111  //0f
-`define EX_WrTLBInvalidinMEM    5'b10000  //10
+`define EX_TLBRefillinIF        5'b01011
+`define EX_TLBInvalidinIF       5'b01100
+`define EX_RdTLBRefillinMEM     5'b01101
+`define EX_RdTLBInvalidinMEM    5'b01110
+`define EX_WrTLBRefillinMEM     5'b01111
+`define EX_WrTLBInvalidinMEM    5'b10000
 `define EX_TLBModified          5'b10001
 `define EX_CpU                  5'b10010  // 浮点指令 协处理器异常
 `define EX_Refetch              5'b10011

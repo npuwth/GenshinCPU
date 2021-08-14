@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-14 18:14:21
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-14 12:04:59
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -56,6 +56,7 @@ module Decode(
     assign ID_TLBWIorR = (ID_Instr == 32'b010000_1_000_0000_0000_0000_0000_000110);
     assign ID_IsMOVN   = (ID_Instr[31:26]=='0 && ID_Instr[5:0]==6'b001011);
     assign ID_IsMOVZ   = (ID_Instr[31:26]=='0 && ID_Instr[5:0]==6'b001010);
+    assign ID_IsBranch = ID_BranchType.isBranch;
 
     logic [5:0]opcode;
     logic [5:0]funct;
@@ -88,30 +89,7 @@ module Decode(
     //   end
     //   else ID_rsrtRead[0] = 1'b1;
     // end
-    always_comb begin : ID_IsBranch_blockName
-      casez (opcode)
-        6'b000_000:begin
-          if(funct[5:1] == 5'b00100) ID_IsBranch = 1'b1;
-          else                       ID_IsBranch = 1'b0;
-        end
-        6'b000_001:begin
-          if(rt[5:2] == 4'b0000 || rt[5:2] == 4'b1000) ID_IsBranch = 1'b1;
-          else                                         ID_IsBranch = 1'b0;
-        end
-        6'b000_01?:begin
-          ID_IsBranch = 1'b1;
-        end 
-        6'b000_1??:begin
-          ID_IsBranch = 1'b1;
-        end
-        6'b001110,6'b001111,6'b010000,6'b010001:begin
-          ID_IsBranch = 1'b1;
-        end
-        default: begin
-          ID_IsBranch = 1'b0;
-        end
-      endcase
-    end
+
 
     always_comb begin : rsrt_blockName
       case (opcode)
