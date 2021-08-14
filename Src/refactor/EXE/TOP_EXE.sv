@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-13 20:29:28
- * @LastEditors: Johnson Yang
+ * @LastEditTime: 2021-08-14 00:21:06
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -46,6 +46,9 @@ module TOP_EXE (
     logic [31:0]              EXE_BusB_L2;
     logic [1:0]               EXE_MultiExtendOp; //New add for MADD
     logic                     EXE_Finish;        //来自乘除法
+    logic                     multi_finish;
+    logic                     multi_finish_final;
+    logic                     div_finish;
     logic [31:0]              EXE_MULTDIVtoHI;
     logic [31:0]              EXE_MULTDIVtoLO;
     logic [31:0]              HI_Bus;
@@ -83,6 +86,10 @@ module TOP_EXE (
     assign IEBus.EXE_Dst      = EMBus.EXE_Dst;
     assign IEBus.EXE_Result   = EMBus.EXE_Result;
     assign EXE_Final_Wr       = (EXE_DisWr) ? '0: EXE_RegsWrType_new;
+    
+    // assign multi_finish_final = multi_finish;
+    // assign EXE_Finish         = multi_finish_final || div_finish;
+    assign EXE_Finish         = multi_finish || div_finish;
     assign EXE_Final_Finish   = (EXE_DisWr) ? '0: EXE_Finish;
     assign EMBus.EXE_LoadType = (EXE_DisWr) ? '0: EXE_LoadType;
     assign EMBus.EXE_StoreType= (EXE_DisWr) ? '0: EXE_StoreType;
@@ -278,19 +285,23 @@ module TOP_EXE (
         .EXE_ResultB          (EXE_BusB),
         .ExceptionAssert      (EXE_Flush),  // 如果产生flush信号，需要清除状态机
         .EXE_ALUOp            (EXE_ALUOp),
+        .EXE_Hi               (HI_Bus),
+        .EXE_Lo               (LO_Bus),
     //---------------------output--------------------------//
         .EXE_MULTDIVtoLO      (EXE_MULTDIVtoLO),
         .EXE_MULTDIVtoHI      (EXE_MULTDIVtoHI),
-        .EXE_Finish           (EXE_Finish),
-        .EXE_MULTDIVStall     (EXE_MULTDIVStall),
-        .EXE_MultiExtendOp    (EXE_MultiExtendOp)
+        // .EXE_Finish           (EXE_Finish),
+        .multi_finish         (multi_finish),
+        .div_finish           (div_finish),
+        .EXE_MULTDIVStall     (EXE_MULTDIVStall)
+        // .EXE_MultiExtendOp    (EXE_MultiExtendOp)
     );
 
     HILO U_HILO (
         .clk                   (clk),
         .rst                   (resetn),
         .MULT_DIV_finish       (EXE_Final_Finish ),
-        .EXE_MultiExtendOp     (EXE_MultiExtendOp),
+        // .EXE_MultiExtendOp     (EXE_MultiExtendOp),
         .HIWr                  (EXE_Final_Wr.HIWr), //把写HI，LO统一在EXE级
         .LOWr                  (EXE_Final_Wr.LOWr),
         .Data_Wr               (EXE_BusA),

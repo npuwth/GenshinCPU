@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-14 20:42:43
+ * @LastEditTime: 2021-08-13 19:38:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -286,7 +286,7 @@ assign pipe_wr        = (state == REFILLDONE) ? 1'b1:(cpu_bus.stall)?1'b0:1'b1;
 
 assign req_buffer_en  = (cpu_bus.stall)? 1'b0:1'b1 ;
 
-// assign data_wdata =  axi_bus.ret_data  ;
+// assign data_wdata =  axi_bus.ret_data ;
 assign tagv_wdata     = (~cpu_bus.stall && cpu_bus.cacheType.isIcache ) ? '0 : {1'b1,req_buffer.tag} ;
 
 
