@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-13 20:18:09
+ * @LastEditTime: 2021-08-14 22:02:28
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -303,7 +303,7 @@ typedef struct packed {
     logic                      Hit;      //表示预测时BHT是否命中
     logic                      Valid;    //表示预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
-	logic [7:0]                Index;
+	// logic [7:0]                Index;
 } PResult;
 
 typedef struct packed {
@@ -316,7 +316,7 @@ typedef struct packed {
     logic                      Valid;    //预测是否有效
 	// logic [1:0]                History;  //预测时的历史跳转信息
 	// logic                      RetnSuccess;//JR预测成功
-	logic [7:0]                Index;
+	// logic [7:0]                Index;
 } BResult;
 
 typedef struct packed {
@@ -340,7 +340,7 @@ typedef struct packed {
     logic [2:0]                Type;      //Type in BHT
     logic [1:0]                Count;     //Count in BHT
 	logic                      Valid;
-	logic [7:0]                Index;
+	// logic [7:0]                Index;
 } BPU_RegType;
 //-------------------------------------------------------------------------------------------------//
 //-----------------------------------Interface Definition------------------------------------------//

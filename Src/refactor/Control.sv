@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-13 23:33:44
+ * @LastEditTime: 2021-08-14 22:25:13
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -58,7 +58,7 @@ module Control(
                                     // 需要发送stall信号，cache状态机停滞知道数据被CPU接受
     output logic        DCache_Stall
 );
-    logic Brchlike_Flush = EXE_IsBrchLikely && EXE_IsTaken;
+    logic Brchlike_Flush = EXE_IsBrchLikely && ~EXE_IsTaken;
     // logic Load_store_stall ;
     // localparam int unsigned INDEX_WIDTH = $clog2(`ICACHE_LINE_WORD*4) ;
     
