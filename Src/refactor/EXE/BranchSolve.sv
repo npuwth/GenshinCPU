@@ -1,7 +1,7 @@
 /*
  * @Author: Seddon Shen
  * @Date: 2021-04-02 15:25:55
- * @LastEditTime: 2021-08-13 11:05:53
+ * @LastEditTime: 2021-08-14 23:48:17
  * @LastEditors: npuwth
  * @Description: Copyright 2021 GenshinCPU
  * @FilePath: \Coded:\cpu\nontrival-cpu\nontrival-cpu\Src\Code\BranchSolve.sv
@@ -121,7 +121,7 @@ module BranchSolve (
     assign EXE_BResult.Count        = EXE_PResult.Count;
     assign EXE_BResult.Hit          = EXE_PResult.Hit;
     assign EXE_BResult.Valid        = EXE_PResult.Valid && EXE_Wr && (Branch_Type != `BIsNone);
-    assign EXE_BResult.Index        = EXE_PResult.Index;
+    // assign EXE_BResult.Index        = EXE_PResult.Index;
     // assign EXE_Correction_Vector    = Branch_Target;
     assign EXE_Correction_Vector    = (EXE_PF_FlushAll)?EXE_PC+4:Branch_Target;
     // assign EXE_BResult.RetnSuccess  = Prediction_Success;
