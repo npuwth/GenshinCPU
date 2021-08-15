@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-14 23:20:51
+ * @LastEditTime: 2021-08-15 10:14:00
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -131,16 +131,16 @@ module cp0_reg (
             CP0.Index.Index                <= CTBus.TLB_index;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_INDEX) begin
-            CP0.Index.Index                <= MEM_Result[3:0];
+            CP0.Index.Index                <= MEM_Result[2:0];
         end
     end
 //Random
     always_ff @(posedge clk ) begin
         if(rst == `RstEnable) begin
-            CP0.Random.Random              <= 4'b1111;
+            CP0.Random.Random              <= 3'b111;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_WIRED) begin
-            CP0.Random.Random              <= 4'b1111;
+            CP0.Random.Random              <= 3'b111;
         end
     end
 //EntryLo0
@@ -219,7 +219,7 @@ module cp0_reg (
             CP0.Wired.Wired                <= '0;
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_WIRED) begin
-            CP0.Wired.Wired                <= MEM_Result[3:0];
+            CP0.Wired.Wired                <= MEM_Result[2:0];
         end
     end
 //BadVAddr
@@ -502,13 +502,13 @@ module cp0_reg (
     //read port
     always_comb begin
         case(CP0_RdAddr)
-            `CP0_REG_INDEX:      CP0_RdData = {CP0.Index.P , 27'b0 , CP0.Index.Index};
-            `CP0_REG_RANDOM:     CP0_RdData = {28'b0,CP0.Random.Random};
+            `CP0_REG_INDEX:      CP0_RdData = {CP0.Index.P , 28'b0 , CP0.Index.Index};
+            `CP0_REG_RANDOM:     CP0_RdData = {29'b0,CP0.Random.Random};
             `CP0_REG_ENTRYLO0:   CP0_RdData = {6'b0 , CP0.EntryLo0.PFN0 , CP0.EntryLo0.C0 , CP0.EntryLo0.D0 , CP0.EntryLo0.V0 , CP0.EntryLo0.G0};
             `CP0_REG_ENTRYLO1:   CP0_RdData = {6'b0 , CP0.EntryLo1.PFN1 , CP0.EntryLo1.C1 , CP0.EntryLo1.D1 , CP0.EntryLo1.V1 , CP0.EntryLo1.G1};
             `CP0_REG_CONTEXT:    CP0_RdData = {CP0.Context.PTEBase,CP0.Context.BadVPN2,4'b0};
             `CP0_REG_PAGEMASK:   CP0_RdData = CP0.PageMask;
-            `CP0_REG_WIRED:      CP0_RdData = {28'b0,CP0.Wired.Wired};
+            `CP0_REG_WIRED:      CP0_RdData = {29'b0,CP0.Wired.Wired};
             `CP0_REG_BADVADDR:   CP0_RdData = CP0.BadVAddr;
             `CP0_REG_COUNT:      CP0_RdData = CP0.Count;
             `CP0_REG_ENTRYHI:    CP0_RdData = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};

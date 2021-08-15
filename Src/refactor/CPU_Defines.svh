@@ -1,7 +1,7 @@
 /*
  * @Author: 
  * @Date: 2021-03-31 15:16:20
- * @LastEditTime: 2021-08-14 22:55:56
+ * @LastEditTime: 2021-08-15 10:10:30
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -160,11 +160,11 @@ typedef struct packed {
 
 typedef struct packed {
 	logic    [31:31]	 P;
-	logic    [3:0]       Index;
+	logic    [2:0]       Index;
 } CP0_Index;
 
 typedef struct packed {
-	logic    [3:0]       Random;
+	logic    [2:0]       Random;
 } CP0_Random;
 
 typedef struct packed {
@@ -189,7 +189,7 @@ typedef struct packed {
 } CP0_Context;
 
 typedef struct packed {
-	logic    [3:0]       Wired;
+	logic    [2:0]       Wired;
 } CP0_Wired;
 
 typedef struct packed {
@@ -770,8 +770,8 @@ interface CP0_TLB_Interface ();
 	logic                   CP0_d1;     //用于查TLB和写TLB
 	logic                   CP0_v1;     //用于查TLB和写TLB
 	logic                   CP0_g1;     //用于查TLB和写TLB
-	logic [3:0]             CP0_index;  //16项的TLB，log16,所以位宽是4
-	logic [3:0]             CP0_random; //同上
+	logic [2:0]             CP0_index;  //16项的TLB，log16,所以位宽是4,现在改成8项了
+	logic [2:0]             CP0_random; //同上
     logic [18:0]            TLB_vpn2;   //用于TLBR，写CP0    
 	logic [7:0]             TLB_asid;   //用于TLBR，写CP0  
 	logic [19:0]            TLB_pfn0;   //用于TLBR，写CP0  
@@ -784,7 +784,7 @@ interface CP0_TLB_Interface ();
 	logic                   TLB_d1;     //用于TLBR，写CP0
 	logic                   TLB_v1;     //用于TLBR，写CP0
 	logic                   TLB_g1;     //用于TLBR，写CP0
-	logic [3:0]             TLB_index;  //用于TLBP，写CP0
+	logic [2:0]             TLB_index;  //用于TLBP，写CP0
 	logic                   TLB_s1found;//用于TLBP，写CP0
 
 	modport CP0 ( 

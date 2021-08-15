@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-27 20:08:23
- * @LastEditTime: 2021-08-10 12:34:20
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-15 10:39:18
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -14,7 +14,7 @@
 
 module TLB
 #(
-    parameter TLBNUM = 16
+    parameter TLBNUM = 8//16
 )
 (
     input  logic                       clk,
@@ -44,12 +44,12 @@ module TLB
     logic [TLBNUM-1:0]                 match0;
     logic [TLBNUM-1:0]                 match1;
 
-    logic [3:0]                        w_index;
+    logic [2:0]                        w_index;
     logic [31:13]                      s1_vpn2;
-    logic [3:0]                        s0_index;
-    logic [3:0]                        s1_index;
+    logic [2:0]                        s0_index;
+    logic [2:0]                        s1_index;
 //--------------------------------w_index生成逻辑-----------------------------------------//
-    MUX2to1#(4) U_MUX_windex ( 
+    MUX2to1#(3) U_MUX_windex ( 
         .d0                   (CTBus.CP0_index),
         .d1                   (CTBus.CP0_random),
         .sel2_to_1            (MEM_TLBWIorR),
@@ -141,14 +141,14 @@ module TLB
     assign match0[ 5] = (I_VPN2 == tlb_vpn2[ 5]) && ((CTBus.CP0_asid == tlb_asid[ 5]) || tlb_g[ 5]);
     assign match0[ 6] = (I_VPN2 == tlb_vpn2[ 6]) && ((CTBus.CP0_asid == tlb_asid[ 6]) || tlb_g[ 6]);
     assign match0[ 7] = (I_VPN2 == tlb_vpn2[ 7]) && ((CTBus.CP0_asid == tlb_asid[ 7]) || tlb_g[ 7]);
-    assign match0[ 8] = (I_VPN2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
-    assign match0[ 9] = (I_VPN2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
-    assign match0[10] = (I_VPN2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
-    assign match0[11] = (I_VPN2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
-    assign match0[12] = (I_VPN2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
-    assign match0[13] = (I_VPN2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
-    assign match0[14] = (I_VPN2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
-    assign match0[15] = (I_VPN2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);
+    // assign match0[ 8] = (I_VPN2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
+    // assign match0[ 9] = (I_VPN2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
+    // assign match0[10] = (I_VPN2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
+    // assign match0[11] = (I_VPN2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
+    // assign match0[12] = (I_VPN2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
+    // assign match0[13] = (I_VPN2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
+    // assign match0[14] = (I_VPN2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
+    // assign match0[15] = (I_VPN2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);
     //--------------------s0_found生成逻辑，port0是否hit--------------------------------------------------// 
     always_comb begin          
         if(match0 == 0)
@@ -171,22 +171,30 @@ module TLB
     //-----------------------s0_index生成逻辑------------------------------------------------------------//
     always_comb begin          
         unique case(match0)
-            16'b0000_0000_0000_0001:s0_index = 4'd0;
-            16'b0000_0000_0000_0010:s0_index = 4'd1;
-            16'b0000_0000_0000_0100:s0_index = 4'd2;
-            16'b0000_0000_0000_1000:s0_index = 4'd3;
-            16'b0000_0000_0001_0000:s0_index = 4'd4;
-            16'b0000_0000_0010_0000:s0_index = 4'd5;
-            16'b0000_0000_0100_0000:s0_index = 4'd6;
-            16'b0000_0000_1000_0000:s0_index = 4'd7;
-            16'b0000_0001_0000_0000:s0_index = 4'd8;
-            16'b0000_0010_0000_0000:s0_index = 4'd9;
-            16'b0000_0100_0000_0000:s0_index = 4'd10;
-            16'b0000_1000_0000_0000:s0_index = 4'd11;
-            16'b0001_0000_0000_0000:s0_index = 4'd12;
-            16'b0010_0000_0000_0000:s0_index = 4'd13;
-            16'b0100_0000_0000_0000:s0_index = 4'd14;
-            16'b1000_0000_0000_0000:s0_index = 4'd15; 
+            8'b0000_0001:s0_index = 3'd0;
+            8'b0000_0010:s0_index = 3'd1;
+            8'b0000_0100:s0_index = 3'd2;
+            8'b0000_1000:s0_index = 3'd3;
+            8'b0001_0000:s0_index = 3'd4;
+            8'b0010_0000:s0_index = 3'd5;
+            8'b0100_0000:s0_index = 3'd6;
+            8'b1000_0000:s0_index = 3'd7;
+            // 16'b0000_0000_0000_0001:s0_index = 4'd0;
+            // 16'b0000_0000_0000_0010:s0_index = 4'd1;
+            // 16'b0000_0000_0000_0100:s0_index = 4'd2;
+            // 16'b0000_0000_0000_1000:s0_index = 4'd3;
+            // 16'b0000_0000_0001_0000:s0_index = 4'd4;
+            // 16'b0000_0000_0010_0000:s0_index = 4'd5;
+            // 16'b0000_0000_0100_0000:s0_index = 4'd6;
+            // 16'b0000_0000_1000_0000:s0_index = 4'd7;
+            // 16'b0000_0001_0000_0000:s0_index = 4'd8;
+            // 16'b0000_0010_0000_0000:s0_index = 4'd9;
+            // 16'b0000_0100_0000_0000:s0_index = 4'd10;
+            // 16'b0000_1000_0000_0000:s0_index = 4'd11;
+            // 16'b0001_0000_0000_0000:s0_index = 4'd12;
+            // 16'b0010_0000_0000_0000:s0_index = 4'd13;
+            // 16'b0100_0000_0000_0000:s0_index = 4'd14;
+            // 16'b1000_0000_0000_0000:s0_index = 4'd15; 
             default:s0_index = '0;
         endcase
     end
@@ -200,14 +208,14 @@ module TLB
     assign match1[ 5] = (s1_vpn2 == tlb_vpn2[ 5]) && ((CTBus.CP0_asid == tlb_asid[ 5]) || tlb_g[ 5]);
     assign match1[ 6] = (s1_vpn2 == tlb_vpn2[ 6]) && ((CTBus.CP0_asid == tlb_asid[ 6]) || tlb_g[ 6]);
     assign match1[ 7] = (s1_vpn2 == tlb_vpn2[ 7]) && ((CTBus.CP0_asid == tlb_asid[ 7]) || tlb_g[ 7]);
-    assign match1[ 8] = (s1_vpn2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
-    assign match1[ 9] = (s1_vpn2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
-    assign match1[10] = (s1_vpn2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
-    assign match1[11] = (s1_vpn2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
-    assign match1[12] = (s1_vpn2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
-    assign match1[13] = (s1_vpn2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
-    assign match1[14] = (s1_vpn2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
-    assign match1[15] = (s1_vpn2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);     
+    // assign match1[ 8] = (s1_vpn2 == tlb_vpn2[ 8]) && ((CTBus.CP0_asid == tlb_asid[ 8]) || tlb_g[ 8]);
+    // assign match1[ 9] = (s1_vpn2 == tlb_vpn2[ 9]) && ((CTBus.CP0_asid == tlb_asid[ 9]) || tlb_g[ 9]);
+    // assign match1[10] = (s1_vpn2 == tlb_vpn2[10]) && ((CTBus.CP0_asid == tlb_asid[10]) || tlb_g[10]);
+    // assign match1[11] = (s1_vpn2 == tlb_vpn2[11]) && ((CTBus.CP0_asid == tlb_asid[11]) || tlb_g[11]);
+    // assign match1[12] = (s1_vpn2 == tlb_vpn2[12]) && ((CTBus.CP0_asid == tlb_asid[12]) || tlb_g[12]);
+    // assign match1[13] = (s1_vpn2 == tlb_vpn2[13]) && ((CTBus.CP0_asid == tlb_asid[13]) || tlb_g[13]);
+    // assign match1[14] = (s1_vpn2 == tlb_vpn2[14]) && ((CTBus.CP0_asid == tlb_asid[14]) || tlb_g[14]);
+    // assign match1[15] = (s1_vpn2 == tlb_vpn2[15]) && ((CTBus.CP0_asid == tlb_asid[15]) || tlb_g[15]);     
     //--------------------s1_found生成逻辑，port1是否hit--------------------------------------------------//    
     always_comb begin           
         if(match1 == 0)
@@ -233,22 +241,30 @@ module TLB
     //------------------------s1_index生成逻辑-----------------------------------------------------------//
     always_comb begin          
         unique case(match1)
-            16'b0000_0000_0000_0001:s1_index = 4'd0;
-            16'b0000_0000_0000_0010:s1_index = 4'd1;
-            16'b0000_0000_0000_0100:s1_index = 4'd2;
-            16'b0000_0000_0000_1000:s1_index = 4'd3;
-            16'b0000_0000_0001_0000:s1_index = 4'd4;
-            16'b0000_0000_0010_0000:s1_index = 4'd5;
-            16'b0000_0000_0100_0000:s1_index = 4'd6;
-            16'b0000_0000_1000_0000:s1_index = 4'd7;
-            16'b0000_0001_0000_0000:s1_index = 4'd8;
-            16'b0000_0010_0000_0000:s1_index = 4'd9;
-            16'b0000_0100_0000_0000:s1_index = 4'd10;
-            16'b0000_1000_0000_0000:s1_index = 4'd11;
-            16'b0001_0000_0000_0000:s1_index = 4'd12;
-            16'b0010_0000_0000_0000:s1_index = 4'd13;
-            16'b0100_0000_0000_0000:s1_index = 4'd14;
-            16'b1000_0000_0000_0000:s1_index = 4'd15;
+            8'b0000_0001:s1_index = 3'd0;
+            8'b0000_0010:s1_index = 3'd1;
+            8'b0000_0100:s1_index = 3'd2;
+            8'b0000_1000:s1_index = 3'd3;
+            8'b0001_0000:s1_index = 3'd4;
+            8'b0010_0000:s1_index = 3'd5;
+            8'b0100_0000:s1_index = 3'd6;
+            8'b1000_0000:s1_index = 3'd7;
+            // 16'b0000_0000_0000_0001:s1_index = 4'd0;
+            // 16'b0000_0000_0000_0010:s1_index = 4'd1;
+            // 16'b0000_0000_0000_0100:s1_index = 4'd2;
+            // 16'b0000_0000_0000_1000:s1_index = 4'd3;
+            // 16'b0000_0000_0001_0000:s1_index = 4'd4;
+            // 16'b0000_0000_0010_0000:s1_index = 4'd5;
+            // 16'b0000_0000_0100_0000:s1_index = 4'd6;
+            // 16'b0000_0000_1000_0000:s1_index = 4'd7;
+            // 16'b0000_0001_0000_0000:s1_index = 4'd8;
+            // 16'b0000_0010_0000_0000:s1_index = 4'd9;
+            // 16'b0000_0100_0000_0000:s1_index = 4'd10;
+            // 16'b0000_1000_0000_0000:s1_index = 4'd11;
+            // 16'b0001_0000_0000_0000:s1_index = 4'd12;
+            // 16'b0010_0000_0000_0000:s1_index = 4'd13;
+            // 16'b0100_0000_0000_0000:s1_index = 4'd14;
+            // 16'b1000_0000_0000_0000:s1_index = 4'd15;
             default:s1_index = '0;
         endcase
     end

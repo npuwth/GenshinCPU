@@ -11,7 +11,8 @@
 `define CPU_PERFORMANCE      1
 `define CPU_DELAYED_BRANCH   `CPU_PERFORMANCE
 
-`define TLB_ENTRIES_NUM      16
+// `define TLB_ENTRIES_NUM      16
+`define TLB_ENTRIES_NUM      8
 `define CACHE_WAY_SIZE       4 * 1024        // 4KB 
 
 `define ICACHE_LINE_WORD     16
