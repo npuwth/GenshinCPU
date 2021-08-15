@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-13 19:38:00
+ * @LastEditTime: 2021-08-15 10:29:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -191,7 +191,7 @@ generate;
             .douta(tagv_rdata[i])
         );
         for (genvar j=0; j<LINE_WORD_NUM; ++j) begin
-            simple_port_ram #(
+            simple_port_ram_without_bypass #(
             .SIZE(SET_NUM)
         )mem_data(
             .clk(clk),
