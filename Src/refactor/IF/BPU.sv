@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-22 19:50:26
- * @LastEditTime: 2021-08-14 22:03:57
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-15 11:45:25
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -44,7 +44,7 @@ module BPU (
 
     BPU_RegType                        BPU_Reg;
 
-    simple_port_ram #(
+    simple_port_ram_without_bypass #(
                 .LATENCY(0),
                 .SIZE(`SIZE_OF_SET),
                 .dtype(BHT_Entry)
