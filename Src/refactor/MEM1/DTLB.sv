@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-08-15 22:58:46
+ * @LastEditTime: 2021-08-16 00:14:15
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -88,10 +88,10 @@ module DTLB (
 //----------------------根据TLB进行虚实地址转换-------------------------//
     always_comb begin //TLBD
         if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h9) begin
-            Phsy_Daddr        = Virt_Daddr - 20'hA000_0;
+            Phsy_Daddr        = {Virt_Daddr[31:28] - 4'hA,Virt_Daddr[27:12]};
         end
         else if(Virt_Daddr[31:28] < 4'hA && Virt_Daddr[31:28] > 4'h7) begin
-            Phsy_Daddr        = Virt_Daddr - 20'h8000_0;
+            Phsy_Daddr        = {Virt_Daddr[31:28] - 4'h8,Virt_Daddr[27:12]};
         end
         else if(Virt_Daddr[12] == 1'b0) begin
             Phsy_Daddr        = D_TLBBuffer.PFN0;
@@ -236,10 +236,10 @@ module DTLB (
 `else 
     always_comb begin //TLBD
         if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h9) begin
-            Phsy_Daddr        = Virt_Daddr - 20'hA000_0;
+            Phsy_Daddr        = {Virt_Daddr[31:28] - 4'hA,Virt_Daddr[27:12]};
         end
         else if(Virt_Daddr[31:28] < 4'hA && Virt_Daddr[31:28] > 4'h7) begin
-            Phsy_Daddr        = Virt_Daddr - 20'h8000_0;
+            Phsy_Daddr        = {Virt_Daddr[31:28] - 4'h8,Virt_Daddr[27:12]};
         end
         else begin
             Phsy_Daddr        = Virt_Daddr;

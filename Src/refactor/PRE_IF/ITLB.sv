@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-08-15 23:05:50
+ * @LastEditTime: 2021-08-16 00:58:47
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -78,16 +78,16 @@ module ITLB (
 //---------------------------根据TLB进行虚实地址转换---------------------//
     always_comb begin //TLBI
         if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h9) begin
-            Phsy_Iaddr        = Virt_Iaddr - 20'hA000_0; 
+            Phsy_Iaddr        = {Virt_Iaddr[31:28] - 4'hA,Virt_Iaddr[27:12]}; 
         end
         else if(Virt_Iaddr[31:28] < 4'hA && Virt_Iaddr[31:28] > 4'h7) begin
-            Phsy_Iaddr        = Virt_Iaddr - 20'h8000_0;
+            Phsy_Iaddr        = {Virt_Iaddr[31:28] - 4'h8,Virt_Iaddr[27:12]};
         end
         else if(Virt_Iaddr[12] == 1'b0) begin                            //根据TLB Buffer进行转换
-            Phsy_Iaddr        = {I_TLBBuffer.PFN0,Virt_Iaddr[11:0]};
+            Phsy_Iaddr        = I_TLBBuffer.PFN0;
         end
         else begin
-            Phsy_Iaddr        = {I_TLBBuffer.PFN1,Virt_Iaddr[11:0]};
+            Phsy_Iaddr        = I_TLBBuffer.PFN1;
         end
     end
 //-----------------------------对Cache属性进行判断-----------------------//
@@ -195,10 +195,10 @@ module ITLB (
 `else 
     always_comb begin //TLBI
         if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h9) begin
-            Phsy_Iaddr        = Virt_Iaddr - 20'hA000_0; 
+            Phsy_Iaddr        = {Virt_Iaddr[31:28] - 4'hA,Virt_Iaddr[27:12]}; 
         end
         else if(Virt_Iaddr[31:28] < 4'hA && Virt_Iaddr[31:28] > 4'h7) begin
-            Phsy_Iaddr        = Virt_Iaddr - 20'h8000_0;
+            Phsy_Iaddr        = {Virt_Iaddr[31:28] - 4'h8,Virt_Iaddr[27:12]};
         end
         else begin
             Phsy_Iaddr        = Virt_Iaddr;
