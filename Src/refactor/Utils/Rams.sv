@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-07-06 11:14:04
- * @LastEditTime: 2021-08-15 10:29:01
+ * @LastEditTime: 2021-08-16 03:42:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \NewCache\Rams.sv
@@ -240,7 +240,7 @@ module simple_port_ram_without_bypass #(
       .MEMORY_INIT_FILE("none"),      // String
       .MEMORY_INIT_PARAM("0"),        // String
       .MEMORY_OPTIMIZATION("true"),   // String
-      .MEMORY_PRIMITIVE("distributed"),      // String distributed
+      .MEMORY_PRIMITIVE("auto"),      // String distributed
       .MEMORY_SIZE(MEMORY_SIZE),             // DECIMAL
       .MESSAGE_CONTROL(0),            // DECIMAL
       .READ_DATA_WIDTH_B($bits(dtype)),         // DECIMAL

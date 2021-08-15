@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-15 18:11:32
+ * @LastEditTime: 2021-08-16 03:19:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -107,7 +107,7 @@ function logic  clog2(//TODO: 配置的时候需要改�?
     };
 endfunction
 
-typedef enum logic [3:0] { 
+typedef enum logic [2:0] { 
 
         MISSDIRTY,
         WRITEBACK,//之后加入fifo就不用这个装态了
@@ -119,7 +119,7 @@ typedef enum logic [3:0] {
 } state_t;
 
 
-typedef enum logic [2:0] { 
+typedef enum logic [0:0] { 
         WB_IDLE,
         WB_STORE
 } wb_state_t;
@@ -147,7 +147,7 @@ typedef struct packed {//store指令在读数的时�?�根据写使能替换
     data_t  wdata;
 } store_t;
 
-typedef enum logic [2:0]{ 
+typedef enum logic [1:0]{ 
     UNCACHE_IDLE,//空闲态
     UNCACHE_READ_WAIT_AXI,//等待读握手
     // UNCACHE_WRITE_WAIT_AXI,//等待写握手
