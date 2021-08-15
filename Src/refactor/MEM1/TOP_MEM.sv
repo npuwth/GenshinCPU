@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-15 22:26:14
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-15 23:11:52
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -72,7 +72,7 @@ module TOP_MEM (
     logic [31:0]                 CP0_Ebase;
     //用于TLB
     logic [2:0]                  MEM_TLBExceptType;
-    logic [31:0]                 Phsy_Daddr;
+    logic [31:12]                Phsy_Daddr;
     logic                        D_IsCached;
     logic                        D_IsTLBBufferValid;
     logic                        TLBBuffer_Flush;
@@ -282,7 +282,7 @@ module TOP_MEM (
     DTLB U_DTLB (
         .clk                     (clk ),
         .rst                     (resetn ),
-        .Virt_Daddr              (MM2Bus.MEM_ALUOut ),
+        .Virt_Daddr              (MM2Bus.MEM_ALUOut[31:12] ),
         .TLBBuffer_Flush         (TLBBuffer_Flush_Final ),
         .D_TLBEntry              (D_TLBEntry ),
         .s1_found                (s1_found ),

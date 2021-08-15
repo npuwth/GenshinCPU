@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 17:37:05
- * @LastEditTime: 2021-08-08 23:05:56
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-15 23:05:50
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -18,12 +18,12 @@
 module ITLB ( 
     input logic                   clk,
     input logic                   rst,
-    input logic  [31:0]           Virt_Iaddr,
+    input logic  [31:12]          Virt_Iaddr,
     input logic                   TLBBuffer_Flush,
     input TLB_Entry               I_TLBEntry,//来自TLB
     input logic                   s0_found,  //来自TLB
     input logic  [2:0]            CP0_Config_K0,
-    output logic [31:0]           Phsy_Iaddr,
+    output logic [31:12]          Phsy_Iaddr,
     output logic                  I_IsCached,
     output logic                  I_IsTLBBufferValid,
     output logic                  I_IsTLBStall,
@@ -39,7 +39,7 @@ module ITLB (
     logic                         I_TLBBufferHit;
 //----------------TLB Buffer Hit信号的生成-------------------------//
     always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+        if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h7) begin
             I_TLBBufferHit = 1'b1;
         end
         else if((Virt_Iaddr[31:13] == I_TLBBuffer.VPN2) && I_TLBBuffer.Valid) begin
@@ -77,11 +77,11 @@ module ITLB (
     end
 //---------------------------根据TLB进行虚实地址转换---------------------//
     always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
-            Phsy_Iaddr        = Virt_Iaddr - 32'hA000_0000; 
+        if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h9) begin
+            Phsy_Iaddr        = Virt_Iaddr - 20'hA000_0; 
         end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
-            Phsy_Iaddr        = Virt_Iaddr - 32'h8000_0000;
+        else if(Virt_Iaddr[31:28] < 4'hA && Virt_Iaddr[31:28] > 4'h7) begin
+            Phsy_Iaddr        = Virt_Iaddr - 20'h8000_0;
         end
         else if(Virt_Iaddr[12] == 1'b0) begin                            //根据TLB Buffer进行转换
             Phsy_Iaddr        = {I_TLBBuffer.PFN0,Virt_Iaddr[11:0]};
@@ -95,10 +95,10 @@ module ITLB (
     assign I_IsCached                                = 1'b0;
 `else
     always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+        if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h9) begin
             I_IsCached                               = 1'b0;
         end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+        else if(Virt_Iaddr[31:28] < 4'hA && Virt_Iaddr[31:28] > 4'h7) begin
             if(CP0_Config_K0 == 3'b011) begin
                 I_IsCached                           = 1'b1;
             end
@@ -157,7 +157,7 @@ module ITLB (
     assign I_VPN2                     = Virt_Iaddr[31:13];
 //------------------------------对异常和Valid信号进行赋值----------------------------------------------//
     always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效，没有异常
+        if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h7) begin  //不走TLB，认为有效，没有异常
             I_IsTLBBufferValid                              = 1'b1; 
             IF_TLBExceptType                                = `IF_TLBNoneEX;
         end
@@ -194,11 +194,11 @@ module ITLB (
     end
 `else 
     always_comb begin //TLBI
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
-            Phsy_Iaddr        = Virt_Iaddr - 32'hA000_0000; 
+        if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h9) begin
+            Phsy_Iaddr        = Virt_Iaddr - 20'hA000_0; 
         end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
-            Phsy_Iaddr        = Virt_Iaddr - 32'h8000_0000;
+        else if(Virt_Iaddr[31:28] < 4'hA && Virt_Iaddr[31:28] > 4'h7) begin
+            Phsy_Iaddr        = Virt_Iaddr - 20'h8000_0;
         end
         else begin
             Phsy_Iaddr        = Virt_Iaddr;
@@ -208,10 +208,10 @@ module ITLB (
     assign I_IsCached         = 1'b0;
 `else 
     always_comb begin
-        if(Virt_Iaddr < 32'hC000_0000 && Virt_Iaddr > 32'h9FFF_FFFF) begin
+        if(Virt_Iaddr[31:28] < 4'hC && Virt_Iaddr[31:28] > 4'h9) begin
             I_IsCached                               = 1'b0;
         end
-        else if(Virt_Iaddr < 32'hA000_0000 && Virt_Iaddr > 32'h7FFF_FFFF) begin
+        else if(Virt_Iaddr[31:28] < 4'hA && Virt_Iaddr[31:28] > 4'h7) begin
             if(CP0_Config_K0 == 3'b011) begin
                 I_IsCached                           = 1'b1;
             end

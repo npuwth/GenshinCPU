@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-08-15 22:25:42
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-15 22:58:46
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -18,14 +18,14 @@
 module DTLB ( 
     input logic                   clk,
     input logic                   rst,
-    input logic  [31:0]           Virt_Daddr,
+    input logic  [31:12]          Virt_Daddr,
     input logic                   TLBBuffer_Flush,
     input TLB_Entry               D_TLBEntry,//来自TLB
     input logic                   s1_found,  //来自TLB
     input LoadType                MEM_LoadType,
     input StoreType               MEM_StoreType,
     input logic  [2:0]            CP0_Config_K0,
-    output logic [31:0]           Phsy_Daddr,
+    output logic [31:12]          Phsy_Daddr,
     output logic                  D_IsCached,
     output logic                  D_IsTLBBufferValid,
     output logic                  D_IsTLBStall,
@@ -44,7 +44,7 @@ module DTLB (
     // assign DTLBBuffer = D_TLBBuffer;
 //-----------------TLB Buffer Hit信号的生成-------------------------------//
     always_comb begin //TLBD
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+        if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h7) begin
                 D_TLBBufferHit = 1'b1; 
         end
         else if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
@@ -87,17 +87,17 @@ module DTLB (
     end
 //----------------------根据TLB进行虚实地址转换-------------------------//
     always_comb begin //TLBD
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
-            Phsy_Daddr        = Virt_Daddr - 32'hA000_0000;
+        if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h9) begin
+            Phsy_Daddr        = Virt_Daddr - 20'hA000_0;
         end
-        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
-            Phsy_Daddr        = Virt_Daddr - 32'h8000_0000;
+        else if(Virt_Daddr[31:28] < 4'hA && Virt_Daddr[31:28] > 4'h7) begin
+            Phsy_Daddr        = Virt_Daddr - 20'h8000_0;
         end
         else if(Virt_Daddr[12] == 1'b0) begin
-            Phsy_Daddr        = {D_TLBBuffer.PFN0,Virt_Daddr[11:0]};
+            Phsy_Daddr        = D_TLBBuffer.PFN0;
         end
         else begin
-            Phsy_Daddr        = {D_TLBBuffer.PFN1,Virt_Daddr[11:0]};
+            Phsy_Daddr        = D_TLBBuffer.PFN1;
         end
     end
 //----------------------对Cache属性进行判断----------------------------//
@@ -105,10 +105,10 @@ module DTLB (
     assign D_IsCached                                = 1'b0;
 `else
     always_comb begin //TLBD
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
+        if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h9) begin
             D_IsCached                               = 1'b0;
         end
-        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+        else if(Virt_Daddr[31:28] < 4'hA && Virt_Daddr[31:28] > 4'h7) begin
             if(CP0_Config_K0 == 3'b011) begin
                 D_IsCached                           = 1'b1;
             end
@@ -166,7 +166,7 @@ module DTLB (
 //------------------------------对异常和Valid信号进行赋值----------------------------------------------//    
     always_comb begin //TLBD
     if(MEM_LoadType.ReadMem != 1'b0 || MEM_StoreType.DMWr != 1'b0) begin
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin  //不走TLB，认为有效
+        if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h7) begin  //不走TLB，认为有效
             D_IsTLBBufferValid                              = 1'b1; 
             MEM_TLBExceptType                               = `MEM_TLBNoneEX;
         end
@@ -235,11 +235,11 @@ module DTLB (
     end
 `else 
     always_comb begin //TLBD
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
-            Phsy_Daddr        = Virt_Daddr - 32'hA000_0000;
+        if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h9) begin
+            Phsy_Daddr        = Virt_Daddr - 20'hA000_0;
         end
-        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
-            Phsy_Daddr        = Virt_Daddr - 32'h8000_0000;
+        else if(Virt_Daddr[31:28] < 4'hA && Virt_Daddr[31:28] > 4'h7) begin
+            Phsy_Daddr        = Virt_Daddr - 20'h8000_0;
         end
         else begin
             Phsy_Daddr        = Virt_Daddr;
@@ -249,10 +249,10 @@ module DTLB (
     assign D_IsCached         = 1'b0;
 `else 
     always_comb begin
-        if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h9FFF_FFFF) begin
+        if(Virt_Daddr[31:28] < 4'hC && Virt_Daddr[31:28] > 4'h9) begin
             D_IsCached                               = 1'b0;
         end
-        else if(Virt_Daddr < 32'hA000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin
+        else if(Virt_Daddr[31:28] < 4'hA && Virt_Daddr[31:28] > 4'h7) begin
             if(CP0_Config_K0 == 3'b011) begin
                 D_IsCached                           = 1'b1;
             end

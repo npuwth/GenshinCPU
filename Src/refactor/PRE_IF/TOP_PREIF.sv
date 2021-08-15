@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-07-12 18:10:55
- * @LastEditTime: 2021-08-13 20:36:45
+ * @LastEditTime: 2021-08-15 23:11:21
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -48,7 +48,7 @@ module TOP_PREIF (
     logic   [2:0]               PCSel;
 
     logic   [1:0]               IF_TLBExceptType;
-    logic   [31:0]              Phsy_Iaddr;
+    logic   [31:12]             Phsy_Iaddr;
     logic                       I_IsCached;
     logic                       I_IsTLBBufferValid;
 
@@ -142,7 +142,7 @@ module TOP_PREIF (
     ITLB U_ITLB (
         .clk             (clk ),
         .rst             (resetn ),
-        .Virt_Iaddr      (PREIF_PC ),
+        .Virt_Iaddr      (PREIF_PC[31:12] ),
         .TLBBuffer_Flush (TLBBuffer_Flush ),
         .I_TLBEntry      (I_TLBEntry ),
         .s0_found        (s0_found ),

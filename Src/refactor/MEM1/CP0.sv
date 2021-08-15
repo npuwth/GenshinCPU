@@ -1,8 +1,8 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-15 20:55:20
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-15 22:31:55
+ * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -47,22 +47,22 @@ module cp0_reg (
     output logic [2:0]      CP0_Config_K0
     );
 
-    cp0_ila CP0_ILA(
-        .clk(clk),
-        .probe0 (MEM2_PC),
-        .probe1 (CP0_EPC),
-        .probe2 (CP0.EntryHi),
-        .probe3 (CP0.EntryLo0), 
-        .probe4 (MEM2_ExcType),       // [4:0]
-        .probe5 (CP0.Cause.ExcCode ), // [4:0]
-        .probe6 (CP0.EntryLo1),    // [4:0]
-        .probe7 (CP0.Index),     //[1:0]
-        .probe8 (CP0.BadVAddr),      // [0:0]
-        .probe9 (MEM_IsTLBP),
-        .probe10(MEM_RegsWrType.CP0Wr),
-        .probe11(MEM_Dst),
-        .probe12(CP0_Status_EXL)
-    );
+    // cp0_ila CP0_ILA(
+    //     .clk(clk),
+    //     .probe0 (MEM2_PC),
+    //     .probe1 (CP0_EPC),
+    //     .probe2 (CP0.EntryHi),
+    //     .probe3 (CP0.EntryLo0), 
+    //     .probe4 (MEM2_ExcType),       // [4:0]
+    //     .probe5 (CP0.Cause.ExcCode ), // [4:0]
+    //     .probe6 (CP0.EntryLo1),    // [4:0]
+    //     .probe7 (CP0.Index),     //[1:0]
+    //     .probe8 (CP0.BadVAddr),      // [0:0]
+    //     .probe9 (MEM_IsTLBP),
+    //     .probe10(MEM_RegsWrType.CP0Wr),
+    //     .probe11(MEM_Dst),
+    //     .probe12(CP0_Status_EXL)
+    // );
  
     
     // 4096/4/8 = 128 ; 128 对应了3'd01
@@ -81,7 +81,7 @@ module cp0_reg (
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
     logic  [5:0]            Interrupt_final;
     logic  [31:0]           config0_default;
-        `ifdef DEBUG
+`ifdef DEBUG
     logic  [31:0]           cp0_cause_debug      /* verilator public_flat */;
     logic  [31:0]           cp0_status_debug     /* verilator public_flat */;
     logic  [31:0]           cp0_count_debug      /* verilator public_flat */;
@@ -101,9 +101,7 @@ module cp0_reg (
     assign     cp0_entryhi_debug   = {CP0.EntryHi.VPN2 , 5'b0 , CP0.EntryHi.ASID};
     assign     cp0_entrylo0_debug  = {6'b0 , CP0.EntryLo0.PFN0 , CP0.EntryLo0.C0 , CP0.EntryLo0.D0 , CP0.EntryLo0.V0 , CP0.EntryLo0.G0};
     assign     cp0_entrylo1_debug  = {6'b0 , CP0.EntryLo1.PFN1 , CP0.EntryLo1.C1 , CP0.EntryLo1.D1 , CP0.EntryLo1.V1 , CP0.EntryLo1.G1};
-
-
-    `endif
+`endif
     
     assign                  CP0_Status_BEV   = CP0.Status.BEV;
     assign                  CP0_Status_IM7_0 = CP0.Status.IM7_0;
