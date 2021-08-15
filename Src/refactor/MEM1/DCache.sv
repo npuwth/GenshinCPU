@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-06-29 23:11:11
- * @LastEditTime: 2021-08-15 11:45:58
+ * @LastEditTime: 2021-08-15 18:11:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Src\ICache.sv
@@ -256,7 +256,7 @@ assign axi_bus.wr_req  = (cache_state == CACHE_WAIT_WRITE  ||state == MISSDIRTY)
 
 // assign axi_bus.wr_addr = (){pipe_tagv_rdata[lru[req_buffer.index]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};
 always_comb begin : axi_bus_wraddr_blockName
-    if (req_buffer.cacheType.isCache) begin
+    if (req_buffer.cacheType.isDcache) begin
         case (req_buffer.cacheType.cacheCode)
             D_Index_Writeback_Invalid:begin
                 axi_bus.wr_addr = {pipe_tagv_rdata[req_buffer.tag[0]].tag,req_buffer.index,{OFFSET_WIDTH{1'b0}}};//tag[0]为1 即指的是第一路
@@ -458,7 +458,7 @@ always_comb begin : tagv_wdata_blockName
         tagv_wdata = {1'b1,req_buffer.tag};
     end
 end
-assign data_read_en   = (state == REFILLDONE || cache_state == CACHE_LOOKUP ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
+assign data_read_en   = (state == REFILLDONE  ) ? 1'b1  : (cpu_bus.stall) ? 1'b0 : 1'b1;
 
 assign dirty_wdata    = (cache_state == CACHE_LOOKUP || state == REFILL)? 1'b0 : 1'b1;
 assign dirty_addr     = req_buffer.index;

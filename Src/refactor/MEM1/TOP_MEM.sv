@@ -1,8 +1,8 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-16 18:10:55
- * @LastEditTime: 2021-08-14 14:41:52
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-15 22:26:14
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -82,6 +82,7 @@ module TOP_MEM (
     logic                        MEM_Interrupt;
     logic                        TLB_Refetch;
     logic                        ICache_Refetch;
+    // TLB_Buffer                   DTLBBuffer;
 
     //表示当前指令是否在延迟槽中，通过判断上一条指令是否是branch或jump实现
     assign MM2Bus.MEM_IsInDelaySlot = MM2Bus.MEM2_IsABranch; 
@@ -295,12 +296,13 @@ module TOP_MEM (
         .D_IsTLBStall            (D_IsTLBStall ),
         .MEM_TLBExceptType       (MEM_TLBExceptType ),
         .D_VPN2                  ( D_VPN2)
+        // .DTLBBuffer              (DTLBBuffer)
     );
 
     // DTLB_ila DTLB_ILA(
     //     .clk(clk),
-    //     .probe0 (MM2Bus.MEM_ALUOut),
-    //     .probe1 (TLBBuffer_Flush_Final),
+    //     .probe0 (TLBBuffer_Flush_Final),
+    //     .probe1 (MEM_ALUOut),
     //     .probe2 (D_TLBEntry),
     //     .probe3 (s1_found), 
     //     .probe4 (MEM_LoadType),       // [4:0]
@@ -311,7 +313,8 @@ module TOP_MEM (
     //     .probe9 (D_IsTLBStall),
     //     .probe10(MEM_TLBExceptType),
     //     .probe11(MM2Bus.MEM_PC),
-    //     .probe12(MM2Bus.MEM_Instr )
+    //     .probe12(MM2Bus.MEM_Instr ),
+    //     .probe13(DTLBBuffer)
     // );
 
 

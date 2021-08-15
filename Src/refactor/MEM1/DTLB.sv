@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-07-16 19:41:02
- * @LastEditTime: 2021-08-08 22:24:25
+ * @LastEditTime: 2021-08-15 22:25:42
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -31,7 +31,9 @@ module DTLB (
     output logic                  D_IsTLBStall,
     output logic [2:0]            MEM_TLBExceptType,
     output logic [31:13]          D_VPN2
+    // output TLB_Buffer             DTLBBuffer
 );
+    
 
 `ifdef EN_TLB
     logic                         D_TLBState;
@@ -39,6 +41,7 @@ module DTLB (
     TLB_Buffer                    D_TLBBuffer;
     logic                         D_TLBBuffer_Wr;
     logic                         D_TLBBufferHit;
+    // assign DTLBBuffer = D_TLBBuffer;
 //-----------------TLB Buffer Hit信号的生成-------------------------------//
     always_comb begin //TLBD
         if(Virt_Daddr < 32'hC000_0000 && Virt_Daddr > 32'h7FFF_FFFF) begin

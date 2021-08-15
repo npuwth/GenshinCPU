@@ -1,8 +1,8 @@
 /*
  * @Author: Juan Jiang
  * @Date: 2021-04-02 09:40:19
- * @LastEditTime: 2021-08-15 00:26:04
- * @LastEditors: npuwth
+ * @LastEditTime: 2021-08-15 17:16:01
+ * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
  * @IO PORT:
@@ -213,7 +213,7 @@ module Decode(
                 `EXE_DIVU:instrType = OP_DIVU;
 
                 `EXE_MULT:instrType = OP_MULT;
-
+ 
                 `EXE_MULTU:instrType = OP_MULTU;
 
               

@@ -1,7 +1,7 @@
 /*
  * @Author: npuwth
  * @Date: 2021-06-28 18:45:50
- * @LastEditTime: 2021-08-15 10:32:45
+ * @LastEditTime: 2021-08-15 12:34:31
  * @LastEditors: Please set LastEditors
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -137,16 +137,16 @@ module mycpu_top (
     assign debug_wb_rf_wen = (WB_Final_Wr.RFWr) ? 4'b1111 : 4'b0000;                         //4位字节写使能
     assign debug_wb_rf_wnum = WB_Dst;           
     
-    // ila CPU_TOP_ILA(
-    //     .clk(aclk),
-    //     .probe0 (debug_wb_pc),
-    //     .probe1 (debug_wb_rf_wdata),
-    //     .probe2 (debug_wb_rf_wen),
-    //     .probe3 (debug_wb_rf_wnum),
-    //     .probe4 (M2WBus.MEM2_Instr),
-    //     .probe5 (MM2Bus.MEM_ExcType),
-    //     .probe6 (Exception_Vector)
-    // );
+    ila CPU_TOP_ILA(
+        .clk(aclk),
+        .probe0 (debug_wb_pc),
+        .probe1 (debug_wb_rf_wdata),
+        .probe2 (debug_wb_rf_wen),
+        .probe3 (debug_wb_rf_wnum),
+        .probe4 (M2WBus.MEM2_Instr),
+        .probe5 (MM2Bus.MEM_ExcType),
+        .probe6 (Exception_Vector)
+    );
 
     //---------------------------------------interface实例化-------------------------------------------------------//
     CPU_IBus_Interface          cpu_ibus();
@@ -208,45 +208,45 @@ module mycpu_top (
 
 
 
-    // control_ila control_ILA(
-    //     .clk(aclk),
-    //     .probe0 (Flush_Exception),
-    //     .probe1 (I_IsTLBStall),
-    //     .probe2 (D_IsTLBStall),
-    //     .probe3 (cpu_ibus.busy),
-    //     .probe4 (cpu_dbus.busy ),
-    //     .probe5 (ID_EX_DH_Stall),
-    //     .probe6 (ID_MEM1_DH_Stall),
-    //     .probe7 (ID_MEM2_DH_Stall),
-    //     .probe8 (EXE_Prediction_Failed),
-    //     .probe9 (EXE_PF_FlushAll),
-    //     .probe10(EXE_IsBrchLikely),
-    //     .probe11(EXE_IsTaken),
-    //     .probe12(EXE_MULTDIVStall),
-    //     .probe13(MM2Bus.MEM_ExcType),
-    //     .probe14(debug_wb_pc),
-    //     .probe15(M2WBus.MEM2_Instr) 
-    // );
+    control_ila control_ILA(
+        .clk(aclk),
+        .probe0 (Flush_Exception),
+        .probe1 (I_IsTLBStall),
+        .probe2 (D_IsTLBStall),
+        .probe3 (cpu_ibus.busy),
+        .probe4 (cpu_dbus.busy ),
+        .probe5 (ID_EX_DH_Stall),
+        .probe6 (ID_MEM1_DH_Stall),
+        .probe7 (ID_MEM2_DH_Stall),
+        .probe8 (EXE_Prediction_Failed),
+        .probe9 (EXE_PF_FlushAll),
+        .probe10(EXE_IsBrchLikely),
+        .probe11(EXE_IsTaken),
+        .probe12(EXE_MULTDIVStall),
+        .probe13(MM2Bus.MEM_ExcType),
+        .probe14(debug_wb_pc),
+        .probe15(M2WBus.MEM2_Instr) 
+    );
 
 
-    // pc_instr_ila PC_INSTR_ILA(
-    //     .clk(aclk),
-    //     .probe0 (PIBus.PREIF_PC),
-    //     .probe1 (IIBus.IF_PC),
-    //     .probe2 (IIBus.IF_Instr),
-    //     .probe3 (IEBus.ID_PC),
-    //     .probe4 (IEBus.ID_Instr ),
-    //     .probe5 (EMBus.EXE_PC),
-    //     .probe6 (EMBus.EXE_Instr),
-    //     .probe7 (MM2Bus.MEM_PC),
-    //     .probe8 (MM2Bus.MEM_Instr),
-    //     .probe9 (M2WBus.MEM2_PC),
-    //     .probe10(M2WBus.MEM2_Instr),
-    //     .probe11(MM2Bus.MEM_ExcType),
-    //     .probe12(debug_wb_pc),
-    //     .probe13(M2WBus.MEM2_Instr) 
+    pc_instr_ila PC_INSTR_ILA(
+        .clk(aclk),
+        .probe0 (PIBus.PREIF_PC),
+        .probe1 (IIBus.IF_PC),
+        .probe2 (IIBus.IF_Instr),
+        .probe3 (IEBus.ID_PC),
+        .probe4 (IEBus.ID_Instr ),
+        .probe5 (EMBus.EXE_PC),
+        .probe6 (EMBus.EXE_Instr),
+        .probe7 (MM2Bus.MEM_PC),
+        .probe8 (MM2Bus.MEM_Instr),
+        .probe9 (M2WBus.MEM2_PC),
+        .probe10(M2WBus.MEM2_Instr),
+        .probe11(MM2Bus.MEM_ExcType),
+        .probe12(debug_wb_pc),
+        .probe13(M2WBus.MEM2_Instr) 
 
-    // );
+    );
 
 //------------------------AXI-----------------------//
     `ifdef NEW_BRIDGE
@@ -523,24 +523,24 @@ module mycpu_top (
     );
 `endif
 
-    // dcache_ila DCACHE_ILA(
-    //     .clk(aclk),
-    //     .probe0(cpu_dbus.valid),
-    //     .probe1(cpu_dbus.op),
-    //     .probe2({cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}),
-    //     .probe3(cpu_dbus.wstrb),
-    //     .probe4(cpu_dbus.loadType),
-    //     .probe5(cpu_dbus.wdata),
-    //     .probe6(cpu_dbus.busy),
-    //     .probe7(cpu_dbus.rdata),
-    //     .probe8(cpu_dbus.stall),
-    //     .probe9(cpu_dbus.origin_valid),
-    //     .probe10(cpu_dbus.isCache),
-    //     .probe11(cpu_dbus.cacheType),
-    //     .probe12(MM2Bus.MEM_ExcType),
-    //     .probe13(debug_wb_pc)
+    dcache_ila DCACHE_ILA(
+        .clk(aclk),
+        .probe0(cpu_dbus.valid),
+        .probe1(cpu_dbus.op),
+        .probe2({cpu_dbus.tag,cpu_dbus.index,cpu_dbus.offset}),
+        .probe3(cpu_dbus.wstrb),
+        .probe4(cpu_dbus.loadType),
+        .probe5(cpu_dbus.wdata),
+        .probe6(cpu_dbus.busy),
+        .probe7(cpu_dbus.rdata),
+        .probe8(cpu_dbus.stall),
+        .probe9(cpu_dbus.origin_valid),
+        .probe10(cpu_dbus.isCache),
+        .probe11(cpu_dbus.cacheType),
+        .probe12(MM2Bus.MEM_ExcType),
+        .probe13(debug_wb_pc)
 
-    // );
+    );
 
 //     logic [31:0] count;
 
