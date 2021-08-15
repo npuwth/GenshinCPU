@@ -1,7 +1,7 @@
 /*
  * @Author: Johnson Yang
  * @Date: 2021-03-27 17:12:06
- * @LastEditTime: 2021-08-16 02:55:50
+ * @LastEditTime: 2021-08-16 04:59:36
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -81,6 +81,9 @@ module cp0_reg (
     logic                   CP0_TimerInterrupt;         //是否有定时中断发生
     logic  [5:0]            Interrupt_final;
     logic  [31:0]           config0_default;
+    logic  [2:0]            RandomAdd1;
+    assign RandomAdd1 = CP0.Random.Random + 1;
+
 `ifdef DEBUG
     logic  [31:0]           cp0_cause_debug      /* verilator public_flat */;
     logic  [31:0]           cp0_status_debug     /* verilator public_flat */;
@@ -143,6 +146,9 @@ module cp0_reg (
         end
         else if(MEM_RegsWrType.CP0Wr && MEM_Dst == `CP0_REG_WIRED) begin
             CP0.Random.Random              <= 3'b111;
+        end
+        else begin
+            CP0.Random.Random              <= (RandomAdd1 >=CP0.Wired.Wired) ? RandomAdd1 : CP0.Wired.Wired;
         end
     end
 //EntryLo0
