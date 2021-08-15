@@ -1,7 +1,7 @@
 /*
  * @Author:Juan
  * @Date: 2021-06-16 16:11:20
- * @LastEditTime: 2021-08-15 00:11:15
+ * @LastEditTime: 2021-08-16 04:58:29
  * @LastEditors: npuwth
  * @Copyright 2021 GenshinCPU
  * @Version:1.0
@@ -50,327 +50,273 @@ module Control(
     output logic        MEM_DisWr,      //传到MEM级，用于关闭CP0的写使能
     output logic        WB_DisWr,       //传到WB级 ，用于停滞流水线
 
-    // output logic        IcacheFlush,    //给Icache的Flush
     output logic        IReq_valid,     //是否给Icache发送请求 1表示发送 0 表示不发送
     output logic        DReq_valid,     //是否给Dcache发送请求 1表示发送 0 表示不发送
 
-    output logic        ICache_Stall,    // 如果出现cache数据准备好，但CPU阻塞的清空，
-                                    // 需要发送stall信号，cache状态机停滞知道数据被CPU接受
+    output logic        ICache_Stall,    // 如果出现cache数据准备好，但CPU阻塞的清空，需要发送stall信号，cache状态机停滞知道数据被CPU接受
     output logic        DCache_Stall
 );
     logic Brchlike_Flush;
     assign Brchlike_Flush = EXE_IsBrchLikely && (~EXE_IsTaken);
-    // logic Load_store_stall ;
-    // localparam int unsigned INDEX_WIDTH = $clog2(`ICACHE_LINE_WORD*4) ;
-    
-
-    // always_comb begin
-    //     if (MEM_loadstore_req == 1'b1 && MEM_iscached && MEM2_store_req == 1'b1 && MEM2_iscached&&MEM_Addr[31:INDEX_WIDTH] == MEM2_Addr[31:INDEX_WIDTH]) begin
-    //         Load_store_stall = 1'b1;
-    //     end
-    //     else if (MEM_loadstore_req == 1'b1 && MEM_iscached && WB_store_req == 1'b1 && WB_iscached &&MEM_Addr[31:INDEX_WIDTH] == WB_Addr[31:INDEX_WIDTH] ) begin
-    //         Load_store_stall = 1'b1;
-    //     end
-    //     else begin
-    //         Load_store_stall = 1'b0;
-    //     end
-    // end
-
-    // assign EXE_DisWr = (Flush_Exception == `FlushEnable) || (DIVMULTBusy == 1'b1);
-
-
-    always_comb begin : IReq_valid_blockName
-        if(Flush_Exception == `FlushEnable || ID_MEM2_DH_Stall ||ID_MEM1_DH_Stall ||ID_EX_DH_Stall ||EXE_PredictFailed || EXE_PF_FlushAll)begin
+//IReq_valid
+    always_comb begin : IReq_valid_blockname
+        if (Flush_Exception == `FlushEnable||ID_MEM2_DH_Stall||ID_MEM1_DH_Stall||ID_EX_DH_Stall||EXE_PredictFailed||EXE_PF_FlushAll)begin
             IReq_valid   = 1'b0;
-        end
+        end 
         else begin
             IReq_valid   = 1'b1;
         end
-
     end
-
-    always_comb begin : DReq_valid_blockName
+//DReq_valid
+    always_comb begin : DReq_valid_blockname
         if (Flush_Exception == `FlushEnable) begin
             DReq_valid   = 1'b0;
-        end else begin
+        end 
+        else begin
             DReq_valid   = 1'b1;
         end
     end
-
-    always_comb begin
-        if (D_IsTLBStall == 1'b1  || Dcache_busy == 1'b1 ) begin
+//ICache_Stall
+    always_comb begin : ICache_Stall_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy) begin
+            ICache_Stall  = 1'b1;
+        end
+        else if(Flush_Exception == `FlushEnable || EXE_PF_FlushAll) begin
+            ICache_Stall  = 1'b0;
+        end
+        else if(ID_MEM2_DH_Stall || ID_MEM1_DH_Stall || ID_EX_DH_Stall) begin
+            ICache_Stall  = 1'b1;
+        end
+        else begin
+            ICache_Stall  = 1'b0;
+        end
+    end
+//DCache_Stall
+    always_comb begin : DCache_Stall_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy) begin
+            DCache_Stall  = 1'b1;
+        end
+        else if(Flush_Exception == `FlushEnable || EXE_PF_FlushAll) begin
+            DCache_Stall  = 1'b0;
+        end
+        else begin
+            DCache_Stall  = 1'b0;
+        end
+    end
+//PREIFWr
+    always_comb begin : PREIF_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy) begin
             PREIF_Wr     = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b0;
-            WB_Wr        = 1'b0;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
+        end
+        else if(Flush_Exception == `FlushEnable || EXE_PF_FlushAll) begin
+            PREIF_Wr     = 1'b1;
+        end
+        else if(ID_MEM2_DH_Stall || ID_MEM1_DH_Stall || ID_EX_DH_Stall ) begin
+            PREIF_Wr     = 1'b0;
+        end
+        else begin
+            PREIF_Wr     = 1'b1;
+        end
+    end
+//IFWr
+    always_comb begin : IF_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable||EXE_PF_FlushAll||ID_MEM2_DH_Stall||ID_MEM1_DH_Stall||ID_EX_DH_Stall||EXE_PredictFailed)begin
+            IF_Wr     = 1'b0;
+        end
+        else begin
+            IF_Wr     = 1'b1;
+        end
+    end
+// IDWr
+    always_comb begin : ID_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable||EXE_PF_FlushAll||ID_MEM2_DH_Stall||ID_MEM1_DH_Stall||ID_EX_DH_Stall||EXE_PredictFailed)begin
+            ID_Wr     = 1'b0;
+        end
+        else begin
+            ID_Wr     = 1'b1;
+        end
+    end
+// EXEWr
+    always_comb begin : EXE_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable) begin
+            EXE_Wr     = 1'b0;
+        end
+        else if(EXE_PF_FlushAll) begin
+            EXE_Wr     = 1'b1;
+        end
+        else if(ID_MEM2_DH_Stall||ID_MEM1_DH_Stall) begin
+            EXE_Wr     = 1'b0;
+        end
+        else begin
+            EXE_Wr     = 1'b1;
+        end
+    end
+// MEMWr
+    always_comb begin : MEM_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable) begin
+            MEM_Wr     = 1'b0;
+        end
+        else if(EXE_PF_FlushAll) begin
+            MEM_Wr     = 1'b1;
+        end
+        else if(ID_MEM2_DH_Stall) begin
+            MEM_Wr     = 1'b0;
+        end
+        else begin
+            MEM_Wr     = 1'b1;
+        end
+    end
+// MEM2Wr
+    always_comb begin : MEM2_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy) begin
+            MEM2_Wr    = 1'b0;
+        end
+        else begin
+            MEM2_Wr    = 1'b1;
+        end
+    end
+//WBWr
+    always_comb begin : WB_Wr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy) begin
+            WB_Wr      = 1'b0;
+        end
+        else begin
+            WB_Wr      = 1'b1;
+        end
+    end
+//ID_DisWr
+    always_comb begin : ID_DisWr_blockname
+        if (D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable||EXE_PF_FlushAll||ID_MEM2_DH_Stall||ID_MEM1_DH_Stall) begin
+            ID_DisWr   = 1'b0;
+        end
+        else if (ID_EX_DH_Stall) begin
+            ID_DisWr   = 1'b1;
+        end
+        else begin
+            ID_DisWr   = 1'b0;
+        end
+    end
+//EXE_DisWr
+    always_comb begin : EXE_DisWr_blockname
+        if(D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable) begin
+            EXE_DisWr   = 1'b1;
+        end
+        else if(EXE_PF_FlushAll||ID_MEM2_DH_Stall) begin
+            EXE_DisWr   = 1'b0;
+        end
+        else if(ID_MEM1_DH_Stall) begin
+            EXE_DisWr   = 1'b1;
+        end
+        else begin
+            EXE_DisWr   = 1'b0;
+        end
+    end
+//MEM_DisWr
+    always_comb begin : MEM_DisWr_blockname
+        if(D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy||Flush_Exception == `FlushEnable) begin
             MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b1; 
-                       
+        end
+        else if(EXE_PF_FlushAll) begin
+            MEM_DisWr    = 1'b0;
+        end
+        else if(ID_MEM2_DH_Stall) begin
+            MEM_DisWr    = 1'b1;
+        end
+        else begin
+            MEM_DisWr    = 1'b0;
+        end
+    end
+//WB_DisWr
+    always_comb begin : WB_DisWr_blockname
+        if(D_IsTLBStall||Dcache_busy||I_IsTLBStall||Icache_busy||DIVMULTBusy) begin
+            WB_DisWr     = 1'b1;
+        end
+        else begin
+            WB_DisWr     = 1'b0;
+        end
+    end
+//Flush
+    always_comb begin : Flush_blockname
+        if (D_IsTLBStall == 1'b1  || Dcache_busy == 1'b1 ) begin                 
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-
-            ICache_Stall  = 1'b1;
-            DCache_Stall  = 1'b1;
         end
         else if (I_IsTLBStall == 1'b1  || Icache_busy == 1'b1 ) begin
-            PREIF_Wr     = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b0;
-            WB_Wr        = 1'b0;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b1; 
-                       
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b1;
-            DCache_Stall  = 1'b1;
         end
         else if (DIVMULTBusy == 1'b1) begin
-            PREIF_Wr     = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b0;
-            WB_Wr        = 1'b0;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b1; 
-                       
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-
-            ICache_Stall  = 1'b1;
-            DCache_Stall  = 1'b1;
         end
         else if (Flush_Exception == `FlushEnable)begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b0;
-
             IF_Flush     = 1'b1;
             ID_Flush     = 1'b1;
             EXE_Flush    = 1'b1;
             MEM_Flush    = 1'b1;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b0;
-            DCache_Stall  = 1'b0;
-
         end
         else if (EXE_PF_FlushAll == 1'b1) begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b1;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
             IF_Flush     = 1'b1;
             ID_Flush     = 1'b1;
             EXE_Flush    = 1'b1;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b0;
-            DCache_Stall  = 1'b0;
         end
         else if (ID_MEM2_DH_Stall == 1'b1) begin
-            PREIF_Wr     = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b0; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b1;
-            WB_DisWr     = 1'b0; 
-                       
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b1;
             WB_Flush     = 1'b0;
-
-            // IcacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b1;
-
-            ICache_Stall  = 1'b1;
-            DCache_Stall  = 1'b0;
         end
-        else if (ID_MEM1_DH_Stall == 1'b1) begin
-            PREIF_Wr     = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b0;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b1;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
+        else if (ID_MEM1_DH_Stall == 1'b1) begin        
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b0;
             MEM_Flush    = 1'b1;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            // IcacheFlush  = 1'b0;
-
-            // IReq_valid   = 1'b0;
-            // DReq_valid   = 1'b1;
-
-            ICache_Stall  = 1'b1;
-            DCache_Stall  = 1'b0;
         end
         else if (ID_EX_DH_Stall == 1'b1) begin
-            PREIF_Wr     = 1'b0;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b1;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b1;  //TODO:模块内描述
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = 1'b1;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b1;
-            DCache_Stall  = 1'b0;
         end
         else if (EXE_PredictFailed == 1'b1) begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'b0;
-            ID_Wr        = 1'b0;
-            EXE_Wr       = 1'b1;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
             IF_Flush     = 1'b1;
             ID_Flush     = 1'b1;
             EXE_Flush    = Brchlike_Flush;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b0;
-            DCache_Stall  = 1'b0;
         end
-        
-       
         else begin
-            PREIF_Wr     = 1'b1;
-            IF_Wr        = 1'b1;
-            ID_Wr        = 1'b1;
-            EXE_Wr       = 1'b1;
-            MEM_Wr       = 1'b1; 
-            MEM2_Wr      = 1'b1;
-            WB_Wr        = 1'b1;
-            
-            ID_DisWr     = 1'b0;
-            EXE_DisWr    = 1'b0;
-            MEM_DisWr    = 1'b0;
-            WB_DisWr     = 1'b0; 
-                       
             IF_Flush     = 1'b0;
             ID_Flush     = 1'b0;
             EXE_Flush    = Brchlike_Flush;
             MEM_Flush    = 1'b0;
             MEM2_Flush   = 1'b0;
             WB_Flush     = 1'b0;
-
-            ICache_Stall  = 1'b0;
-            DCache_Stall  = 1'b0;
         end
     end
-
-    // always_comb begin : EXE_DisWrGen
-    //     if (Flush_Exception == `FlushEnable)begin
-    //         EXE_DisWr    = 1'b1;
-    //     end
-    //     else if (EXE_PF_FlushAll == 1'b1)begin
-    //         EXE_DisWr    = 1'b0;
-    //     end
-    //     else if (ID_MEM1_DH_Stall == 1'b1) begin
-    //         EXE_DisWr    = 1'b1;
-    //     end
-    //     else if (DIVMULTBusy == 1'b1) begin
-    //         EXE_DisWr    = 1'b1;
-    //     end
-    //     else begin
-    //         EXE_DisWr    = 1'b0;
-    //     end
-    // end
     
 endmodule
